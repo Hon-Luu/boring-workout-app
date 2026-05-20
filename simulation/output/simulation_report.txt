@@ -1,0 +1,80 @@
+======================================================================
+CSS MONTE CARLO SIMULATION REPORT
+Population: 2 000 synthetic athletes · 16 weeks training each
+======================================================================
+
+── EXPERIMENT 1: SENSITIVITY ANALYSIS ──────────────────────────────
+Which constants most amplify CSS variance when drawn from priors?
+
+  Constant                Variance Lift %  Interpretation
+  ----------------------------------------------------------
+  beta                              +0.5%  LOW — literature prior OK
+  momentum_ceiling                  +0.1%  LOW — literature prior OK
+  alpha                             +0.0%  LOW — literature prior OK
+  inol_center                       -0.0%  LOW — literature prior OK
+  inol_penalty                      -0.5%  LOW — literature prior OK
+  pillar_process                   -32.1%  LOW — literature prior OK
+  pillar_level                     -33.9%  LOW — literature prior OK
+  pillar_momentum                  -35.3%  LOW — literature prior OK
+
+── EXPERIMENT 2: TIER SEPARATION ────────────────────────────────────
+  ANOVA F = 35.1  (p = 3.95e-22)
+  η² = 0.050  (weak effect)
+  Adjacent-tier overlap (avg): 0.69
+  (0 = no overlap, 1 = complete overlap; <0.3 is good)
+
+  Tier              Mean      SD      P5     P95
+  --------------------------------------------
+  developing        74.6     4.8    66.7    82.6
+  intermediate      71.8     5.5    63.1    80.7
+  advanced          71.2     9.3    54.3    85.0
+  elite             68.6    14.4    45.6    86.9
+
+  Pairwise adjacent-tier overlaps:
+    dev→int: 0.782  ✗ poor separation
+    int→adv: 0.690  ✗ poor separation
+    adv→elite: 0.612  ✗ poor separation
+
+── EXPERIMENT 3: RANKING STABILITY ──────────────────────────────────
+  Kendall τ of compound exercise rankings under β perturbation:
+       β   Mean τ    Min τ
+  --------------------------
+     1.5    1.000    1.000  ✓
+     1.6    1.000    1.000  ✓
+     1.7    1.000    1.000  ✓
+     1.8    1.000    1.000  ✓
+     1.9    1.000    1.000  ✓
+     2.0    1.000    1.000  ✓
+
+  Kendall τ under α perturbation (should be ~1.0 — α affects level, not rank):
+    α=0.03: mean τ = 0.867
+    α=0.05: mean τ = 0.915
+    α=0.08: mean τ = 0.840
+    α=0.10: mean τ = 0.909
+    α=0.13: mean τ = 0.856
+
+── EXPERIMENT 4: BETA CALIBRATION ───────────────────────────────────
+  Optimal β (maximises PSI correlation with true fiber load): 2.2
+  Correlation at β=1.8 (current): 0.3828
+  Correlation at optimal β:       0.4037
+  Verdict: Consider shifting β to 2.2
+
+── EXPERIMENT 5: PILLAR WEIGHT AUDIT ────────────────────────────────
+  'Progressing_Well > Overtrained' holds across 100.0% of Dirichlet draws.
+  (Threshold for confidence: ≥ 90%)
+
+  Weights (L/M/P)       Strong_Stagnant  Progressing_Well  Overtrained   OK?
+  ---------------------------------------------------------------------------
+  L0.35/M0.40/P0.25                57.5              69.5         39.7     ✗
+  L0.55/M0.25/P0.20                66.5              65.8         46.0     ✓
+  L0.20/M0.55/P0.25                50.0              72.5         34.9     ✗
+  L0.33/M0.33/P0.33                57.8              68.6         38.9     ✗
+  L0.40/M0.35/P0.25                60.0              68.5         41.3     ✓
+
+── CONCLUSIONS & CALIBRATION RECOMMENDATIONS ────────────────────────
+  [TIER SEPARATION] Weak — Level pillar may need calibration. ⚠
+  [BETA] Current β=1.8 is potentially mis-specified ⚠
+  [ROBUSTNESS] No single constant dominates — CSS is well-distributed.
+  [PILLAR WEIGHTS] Current 0.35/0.40/0.25 correctly rank archetypes ≥90% of draws. ✓
+
+======================================================================

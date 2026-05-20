@@ -1,0 +1,42 @@
+# Xcode user data
+xcuserdata/
+*.xcuserdatad/
+
+# Xcode build artifacts
+build/
+DerivedData/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# CocoaPods
+Pods/
+Podfile.lock
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# Archives
+*.xcarchive
+
+# Credentials / secrets (entitlements contain no secrets but keep pattern safe)
+# workout/workout.entitlements — keep, needed for build
+
+# Reference images not needed in repo
+chatgpt_reference.png

@@ -1,0 +1,3414 @@
+{
+  "reps": {
+    "Under Slight (51–89%)|Single Exercise": [
+      {
+        "id": 1,
+        "phrase": "Reps on {exercise} came in at {actual} of {target} today."
+      },
+      {
+        "id": 2,
+        "phrase": "{exercise} landed just under target — {actual} of {target} reps done."
+      },
+      {
+        "id": 3,
+        "phrase": "You got through {actual} reps on {exercise}, just short of {target}."
+      },
+      {
+        "id": 4,
+        "phrase": "{exercise} was {actual} reps today, target was {target}."
+      },
+      {
+        "id": 5,
+        "phrase": "A little under on {exercise} this session — {actual} of {target} reps."
+      },
+      {
+        "id": 6,
+        "phrase": "{actual} out of {target} reps on {exercise} today."
+      },
+      {
+        "id": 7,
+        "phrase": "Just shy of target on {exercise} — {actual} reps completed."
+      },
+      {
+        "id": 8,
+        "phrase": "{exercise} finished at {actual} reps, {target} was the plan."
+      },
+      {
+        "id": 9,
+        "phrase": "Rep count on {exercise} sat at {actual} today — {target} was the goal."
+      },
+      {
+        "id": 10,
+        "phrase": "You were close on {exercise} — {actual} of {target} reps through."
+      },
+      {
+        "id": 11,
+        "phrase": "{exercise} clocked {actual} reps against a target of {target}."
+      },
+      {
+        "id": 12,
+        "phrase": "Not quite the full set on {exercise} — {actual} of {target} reps done."
+      },
+      {
+        "id": 13,
+        "phrase": "{actual} reps logged on {exercise}, {target} was the aim."
+      },
+      {
+        "id": 14,
+        "phrase": "Almost there on {exercise} — {actual} of {target} reps completed."
+      },
+      {
+        "id": 15,
+        "phrase": "{exercise} hit {actual} reps today, just below the {target} target."
+      },
+      {
+        "id": 16,
+        "phrase": "Slightly under on {exercise} — {actual} reps out of {target}."
+      },
+      {
+        "id": 17,
+        "phrase": "You worked through {actual} reps on {exercise} — {target} was the goal."
+      },
+      {
+        "id": 18,
+        "phrase": "{exercise} came in at {actual} reps, a touch below {target}."
+      },
+      {
+        "id": 19,
+        "phrase": "Rep target on {exercise} was {target} — {actual} completed today."
+      },
+      {
+        "id": 20,
+        "phrase": "{actual} reps on {exercise} this session, {target} was the plan."
+      }
+    ],
+    "Under Slight (51–89%)|2–3 Same Outcome": [
+      {
+        "id": 21,
+        "phrase": "{exercise1} and {exercise2} both came in just under target today."
+      },
+      {
+        "id": 22,
+        "phrase": "Slightly under on both {exercise1} and {exercise2} this session."
+      },
+      {
+        "id": 23,
+        "phrase": "Both {exercise1} and {exercise2} landed short of target — close but not there."
+      },
+      {
+        "id": 24,
+        "phrase": "Rep counts were just under on {exercise1} and {exercise2} today."
+      },
+      {
+        "id": 25,
+        "phrase": "{exercise1}, {exercise2} and {exercise3} all came in slightly under target."
+      },
+      {
+        "id": 26,
+        "phrase": "A little short across {exercise1} and {exercise2} this session."
+      },
+      {
+        "id": 27,
+        "phrase": "Both pressing movements came in just under target today."
+      },
+      {
+        "id": 28,
+        "phrase": "All three exercises landed slightly short of target this session."
+      },
+      {
+        "id": 29,
+        "phrase": "{exercise1} and {exercise2} were both just shy of the rep target."
+      },
+      {
+        "id": 30,
+        "phrase": "Reps were close but under on both {exercise1} and {exercise2}."
+      },
+      {
+        "id": 31,
+        "phrase": "Slightly under across the board — {exercise1} and {exercise2} both short."
+      },
+      {
+        "id": 32,
+        "phrase": "Both {exercise1} and {exercise2} finished a little short of target reps."
+      },
+      {
+        "id": 33,
+        "phrase": "Under target on {exercise1} and {exercise2} — not by much, but not there yet."
+      },
+      {
+        "id": 34,
+        "phrase": "All exercises came in slightly under target this session."
+      }
+    ],
+    "Under Slight (51–89%)|2–3 Mixed": [
+      {
+        "id": 35,
+        "phrase": "{exercise1} hit target today, {exercise2} came in just under at {actual} reps."
+      },
+      {
+        "id": 36,
+        "phrase": "Good session on {exercise1} — {exercise2} was slightly short at {actual} of {target} reps."
+      },
+      {
+        "id": 37,
+        "phrase": "{exercise1} was on target, {exercise2} landed at {actual} reps against {target}."
+      },
+      {
+        "id": 38,
+        "phrase": "Full reps on {exercise1}, just under on {exercise2} — {actual} of {target} done."
+      },
+      {
+        "id": 39,
+        "phrase": "{exercise1} hit its numbers, {exercise2} came in a little short."
+      },
+      {
+        "id": 40,
+        "phrase": "On target for {exercise1}, slightly under for {exercise2} at {actual} reps."
+      },
+      {
+        "id": 41,
+        "phrase": "Most of the session hit target — {exercise2} came in just under at {actual} reps."
+      },
+      {
+        "id": 42,
+        "phrase": "Everything hit target except {exercise} — {actual} of {target} reps there."
+      },
+      {
+        "id": 43,
+        "phrase": "{exercise1} and {exercise2} were on target, {exercise3} came in just under."
+      },
+      {
+        "id": 44,
+        "phrase": "Clean session on most exercises — {exercise} was slightly short at {actual} reps."
+      },
+      {
+        "id": 45,
+        "phrase": "Good session overall — {exercise} was the only one slightly under target."
+      }
+    ],
+    "Under Slight (51–89%)|4+ Exercises": [
+      {
+        "id": 46,
+        "phrase": "Most exercises came in just under target today."
+      },
+      {
+        "id": 47,
+        "phrase": "Reps were slightly short across most of the session."
+      },
+      {
+        "id": 48,
+        "phrase": "A little under across the board — close but not quite there."
+      },
+      {
+        "id": 49,
+        "phrase": "Most of the session landed just shy of target reps."
+      },
+      {
+        "id": 50,
+        "phrase": "Slightly under on most exercises this session."
+      },
+      {
+        "id": 51,
+        "phrase": "Almost there across most of the session — reps just short of target."
+      },
+      {
+        "id": 52,
+        "phrase": "Close to target across the board — just not quite there."
+      },
+      {
+        "id": 53,
+        "phrase": "Most exercises were slightly short of the rep target today."
+      }
+    ],
+    "Under Significant (≤50%)|Single Exercise": [
+      {
+        "id": 54,
+        "phrase": "Reps on {exercise} were well under target today — {actual} out of {target}."
+      },
+      {
+        "id": 55,
+        "phrase": "{exercise} came in significantly short — {actual} reps against a {target} target."
+      },
+      {
+        "id": 56,
+        "phrase": "Only {actual} reps on {exercise} today, target was {target}."
+      },
+      {
+        "id": 57,
+        "phrase": "{exercise} landed at {actual} reps — well below the {target} goal."
+      },
+      {
+        "id": 58,
+        "phrase": "Rep count on {exercise} was {actual} this session, a big gap from {target}."
+      },
+      {
+        "id": 59,
+        "phrase": "{actual} out of {target} reps on {exercise} — a significant miss today."
+      },
+      {
+        "id": 60,
+        "phrase": "Reps on {exercise} sat at {actual} — {target} was the plan."
+      },
+      {
+        "id": 61,
+        "phrase": "{exercise} finished at {actual} reps, well short of {target}."
+      },
+      {
+        "id": 62,
+        "phrase": "Only {actual} reps through on {exercise} this session."
+      },
+      {
+        "id": 63,
+        "phrase": "Rep target on {exercise} was {target} — {actual} were completed."
+      },
+      {
+        "id": 64,
+        "phrase": "{exercise} came in at {actual} reps, a notable gap from the {target} goal."
+      },
+      {
+        "id": 65,
+        "phrase": "Well under on {exercise} today — {actual} of {target} reps done."
+      },
+      {
+        "id": 66,
+        "phrase": "The {target} rep target on {exercise} was a stretch today — {actual} completed."
+      },
+      {
+        "id": 67,
+        "phrase": "{exercise} finished at {actual} reps, significantly below {target}."
+      },
+      {
+        "id": 68,
+        "phrase": "Reps were low on {exercise} — {actual} out of {target} this session."
+      },
+      {
+        "id": 69,
+        "phrase": "A big gap on {exercise} today — {actual} reps out of {target}."
+      },
+      {
+        "id": 70,
+        "phrase": "{target} reps was the aim on {exercise} — {actual} done."
+      },
+      {
+        "id": 71,
+        "phrase": "Fell well short on {exercise} — {actual} reps completed."
+      },
+      {
+        "id": 72,
+        "phrase": "Rep count on {exercise} was {actual} — a long way from {target}."
+      },
+      {
+        "id": 73,
+        "phrase": "Low rep count on {exercise} today — {actual} out of {target}."
+      }
+    ],
+    "Under Significant (≤50%)|2–3 Same Outcome": [
+      {
+        "id": 74,
+        "phrase": "{exercise1} and {exercise2} both came in well under target today."
+      },
+      {
+        "id": 75,
+        "phrase": "Significantly short on both {exercise1} and {exercise2} this session."
+      },
+      {
+        "id": 76,
+        "phrase": "Both {exercise1} and {exercise2} landed well below target reps."
+      },
+      {
+        "id": 77,
+        "phrase": "Rep counts were a long way under on {exercise1} and {exercise2} today."
+      },
+      {
+        "id": 78,
+        "phrase": "{exercise1}, {exercise2} and {exercise3} all came in significantly under target."
+      },
+      {
+        "id": 79,
+        "phrase": "A big gap across {exercise1} and {exercise2} this session."
+      },
+      {
+        "id": 80,
+        "phrase": "Both exercises came in well under target today."
+      },
+      {
+        "id": 81,
+        "phrase": "All three exercises landed significantly short of target this session."
+      },
+      {
+        "id": 82,
+        "phrase": "{exercise1} and {exercise2} were both well shy of the rep target."
+      },
+      {
+        "id": 83,
+        "phrase": "Well under target on {exercise1} and {exercise2} — a big gap on both."
+      }
+    ],
+    "Under Significant (≤50%)|2–3 Mixed": [
+      {
+        "id": 84,
+        "phrase": "{exercise1} hit target today, {exercise2} came in well under at {actual} reps."
+      },
+      {
+        "id": 85,
+        "phrase": "Good session on {exercise1} — {exercise2} was significantly short at {actual} of {target} reps."
+      },
+      {
+        "id": 86,
+        "phrase": "Full reps on {exercise1}, a big gap on {exercise2} — {actual} of {target} done."
+      },
+      {
+        "id": 87,
+        "phrase": "{exercise1} hit its numbers, {exercise2} came in well short."
+      },
+      {
+        "id": 88,
+        "phrase": "Most of the session hit target — {exercise2} came in well under at {actual} reps."
+      },
+      {
+        "id": 89,
+        "phrase": "Everything hit target except {exercise} — only {actual} of {target} reps there."
+      },
+      {
+        "id": 90,
+        "phrase": "Strong session overall — {exercise} was the one that fell well short today."
+      }
+    ],
+    "Under Significant (≤50%)|4+ Exercises": [
+      {
+        "id": 91,
+        "phrase": "Reps were well under target across most of the session today."
+      },
+      {
+        "id": 92,
+        "phrase": "A significant gap across most exercises this session."
+      },
+      {
+        "id": 93,
+        "phrase": "Well under across the board — a long way from target on most."
+      },
+      {
+        "id": 94,
+        "phrase": "Most of the session landed well short of target reps."
+      },
+      {
+        "id": 95,
+        "phrase": "Significantly under on most exercises this session."
+      },
+      {
+        "id": 96,
+        "phrase": "A big gap across most of the session — reps well short of target."
+      },
+      {
+        "id": 97,
+        "phrase": "Well short of target across the board today."
+      }
+    ],
+    "On Target (90–109%)|Single Exercise": [
+      {
+        "id": 98,
+        "phrase": "{exercise} hit the full rep target today."
+      },
+      {
+        "id": 99,
+        "phrase": "Full reps on {exercise} this session."
+      },
+      {
+        "id": 100,
+        "phrase": "{exercise} landed right on target."
+      },
+      {
+        "id": 101,
+        "phrase": "On target for {exercise} today — {actual} reps done."
+      },
+      {
+        "id": 102,
+        "phrase": "Full rep target hit on {exercise}."
+      },
+      {
+        "id": 103,
+        "phrase": "{exercise} checked out today — full reps."
+      },
+      {
+        "id": 104,
+        "phrase": "Right on target for {exercise} — {actual} reps."
+      },
+      {
+        "id": 105,
+        "phrase": "Full reps on {exercise} — {target} done."
+      },
+      {
+        "id": 106,
+        "phrase": "{exercise} hit its numbers today."
+      },
+      {
+        "id": 107,
+        "phrase": "Target met on {exercise} — {actual} reps."
+      },
+      {
+        "id": 108,
+        "phrase": "All reps completed on {exercise} today."
+      },
+      {
+        "id": 109,
+        "phrase": "{exercise} came in exactly on plan."
+      },
+      {
+        "id": 110,
+        "phrase": "Every rep on {exercise} was there today."
+      },
+      {
+        "id": 111,
+        "phrase": "{exercise} went to plan — {actual} reps."
+      },
+      {
+        "id": 112,
+        "phrase": "Rep target on {exercise} — done."
+      },
+      {
+        "id": 113,
+        "phrase": "{actual} reps on {exercise} — right where the target was."
+      },
+      {
+        "id": 114,
+        "phrase": "Full set on {exercise} today."
+      },
+      {
+        "id": 115,
+        "phrase": "{exercise} delivered — {actual} reps on target."
+      },
+      {
+        "id": 116,
+        "phrase": "Clean session on {exercise} — full reps."
+      },
+      {
+        "id": 117,
+        "phrase": "{exercise} was right on plan today."
+      }
+    ],
+    "On Target (90–109%)|2–3 Same Outcome": [
+      {
+        "id": 118,
+        "phrase": "{exercise1} and {exercise2} both hit full target today."
+      },
+      {
+        "id": 119,
+        "phrase": "Full reps across {exercise1} and {exercise2} this session."
+      },
+      {
+        "id": 120,
+        "phrase": "Both {exercise1} and {exercise2} landed right on target."
+      },
+      {
+        "id": 121,
+        "phrase": "{exercise1}, {exercise2} and {exercise3} all hit full target today."
+      },
+      {
+        "id": 122,
+        "phrase": "On target across {exercise1} and {exercise2} — both delivered."
+      },
+      {
+        "id": 123,
+        "phrase": "Full rep targets hit on {exercise1} and {exercise2}."
+      },
+      {
+        "id": 124,
+        "phrase": "Both exercises checked out — full reps on each."
+      },
+      {
+        "id": 125,
+        "phrase": "All three on target — {exercise1}, {exercise2} and {exercise3} all delivered."
+      },
+      {
+        "id": 126,
+        "phrase": "{exercise1} and {exercise2} both hit their numbers today."
+      },
+      {
+        "id": 127,
+        "phrase": "Clean across {exercise1} and {exercise2} — full reps on both."
+      }
+    ],
+    "On Target (90–109%)|4+ Exercises": [
+      {
+        "id": 128,
+        "phrase": "Everything hit target today."
+      },
+      {
+        "id": 129,
+        "phrase": "Full reps across the board this session."
+      },
+      {
+        "id": 130,
+        "phrase": "All exercises landed on target today."
+      },
+      {
+        "id": 131,
+        "phrase": "A clean session — everything on target."
+      },
+      {
+        "id": 132,
+        "phrase": "Rep targets met across the board."
+      },
+      {
+        "id": 133,
+        "phrase": "All exercises hit their numbers today."
+      },
+      {
+        "id": 134,
+        "phrase": "Full target across every exercise this session."
+      },
+      {
+        "id": 135,
+        "phrase": "Everything checked out — full reps across the board."
+      }
+    ],
+    "Over Target (110%+)|Single Exercise": [
+      {
+        "id": 136,
+        "phrase": "{exercise} went over target today — {actual} reps against a {target} goal."
+      },
+      {
+        "id": 137,
+        "phrase": "Over target on {exercise} — {actual} reps, target was {target}."
+      },
+      {
+        "id": 138,
+        "phrase": "{exercise} exceeded the target at {actual} reps."
+      },
+      {
+        "id": 139,
+        "phrase": "More than the full target on {exercise} — {actual} reps done."
+      },
+      {
+        "id": 140,
+        "phrase": "{exercise} went past target today — {actual} reps."
+      },
+      {
+        "id": 141,
+        "phrase": "Past target on {exercise} — {actual} reps."
+      },
+      {
+        "id": 142,
+        "phrase": "{exercise} hit {actual} reps — past the {target} target."
+      },
+      {
+        "id": 143,
+        "phrase": "{actual} reps on {exercise} — over the {target} target."
+      },
+      {
+        "id": 144,
+        "phrase": "{exercise} exceeded target today at {actual} reps."
+      },
+      {
+        "id": 145,
+        "phrase": "Over the target on {exercise} — {actual} reps done."
+      },
+      {
+        "id": 146,
+        "phrase": "{exercise} pushed past {target} reps today — {actual} completed."
+      },
+      {
+        "id": 147,
+        "phrase": "Strong session on {exercise} — {actual} reps, target was {target}."
+      },
+      {
+        "id": 148,
+        "phrase": "{actual} reps through on {exercise}, above the {target} goal."
+      },
+      {
+        "id": 149,
+        "phrase": "{exercise} came in above target — {actual} reps."
+      },
+      {
+        "id": 150,
+        "phrase": "Above target on {exercise} today — {actual} reps completed."
+      },
+      {
+        "id": 151,
+        "phrase": "{exercise} delivered {actual} reps — target was {target}."
+      },
+      {
+        "id": 152,
+        "phrase": "Rep count on {exercise} went past target — {actual} done."
+      },
+      {
+        "id": 153,
+        "phrase": "{exercise} cleared the target — {actual} reps today."
+      },
+      {
+        "id": 154,
+        "phrase": "Exceeded target on {exercise} — {actual} reps against {target}."
+      },
+      {
+        "id": 155,
+        "phrase": "{exercise} finished above target at {actual} reps."
+      }
+    ],
+    "Over Target (110%+)|2–3 Same Outcome": [
+      {
+        "id": 156,
+        "phrase": "{exercise1} and {exercise2} both went over target today."
+      },
+      {
+        "id": 157,
+        "phrase": "Over target across {exercise1} and {exercise2} this session."
+      },
+      {
+        "id": 158,
+        "phrase": "Both {exercise1} and {exercise2} exceeded their rep targets."
+      },
+      {
+        "id": 159,
+        "phrase": "{exercise1}, {exercise2} and {exercise3} all went past target today."
+      },
+      {
+        "id": 160,
+        "phrase": "Above target on both {exercise1} and {exercise2}."
+      },
+      {
+        "id": 161,
+        "phrase": "Both exercises cleared their targets — strong session."
+      },
+      {
+        "id": 162,
+        "phrase": "All three exceeded target today — {exercise1}, {exercise2} and {exercise3}."
+      }
+    ],
+    "Over Target (110%+)|4+ Exercises": [
+      {
+        "id": 163,
+        "phrase": "Everything went over target today."
+      },
+      {
+        "id": 164,
+        "phrase": "Above target across the board this session."
+      },
+      {
+        "id": 165,
+        "phrase": "All exercises exceeded their rep targets today."
+      },
+      {
+        "id": 166,
+        "phrase": "A strong session — everything above target."
+      },
+      {
+        "id": 167,
+        "phrase": "Rep targets cleared across every exercise this session."
+      }
+    ]
+  },
+  "weight": {
+    "Dropped → Completed Reps": [
+      {
+        "id": 1,
+        "phrase": "You dropped {exercise} from {original_weight} to {weight} mid-session and completed the full reps from there."
+      },
+      {
+        "id": 2,
+        "phrase": "You adjusted {exercise} down to {weight} mid-session and hit the rep target from there."
+      },
+      {
+        "id": 3,
+        "phrase": "{exercise} was brought down to {weight} this session — full reps completed from there."
+      },
+      {
+        "id": 4,
+        "phrase": "Weight on {exercise} came down to {weight} mid-session — reps completed from there."
+      },
+      {
+        "id": 5,
+        "phrase": "You moved {exercise} down to {weight} and got through the full reps."
+      },
+      {
+        "id": 6,
+        "phrase": "{exercise} dropped to {weight} mid-session — reps done from there."
+      },
+      {
+        "id": 7,
+        "phrase": "After adjusting {exercise} to {weight}, the full rep target was hit."
+      },
+      {
+        "id": 8,
+        "phrase": "You brought {exercise} down to {weight} and completed the reps from there."
+      },
+      {
+        "id": 9,
+        "phrase": "{exercise} was adjusted to {weight} this session — reps through from there."
+      },
+      {
+        "id": 10,
+        "phrase": "Weight adjustment on {exercise} to {weight} worked — full reps completed."
+      },
+      {
+        "id": 11,
+        "phrase": "You took {exercise} down to {weight} mid-session and delivered the full reps."
+      },
+      {
+        "id": 12,
+        "phrase": "{exercise} came down to {weight} — reps completed from that point."
+      },
+      {
+        "id": 13,
+        "phrase": "Mid-session adjustment on {exercise} to {weight} — reps followed through."
+      },
+      {
+        "id": 14,
+        "phrase": "You reduced {exercise} to {weight} and hit the rep target from there."
+      },
+      {
+        "id": 15,
+        "phrase": "{exercise} shifted to {weight} mid-session — completed the reps from there."
+      }
+    ],
+    "Dropped → Still Under": [
+      {
+        "id": 16,
+        "phrase": "Even after dropping {exercise} to {weight}, reps came in at {actual} of {target}."
+      },
+      {
+        "id": 17,
+        "phrase": "You adjusted {exercise} down to {weight} — reps were still under at {actual} of {target}."
+      },
+      {
+        "id": 18,
+        "phrase": "{exercise} was dropped to {weight} mid-session — {actual} of {target} reps completed."
+      },
+      {
+        "id": 19,
+        "phrase": "Weight on {exercise} came down to {weight} — reps still came in at {actual} of {target}."
+      },
+      {
+        "id": 20,
+        "phrase": "You brought {exercise} down to {weight} — reps were still short at {actual} of {target}."
+      },
+      {
+        "id": 21,
+        "phrase": "{exercise} dropped to {weight} mid-session — still {actual} of {target} reps."
+      },
+      {
+        "id": 22,
+        "phrase": "After adjusting {exercise} to {weight}, reps came in at {actual} of {target}."
+      },
+      {
+        "id": 23,
+        "phrase": "You moved {exercise} down to {weight} — reps were still short at {actual} of {target}."
+      },
+      {
+        "id": 24,
+        "phrase": "{exercise} was adjusted to {weight} — {actual} of {target} reps done."
+      },
+      {
+        "id": 25,
+        "phrase": "Weight dropped to {weight} on {exercise} — reps came in at {actual} of {target}."
+      },
+      {
+        "id": 26,
+        "phrase": "Even at {weight}, {exercise} came in at {actual} of {target} reps."
+      },
+      {
+        "id": 27,
+        "phrase": "You reduced {exercise} to {weight} — reps still came in short at {actual} of {target}."
+      },
+      {
+        "id": 28,
+        "phrase": "{exercise} at {weight} after the adjustment — {actual} of {target} reps through."
+      },
+      {
+        "id": 29,
+        "phrase": "Brought {exercise} down to {weight} mid-session — still short at {actual} reps."
+      },
+      {
+        "id": 30,
+        "phrase": "Weight adjustment to {weight} on {exercise} — reps still came in at {actual} of {target}."
+      }
+    ],
+    "User Increased → Hit Target": [
+      {
+        "id": 31,
+        "phrase": "You moved {exercise} up to {weight} and hit the full rep target."
+      },
+      {
+        "id": 32,
+        "phrase": "Weight on {exercise} went up to {weight} — full reps hit from there."
+      },
+      {
+        "id": 33,
+        "phrase": "You increased {exercise} to {weight} and completed the full target."
+      },
+      {
+        "id": 34,
+        "phrase": "{exercise} was up to {weight} this session — full reps done."
+      },
+      {
+        "id": 35,
+        "phrase": "Weight moved up to {weight} on {exercise} — full reps delivered."
+      },
+      {
+        "id": 36,
+        "phrase": "You pushed {exercise} to {weight} and hit the rep target."
+      },
+      {
+        "id": 37,
+        "phrase": "{exercise} went up to {weight} this session — full reps completed."
+      },
+      {
+        "id": 38,
+        "phrase": "Weight increased to {weight} on {exercise} — target hit."
+      },
+      {
+        "id": 39,
+        "phrase": "You moved {exercise} up to {weight} — full reps through."
+      },
+      {
+        "id": 40,
+        "phrase": "{exercise} was at {weight} this session — rep target met."
+      },
+      {
+        "id": 41,
+        "phrase": "You stepped {exercise} up to {weight} and delivered the full reps."
+      },
+      {
+        "id": 42,
+        "phrase": "{exercise} up to {weight} — full rep target completed."
+      },
+      {
+        "id": 43,
+        "phrase": "Weight on {exercise} increased to {weight} — reps were all there."
+      },
+      {
+        "id": 44,
+        "phrase": "You took {exercise} up to {weight} and hit the target."
+      },
+      {
+        "id": 45,
+        "phrase": "{exercise} moved to {weight} this session — full reps done."
+      }
+    ],
+    "User Increased → Slight Miss": [
+      {
+        "id": 46,
+        "phrase": "You moved {exercise} up to {weight} this session — reps came in at {actual} of {target}."
+      },
+      {
+        "id": 47,
+        "phrase": "Weight on {exercise} went up to {weight} — reps were just under at {actual} of {target}."
+      },
+      {
+        "id": 48,
+        "phrase": "You increased {exercise} to {weight} — {actual} of {target} reps completed."
+      },
+      {
+        "id": 49,
+        "phrase": "{exercise} was up to {weight} this session — reps came in slightly short at {actual} of {target}."
+      },
+      {
+        "id": 50,
+        "phrase": "Weight moved up to {weight} on {exercise} — {actual} of {target} reps done."
+      },
+      {
+        "id": 51,
+        "phrase": "You pushed {exercise} to {weight} — reps were {actual} of {target}."
+      },
+      {
+        "id": 52,
+        "phrase": "{exercise} went up to {weight} this session — just under on reps at {actual} of {target}."
+      },
+      {
+        "id": 53,
+        "phrase": "Weight increased to {weight} on {exercise} — reps came in at {actual} of {target}."
+      },
+      {
+        "id": 54,
+        "phrase": "You moved {exercise} up to {weight} — {actual} reps against a {target} target."
+      },
+      {
+        "id": 55,
+        "phrase": "{exercise} was at {weight} this session — reps came in slightly short."
+      }
+    ],
+    "User Increased → Significant Miss": [
+      {
+        "id": 56,
+        "phrase": "You moved {exercise} up to {weight} — reps came in well under at {actual} of {target}."
+      },
+      {
+        "id": 57,
+        "phrase": "Weight on {exercise} went up to {weight} — reps were significantly short at {actual} of {target}."
+      },
+      {
+        "id": 58,
+        "phrase": "You increased {exercise} to {weight} — {actual} of {target} reps completed."
+      },
+      {
+        "id": 59,
+        "phrase": "{exercise} was up to {weight} this session — reps came in well short at {actual} of {target}."
+      },
+      {
+        "id": 60,
+        "phrase": "Weight moved up to {weight} on {exercise} — {actual} of {target} reps done."
+      },
+      {
+        "id": 61,
+        "phrase": "You pushed {exercise} to {weight} — reps were {actual} of {target}."
+      },
+      {
+        "id": 62,
+        "phrase": "{exercise} went up to {weight} this session — a big gap on reps at {actual} of {target}."
+      },
+      {
+        "id": 63,
+        "phrase": "Weight increased to {weight} on {exercise} — reps came in at {actual} of {target}."
+      },
+      {
+        "id": 64,
+        "phrase": "You moved {exercise} up to {weight} — {actual} reps against a {target} target."
+      },
+      {
+        "id": 65,
+        "phrase": "{exercise} was at {weight} this session — reps came in well short."
+      }
+    ],
+    "User Increased → Over Target": [
+      {
+        "id": 66,
+        "phrase": "You moved {exercise} up to {weight} and exceeded the rep target — {actual} reps done."
+      },
+      {
+        "id": 67,
+        "phrase": "Weight on {exercise} went up to {weight} — over target at {actual} reps."
+      },
+      {
+        "id": 68,
+        "phrase": "You increased {exercise} to {weight} and went past target — {actual} of {target} reps."
+      },
+      {
+        "id": 69,
+        "phrase": "{exercise} was up to {weight} this session — over target at {actual} reps."
+      },
+      {
+        "id": 70,
+        "phrase": "Weight moved up to {weight} on {exercise} — {actual} reps against a {target} target."
+      },
+      {
+        "id": 71,
+        "phrase": "You pushed {exercise} to {weight} and exceeded target — {actual} reps."
+      },
+      {
+        "id": 72,
+        "phrase": "{exercise} went up to {weight} — over target at {actual} reps."
+      },
+      {
+        "id": 73,
+        "phrase": "Weight increased to {weight} on {exercise} — past target at {actual} reps."
+      },
+      {
+        "id": 74,
+        "phrase": "You moved {exercise} up to {weight} and went over target — {actual} reps done."
+      },
+      {
+        "id": 75,
+        "phrase": "{exercise} was at {weight} this session — over target at {actual} reps."
+      }
+    ],
+    "Drop Set — Completed": [
+      {
+        "id": 76,
+        "phrase": "You finished {exercise} with a drop set — good way to squeeze out extra work when the weight gets heavy."
+      },
+      {
+        "id": 77,
+        "phrase": "Drop set on {exercise} completed — that extra volume at the end adds up."
+      },
+      {
+        "id": 78,
+        "phrase": "You used a drop set on {exercise} to push past the sticking point — and completed it."
+      },
+      {
+        "id": 79,
+        "phrase": "Drop set completed on {exercise} — solid execution on the extended set."
+      },
+      {
+        "id": 80,
+        "phrase": "You went past the main sets on {exercise} with a drop — that extra rep work builds capacity."
+      },
+      {
+        "id": 81,
+        "phrase": "{exercise} finished with a drop set — you didn't leave reps on the table."
+      },
+      {
+        "id": 82,
+        "phrase": "Drop set on {exercise} logged and completed — good use of the technique."
+      },
+      {
+        "id": 83,
+        "phrase": "You extended {exercise} with a drop set and saw it through — the extra volume counts."
+      },
+      {
+        "id": 84,
+        "phrase": "Drop set wrapped up on {exercise} — that's a clean finish on a hard set."
+      },
+      {
+        "id": 85,
+        "phrase": "Completed the drop set on {exercise} — the hardest sets are the ones you don't quit early."
+      }
+    ]
+  },
+  "trend": {
+    "Improving": [
+      {
+        "id": 1,
+        "phrase": "Reps on {exercise} have been climbing over the last few sessions."
+      },
+      {
+        "id": 2,
+        "phrase": "{exercise} has been trending up recently."
+      },
+      {
+        "id": 3,
+        "phrase": "Rep count on {exercise} has been building steadily."
+      },
+      {
+        "id": 4,
+        "phrase": "The direction on {exercise} has been up."
+      },
+      {
+        "id": 5,
+        "phrase": "{exercise} has been improving session over session."
+      },
+      {
+        "id": 6,
+        "phrase": "Reps on {exercise} have been on the rise."
+      },
+      {
+        "id": 7,
+        "phrase": "The trend on {exercise} is heading in the right direction."
+      },
+      {
+        "id": 8,
+        "phrase": "{exercise} has been gaining ground over recent sessions."
+      },
+      {
+        "id": 9,
+        "phrase": "Rep count on {exercise} keeps climbing."
+      },
+      {
+        "id": 10,
+        "phrase": "The trajectory on {exercise} has been upward."
+      },
+      {
+        "id": 11,
+        "phrase": "{exercise} has been building over the last few sessions."
+      },
+      {
+        "id": 12,
+        "phrase": "Reps on {exercise} have been steadily increasing."
+      },
+      {
+        "id": 13,
+        "phrase": "The momentum on {exercise} is positive."
+      },
+      {
+        "id": 14,
+        "phrase": "{exercise} has been moving in the right direction."
+      },
+      {
+        "id": 15,
+        "phrase": "Rep count on {exercise} has been on an upward trend."
+      },
+      {
+        "id": 16,
+        "phrase": "{exercise} keeps improving session to session."
+      },
+      {
+        "id": 17,
+        "phrase": "The numbers on {exercise} have been heading up."
+      },
+      {
+        "id": 18,
+        "phrase": "Reps on {exercise} have been consistently building."
+      },
+      {
+        "id": 19,
+        "phrase": "{exercise} has shown steady improvement recently."
+      },
+      {
+        "id": 20,
+        "phrase": "The direction on {exercise} has been consistently upward."
+      },
+      {
+        "id": 21,
+        "phrase": "Rep count on {exercise} has been moving up over recent sessions."
+      },
+      {
+        "id": 22,
+        "phrase": "{exercise} has been on an upward path lately."
+      },
+      {
+        "id": 23,
+        "phrase": "The pattern on {exercise} has been consistently improving."
+      },
+      {
+        "id": 24,
+        "phrase": "Reps on {exercise} have been adding up session to session."
+      },
+      {
+        "id": 25,
+        "phrase": "{exercise} has been tracking upward over the last few sessions."
+      }
+    ],
+    "Declining": [
+      {
+        "id": 26,
+        "phrase": "Reps on {exercise} have been dropping over the last few sessions."
+      },
+      {
+        "id": 27,
+        "phrase": "{exercise} has been trending down recently."
+      },
+      {
+        "id": 28,
+        "phrase": "Rep count on {exercise} has been slipping."
+      },
+      {
+        "id": 29,
+        "phrase": "The direction on {exercise} has been downward."
+      },
+      {
+        "id": 30,
+        "phrase": "{exercise} has been losing ground over recent sessions."
+      },
+      {
+        "id": 31,
+        "phrase": "Reps on {exercise} have been on the decline."
+      },
+      {
+        "id": 32,
+        "phrase": "The trend on {exercise} has been heading down."
+      },
+      {
+        "id": 33,
+        "phrase": "{exercise} has been dipping session over session."
+      },
+      {
+        "id": 34,
+        "phrase": "Rep count on {exercise} has been falling."
+      },
+      {
+        "id": 35,
+        "phrase": "The trajectory on {exercise} has been downward."
+      },
+      {
+        "id": 36,
+        "phrase": "{exercise} has been sliding over the last few sessions."
+      },
+      {
+        "id": 37,
+        "phrase": "Reps on {exercise} have been steadily decreasing."
+      },
+      {
+        "id": 38,
+        "phrase": "The momentum on {exercise} has been negative recently."
+      },
+      {
+        "id": 39,
+        "phrase": "{exercise} has been moving in the wrong direction."
+      },
+      {
+        "id": 40,
+        "phrase": "Rep count on {exercise} has been on a downward trend."
+      },
+      {
+        "id": 41,
+        "phrase": "{exercise} has been dropping session to session."
+      },
+      {
+        "id": 42,
+        "phrase": "The numbers on {exercise} have been heading down."
+      },
+      {
+        "id": 43,
+        "phrase": "Reps on {exercise} have been consistently falling."
+      },
+      {
+        "id": 44,
+        "phrase": "{exercise} has shown a downward pattern recently."
+      },
+      {
+        "id": 45,
+        "phrase": "The direction on {exercise} has been consistently downward."
+      },
+      {
+        "id": 46,
+        "phrase": "Rep count on {exercise} has been moving down over recent sessions."
+      },
+      {
+        "id": 47,
+        "phrase": "{exercise} has been on a downward path lately."
+      },
+      {
+        "id": 48,
+        "phrase": "The pattern on {exercise} has been consistently declining."
+      },
+      {
+        "id": 49,
+        "phrase": "Reps on {exercise} have been slipping session to session."
+      },
+      {
+        "id": 50,
+        "phrase": "{exercise} has been tracking downward over the last few sessions."
+      }
+    ],
+    "Plateauing Below Target": [
+      {
+        "id": 51,
+        "phrase": "Reps on {exercise} have been sitting in the same place for a few sessions."
+      },
+      {
+        "id": 52,
+        "phrase": "{exercise} has been stuck at a similar rep count recently."
+      },
+      {
+        "id": 53,
+        "phrase": "Rep count on {exercise} hasn't moved much over the last few sessions."
+      },
+      {
+        "id": 54,
+        "phrase": "The numbers on {exercise} have been flat below target."
+      },
+      {
+        "id": 55,
+        "phrase": "{exercise} has been hovering below target for a while."
+      },
+      {
+        "id": 56,
+        "phrase": "Reps on {exercise} have plateaued below the goal."
+      },
+      {
+        "id": 57,
+        "phrase": "The trend on {exercise} has been flat — not there yet."
+      },
+      {
+        "id": 58,
+        "phrase": "{exercise} has been consistent but still short of target."
+      },
+      {
+        "id": 59,
+        "phrase": "Rep count on {exercise} has leveled off below target."
+      },
+      {
+        "id": 60,
+        "phrase": "The trajectory on {exercise} has been flat."
+      },
+      {
+        "id": 61,
+        "phrase": "{exercise} has been holding steady below the target."
+      },
+      {
+        "id": 62,
+        "phrase": "Reps on {exercise} haven't moved much recently."
+      },
+      {
+        "id": 63,
+        "phrase": "The pattern on {exercise} has been consistent but under target."
+      },
+      {
+        "id": 64,
+        "phrase": "{exercise} has been sitting in the same range for a few sessions."
+      },
+      {
+        "id": 65,
+        "phrase": "Rep count on {exercise} has been plateauing below the goal."
+      },
+      {
+        "id": 66,
+        "phrase": "{exercise} has been sticking around the same rep count."
+      },
+      {
+        "id": 67,
+        "phrase": "The numbers on {exercise} have been flat for a while."
+      },
+      {
+        "id": 68,
+        "phrase": "Reps on {exercise} have been holding in the same spot."
+      },
+      {
+        "id": 69,
+        "phrase": "{exercise} has been consistent — just not at target yet."
+      },
+      {
+        "id": 70,
+        "phrase": "The direction on {exercise} has been flat for a few sessions."
+      },
+      {
+        "id": 71,
+        "phrase": "Rep count on {exercise} has been in the same zone for a while."
+      },
+      {
+        "id": 72,
+        "phrase": "{exercise} hasn't broken through the plateau yet."
+      },
+      {
+        "id": 73,
+        "phrase": "The rep count on {exercise} has been stalled below target."
+      },
+      {
+        "id": 74,
+        "phrase": "Reps on {exercise} have been consistently below target with little movement."
+      },
+      {
+        "id": 75,
+        "phrase": "{exercise} has been locked in at the same rep count below target."
+      }
+    ],
+    "Plateauing At Target": [
+      {
+        "id": 76,
+        "phrase": "Reps on {exercise} have been consistently hitting target over the last few sessions."
+      },
+      {
+        "id": 77,
+        "phrase": "{exercise} has been steady at full target reps recently."
+      },
+      {
+        "id": 78,
+        "phrase": "Rep count on {exercise} has been right on target session after session."
+      },
+      {
+        "id": 79,
+        "phrase": "The numbers on {exercise} have been consistently there."
+      },
+      {
+        "id": 80,
+        "phrase": "{exercise} has been reliably hitting the target."
+      },
+      {
+        "id": 81,
+        "phrase": "Reps on {exercise} have been on target for a few sessions now."
+      },
+      {
+        "id": 82,
+        "phrase": "The trend on {exercise} has been consistently on point."
+      },
+      {
+        "id": 83,
+        "phrase": "{exercise} has been delivering full reps session after session."
+      },
+      {
+        "id": 84,
+        "phrase": "Rep count on {exercise} has been locked in at target."
+      },
+      {
+        "id": 85,
+        "phrase": "The trajectory on {exercise} has been flat at the top."
+      },
+      {
+        "id": 86,
+        "phrase": "{exercise} has been consistent at full target reps."
+      },
+      {
+        "id": 87,
+        "phrase": "Reps on {exercise} have been right where they need to be."
+      },
+      {
+        "id": 88,
+        "phrase": "The pattern on {exercise} has been reliably on target."
+      },
+      {
+        "id": 89,
+        "phrase": "{exercise} has been hitting full reps consistently."
+      },
+      {
+        "id": 90,
+        "phrase": "Rep count on {exercise} has been steady at target for a while."
+      },
+      {
+        "id": 91,
+        "phrase": "{exercise} has been delivering consistently."
+      },
+      {
+        "id": 92,
+        "phrase": "The numbers on {exercise} have been on target for a few sessions."
+      },
+      {
+        "id": 93,
+        "phrase": "Reps on {exercise} have been consistently meeting the goal."
+      },
+      {
+        "id": 94,
+        "phrase": "{exercise} has been performing right on target recently."
+      },
+      {
+        "id": 95,
+        "phrase": "The direction on {exercise} has been flat — in the best way."
+      },
+      {
+        "id": 96,
+        "phrase": "Full reps on {exercise} have been the consistent story lately."
+      },
+      {
+        "id": 97,
+        "phrase": "{exercise} has been hitting its mark session after session."
+      },
+      {
+        "id": 98,
+        "phrase": "Rep count on {exercise} has been locked in at the target for a while."
+      },
+      {
+        "id": 99,
+        "phrase": "Reps on {exercise} have been reliably on target recently."
+      },
+      {
+        "id": 100,
+        "phrase": "{exercise} has been a consistent performer at full target reps."
+      }
+    ]
+  },
+  "history": {
+    "First Time": [
+      {
+        "id": 1,
+        "phrase": "First session on {exercise}."
+      },
+      {
+        "id": 2,
+        "phrase": "New exercise today — {exercise}."
+      },
+      {
+        "id": 3,
+        "phrase": "{exercise} was new this session."
+      },
+      {
+        "id": 4,
+        "phrase": "First time through {exercise}."
+      },
+      {
+        "id": 5,
+        "phrase": "Added {exercise} for the first time today."
+      },
+      {
+        "id": 6,
+        "phrase": "{exercise} makes its first appearance this session."
+      },
+      {
+        "id": 7,
+        "phrase": "First go at {exercise} today."
+      },
+      {
+        "id": 8,
+        "phrase": "New movement in the session — {exercise}."
+      },
+      {
+        "id": 9,
+        "phrase": "{exercise} was introduced this session."
+      },
+      {
+        "id": 10,
+        "phrase": "First attempt at {exercise} today."
+      },
+      {
+        "id": 11,
+        "phrase": "First time doing {exercise}."
+      },
+      {
+        "id": 12,
+        "phrase": "{exercise} is new to the routine — first session."
+      },
+      {
+        "id": 13,
+        "phrase": "Today was the first time tackling {exercise}."
+      },
+      {
+        "id": 14,
+        "phrase": "{exercise} entered the session for the first time today."
+      },
+      {
+        "id": 15,
+        "phrase": "First run at {exercise} — new to the program."
+      }
+    ],
+    "Short Gap": [
+      {
+        "id": 16,
+        "phrase": "First session back after a short break."
+      },
+      {
+        "id": 17,
+        "phrase": "Returning after a few days away."
+      },
+      {
+        "id": 18,
+        "phrase": "Back after a short gap."
+      },
+      {
+        "id": 19,
+        "phrase": "First session back in a little while."
+      },
+      {
+        "id": 20,
+        "phrase": "Coming back after a brief break."
+      },
+      {
+        "id": 21,
+        "phrase": "Returning to the session after a short time off."
+      },
+      {
+        "id": 22,
+        "phrase": "Back after a few days out."
+      },
+      {
+        "id": 23,
+        "phrase": "First session back after a short rest."
+      },
+      {
+        "id": 24,
+        "phrase": "Returning after a brief gap."
+      },
+      {
+        "id": 25,
+        "phrase": "Back in after a short break."
+      },
+      {
+        "id": 26,
+        "phrase": "A few days between sessions — back at it today."
+      },
+      {
+        "id": 27,
+        "phrase": "Short break behind you — back in the session."
+      },
+      {
+        "id": 28,
+        "phrase": "First session back after a few days off."
+      },
+      {
+        "id": 29,
+        "phrase": "Back to it after a short gap."
+      },
+      {
+        "id": 30,
+        "phrase": "Returning after some time away — back in today."
+      }
+    ],
+    "Long Gap": [
+      {
+        "id": 31,
+        "phrase": "First session back after an extended break — your strength base is still there."
+      },
+      {
+        "id": 32,
+        "phrase": "Returning after a longer time away — expect some neural cobwebs, not lost muscle."
+      },
+      {
+        "id": 33,
+        "phrase": "Back after a significant gap — your body retains more than it feels like right now."
+      },
+      {
+        "id": 34,
+        "phrase": "First session back in a while — the strength is there, it just needs a session or two to resurface."
+      },
+      {
+        "id": 35,
+        "phrase": "Coming back after an extended break — treat this as a recalibration, not a reset."
+      },
+      {
+        "id": 36,
+        "phrase": "Extended time away behind you — most of your strength has been retained, even if it doesn't feel that way yet."
+      },
+      {
+        "id": 37,
+        "phrase": "Back after a longer stretch away — muscle memory and base strength carry over well past 2 weeks."
+      },
+      {
+        "id": 38,
+        "phrase": "First session back after a prolonged rest — the hardest part is already done."
+      },
+      {
+        "id": 39,
+        "phrase": "Returning after an extended gap — this session is about re-establishing the pattern, not proving fitness."
+      },
+      {
+        "id": 40,
+        "phrase": "Back in after a longer break — the numbers may feel off today, but they'll come back quickly."
+      },
+      {
+        "id": 41,
+        "phrase": "It's been a while — back in the session today. Physiologically, you're holding more than the numbers suggest."
+      },
+      {
+        "id": 42,
+        "phrase": "An extended break behind you — muscle tissue is preserved well past 2 weeks; what drops first is feel and coordination."
+      },
+      {
+        "id": 43,
+        "phrase": "Back at it after a longer time away — expect the first session to feel harder than your baseline; expect the second to feel close."
+      },
+      {
+        "id": 44,
+        "phrase": "First session back after some extended time off — your adaptation base is intact, your feel is just rusty."
+      },
+      {
+        "id": 45,
+        "phrase": "Returning after a longer absence — the strength dip is real but temporary; re-adaptation is fast."
+      }
+    ],
+    "Stalled": [
+      {
+        "id": 46,
+        "phrase": "{exercise} has been at {weight} for a while now."
+      },
+      {
+        "id": 47,
+        "phrase": "Weight on {exercise} hasn't moved in some time."
+      },
+      {
+        "id": 48,
+        "phrase": "{exercise} has been sitting at {weight} for several sessions."
+      },
+      {
+        "id": 49,
+        "phrase": "No weight change on {exercise} for a while."
+      },
+      {
+        "id": 50,
+        "phrase": "{exercise} has been at the same weight for a number of sessions."
+      },
+      {
+        "id": 51,
+        "phrase": "Weight on {exercise} has been steady at {weight} for a while."
+      },
+      {
+        "id": 52,
+        "phrase": "{exercise} hasn't moved in weight for some time."
+      },
+      {
+        "id": 53,
+        "phrase": "The weight on {exercise} has been unchanged for several sessions."
+      },
+      {
+        "id": 54,
+        "phrase": "{exercise} has been parked at {weight} for a while."
+      },
+      {
+        "id": 55,
+        "phrase": "No progression on {exercise} weight for some time."
+      },
+      {
+        "id": 56,
+        "phrase": "{exercise} has been at {weight} for {n} sessions now."
+      },
+      {
+        "id": 57,
+        "phrase": "Weight on {exercise} has stayed at {weight} for a run of sessions."
+      },
+      {
+        "id": 58,
+        "phrase": "{exercise} has been holding at {weight} for a while without moving up."
+      },
+      {
+        "id": 59,
+        "phrase": "The weight on {exercise} hasn't shifted for several sessions."
+      },
+      {
+        "id": 60,
+        "phrase": "{exercise} has been at {weight} without progression for a while."
+      }
+    ]
+  },
+  "whats_next": {
+    "Hold Weight — Work Reps|Single": [
+      {
+        "id": 1,
+        "phrase": "Stay at {weight} and aim for the full {target} next session."
+      },
+      {
+        "id": 2,
+        "phrase": "Hold {exercise} at {weight} — close to target, not there yet."
+      },
+      {
+        "id": 3,
+        "phrase": "Keep {exercise} at {weight} and go for the full set next time."
+      },
+      {
+        "id": 4,
+        "phrase": "Same weight next session — focus on closing the gap."
+      },
+      {
+        "id": 5,
+        "phrase": "Hold at {weight} on {exercise} and bring it home next time."
+      },
+      {
+        "id": 6,
+        "phrase": "No weight change yet — hit the full reps first."
+      },
+      {
+        "id": 7,
+        "phrase": "{exercise} stays at {weight} until {target} reps are consistently there."
+      },
+      {
+        "id": 8,
+        "phrase": "Keep building at {weight} — the reps will come."
+      },
+      {
+        "id": 9,
+        "phrase": "Stay at {weight} and push through the full {target} next session."
+      },
+      {
+        "id": 10,
+        "phrase": "Hold the line at {weight} on {exercise}."
+      },
+      {
+        "id": 11,
+        "phrase": "Same plan — {weight} on {exercise}, full reps the goal."
+      },
+      {
+        "id": 12,
+        "phrase": "No movement on weight yet — build the reps up to {target} first."
+      },
+      {
+        "id": 13,
+        "phrase": "{weight} stays on {exercise} — get the full reps before moving up."
+      },
+      {
+        "id": 14,
+        "phrase": "Keep {exercise} at {weight} and go again next session."
+      },
+      {
+        "id": 15,
+        "phrase": "Stay at {weight} — one more solid session should do it."
+      },
+      {
+        "id": 16,
+        "phrase": "Hold at {weight} and make {target} reps the focus next time."
+      },
+      {
+        "id": 17,
+        "phrase": "No changes on {exercise} — stay at {weight} and work the reps up."
+      },
+      {
+        "id": 18,
+        "phrase": "{exercise} holds at {weight} for now — reps first."
+      },
+      {
+        "id": 19,
+        "phrase": "Same weight, same goal — hit {target} reps next session."
+      },
+      {
+        "id": 20,
+        "phrase": "Keep {exercise} where it is and finish the job next time."
+      }
+    ],
+    "Hold Weight — Work Reps|Multi": [
+      {
+        "id": 21,
+        "phrase": "Hold both at their current weights and aim for the full reps next session."
+      },
+      {
+        "id": 22,
+        "phrase": "No weight changes — close the rep gap on both."
+      },
+      {
+        "id": 23,
+        "phrase": "Keep {exercise1} at {weight1} and {exercise2} at {weight2} for now."
+      },
+      {
+        "id": 24,
+        "phrase": "Same weights next session — the reps need to get there first."
+      },
+      {
+        "id": 25,
+        "phrase": "Hold all three at current weights and go again."
+      },
+      {
+        "id": 26,
+        "phrase": "No movement on any weights yet — build the reps up first."
+      },
+      {
+        "id": 27,
+        "phrase": "Stay at current weights across the board and push for full reps next time."
+      },
+      {
+        "id": 28,
+        "phrase": "Keep both where they are — one more session should close the gap."
+      },
+      {
+        "id": 29,
+        "phrase": "Hold the weights and focus on completing the reps next session."
+      },
+      {
+        "id": 30,
+        "phrase": "Same plan across all — current weights, full reps the goal."
+      }
+    ],
+    "Progress Weight|Single": [
+      {
+        "id": 31,
+        "phrase": "Move {exercise} up to {next_weight} next session."
+      },
+      {
+        "id": 32,
+        "phrase": "Ready to progress — {next_weight} on {exercise} next session."
+      },
+      {
+        "id": 33,
+        "phrase": "Step {exercise} up to {next_weight} next time."
+      },
+      {
+        "id": 34,
+        "phrase": "Time to move up — {next_weight} on {exercise} next session."
+      },
+      {
+        "id": 35,
+        "phrase": "{exercise} progresses to {next_weight} next session."
+      },
+      {
+        "id": 36,
+        "phrase": "Next session, take {exercise} up to {next_weight}."
+      },
+      {
+        "id": 37,
+        "phrase": "{next_weight} on {exercise} next session."
+      },
+      {
+        "id": 38,
+        "phrase": "Progress {exercise} to {next_weight} next time."
+      },
+      {
+        "id": 39,
+        "phrase": "Move up to {next_weight} on {exercise} next session."
+      },
+      {
+        "id": 40,
+        "phrase": "{exercise} is ready for {next_weight} next session."
+      },
+      {
+        "id": 41,
+        "phrase": "Take {exercise} to {next_weight} next session."
+      },
+      {
+        "id": 42,
+        "phrase": "The next step is {next_weight} on {exercise}."
+      },
+      {
+        "id": 43,
+        "phrase": "Bump {exercise} up to {next_weight} next time."
+      },
+      {
+        "id": 44,
+        "phrase": "{exercise} moves to {next_weight} next session."
+      },
+      {
+        "id": 45,
+        "phrase": "Step up to {next_weight} on {exercise} next session."
+      }
+    ],
+    "Progress Weight|Multi": [
+      {
+        "id": 46,
+        "phrase": "Move {exercise1} and {exercise2} both up next session."
+      },
+      {
+        "id": 47,
+        "phrase": "Both {exercise1} and {exercise2} are ready to progress."
+      },
+      {
+        "id": 48,
+        "phrase": "Step everything up next session — the reps were there."
+      },
+      {
+        "id": 49,
+        "phrase": "Progress {exercise1} to {next_weight1} and {exercise2} to {next_weight2}."
+      },
+      {
+        "id": 50,
+        "phrase": "All exercises ready to move up — progress next session."
+      }
+    ],
+    "Consolidate at Dropped Weight|Single": [
+      {
+        "id": 51,
+        "phrase": "Stay at {weight} next session and consolidate."
+      },
+      {
+        "id": 52,
+        "phrase": "Hold at {weight} and build confidence at this level."
+      },
+      {
+        "id": 53,
+        "phrase": "Stay here next session before moving up."
+      },
+      {
+        "id": 54,
+        "phrase": "Hold at {weight} and confirm it next session."
+      },
+      {
+        "id": 55,
+        "phrase": "Stay at {weight} and consolidate before progressing."
+      },
+      {
+        "id": 56,
+        "phrase": "Hold here next session and see if it holds."
+      },
+      {
+        "id": 57,
+        "phrase": "Stay at {weight} and confirm next session."
+      },
+      {
+        "id": 58,
+        "phrase": "Hold at {weight} and build from here."
+      },
+      {
+        "id": 59,
+        "phrase": "Stay here next session before considering progression."
+      },
+      {
+        "id": 60,
+        "phrase": "Hold at {weight} and consolidate."
+      },
+      {
+        "id": 61,
+        "phrase": "Confirm {weight} next session before moving on."
+      },
+      {
+        "id": 62,
+        "phrase": "Lock in {weight} next session — don't rush the next step."
+      },
+      {
+        "id": 63,
+        "phrase": "Stay at {weight} and let it settle before progressing."
+      },
+      {
+        "id": 64,
+        "phrase": "Hold the new weight and confirm it next session."
+      },
+      {
+        "id": 65,
+        "phrase": "Keep {exercise} at {weight} and verify next session."
+      }
+    ],
+    "Drop Weight|Single": [
+      {
+        "id": 66,
+        "phrase": "Drop back to {previous_weight} and hit the full reps there first."
+      },
+      {
+        "id": 67,
+        "phrase": "Return to {previous_weight} and build from there."
+      },
+      {
+        "id": 68,
+        "phrase": "Step back to {previous_weight} and get the full reps before moving up."
+      },
+      {
+        "id": 69,
+        "phrase": "Drop back to {previous_weight} for now."
+      },
+      {
+        "id": 70,
+        "phrase": "Return to {previous_weight} and hit the full target there first."
+      },
+      {
+        "id": 71,
+        "phrase": "Step back to {previous_weight} and close the gap on reps first."
+      },
+      {
+        "id": 72,
+        "phrase": "Drop back to {previous_weight} and build up."
+      },
+      {
+        "id": 73,
+        "phrase": "Return to {previous_weight} and get the reps there first."
+      },
+      {
+        "id": 74,
+        "phrase": "Step back to {previous_weight} for now."
+      },
+      {
+        "id": 75,
+        "phrase": "Go back to {previous_weight} and build from there."
+      },
+      {
+        "id": 76,
+        "phrase": "Drop {exercise} back to {previous_weight} next session."
+      },
+      {
+        "id": 77,
+        "phrase": "Take {exercise} back to {previous_weight} and get the full reps there."
+      },
+      {
+        "id": 78,
+        "phrase": "Return to {previous_weight} on {exercise} next session."
+      },
+      {
+        "id": 79,
+        "phrase": "Pull {exercise} back to {previous_weight} and build the reps up."
+      },
+      {
+        "id": 80,
+        "phrase": "Step {exercise} back to {previous_weight} and close the rep gap."
+      }
+    ],
+    "Build From Dropped Weight|Single": [
+      {
+        "id": 81,
+        "phrase": "Stay at {weight} and keep building from here."
+      },
+      {
+        "id": 82,
+        "phrase": "Hold at {weight} and work the reps up."
+      },
+      {
+        "id": 83,
+        "phrase": "Stay here and build."
+      },
+      {
+        "id": 84,
+        "phrase": "Hold at {weight} and keep at it."
+      },
+      {
+        "id": 85,
+        "phrase": "Stay at {weight} and focus on building the count up."
+      },
+      {
+        "id": 86,
+        "phrase": "Hold at {weight} and work on adding reps each session."
+      },
+      {
+        "id": 87,
+        "phrase": "Stay at {weight} and keep working."
+      },
+      {
+        "id": 88,
+        "phrase": "Hold here and build the count up."
+      },
+      {
+        "id": 89,
+        "phrase": "Stay at {weight} and keep building."
+      },
+      {
+        "id": 90,
+        "phrase": "Hold at {weight} and go again."
+      },
+      {
+        "id": 91,
+        "phrase": "Stay at {weight} — build session by session."
+      },
+      {
+        "id": 92,
+        "phrase": "Hold at {weight} and chip away at the reps."
+      },
+      {
+        "id": 93,
+        "phrase": "Keep {exercise} at {weight} and build from here."
+      },
+      {
+        "id": 94,
+        "phrase": "Stay at {weight} and add reps each session."
+      },
+      {
+        "id": 95,
+        "phrase": "Hold at {weight} — the reps will come."
+      }
+    ],
+    "Confirm New Weight|Single": [
+      {
+        "id": 96,
+        "phrase": "Stay at {weight} and confirm it next session."
+      },
+      {
+        "id": 97,
+        "phrase": "Hold at {weight} and confirm it holds."
+      },
+      {
+        "id": 98,
+        "phrase": "Stay at {weight} next session before going further."
+      },
+      {
+        "id": 99,
+        "phrase": "Hold here and confirm next session."
+      },
+      {
+        "id": 100,
+        "phrase": "Stay at {weight} and see if it holds next session."
+      },
+      {
+        "id": 101,
+        "phrase": "Hold at {weight} and confirm before considering the next step."
+      },
+      {
+        "id": 102,
+        "phrase": "Stay here next session and confirm."
+      },
+      {
+        "id": 103,
+        "phrase": "Hold at {weight} — confirm next session."
+      },
+      {
+        "id": 104,
+        "phrase": "Stay at {weight} and verify next session."
+      },
+      {
+        "id": 105,
+        "phrase": "Hold at {weight} and confirm it next time."
+      },
+      {
+        "id": 106,
+        "phrase": "Lock in {weight} next session."
+      },
+      {
+        "id": 107,
+        "phrase": "Stay at {weight} — one more session to confirm."
+      },
+      {
+        "id": 108,
+        "phrase": "Hold the new weight and confirm it holds."
+      },
+      {
+        "id": 109,
+        "phrase": "Keep {exercise} at {weight} and confirm next session."
+      },
+      {
+        "id": 110,
+        "phrase": "Stay at {weight} — confirm before progressing further."
+      }
+    ],
+    "Build From Drop Set|Single": [
+      {
+        "id": 111,
+        "phrase": "The drop set showed you can push past the sticking point — aim to hit the full rep count without one next session."
+      },
+      {
+        "id": 112,
+        "phrase": "You used the drop set well on {exercise} — try to close the gap on the main sets next time before reaching for it."
+      },
+      {
+        "id": 113,
+        "phrase": "Drop set completed — the goal now is to push the main sets until the drop set becomes unnecessary."
+      },
+      {
+        "id": 114,
+        "phrase": "Good use of the drop set on {exercise} — keep the same weight and try to extend the main sets next session."
+      },
+      {
+        "id": 115,
+        "phrase": "The drop set is a tool, not a crutch — use it to bridge the gap while you build toward the full set at {weight}."
+      },
+      {
+        "id": 116,
+        "phrase": "Drop set logged on {exercise} — next session, push the main sets one rep further before dropping."
+      },
+      {
+        "id": 117,
+        "phrase": "You extended {exercise} with a drop — keep the same approach and aim to need it less as the weeks go on."
+      },
+      {
+        "id": 118,
+        "phrase": "Drop set used effectively — same weight next session, aim to push the main sets a little harder first."
+      }
+    ],
+    "Use Drop Set Strategy|Single": [
+      {
+        "id": 119,
+        "phrase": "If the reps stall again next session, consider adding a drop set — it's a legitimate way to extend volume past a hard stop."
+      },
+      {
+        "id": 120,
+        "phrase": "A drop set on {exercise} could help you build capacity at this weight — worth adding next session if the reps fall short again."
+      },
+      {
+        "id": 121,
+        "phrase": "The weight is still ahead of your reps — a drop set is a useful tool to get more work in at this stage."
+      },
+      {
+        "id": 122,
+        "phrase": "If {exercise} stalls next session, consider a drop set after the main sets to accumulate the reps."
+      },
+      {
+        "id": 123,
+        "phrase": "A drop set after the main sets on {exercise} would add volume without adding load — useful while the reps catch up."
+      },
+      {
+        "id": 124,
+        "phrase": "Next session on {exercise}, try adding a drop set if reps fall short — it keeps the volume high while you build."
+      },
+      {
+        "id": 125,
+        "phrase": "Consider a drop set on {exercise} next time — extra reps at a reduced weight help bridge the gap to full sets."
+      },
+      {
+        "id": 126,
+        "phrase": "Drop sets are worth using here — they let you accumulate rep volume at a weight that's still challenging."
+      }
+    ],
+    "Deload — Reset Weight|Single": [
+      {
+        "id": 130,
+        "phrase": "Consider dropping {exercise} by 10% next session — two sessions under 65% is a reset signal, not a setback."
+      },
+      {
+        "id": 131,
+        "phrase": "Take {exercise} back 10% next session and rebuild from there — a short reset is faster than grinding through a stall."
+      },
+      {
+        "id": 132,
+        "phrase": "Deload {exercise} by 10% next session — the weight is ahead of where the reps are right now."
+      },
+      {
+        "id": 133,
+        "phrase": "Reset {exercise} down 10% next session and work back up — two sessions under the threshold is the signal to rebuild."
+      },
+      {
+        "id": 134,
+        "phrase": "A 10% drop on {exercise} next session sets up faster progress than continuing to miss reps at the current load."
+      }
+    ],
+    "Stuck — Rest & Microload|Single": [
+      {
+        "id": 168,
+        "phrase": "You've missed {exercise} at {weight} for a couple of sessions. Try resting 3 full minutes between sets — extra recovery can be the difference."
+      },
+      {
+        "id": 169,
+        "phrase": "Still short on {exercise} at {weight}. Extend rest to 3+ minutes this session; the reps may already be there with more recovery time."
+      },
+      {
+        "id": 170,
+        "phrase": "{exercise} at {weight} has been a sticking point for two sessions. Add a minute to your rest periods before adjusting the weight."
+      },
+      {
+        "id": 171,
+        "phrase": "Holding at {weight} on {exercise}. Bump rest to 3 minutes between sets — you might find the reps are there when you're not rushing."
+      },
+      {
+        "id": 172,
+        "phrase": "Two sessions short on {exercise}. Before changing the weight, stretch your rest to 3 minutes and see if full reps come through."
+      }
+    ],
+    "Stuck — Neural Overload|Single": [
+      {
+        "id": 173,
+        "phrase": "Three sessions at a wall on {exercise}. Try {next_weight} for 3–5 reps — a brief overload shocks the nervous system and can reset the plateau."
+      },
+      {
+        "id": 174,
+        "phrase": "{exercise} at {weight} has stalled. Load up to {next_weight} and do 3–5 heavy reps to trigger a neural adaptation, then return to {weight} next session."
+      },
+      {
+        "id": 175,
+        "phrase": "Stuck on {exercise} for three sessions. Load {next_weight} for a short 3–5 rep set — the neural overload technique often breaks a prolonged stall."
+      },
+      {
+        "id": 176,
+        "phrase": "Time to shake things up on {exercise}. One set at {next_weight} for 3–5 reps can reset your nervous system and help you break through {weight}."
+      },
+      {
+        "id": 177,
+        "phrase": "You've been at {weight} on {exercise} for several sessions. Try {next_weight} for a few heavy reps — a brief overload can unlock progress that grinding the same weight won't."
+      }
+    ],
+    "Stuck — Extended|Single": [
+      {
+        "id": 178,
+        "phrase": "You've been stuck at {weight} on {exercise} for several sessions — time for a planned deload. Drop to {next_weight}, nail the reps, then build back up."
+      },
+      {
+        "id": 179,
+        "phrase": "Extended stall on {exercise} at {weight}. Back off to {next_weight} and rebuild with clean reps before pushing up again."
+      },
+      {
+        "id": 180,
+        "phrase": "A few sessions of missing {exercise} at {weight} is a signal to reset. Drop to {next_weight}, get consistent reps, and work back up progressively."
+      },
+      {
+        "id": 181,
+        "phrase": "Prolonged stall on {exercise}. Drop to {next_weight}, restore your technique and rep quality, then re-climb from there."
+      },
+      {
+        "id": 182,
+        "phrase": "When the same weight fails session after session, a deload repairs it. Hit {next_weight} on {exercise} and rebuild solid before pushing higher."
+      }
+    ]
+  },
+  "connective": {
+    "Under / Building": [
+      {
+        "id": 1,
+        "phrase": "Almost there."
+      },
+      {
+        "id": 2,
+        "phrase": "Close, but not quite."
+      },
+      {
+        "id": 3,
+        "phrase": "The gap is small."
+      },
+      {
+        "id": 4,
+        "phrase": "Nearly there."
+      },
+      {
+        "id": 5,
+        "phrase": "Getting closer."
+      },
+      {
+        "id": 6,
+        "phrase": "Not far off."
+      },
+      {
+        "id": 7,
+        "phrase": "Within reach."
+      },
+      {
+        "id": 8,
+        "phrase": "The reps are coming."
+      },
+      {
+        "id": 9,
+        "phrase": "Just a little more."
+      },
+      {
+        "id": 10,
+        "phrase": "The target is close."
+      },
+      {
+        "id": 11,
+        "phrase": "Closing in."
+      },
+      {
+        "id": 12,
+        "phrase": "One session at a time."
+      },
+      {
+        "id": 13,
+        "phrase": "Steady as it goes."
+      },
+      {
+        "id": 14,
+        "phrase": "Small gap to close."
+      },
+      {
+        "id": 15,
+        "phrase": "Progress is there."
+      },
+      {
+        "id": 16,
+        "phrase": "Trending the right way."
+      },
+      {
+        "id": 17,
+        "phrase": "A small step away."
+      },
+      {
+        "id": 18,
+        "phrase": "The work is adding up."
+      },
+      {
+        "id": 19,
+        "phrase": "Not much left to close."
+      },
+      {
+        "id": 20,
+        "phrase": "Keep at it."
+      },
+      {
+        "id": 21,
+        "phrase": "The weight is right — the reps will follow."
+      },
+      {
+        "id": 22,
+        "phrase": "Stay patient with it."
+      },
+      {
+        "id": 23,
+        "phrase": "Build from here."
+      },
+      {
+        "id": 24,
+        "phrase": "The work will add up."
+      },
+      {
+        "id": 25,
+        "phrase": "No need to rush it."
+      },
+      {
+        "id": 26,
+        "phrase": "Stay consistent and the reps will come."
+      },
+      {
+        "id": 27,
+        "phrase": "Rep by rep."
+      },
+      {
+        "id": 28,
+        "phrase": "Stay the course."
+      },
+      {
+        "id": 29,
+        "phrase": "It'll come together."
+      },
+      {
+        "id": 30,
+        "phrase": "Keep showing up."
+      },
+      {
+        "id": 31,
+        "phrase": "Session by session."
+      },
+      {
+        "id": 32,
+        "phrase": "The reps will get there."
+      },
+      {
+        "id": 33,
+        "phrase": "Small gains add up."
+      },
+      {
+        "id": 34,
+        "phrase": "Stay with it."
+      },
+      {
+        "id": 35,
+        "phrase": "The foundation is being built."
+      },
+      {
+        "id": 36,
+        "phrase": "Steady progress is still progress."
+      },
+      {
+        "id": 37,
+        "phrase": "It takes time."
+      },
+      {
+        "id": 38,
+        "phrase": "One step at a time."
+      }
+    ],
+    "On Target / Progress": [
+      {
+        "id": 39,
+        "phrase": "The work paid off."
+      },
+      {
+        "id": 40,
+        "phrase": "Right on track."
+      },
+      {
+        "id": 41,
+        "phrase": "Exactly where it needs to be."
+      },
+      {
+        "id": 42,
+        "phrase": "Clean session."
+      },
+      {
+        "id": 43,
+        "phrase": "Solid work."
+      },
+      {
+        "id": 44,
+        "phrase": "On plan."
+      },
+      {
+        "id": 45,
+        "phrase": "Right on the mark."
+      },
+      {
+        "id": 46,
+        "phrase": "Delivered."
+      },
+      {
+        "id": 47,
+        "phrase": "All there."
+      },
+      {
+        "id": 48,
+        "phrase": "Done right."
+      },
+      {
+        "id": 49,
+        "phrase": "On point."
+      },
+      {
+        "id": 50,
+        "phrase": "Right where it should be."
+      },
+      {
+        "id": 51,
+        "phrase": "Ticked off."
+      },
+      {
+        "id": 52,
+        "phrase": "Everything accounted for."
+      },
+      {
+        "id": 53,
+        "phrase": "No complaints."
+      },
+      {
+        "id": 54,
+        "phrase": "Exactly as planned."
+      },
+      {
+        "id": 55,
+        "phrase": "Consistent."
+      },
+      {
+        "id": 56,
+        "phrase": "Nothing to change."
+      }
+    ],
+    "Over Target / Strong": [
+      {
+        "id": 57,
+        "phrase": "Strong session."
+      },
+      {
+        "id": 58,
+        "phrase": "Well above the line."
+      },
+      {
+        "id": 59,
+        "phrase": "Ahead of the plan."
+      },
+      {
+        "id": 60,
+        "phrase": "Above and beyond."
+      },
+      {
+        "id": 61,
+        "phrase": "Stronger than expected."
+      },
+      {
+        "id": 62,
+        "phrase": "Ahead of schedule."
+      },
+      {
+        "id": 63,
+        "phrase": "More than planned."
+      },
+      {
+        "id": 64,
+        "phrase": "Above target."
+      },
+      {
+        "id": 65,
+        "phrase": "Exceeded the goal."
+      },
+      {
+        "id": 66,
+        "phrase": "Past the mark."
+      },
+      {
+        "id": 67,
+        "phrase": "Well done."
+      },
+      {
+        "id": 68,
+        "phrase": "Beyond the plan."
+      }
+    ],
+    "Mixed Session": [
+      {
+        "id": 69,
+        "phrase": "Good session overall."
+      },
+      {
+        "id": 70,
+        "phrase": "Mostly on track."
+      },
+      {
+        "id": 71,
+        "phrase": "One to keep an eye on."
+      },
+      {
+        "id": 72,
+        "phrase": "Strong session with one gap to close."
+      },
+      {
+        "id": 73,
+        "phrase": "Almost a clean sweep."
+      },
+      {
+        "id": 74,
+        "phrase": "One exercise to sort out."
+      },
+      {
+        "id": 75,
+        "phrase": "Solid session with one holdout."
+      },
+      {
+        "id": 76,
+        "phrase": "Nearly all the way there."
+      },
+      {
+        "id": 77,
+        "phrase": "One to watch next session."
+      },
+      {
+        "id": 78,
+        "phrase": "Strong across the board, one gap remaining."
+      },
+      {
+        "id": 79,
+        "phrase": "One exercise to focus on."
+      },
+      {
+        "id": 80,
+        "phrase": "Mostly strong — one gap to close."
+      },
+      {
+        "id": 81,
+        "phrase": "Solid overall — one holdout."
+      },
+      {
+        "id": 82,
+        "phrase": "Strong across the board, one gap to close."
+      },
+      {
+        "id": 83,
+        "phrase": "One exercise to bring up to speed."
+      },
+      {
+        "id": 84,
+        "phrase": "Nearly a clean session — one to focus on."
+      }
+    ],
+    "Weight Drop / Reset": [
+      {
+        "id": 85,
+        "phrase": "The adjustment was the right call."
+      },
+      {
+        "id": 86,
+        "phrase": "Finding the right level."
+      },
+      {
+        "id": 87,
+        "phrase": "The reset makes sense."
+      },
+      {
+        "id": 88,
+        "phrase": "The new weight is the starting point."
+      },
+      {
+        "id": 89,
+        "phrase": "Build from the new base."
+      },
+      {
+        "id": 90,
+        "phrase": "The adjustment sets up the next step."
+      },
+      {
+        "id": 91,
+        "phrase": "The right weight is the foundation."
+      },
+      {
+        "id": 92,
+        "phrase": "Start clean from here."
+      },
+      {
+        "id": 93,
+        "phrase": "The new level is the base."
+      },
+      {
+        "id": 94,
+        "phrase": "Reset and rebuild."
+      }
+    ],
+    "Trend / History": [
+      {
+        "id": 95,
+        "phrase": "The direction is there."
+      },
+      {
+        "id": 96,
+        "phrase": "The pattern is building."
+      },
+      {
+        "id": 97,
+        "phrase": "The trend is the story."
+      },
+      {
+        "id": 98,
+        "phrase": "Session to session it adds up."
+      },
+      {
+        "id": 99,
+        "phrase": "The data tells the story."
+      },
+      {
+        "id": 100,
+        "phrase": "The sessions are adding up."
+      },
+      {
+        "id": 101,
+        "phrase": "History is on your side."
+      },
+      {
+        "id": 102,
+        "phrase": "The pattern is clear."
+      },
+      {
+        "id": 103,
+        "phrase": "The sessions tell the story."
+      },
+      {
+        "id": 104,
+        "phrase": "It shows in the numbers."
+      }
+    ],
+    "To Failure": [
+      {
+        "id": 105,
+        "phrase": "Working to failure means every rep counted — there was nothing left in the tank."
+      },
+      {
+        "id": 106,
+        "phrase": "Training to failure extracts maximum effort from the set — a high-stimulus technique worth using selectively."
+      },
+      {
+        "id": 107,
+        "phrase": "Going to failure on {exercise} means the muscle was fully recruited — the trade-off is more recovery needed."
+      },
+      {
+        "id": 108,
+        "phrase": "To-failure sets drive adaptation hard — make sure the next session has enough recovery behind it."
+      },
+      {
+        "id": 109,
+        "phrase": "You pushed {exercise} to failure — that's maximum mechanical tension on the muscle."
+      },
+      {
+        "id": 110,
+        "phrase": "Failure sets are effective, but expensive — factor in recovery before loading the same muscle again."
+      },
+      {
+        "id": 111,
+        "phrase": "Taking {exercise} to failure extracts everything available from the set."
+      },
+      {
+        "id": 112,
+        "phrase": "To failure means nothing left — good stimulus, but needs respect in the recovery window."
+      },
+      {
+        "id": 113,
+        "phrase": "Full effort on {exercise} — training to failure is a high-reward, high-cost strategy."
+      },
+      {
+        "id": 114,
+        "phrase": "Every available rep was used on {exercise} — a clean failure set."
+      }
+    ],
+    "Near Target / Building": [
+      {
+        "id": 120,
+        "phrase": "One rep short of the goal."
+      },
+      {
+        "id": 121,
+        "phrase": "Right on the doorstep."
+      },
+      {
+        "id": 122,
+        "phrase": "Essentially there."
+      },
+      {
+        "id": 123,
+        "phrase": "One more rep away."
+      },
+      {
+        "id": 124,
+        "phrase": "The gap is a single rep."
+      },
+      {
+        "id": 125,
+        "phrase": "This close."
+      },
+      {
+        "id": 126,
+        "phrase": "The target is right there."
+      },
+      {
+        "id": 127,
+        "phrase": "Next session closes it."
+      },
+      {
+        "id": 128,
+        "phrase": "Within a rep of the goal."
+      },
+      {
+        "id": 129,
+        "phrase": "One strong session away."
+      }
+    ]
+  },
+  "frames": {
+    "All Hit — Single Exercise": [
+      {
+        "id": 1,
+        "phrase": "Clean session on {exercise} today."
+      },
+      {
+        "id": 2,
+        "phrase": "{exercise} was right on plan."
+      },
+      {
+        "id": 3,
+        "phrase": "Good session on {exercise}."
+      },
+      {
+        "id": 4,
+        "phrase": "Solid work on {exercise} today."
+      },
+      {
+        "id": 5,
+        "phrase": "{exercise} delivered today."
+      }
+    ],
+    "All Hit — Multiple Exercises": [
+      {
+        "id": 6,
+        "phrase": "Clean session across the board today."
+      },
+      {
+        "id": 7,
+        "phrase": "Everything hit target this session."
+      },
+      {
+        "id": 8,
+        "phrase": "All exercises on plan today."
+      },
+      {
+        "id": 9,
+        "phrase": "Solid session — everything on target."
+      },
+      {
+        "id": 10,
+        "phrase": "A clean sweep today — all exercises on target."
+      },
+      {
+        "id": 11,
+        "phrase": "Everything delivered today."
+      },
+      {
+        "id": 12,
+        "phrase": "Full marks across the session."
+      },
+      {
+        "id": 13,
+        "phrase": "All exercises checked out today."
+      },
+      {
+        "id": 14,
+        "phrase": "Nothing to flag — all on target."
+      },
+      {
+        "id": 15,
+        "phrase": "A complete session — everything on plan."
+      }
+    ],
+    "All Missed — Single Exercise": [
+      {
+        "id": 16,
+        "phrase": "{exercise} was the focus today — reps under target."
+      },
+      {
+        "id": 17,
+        "phrase": "One exercise, one area to build — {exercise}."
+      }
+    ],
+    "All Missed — Multiple Exercises": [
+      {
+        "id": 18,
+        "phrase": "Reps were under target across the session today."
+      },
+      {
+        "id": 19,
+        "phrase": "Under target across the board this session."
+      },
+      {
+        "id": 20,
+        "phrase": "A session to build from — reps were short across the exercises."
+      },
+      {
+        "id": 21,
+        "phrase": "Rep counts came in under target across everything today."
+      },
+      {
+        "id": 22,
+        "phrase": "Below target on all exercises this session."
+      }
+    ],
+    "Mixed — Majority Hit": [
+      {
+        "id": 23,
+        "phrase": "Mostly on target today — one exercise to note."
+      },
+      {
+        "id": 24,
+        "phrase": "Strong session overall — most exercises hit target."
+      },
+      {
+        "id": 25,
+        "phrase": "Mostly clean today — one exercise fell short."
+      },
+      {
+        "id": 26,
+        "phrase": "Good session with one gap to close."
+      },
+      {
+        "id": 27,
+        "phrase": "Most of the session was on target — one exercise to work on."
+      },
+      {
+        "id": 28,
+        "phrase": "Nearly a clean session — one exercise under target."
+      },
+      {
+        "id": 29,
+        "phrase": "Strong across most exercises today — one to note."
+      }
+    ],
+    "Mixed — Majority Missed": [
+      {
+        "id": 30,
+        "phrase": "A session with some work to do — most exercises under target."
+      },
+      {
+        "id": 31,
+        "phrase": "Most exercises came in under target — one exception."
+      },
+      {
+        "id": 32,
+        "phrase": "Under target on most exercises today — one hit its numbers."
+      },
+      {
+        "id": 33,
+        "phrase": "More misses than hits today — one exercise was the exception."
+      }
+    ],
+    "Mixed — Exactly Half": [
+      {
+        "id": 34,
+        "phrase": "A split session today — half on target, half under."
+      },
+      {
+        "id": 35,
+        "phrase": "Even split today — some exercises hit, some missed."
+      },
+      {
+        "id": 36,
+        "phrase": "Half the session on target, half under — a mixed result."
+      }
+    ],
+    "Partial Session": [
+      {
+        "id": 37,
+        "phrase": "Fewer exercises today — focused session."
+      },
+      {
+        "id": 38,
+        "phrase": "A shorter session today."
+      },
+      {
+        "id": 39,
+        "phrase": "Not a full session today — a few exercises logged."
+      },
+      {
+        "id": 40,
+        "phrase": "Partial session today — a few exercises covered."
+      },
+      {
+        "id": 41,
+        "phrase": "A focused session today — not the full routine."
+      }
+    ],
+    "Single Exercise Only": [
+      {
+        "id": 42,
+        "phrase": "One exercise this session — {exercise}."
+      },
+      {
+        "id": 43,
+        "phrase": "Just {exercise} today."
+      },
+      {
+        "id": 44,
+        "phrase": "Single exercise session — {exercise}."
+      },
+      {
+        "id": 45,
+        "phrase": "Today's session was {exercise} only."
+      },
+      {
+        "id": 46,
+        "phrase": "One movement today — {exercise}."
+      }
+    ]
+  },
+  "combos": {
+    "Under Slight|Held|Improving|Normal": [
+      {
+        "id": 1,
+        "phrase": "{exercise} came in at {actual} of {target} reps today. Rep count has been climbing — stay at {weight} and keep the momentum going."
+      },
+      {
+        "id": 2,
+        "phrase": "Reps on {exercise} were {actual} of {target} this session. The direction has been up — hold at {weight} and the full target is close."
+      },
+      {
+        "id": 3,
+        "phrase": "{actual} of {target} reps on {exercise} today. Been trending up recently — hold at {weight} and keep going."
+      },
+      {
+        "id": 4,
+        "phrase": "Just under on {exercise} — {actual} of {target} reps. The rep count has been building — stay at {weight} and close the gap."
+      },
+      {
+        "id": 5,
+        "phrase": "Slightly short on {exercise} — {actual} of {target} reps this session. The trend has been upward — hold at {weight} and keep at it."
+      },
+      {
+        "id": 6,
+        "phrase": "{actual} reps on {exercise} against a target of {target}. Been heading in the right direction — stay at {weight} and the reps will get there."
+      },
+      {
+        "id": 7,
+        "phrase": "Rep count on {exercise} was {actual} today — {target} is the goal. The trend has been upward — hold at {weight} and keep building."
+      },
+      {
+        "id": 8,
+        "phrase": "{exercise} came in just under at {actual} of {target} reps. Been improving session to session — stay at {weight} and keep the progress going."
+      },
+      {
+        "id": 9,
+        "phrase": "A little short on {exercise} — {actual} of {target} reps. The numbers have been climbing — hold at {weight} and the full target is within reach."
+      },
+      {
+        "id": 10,
+        "phrase": "{exercise} was {actual} reps today, target was {target}. Rep count has been on the rise — stay at {weight} and keep building."
+      }
+    ],
+    "Under Slight|Held|Declining|Normal": [
+      {
+        "id": 11,
+        "phrase": "{exercise} came in at {actual} of {target} reps today. Rep count has been dipping over the last few sessions — hold at {weight} and see if next session turns it around."
+      },
+      {
+        "id": 12,
+        "phrase": "Reps on {exercise} were {actual} of {target} this session. The trend has been downward recently — stay at {weight} and focus on stabilizing."
+      },
+      {
+        "id": 13,
+        "phrase": "{actual} of {target} reps on {exercise} today. Rep count has been sliding — hold at {weight} and work on getting it back up."
+      },
+      {
+        "id": 14,
+        "phrase": "Just under on {exercise} — {actual} of {target} reps. Been trending down recently — stay at {weight} and aim to reverse that next session."
+      },
+      {
+        "id": 15,
+        "phrase": "{exercise} landed at {actual} reps, target was {target}. The direction has been downward — hold at {weight} and focus on the reps."
+      },
+      {
+        "id": 16,
+        "phrase": "Slightly short on {exercise} — {actual} of {target} reps. Rep count has been falling — stay at {weight} and work on getting more reps through."
+      },
+      {
+        "id": 17,
+        "phrase": "{actual} reps on {exercise} against a target of {target}. The trend has been heading down — hold at {weight} and aim to stabilize next session."
+      },
+      {
+        "id": 18,
+        "phrase": "Rep count on {exercise} was {actual} today — {target} is the goal. Been dropping session to session — stay at {weight} and focus on turning it around."
+      },
+      {
+        "id": 19,
+        "phrase": "{exercise} came in just under at {actual} of {target} reps. The numbers have been declining — hold at {weight} and see if next session stabilizes."
+      },
+      {
+        "id": 20,
+        "phrase": "A little short on {exercise} — {actual} of {target} reps. The direction has been downward — stay at {weight} and work on reversing the trend."
+      }
+    ],
+    "Under Slight|Held|Plateauing Below|Normal": [
+      {
+        "id": 21,
+        "phrase": "{exercise} came in at {actual} of {target} reps today. Rep count has been sitting in the same place for a few sessions — stay at {weight} and keep working through it."
+      },
+      {
+        "id": 22,
+        "phrase": "Reps on {exercise} were {actual} of {target} this session. The numbers have been flat below target — hold at {weight} and keep pushing."
+      },
+      {
+        "id": 23,
+        "phrase": "{actual} of {target} reps on {exercise} today. Rep count has leveled off — stay at {weight} and focus on breaking through."
+      },
+      {
+        "id": 24,
+        "phrase": "Just under on {exercise} — {actual} of {target} reps. Been hovering in the same spot — hold at {weight} and work on adding a rep or two next session."
+      },
+      {
+        "id": 25,
+        "phrase": "{exercise} landed at {actual} reps, target was {target}. Rep count has been plateauing — stay at {weight} and keep at it."
+      }
+    ],
+    "Under Significant|Held|Declining|Normal": [
+      {
+        "id": 26,
+        "phrase": "{exercise} came in at {actual} of {target} reps today. Rep count has been dropping over the last few sessions — hold at {weight} and focus on stabilizing before anything else changes."
+      },
+      {
+        "id": 27,
+        "phrase": "Reps on {exercise} were {actual} of {target} this session. The trend has been downward — stay at {weight} and see if next session turns things around."
+      },
+      {
+        "id": 28,
+        "phrase": "{actual} of {target} reps on {exercise} today. Rep count has been falling — hold at {weight} and work on getting more reps through."
+      },
+      {
+        "id": 29,
+        "phrase": "Well under on {exercise} — {actual} of {target} reps. Been trending down recently — stay at {weight} and focus on reversing that."
+      },
+      {
+        "id": 30,
+        "phrase": "{exercise} landed at {actual} reps, target was {target}. The direction has been downward — hold at {weight} and aim to stabilize next session."
+      }
+    ],
+    "Under Significant|Dropped → Still Under|Declining|Normal": [
+      {
+        "id": 31,
+        "phrase": "Even after dropping {exercise} to {weight}, reps came in at {actual} of {target}. Rep count has been declining — stay at {weight} and build from here."
+      },
+      {
+        "id": 32,
+        "phrase": "You adjusted {exercise} down to {weight} — reps were still under at {actual} of {target}. The trend has been downward — hold here and focus on stabilizing."
+      },
+      {
+        "id": 33,
+        "phrase": "{exercise} was dropped to {weight} mid-session — {actual} of {target} reps completed. Rep count has been falling — stay at {weight} and work the reps up."
+      },
+      {
+        "id": 34,
+        "phrase": "Weight came down to {weight} on {exercise} — still {actual} of {target} reps. Been trending down — hold at {weight} and focus on turning it around."
+      },
+      {
+        "id": 35,
+        "phrase": "Even at {weight}, {exercise} came in at {actual} of {target} reps. The direction has been downward — stay here and keep building."
+      }
+    ],
+    "On Target|Held|Improving|Normal": [
+      {
+        "id": 36,
+        "phrase": "{exercise} hit the full target today. Rep count has been climbing — ready to move up to {next_weight} next session."
+      },
+      {
+        "id": 37,
+        "phrase": "Full reps on {exercise} this session. The trend has been upward — time to progress to {next_weight}."
+      },
+      {
+        "id": 38,
+        "phrase": "{exercise} landed right on target. Been improving session to session — move up to {next_weight} next time."
+      },
+      {
+        "id": 39,
+        "phrase": "On target for {exercise} today. Rep count has been building — {next_weight} is the next step."
+      },
+      {
+        "id": 40,
+        "phrase": "Full rep target hit on {exercise}. The direction has been up — progress to {next_weight} next session."
+      }
+    ],
+    "On Target|Held|Plateauing At|Normal": [
+      {
+        "id": 41,
+        "phrase": "{exercise} hit full target again today. Been consistent here for a few sessions — time to move up to {next_weight}."
+      },
+      {
+        "id": 42,
+        "phrase": "Full reps on {exercise} this session. Rep count has been right on target for a while — {next_weight} is overdue."
+      },
+      {
+        "id": 43,
+        "phrase": "{exercise} landed on target again. Been delivering consistently — ready to progress to {next_weight}."
+      },
+      {
+        "id": 44,
+        "phrase": "On target for {exercise} today — again. Been steady here — time to step up to {next_weight} next session."
+      },
+      {
+        "id": 45,
+        "phrase": "Full rep target hit on {exercise}. Been hitting this consistently — move up to {next_weight} next time."
+      }
+    ],
+    "On Target|Dropped → Completed|Normal|Omitted": [
+      {
+        "id": 46,
+        "phrase": "You adjusted {exercise} down to {weight} mid-session and hit the full rep target from there. Stay at {weight} next session and consolidate."
+      },
+      {
+        "id": 47,
+        "phrase": "Weight on {exercise} came down to {weight} — full reps hit from there. Hold at {weight} and build confidence at this level."
+      },
+      {
+        "id": 48,
+        "phrase": "You dropped {exercise} to {weight} and completed the full target. Stay here next session before moving up."
+      },
+      {
+        "id": 49,
+        "phrase": "{exercise} was adjusted to {weight} mid-session — full reps done. Hold at {weight} and confirm it next session."
+      },
+      {
+        "id": 50,
+        "phrase": "After bringing {exercise} down to {weight}, full rep target was hit. Stay at {weight} and consolidate before progressing."
+      }
+    ],
+    "Over Target|Held|Improving|Normal": [
+      {
+        "id": 51,
+        "phrase": "{exercise} went over target today — {actual} reps against a {target} goal. The trend has been up — move to {next_weight} next session."
+      },
+      {
+        "id": 52,
+        "phrase": "Over target on {exercise} — {actual} of {target} reps. Rep count has been climbing — time to step up to {next_weight}."
+      },
+      {
+        "id": 53,
+        "phrase": "{exercise} exceeded the target at {actual} reps. Been improving session to session — progress to {next_weight} next time."
+      },
+      {
+        "id": 54,
+        "phrase": "More than the full target on {exercise} — {actual} reps done. The direction has been upward — {next_weight} next session."
+      },
+      {
+        "id": 55,
+        "phrase": "{exercise} went past target today — {actual} reps. Been trending up — move up to {next_weight}."
+      }
+    ],
+    "Under Slight|User Increased → Slight Miss|Normal|Omitted": [
+      {
+        "id": 56,
+        "phrase": "You moved {exercise} up to {weight} this session — reps came in at {actual} of {target}. Drop back to {previous_weight} and hit the full reps there first."
+      },
+      {
+        "id": 57,
+        "phrase": "Weight on {exercise} went up to {weight} — reps were just under at {actual} of {target}. Return to {previous_weight} and build from there."
+      },
+      {
+        "id": 58,
+        "phrase": "You increased {exercise} to {weight} — {actual} of {target} reps completed. Step back to {previous_weight} and get the full reps before moving up."
+      },
+      {
+        "id": 59,
+        "phrase": "{exercise} was up to {weight} this session — reps came in slightly short at {actual} of {target}. Drop back to {previous_weight} for now."
+      },
+      {
+        "id": 60,
+        "phrase": "Weight moved up to {weight} on {exercise} — {actual} of {target} reps done. Return to {previous_weight} and hit the full target there first."
+      }
+    ],
+    "Under Significant|User Increased → Significant Miss|Normal|Omitted": [
+      {
+        "id": 61,
+        "phrase": "You moved {exercise} up to {weight} — reps came in well under at {actual} of {target}. Drop back to {previous_weight} and build the reps up from there."
+      },
+      {
+        "id": 62,
+        "phrase": "Weight on {exercise} went up to {weight} — reps were significantly short at {actual} of {target}. Return to {previous_weight} and focus on the reps."
+      },
+      {
+        "id": 63,
+        "phrase": "You increased {exercise} to {weight} — {actual} of {target} reps completed. Step back to {previous_weight} and get the full reps before moving up."
+      },
+      {
+        "id": 64,
+        "phrase": "{exercise} was up to {weight} this session — reps came in well short at {actual} of {target}. Drop back to {previous_weight} for now."
+      },
+      {
+        "id": 65,
+        "phrase": "Weight moved up to {weight} on {exercise} — {actual} of {target} reps done. Return to {previous_weight} and build from there."
+      }
+    ],
+    "Over Target|User Increased → Over Target|Normal|Omitted": [
+      {
+        "id": 66,
+        "phrase": "You moved {exercise} up to {weight} and exceeded the rep target — {actual} reps done. Stay at {weight} and confirm it next session."
+      },
+      {
+        "id": 67,
+        "phrase": "Weight on {exercise} went up to {weight} — over target at {actual} reps. Hold here and confirm it next session before going further."
+      },
+      {
+        "id": 68,
+        "phrase": "You increased {exercise} to {weight} and went past target — {actual} of {target} reps. Stay at {weight} and see if it holds next session."
+      },
+      {
+        "id": 69,
+        "phrase": "{exercise} was up to {weight} this session — over target at {actual} reps. Hold at {weight} and confirm next time."
+      },
+      {
+        "id": 70,
+        "phrase": "Weight moved up to {weight} on {exercise} — {actual} reps against a {target} target. Stay here and confirm before considering the next step."
+      }
+    ],
+    "Under Slight|Held|Omitted|First Time": [
+      {
+        "id": 71,
+        "phrase": "First session on {exercise} — reps came in at {actual} of {target}. Stay at {weight} next session and build from here."
+      },
+      {
+        "id": 72,
+        "phrase": "New exercise today — {exercise}. {actual} of {target} reps on the first go. Hold at {weight} and go again next session."
+      },
+      {
+        "id": 73,
+        "phrase": "First time through {exercise} — {actual} of {target} reps. Stay at {weight} and work the reps up next session."
+      }
+    ],
+    "On Target|Held|Omitted|First Time": [
+      {
+        "id": 74,
+        "phrase": "First session on {exercise} and the full rep target was hit. Stay at {weight} next session and confirm before moving up."
+      },
+      {
+        "id": 75,
+        "phrase": "New exercise today — {exercise}. Full reps on the first go. Hold at {weight} and confirm next session."
+      },
+      {
+        "id": 76,
+        "phrase": "First time through {exercise} and already hitting target. Stay at {weight} and verify next session before progressing."
+      }
+    ],
+    "Under Slight|Held|Omitted|Short Gap": [
+      {
+        "id": 77,
+        "phrase": "First session back after a short break — {exercise} came in at {actual} of {target} reps. Stay at {weight} and build back up."
+      },
+      {
+        "id": 78,
+        "phrase": "Returning after a few days away — {exercise} was {actual} of {target} reps. Hold at {weight} and get back into the groove."
+      }
+    ],
+    "Under Significant|Held|Omitted|Long Gap": [
+      {
+        "id": 79,
+        "phrase": "First session back after an extended break — {exercise} came in at {actual} of {target} reps. Stay at {weight} and rebuild from here."
+      },
+      {
+        "id": 80,
+        "phrase": "Returning after a longer time away — {exercise} was {actual} of {target} reps. Hold at {weight} and build back up steadily."
+      }
+    ],
+    "On Target|Held|Omitted|Long Gap": [
+      {
+        "id": 81,
+        "phrase": "First session back after an extended break — {exercise} hit the full target. Stay at {weight} and confirm next session."
+      }
+    ],
+    "On Target|Held|Omitted|Short Gap": [
+      {
+        "id": 82,
+        "phrase": "First session back after a short break — {exercise} was right on target. Hold at {weight} and keep it going."
+      }
+    ]
+  }
+}
