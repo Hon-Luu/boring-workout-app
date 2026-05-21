@@ -178,11 +178,16 @@ struct SettingsView: View {
                 }
 
                 #if DEBUG
-                Section("Debug — Habit Intelligence") {
+                Section("Debug") {
                     NavigationLink {
                         HONDebugView()
                     } label: {
                         Label("HON Engine", systemImage: "brain.head.profile")
+                    }
+                    NavigationLink {
+                        UATScenarioView()
+                    } label: {
+                        Label("UAT Scenarios", systemImage: "testtube.2")
                     }
                 }
 

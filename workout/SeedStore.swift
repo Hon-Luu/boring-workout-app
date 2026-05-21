@@ -920,6 +920,36 @@ class SeedStore {
         save()
     }
 
+    // MARK: - UAT
+
+    #if DEBUG
+    /// Replaces the entire workout log with `log`, rebuilds personal records, and refreshes analytics.
+    func injectUATScenario(_ log: [WorkoutLogEntry]) {
+        workoutLog = log.sorted { $0.startedAt > $1.startedAt }
+        personalRecords = [:]
+        for entry in workoutLog {
+            for we in entry.exercises {
+                for set in we.completedSets {
+                    let e1rm = set.estimated1RM
+                    guard e1rm > 0 else { continue }
+                    let existing = personalRecords[we.exercise.id]
+                    if existing == nil || e1rm > existing!.estimated1RM {
+                        personalRecords[we.exercise.id] = PersonalRecord(
+                            exerciseId:    we.exercise.id,
+                            exerciseName:  we.exercise.name,
+                            weight:        set.weight,
+                            reps:          set.reps,
+                            estimated1RM:  e1rm,
+                            date:          entry.startedAt
+                        )
+                    }
+                }
+            }
+        }
+        persistImport()
+    }
+    #endif
+
     // MARK: - Exercise Database
 
     private static func ex(
