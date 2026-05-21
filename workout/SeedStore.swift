@@ -953,6 +953,10 @@ class SeedStore {
         else { return false }
         workoutLog      = log
         personalRecords = prs
+        // Clear backup keys so the UI reflects the restored state.
+        UserDefaults.standard.removeObject(forKey: uatBackupLogKey)
+        UserDefaults.standard.removeObject(forKey: uatBackupPRsKey)
+        UserDefaults.standard.removeObject(forKey: uatBackupDateKey)
         persistImport()
         return true
     }

@@ -91,6 +91,12 @@ struct UATScenarioView: View {
 
     @State private var cycleIndex = 0
     @State private var lastApplied: String? = nil
+    @State private var restoreAlert: RestoreAlert? = nil
+
+    enum RestoreAlert: Identifiable {
+        case success(count: Int), failure
+        var id: Int { switch self { case .success: return 0; case .failure: return 1 } }
+    }
 
     private var catalogue: [UATScenario] { buildCatalogue() }
 
@@ -106,6 +112,22 @@ struct UATScenarioView: View {
         .listStyle(.insetGrouped)
         .navigationTitle("UAT Scenarios")
         .navigationBarTitleDisplayMode(.large)
+        .alert(item: $restoreAlert) { alert in
+            switch alert {
+            case .success(let count):
+                return Alert(
+                    title: Text("Real Data Restored"),
+                    message: Text("\(count) workout\(count == 1 ? "" : "s") loaded. UAT data has been cleared."),
+                    dismissButton: .default(Text("Done"))
+                )
+            case .failure:
+                return Alert(
+                    title: Text("Nothing to Restore"),
+                    message: Text("No backup was found. Apply a scenario first — it auto-saves a backup before replacing your data."),
+                    dismissButton: .default(Text("OK"))
+                )
+            }
+        }
     }
 
     private var categories: [String] {
@@ -148,7 +170,14 @@ struct UATScenarioView: View {
         Section {
             if let date = store.uatBackupDate {
                 LabeledContent("Backup saved", value: date.formatted(date: .abbreviated, time: .shortened))
-                Button("Restore Real Data") { store.restoreUATBackup(); lastApplied = "Restored" }.foregroundStyle(.green)
+                Button("Restore Real Data") {
+                    if store.restoreUATBackup() {
+                        lastApplied = "Restored"
+                        restoreAlert = .success(count: store.workoutLog.count)
+                    } else {
+                        restoreAlert = .failure
+                    }
+                }.foregroundStyle(.green)
                 Button("Overwrite Backup with Current") { store.backupForUAT() }.foregroundStyle(.secondary)
             } else {
                 Button("Save Backup Now") { store.backupForUAT() }
