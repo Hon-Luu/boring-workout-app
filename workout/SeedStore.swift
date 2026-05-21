@@ -923,8 +923,46 @@ class SeedStore {
     // MARK: - UAT
 
     #if DEBUG
+    private let uatBackupLogKey  = "uat_backup_log_v1"
+    private let uatBackupPRsKey  = "uat_backup_prs_v1"
+    private let uatBackupDateKey = "uat_backup_date_v1"
+
+    var uatBackupDate: Date? {
+        UserDefaults.standard.object(forKey: uatBackupDateKey) as? Date
+    }
+
+    /// Snapshots the current log + PRs so they can be restored after UAT testing.
+    func backupForUAT() {
+        if let data = try? JSONEncoder().encode(workoutLog) {
+            UserDefaults.standard.set(data, forKey: uatBackupLogKey)
+        }
+        if let data = try? JSONEncoder().encode(personalRecords) {
+            UserDefaults.standard.set(data, forKey: uatBackupPRsKey)
+        }
+        UserDefaults.standard.set(Date(), forKey: uatBackupDateKey)
+    }
+
+    /// Restores the last UAT backup. Returns false if no backup exists.
+    @discardableResult
+    func restoreUATBackup() -> Bool {
+        guard
+            let logData = UserDefaults.standard.data(forKey: uatBackupLogKey),
+            let log     = try? JSONDecoder().decode([WorkoutLogEntry].self, from: logData),
+            let prsData = UserDefaults.standard.data(forKey: uatBackupPRsKey),
+            let prs     = try? JSONDecoder().decode([UUID: PersonalRecord].self, from: prsData)
+        else { return false }
+        workoutLog      = log
+        personalRecords = prs
+        persistImport()
+        return true
+    }
+
     /// Replaces the entire workout log with `log`, rebuilds personal records, and refreshes analytics.
+    /// Auto-snapshots real data before the first scenario so it can always be restored.
     func injectUATScenario(_ log: [WorkoutLogEntry]) {
+        if uatBackupDate == nil, !workoutLog.isEmpty {
+            backupForUAT()
+        }
         workoutLog = log.sorted { $0.startedAt > $1.startedAt }
         personalRecords = [:]
         for entry in workoutLog {

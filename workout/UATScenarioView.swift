@@ -10,6 +10,7 @@ struct UATScenarioView: View {
 
     var body: some View {
         List {
+            backupSection
             currentStateSection
             newUserSection
             earlyUserSection
@@ -24,6 +25,32 @@ struct UATScenarioView: View {
     }
 
     // MARK: - Sections
+
+    private var backupSection: some View {
+        Section {
+            if let date = store.uatBackupDate {
+                LabeledContent("Backup saved", value: date.formatted(date: .abbreviated, time: .shortened))
+                Button("Restore Real Data") {
+                    store.restoreUATBackup()
+                    lastApplied = "Restored real data"
+                }
+                .foregroundStyle(.green)
+                Button("Overwrite Backup with Current") {
+                    store.backupForUAT()
+                }
+                .foregroundStyle(.secondary)
+            } else {
+                Button("Save Backup Now") {
+                    store.backupForUAT()
+                }
+                Text("Your real data is auto-backed up the first time you apply a scenario.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        } header: {
+            Text("Your Real Data")
+        }
+    }
 
     private var currentStateSection: some View {
         Section {
