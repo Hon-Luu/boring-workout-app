@@ -113,8 +113,10 @@ struct HomeView: View {
         #endif
     }
 
-    private var todayWorkout: WorkoutLogEntry? {
-        store.workoutLog.first { Calendar.current.isDateInToday($0.startedAt) }
+    private var todayWorkouts: [WorkoutLogEntry] {
+        store.workoutLog
+            .filter { Calendar.current.isDateInToday($0.startedAt) }
+            .sorted { $0.startedAt < $1.startedAt }   // chronological — oldest first
     }
 
     private var todayHints: [UUID: ExerciseTodayHint] { store.homeCache.todayHints }
@@ -188,18 +190,21 @@ struct HomeView: View {
                         HealthSnapshotRow(health: health)
                     }
 
-                    // MARK: Today's Workout Recap (always shown if a workout was completed today)
-                    if let done = todayWorkout {
-                        sectionHeader("Today's Workout")
-                        WorkoutRecapCard(
-                            workout: done,
-                            history: pastWorkouts,
-                            subtitle: "Today"
-                        )
+                    // MARK: Today's Workout Recap (all sessions completed today)
+                    if !todayWorkouts.isEmpty {
+                        let multiSession = todayWorkouts.count > 1
+                        sectionHeader(multiSession ? "Today's Workouts" : "Today's Workout")
+                        ForEach(Array(todayWorkouts.enumerated()), id: \.element.id) { index, session in
+                            WorkoutRecapCard(
+                                workout: session,
+                                history: store.workoutLog.filter { $0.startedAt < session.startedAt },
+                                subtitle: multiSession ? "Session \(index + 1)" : "Today"
+                            )
+                        }
                     }
 
                     // MARK: Today's Plan (shown when no workout done yet and plan exists)
-                    if todayWorkout == nil && !todayPlan.isEmpty {
+                    if todayWorkouts.isEmpty && !todayPlan.isEmpty {
                         sectionHeader("Today's Plan")
                         let hints = todayHints
                         let notes = exerciseNotes
@@ -224,7 +229,7 @@ struct HomeView: View {
                     }
 
                     // MARK: No-plan CTA
-                    if todayWorkout == nil && todayPlan.isEmpty {
+                    if todayWorkouts.isEmpty && todayPlan.isEmpty {
                         startFreeWorkoutBanner
                         if !store.isTodayRestDay {
                             restDayBanner
