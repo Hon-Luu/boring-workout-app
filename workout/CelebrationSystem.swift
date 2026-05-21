@@ -22,7 +22,10 @@ extension CelebrationKind: Identifiable {
 
 struct TodayDotAnchorKey: PreferenceKey {
     static var defaultValue: CGRect = .zero
-    static func reduce(value: inout CGRect, nextValue: () -> CGRect) { value = nextValue() }
+    static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
+        let next = nextValue()
+        if next != .zero { value = next }
+    }
 }
 
 // MARK: - Particle Burst
