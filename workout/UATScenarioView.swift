@@ -2,581 +2,684 @@ import SwiftUI
 
 #if DEBUG
 
-// MARK: - UAT Scenario View
+// MARK: - Metadata
+
+private struct UATScenario {
+    let name: String
+    let category: String
+    let hint: String
+    var needsHON: Bool = false
+}
+
+private func buildCatalogue() -> [UATScenario] { [
+    // A — Feedback Engine (Home card)
+    .init(name: "Empty State",              category: "A · Feedback Engine", hint: "All tabs → empty-state illustrations"),
+    .init(name: "Add Weight Signal",         category: "A · Feedback Engine", hint: "Home → feedback card: bench shows 'Add weight NOW'"),
+    .init(name: "Standard Progression",      category: "A · Feedback Engine", hint: "Home → feedback card: OHP shows standard progression"),
+    .init(name: "Almost Ready to Progress",  category: "A · Feedback Engine", hint: "Home → feedback card: row shows 'Close but not ready'"),
+    .init(name: "Deload Recommended",        category: "A · Feedback Engine", hint: "Home → feedback card: deadlift shows deload advice"),
+    .init(name: "Struggling — Hold Weight",  category: "A · Feedback Engine", hint: "Home → feedback card: squat shows 'Hold weight'"),
+    // B — HON Messages
+    .init(name: "HON · Session 1",           category: "B · HON Messages", hint: "Home: new-user welcome banner appears", needsHON: true),
+    .init(name: "HON · Session 10",          category: "B · HON Messages", hint: "Home: '10 sessions' milestone banner", needsHON: true),
+    .init(name: "HON · Session 25",          category: "B · HON Messages", hint: "Home: '25 sessions' milestone banner", needsHON: true),
+    .init(name: "HON · Return (14-day gap)", category: "B · HON Messages", hint: "Home: comeback message banner", needsHON: true),
+    .init(name: "HON · Return (30-day gap)", category: "B · HON Messages", hint: "Home: long-absence comeback banner", needsHON: true),
+    .init(name: "HON · Type A Pattern",      category: "B · HON Messages", hint: "Settings → HON Debug → Day Pattern: strong MWF bars", needsHON: true),
+    .init(name: "HON · Frequency Ramp",      category: "B · HON Messages", hint: "Home: high-frequency warning banner", needsHON: true),
+    .init(name: "HON · Drift Detected",      category: "B · HON Messages", hint: "Home: slowing-down warning banner", needsHON: true),
+    .init(name: "HON · 12 Consecutive Wks",  category: "B · HON Messages", hint: "Home: streak-celebration banner", needsHON: true),
+    .init(name: "HON · Deload Week",         category: "B · HON Messages", hint: "Home: deload-acknowledgment banner", needsHON: true),
+    // C — Strength Tiers
+    .init(name: "Tier · Beginner",           category: "C · Strength Tiers", hint: "Insights → Strength Score: beginner badge on all lifts"),
+    .init(name: "Tier · Developing",         category: "C · Strength Tiers", hint: "Insights → Strength Score: developing/novice tier"),
+    .init(name: "Tier · Intermediate",       category: "C · Strength Tiers", hint: "Insights → Strength Score: intermediate tier badge"),
+    .init(name: "Tier · Advanced",           category: "C · Strength Tiers", hint: "Insights → Strength Score: advanced tier badge"),
+    .init(name: "Tier · Elite",              category: "C · Strength Tiers", hint: "Insights → Strength Score: elite tier — top badge"),
+    .init(name: "Tier · Mixed Levels",       category: "C · Strength Tiers", hint: "Insights: some elite, some beginner — imbalanced tiers"),
+    // D — Pattern Balance
+    .init(name: "Pattern · All 7 Balanced",  category: "D · Pattern Balance", hint: "Insights → pattern radar: even across all 7 movements"),
+    .init(name: "Pattern · Push-Heavy",      category: "D · Pattern Balance", hint: "Insights: imbalance warning — too much push, no pull"),
+    .init(name: "Pattern · Pull-Heavy",      category: "D · Pattern Balance", hint: "Insights: imbalance — too much pull, no push"),
+    .init(name: "Pattern · Leg-Dominant",    category: "D · Pattern Balance", hint: "Insights: lower-body heavy, minimal upper"),
+    .init(name: "Pattern · No Legs",         category: "D · Pattern Balance", hint: "Insights: all upper, zero hip hinge / knee flexion"),
+    .init(name: "Pattern · Isolation-Only",  category: "D · Pattern Balance", hint: "Insights: no compound moves — curls/raises/extensions only"),
+    .init(name: "Pattern · Compound-Only",   category: "D · Pattern Balance", hint: "Insights: no isolation — big lifts only"),
+    // E — Equipment Mix
+    .init(name: "Equipment · All Barbell",   category: "E · Equipment Mix", hint: "History: all BB tags; Insights: barbell-only profile"),
+    .init(name: "Equipment · All Dumbbell",  category: "E · Equipment Mix", hint: "History: all DB entries"),
+    .init(name: "Equipment · All Machines",  category: "E · Equipment Mix", hint: "History: machine exercises throughout"),
+    .init(name: "Equipment · Bodyweight",    category: "E · Equipment Mix", hint: "History: all BW; no weight numbers > 0"),
+    .init(name: "Equipment · Full Mix",      category: "E · Equipment Mix", hint: "History: BB/DB/Cable/Machine/BW all present"),
+    // F — Personas
+    .init(name: "Persona · The Powerlifter", category: "F · Personas", hint: "Big 3 dominant; heavy + low-rep; advanced/elite tiers"),
+    .init(name: "Persona · The Bodybuilder", category: "F · Personas", hint: "High volume; lots of isolation; intermediate/advanced tiers"),
+    .init(name: "Persona · The Beginner",    category: "F · Personas", hint: "Low weights; beginner tiers; early feedback messages"),
+    .init(name: "Persona · The Elite",       category: "F · Personas", hint: "Elite tier across the board; all 7 patterns covered"),
+    .init(name: "Persona · The Sporadic",    category: "F · Personas", hint: "Broken streaks; irregular gaps; low pattern confidence"),
+    .init(name: "Persona · The Comeback",    category: "F · Personas", hint: "Strong history → 45-day gap → 1 workout today"),
+] }
+
+// MARK: - View
 
 struct UATScenarioView: View {
-    @Environment(SeedStore.self) private var store
+    @Environment(SeedStore.self)       private var store
+    @Environment(HONHabitEngine.self)  private var habitEngine
+
+    @State private var cycleIndex = 0
     @State private var lastApplied: String? = nil
+
+    private var catalogue: [UATScenario] { buildCatalogue() }
 
     var body: some View {
         List {
+            cycleSection
             backupSection
-            currentStateSection
-            newUserSection
-            earlyUserSection
-            progressionSection
-            returningSection
-            workoutStyleSection
-            edgeCasesSection
+            stateSection
+            ForEach(categories, id: \.self) { cat in
+                categorySection(cat)
+            }
         }
         .listStyle(.insetGrouped)
         .navigationTitle("UAT Scenarios")
         .navigationBarTitleDisplayMode(.large)
     }
 
-    // MARK: - Sections
+    private var categories: [String] {
+        var seen = Set<String>()
+        return catalogue.compactMap { seen.insert($0.category).inserted ? $0.category : nil }
+    }
+
+    // MARK: Cycle
+
+    private var cycleSection: some View {
+        let s = catalogue[cycleIndex]
+        return Section {
+            VStack(alignment: .leading, spacing: 5) {
+                HStack {
+                    Text(s.category.uppercased())
+                        .font(.caption2.weight(.semibold)).foregroundStyle(.secondary).kerning(0.5)
+                    Spacer()
+                    Text("\(cycleIndex + 1) / \(catalogue.count)").font(.caption2).foregroundStyle(.secondary)
+                }
+                Text(s.name).font(.headline)
+                Text(s.hint).font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(.vertical, 2)
+            HStack(spacing: 8) {
+                Button("← Prev") { step(-1) }.buttonStyle(.bordered).frame(maxWidth: .infinity)
+                Button("Apply")  { apply(cycleIndex) }.buttonStyle(.borderedProminent).tint(HONTheme.accent).frame(maxWidth: .infinity)
+                Button("Next →") { step(+1) }.buttonStyle(.bordered).frame(maxWidth: .infinity)
+            }
+        } header: { Text("Quick Cycle — tap Next → to advance and apply") }
+    }
+
+    private func step(_ delta: Int) {
+        cycleIndex = (cycleIndex + delta + catalogue.count) % catalogue.count
+        apply(cycleIndex)
+    }
+
+    // MARK: Backup
 
     private var backupSection: some View {
         Section {
             if let date = store.uatBackupDate {
                 LabeledContent("Backup saved", value: date.formatted(date: .abbreviated, time: .shortened))
-                Button("Restore Real Data") {
-                    store.restoreUATBackup()
-                    lastApplied = "Restored real data"
-                }
-                .foregroundStyle(.green)
-                Button("Overwrite Backup with Current") {
-                    store.backupForUAT()
-                }
-                .foregroundStyle(.secondary)
+                Button("Restore Real Data") { store.restoreUATBackup(); lastApplied = "Restored" }.foregroundStyle(.green)
+                Button("Overwrite Backup with Current") { store.backupForUAT() }.foregroundStyle(.secondary)
             } else {
-                Button("Save Backup Now") {
-                    store.backupForUAT()
-                }
-                Text("Your real data is auto-backed up the first time you apply a scenario.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                Button("Save Backup Now") { store.backupForUAT() }
+                Text("Auto-backed up before the first scenario you apply.")
+                    .font(.caption).foregroundStyle(.secondary)
             }
-        } header: {
-            Text("Your Real Data")
-        }
+        } header: { Text("Your Real Data") }
     }
 
-    private var currentStateSection: some View {
+    // MARK: State
+
+    private var stateSection: some View {
         Section {
-            LabeledContent("Total Workouts",   value: "\(store.workoutLog.count)")
-            LabeledContent("Personal Records", value: "\(store.personalRecords.count)")
-            if let first = store.workoutLog.last?.startedAt {
-                LabeledContent("First Workout", value: first.formatted(date: .abbreviated, time: .omitted))
-            }
-            if let last = store.workoutLog.first?.startedAt {
-                LabeledContent("Last Workout",  value: last.formatted(date: .abbreviated, time: .omitted))
-            }
-            if let name = lastApplied {
-                LabeledContent("Last Applied", value: name).foregroundStyle(HONTheme.accent)
-            }
-            Button("Clear All Data", role: .destructive) { apply("Empty", emptyScenario()) }
+            LabeledContent("Workouts", value: "\(store.workoutLog.count)")
+            LabeledContent("PRs",      value: "\(store.personalRecords.count)")
+            if let d = store.workoutLog.last?.startedAt  { LabeledContent("First", value: d.formatted(date: .abbreviated, time: .omitted)) }
+            if let d = store.workoutLog.first?.startedAt { LabeledContent("Last",  value: d.formatted(date: .abbreviated, time: .omitted)) }
+            if let n = lastApplied { LabeledContent("Applied", value: n).foregroundStyle(HONTheme.accent) }
         } header: { Text("Current State") }
     }
 
-    private var newUserSection: some View {
-        Section {
-            cell("Brand-New User",
-                 "Empty log — tests empty-state UI across all tabs") {
-                apply("Brand-New User", emptyScenario())
-            }
-            cell("First Workout Done Today",
-                 "1 workout just finished — tests day-1 experience & no-history states") {
-                apply("First Workout Done Today", firstWorkoutScenario())
-            }
-        } header: { Text("New User") }
-        .foregroundStyle(HONTheme.accent)
-    }
+    // MARK: Category rows
 
-    private var earlyUserSection: some View {
-        Section {
-            cell("Week 1 (3 workouts)",
-                 "3 workouts over 5 days — tests early habit detection, sparse charts") {
-                apply("Week 1", week1Scenario())
+    private func categorySection(_ category: String) -> some View {
+        Section(category) {
+            ForEach(Array(catalogue.enumerated()), id: \.offset) { idx, s in
+                if s.category == category {
+                    Button { apply(idx) } label: {
+                        HStack(alignment: .top, spacing: 10) {
+                            Image(systemName: idx == cycleIndex ? "checkmark.circle.fill" : "circle")
+                                .foregroundStyle(idx == cycleIndex ? HONTheme.accent : Color.secondary.opacity(0.35))
+                                .frame(width: 20)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(s.name).foregroundStyle(HONTheme.accent)
+                                Text(s.hint).font(.caption).foregroundStyle(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                        .padding(.vertical, 2)
+                    }
+                    .buttonStyle(.plain)
+                }
             }
-            cell("1 Month Consistent (3×/week)",
-                 "~12 sessions MWF — tests habit pattern, beginner feedback, early progress lines") {
-                apply("1 Month Consistent", oneMonthScenario())
-            }
-        } header: { Text("Early User") }
-        .foregroundStyle(HONTheme.accent)
-    }
-
-    private var progressionSection: some View {
-        Section {
-            cell("3 Months — Clear Progression",
-                 "~36 sessions, steady weight increases, first PRs — tests progress charts & PR highlights") {
-                apply("3 Months Progression", threeMonthScenario())
-            }
-            cell("6 Months — Full Analytics",
-                 "~72 sessions, strength tiers active, all engines running — tests analytics depth") {
-                apply("6 Months Full Analytics", sixMonthScenario())
-            }
-            cell("Upper/Lower Split (Varied Exercises)",
-                 "30 sessions alternating upper/lower with 6+ exercises each — tests exercise variety display") {
-                apply("Upper/Lower Varied", variedSplitScenario())
-            }
-        } header: { Text("Established User") }
-        .foregroundStyle(HONTheme.accent)
-    }
-
-    private var returningSection: some View {
-        Section {
-            cell("Return After 14-Day Break",
-                 "40 workouts then 14-day gap then 1 today — tests comeback messaging") {
-                apply("Return (14d break)", returningScenario(daysGone: 14))
-            }
-            cell("Return After 30-Day Break",
-                 "40 workouts then 30-day gap then 1 today — tests lapse detection") {
-                apply("Return (30d break)", returningScenario(daysGone: 30))
-            }
-            cell("Sporadic Lifter",
-                 "20 workouts over 90 days with random multi-week gaps — tests low-confidence habit display") {
-                apply("Sporadic Lifter", sporadicScenario())
-            }
-        } header: { Text("Returning / Irregular") }
-        .foregroundStyle(HONTheme.accent)
-    }
-
-    private var workoutStyleSection: some View {
-        Section {
-            cell("Short Sessions Only (15–20 min)",
-                 "20 workouts, 2–3 exercises each — tests compact duration & volume display") {
-                apply("Short Sessions", shortSessionsScenario())
-            }
-            cell("Marathon Sessions (90–120 min)",
-                 "20 workouts, 8–10 exercises, 4+ sets each — tests large-volume UI, long exercise lists") {
-                apply("Marathon Sessions", marathonSessionsScenario())
-            }
-        } header: { Text("Workout Style") }
-        .foregroundStyle(HONTheme.accent)
-    }
-
-    private var edgeCasesSection: some View {
-        Section {
-            cell("Deload Week",
-                 "20 normal sessions then 3 recent at 50% volume — tests deload detection & feedback") {
-                apply("Deload Week", deloadScenario())
-            }
-            cell("Plateau Zone (4 weeks stagnant)",
-                 "24 sessions, weights stuck for last 4 weeks — tests plateau/hold feedback") {
-                apply("Plateau Zone", plateauScenario())
-            }
-            cell("Single Exercise — Bench Only",
-                 "30 sessions of only bench press — tests single-exercise analytics & insights") {
-                apply("Bench Only", benchOnlyScenario())
-            }
-        } header: { Text("Edge Cases") }
-        .foregroundStyle(HONTheme.accent)
-    }
-
-    // MARK: - Cell Builder
-
-    private func cell(_ title: String, _ description: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            VStack(alignment: .leading, spacing: 3) {
-                Text(title).foregroundStyle(HONTheme.accent)
-                Text(description).font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-            }
-            .padding(.vertical, 2)
         }
-        .buttonStyle(.plain)
     }
 
-    // MARK: - Apply
+    // MARK: Apply
 
-    private func apply(_ name: String, _ log: [WorkoutLogEntry]) {
+    private func apply(_ index: Int) {
+        let s   = catalogue[index]
+        let log = buildLog(for: index)
+        cycleIndex   = index
+        lastApplied  = s.name
         store.injectUATScenario(log)
-        lastApplied = name
+        if s.needsHON {
+            habitEngine.resetForDebug()
+            habitEngine.simulateLog(entries: log)
+        }
     }
 }
 
-// MARK: - Scenario Generators
+// MARK: - Log Builder (index → data)
 
 private extension UATScenarioView {
-
-    // MARK: Data Helpers
-
-    func ex(_ name: String) -> Exercise {
-        store.exercises.first { $0.name == name } ?? store.exercises[0]
+    // swiftlint:disable cyclomatic_complexity
+    func buildLog(for i: Int) -> [WorkoutLogEntry] {
+        switch i {
+        case 0:  return []
+        case 1:  return feedbackAddWeight()
+        case 2:  return feedbackStandardProgression()
+        case 3:  return feedbackAlmostReady()
+        case 4:  return feedbackDeload()
+        case 5:  return feedbackStruggling()
+        case 6:  return honLog(count: 1,  span: 0)
+        case 7:  return honLog(count: 10, span: 29)
+        case 8:  return honLog(count: 25, span: 72)
+        case 9:  return honLapse(days: 14)
+        case 10: return honLapse(days: 30)
+        case 11: return honTypeA()
+        case 12: return honRamp()
+        case 13: return honDrift()
+        case 14: return honConsecutiveWeeks(12)
+        case 15: return honDeload()
+        case 16: return strengthTier(bench: 50,  squat: 65,  dead: 80,  ohp: 35)
+        case 17: return strengthTier(bench: 70,  squat: 95,  dead: 120, ohp: 47)
+        case 18: return strengthTier(bench: 90,  squat: 125, dead: 160, ohp: 60)
+        case 19: return strengthTier(bench: 120, squat: 165, dead: 210, ohp: 80)
+        case 20: return strengthTier(bench: 160, squat: 220, dead: 280, ohp: 105)
+        case 21: return strengthTierMixed()
+        case 22: return patternBalanced()
+        case 23: return patternPushHeavy()
+        case 24: return patternPullHeavy()
+        case 25: return patternLegDominant()
+        case 26: return patternNoLegs()
+        case 27: return patternIsolationOnly()
+        case 28: return patternCompoundOnly()
+        case 29: return equipmentOnly(.barbell)
+        case 30: return equipmentOnly(.dumbbell)
+        case 31: return equipmentOnly(.machine)
+        case 32: return equipmentOnly(.bodyweight)
+        case 33: return equipmentFull()
+        case 34: return personaPowerlifter()
+        case 35: return personaBodybuilder()
+        case 36: return personaBeginner()
+        case 37: return personaElite()
+        case 38: return personaSporadic()
+        case 39: return personaComeback()
+        default: return []
+        }
     }
+    // swiftlint:enable cyclomatic_complexity
+}
 
-    func set(_ weight: Double, reps: Int, targetReps: Int = 0, at date: Date? = nil) -> SetRecord {
-        var s = SetRecord(weight: weight, reps: reps, targetWeight: weight,
-                          targetReps: targetReps > 0 ? targetReps : reps)
-        s.isCompleted = true
-        s.completedAt = date
+// MARK: - Data Helpers
+
+private extension UATScenarioView {
+    func ex(_ name: String) -> Exercise { store.exercises.first { $0.name == name } ?? store.exercises[0] }
+
+    func cset(_ w: Double, _ r: Int, target: Int = 0, at t: Date? = nil) -> SetRecord {
+        var s = SetRecord(weight: w, reps: r, targetWeight: w, targetReps: target > 0 ? target : r)
+        s.isCompleted = true; s.completedAt = t
         return s
     }
 
-    func workEx(_ exercise: Exercise, weight: Double, reps: [Int], targetReps: Int = 0, base: Date) -> WorkoutExercise {
-        let sets = reps.enumerated().map { i, r in
-            set(weight, reps: r, targetReps: targetReps > 0 ? targetReps : r,
-                at: base.addingTimeInterval(Double(i) * 180))
-        }
-        return WorkoutExercise(exercise: exercise, sets: sets)
+    func wex(_ exercise: Exercise, w: Double, reps: [Int], target: Int = 0, base: Date) -> WorkoutExercise {
+        WorkoutExercise(exercise: exercise,
+                        sets: reps.enumerated().map { i, r in
+                            cset(w, r, target: target > 0 ? target : r, at: base.addingTimeInterval(Double(i) * 180))
+                        })
     }
 
-    func entry(daysAgo: Int, exercises: [WorkoutExercise], minutes: Int = 60, name: String = "Strength Workout") -> WorkoutLogEntry {
-        let start = Date().addingTimeInterval(-Double(daysAgo) * 86_400)
-        var e = WorkoutLogEntry(startedAt: start, exercises: exercises)
-        e.finishedAt = start.addingTimeInterval(Double(minutes) * 60)
+    func entry(_ daysAgo: Int, _ exs: [WorkoutExercise], min: Int = 60, name: String = "Strength Workout") -> WorkoutLogEntry {
+        let start = Date.ago(daysAgo)
+        var e = WorkoutLogEntry(startedAt: start, exercises: exs)
+        e.finishedAt = start.addingTimeInterval(Double(min) * 60)
         e.name = name
         return e
     }
+}
 
-    // MARK: 1 — Empty
+// MARK: - A · Feedback Engine
 
-    func emptyScenario() -> [WorkoutLogEntry] { [] }
-
-    // MARK: 2 — First Workout Today
-
-    func firstWorkoutScenario() -> [WorkoutLogEntry] {
-        let base = Date().addingTimeInterval(-35 * 60)
+private extension UATScenarioView {
+    func feedbackAddWeight() -> [WorkoutLogEntry] {
+        let bench = ex("Barbell Bench Press"), ohp = ex("Overhead Press")
+        let squat = ex("Barbell Squat"),       dead = ex("Deadlift"), row = ex("Barbell Row")
         return [
-            entry(daysAgo: 0, exercises: [
-                workEx(ex("Barbell Bench Press"), weight: 60, reps: [5,5,5], targetReps: 5, base: base),
-                workEx(ex("Overhead Press"),      weight: 40, reps: [8,8,8], targetReps: 8, base: base.addingTimeInterval(720)),
-            ], minutes: 35, name: "Push Day")
+            entry(14, [wex(bench, w:90, reps:[5,5,5,5], target:5, base:.ago(14)),
+                       wex(ohp,   w:57.5, reps:[8,8,8], target:8, base:.ago(14,900)),
+                       wex(row,   w:75,   reps:[8,8,8], target:8, base:.ago(14,1800)),
+                       wex(squat, w:120,  reps:[5,5,5,5],target:5,base:.ago(14,2700)),
+                       wex(dead,  w:160,  reps:[5,5,5],  target:5,base:.ago(14,3600))]),
+            entry(3,  [wex(bench, w:90, reps:[6,6,6,6], target:5, base:.ago(3)),       // exceeded → Add Weight
+                       wex(ohp,   w:57.5, reps:[8,8,8], target:8, base:.ago(3,900)),
+                       wex(row,   w:75,   reps:[8,8,8], target:8, base:.ago(3,1800)),
+                       wex(squat, w:120,  reps:[5,5,5,5],target:5,base:.ago(3,2700)),
+                       wex(dead,  w:160,  reps:[5,5,5],  target:5,base:.ago(3,3600))]),
         ]
     }
 
-    // MARK: 3 — Week 1
-
-    func week1Scenario() -> [WorkoutLogEntry] {
-        [
-            entry(daysAgo: 5, exercises: [
-                workEx(ex("Barbell Bench Press"), weight: 60,  reps: [5,5,5],   targetReps: 5, base: .ago(days: 5)),
-                workEx(ex("Overhead Press"),      weight: 40,  reps: [8,8,8],   targetReps: 8, base: .ago(days: 5, offset: 720)),
-            ], minutes: 35, name: "Push Day"),
-            entry(daysAgo: 3, exercises: [
-                workEx(ex("Barbell Squat"),        weight: 80,  reps: [5,5,5],   targetReps: 5, base: .ago(days: 3)),
-                workEx(ex("Deadlift"),             weight: 100, reps: [5,5,5],   targetReps: 5, base: .ago(days: 3, offset: 900)),
-            ], minutes: 40, name: "Leg Day"),
-            entry(daysAgo: 0, exercises: [
-                workEx(ex("Barbell Bench Press"), weight: 62.5, reps: [5,5,5],  targetReps: 5, base: .ago(days: 0)),
-                workEx(ex("Barbell Row"),          weight: 60,  reps: [8,8,8],   targetReps: 8, base: .ago(days: 0, offset: 720)),
-            ], minutes: 38, name: "Push / Pull"),
+    func feedbackStandardProgression() -> [WorkoutLogEntry] {
+        let bench = ex("Barbell Bench Press"), ohp = ex("Overhead Press"), squat = ex("Barbell Squat")
+        return [
+            entry(14, [wex(bench, w:90, reps:[5,5,5,5], target:5, base:.ago(14)),
+                       wex(ohp,   w:57.5, reps:[8,8,8], target:8, base:.ago(14,900)),
+                       wex(squat, w:120,  reps:[5,5,5,5],target:5,base:.ago(14,1800))]),
+            entry(7,  [wex(bench, w:90, reps:[5,5,5,5], target:5, base:.ago(7)),
+                       wex(ohp,   w:57.5, reps:[8,8,8], target:8, base:.ago(7,900)),   // clean #1
+                       wex(squat, w:120,  reps:[5,5,5,5],target:5,base:.ago(7,1800))]),
+            entry(3,  [wex(bench, w:90, reps:[5,5,5,5], target:5, base:.ago(3)),
+                       wex(ohp,   w:57.5, reps:[8,8,8], target:8, base:.ago(3,900)),   // clean #2 → Standard Progression
+                       wex(squat, w:120,  reps:[5,5,5,5],target:5,base:.ago(3,1800))]),
         ]
     }
 
-    // MARK: 4 — 1 Month Consistent
-
-    func oneMonthScenario() -> [WorkoutLogEntry] {
-        // 12 sessions over 28 days, every ~2-3 days, alternating A/B
-        let schedule: [(daysAgo: Int, isA: Bool)] = [
-            (28,true),(26,false),(23,true),(21,false),
-            (18,true),(16,false),(13,true),(11,false),
-            (8,true),(6,false),(3,true),(1,false)
+    func feedbackAlmostReady() -> [WorkoutLogEntry] {
+        let bench = ex("Barbell Bench Press"), row = ex("Barbell Row")
+        return [
+            entry(21, [wex(bench, w:87.5, reps:[5,5,5,5], target:5, base:.ago(21)),
+                       wex(row,   w:70,   reps:[8,8,8],   target:8, base:.ago(21,900))]),
+            entry(14, [wex(bench, w:87.5, reps:[5,5,5,5], target:5, base:.ago(14)),
+                       wex(row,   w:70,   reps:[8,8,6],   target:8, base:.ago(14,900))]),  // missed set
+            entry(7,  [wex(bench, w:87.5, reps:[5,5,5,5], target:5, base:.ago(7)),
+                       wex(row,   w:70,   reps:[8,7,7],   target:8, base:.ago(7,900))]),   // still off
+            entry(3,  [wex(bench, w:87.5, reps:[5,5,5,5], target:5, base:.ago(3)),
+                       wex(row,   w:70,   reps:[8,8,8],   target:8, base:.ago(3,900))]),   // clean today, avg score 60-71 → Almost Ready
         ]
-        return schedule.enumerated().map { idx, s in
-            let week   = idx / 2
-            let bw     = 60.0  + Double(week) * 2.5
-            let ohpW   = 40.0  + Double(week) * 1.25
-            let rowW   = 60.0  + Double(week) * 2.5
-            let sqW    = 80.0  + Double(week) * 2.5
-            let dlW    = 100.0 + Double(week) * 5.0
-            let base   = Date.ago(days: s.daysAgo)
-            if s.isA {
-                return entry(daysAgo: s.daysAgo, exercises: [
-                    workEx(ex("Barbell Bench Press"), weight: bw,   reps: [5,5,5,5], targetReps: 5, base: base),
-                    workEx(ex("Overhead Press"),      weight: ohpW, reps: [8,8,8],   targetReps: 8, base: base.addingTimeInterval(900)),
-                    workEx(ex("Barbell Row"),          weight: rowW, reps: [8,8,8],   targetReps: 8, base: base.addingTimeInterval(1800)),
-                ], minutes: 55, name: "Push/Pull A")
-            } else {
-                return entry(daysAgo: s.daysAgo, exercises: [
-                    workEx(ex("Barbell Squat"), weight: sqW, reps: [5,5,5,5], targetReps: 5, base: base),
-                    workEx(ex("Deadlift"),      weight: dlW, reps: [5,5,5],   targetReps: 5, base: base.addingTimeInterval(1200)),
-                ], minutes: 45, name: "Leg Day B")
-            }
+    }
+
+    func feedbackDeload() -> [WorkoutLogEntry] {
+        let bench = ex("Barbell Bench Press"), dead = ex("Deadlift"), squat = ex("Barbell Squat")
+        return [
+            entry(42, [wex(bench, w:90, reps:[5,5,5,5], target:5, base:.ago(42)),
+                       wex(dead,  w:160, reps:[5,5,5,5],target:5, base:.ago(42,1200)),
+                       wex(squat, w:120, reps:[5,5,5,5],target:5, base:.ago(42,2400))]),
+            entry(28, [wex(bench, w:90, reps:[5,5,5,5],   target:5, base:.ago(28)),
+                       wex(dead,  w:162.5, reps:[5,4,3,3],target:5, base:.ago(28,1200)),   // struggle #1
+                       wex(squat, w:120, reps:[5,5,5,5],  target:5, base:.ago(28,2400))]),
+            entry(14, [wex(bench, w:90, reps:[5,5,5,5],   target:5, base:.ago(14)),
+                       wex(dead,  w:160, reps:[5,4,3,3],  target:5, base:.ago(14,1200)),   // struggle #2 → Deload
+                       wex(squat, w:120, reps:[5,5,5,5],  target:5, base:.ago(14,2400))]),
+            entry(3,  [wex(bench, w:90, reps:[5,5,5,5],   target:5, base:.ago(3)),
+                       wex(dead,  w:157.5, reps:[5,4,3,3],target:5, base:.ago(3,1200)),
+                       wex(squat, w:120, reps:[5,5,5,5],  target:5, base:.ago(3,2400))]),
+        ]
+    }
+
+    func feedbackStruggling() -> [WorkoutLogEntry] {
+        let bench = ex("Barbell Bench Press"), squat = ex("Barbell Squat")
+        return [
+            entry(21, [wex(bench, w:90, reps:[5,5,5,5],   target:5, base:.ago(21)),
+                       wex(squat, w:120, reps:[5,5,5,5],  target:5, base:.ago(21,1200))]),
+            entry(14, [wex(bench, w:90, reps:[5,5,5,5],   target:5, base:.ago(14)),
+                       wex(squat, w:120, reps:[5,5,5,5],  target:5, base:.ago(14,1200))]),
+            entry(7,  [wex(bench, w:90, reps:[5,5,5,5],   target:5, base:.ago(7)),
+                       wex(squat, w:120, reps:[5,5,5,5],  target:5, base:.ago(7,1200))]),
+            entry(2,  [wex(bench, w:92.5, reps:[5,5,5,5], target:5, base:.ago(2)),
+                       wex(squat, w:122.5, reps:[5,5,4,3],target:5, base:.ago(2,1200))]), // first struggle
+        ]
+    }
+}
+
+// MARK: - B · HON Messages
+
+private extension UATScenarioView {
+    func honEntry(_ daysAgo: Int, vol: Double = 2400) -> WorkoutLogEntry {
+        let bench = ex("Barbell Bench Press")
+        return entry(max(0, daysAgo),
+                     [wex(bench, w: vol / 24, reps: [8,8,8], target: 8, base: .ago(max(0,daysAgo)))],
+                     min: 45, name: "Workout")
+    }
+
+    func honLog(count: Int, span: Int) -> [WorkoutLogEntry] {
+        let step = span > 0 ? span / max(count - 1, 1) : 0
+        return (0..<count).map { i in honEntry(span - i * step) }
+    }
+
+    func honLapse(days: Int) -> [WorkoutLogEntry] {
+        let cutoff = Date().addingTimeInterval(-Double(days) * 86_400)
+        var log = (0..<15).map { i in honEntry(89 - i * 4) }.filter { $0.startedAt < cutoff }
+        log.append(honEntry(0))
+        return log
+    }
+
+    func honTypeA() -> [WorkoutLogEntry] {
+        var log: [WorkoutLogEntry] = []
+        for week in 0..<12 {
+            for off in [0, 2, 4] { log.append(honEntry((11 - week) * 7 + (6 - off))) }
+        }
+        return log
+    }
+
+    func honRamp() -> [WorkoutLogEntry] {
+        var log = (0..<20).map { i in honEntry(59 - i * 3) }
+        (0..<6).forEach { i in log.append(honEntry(i)) }
+        return log
+    }
+
+    func honDrift() -> [WorkoutLogEntry] {
+        let cutoff = Date().addingTimeInterval(-21 * 86_400)
+        let history = (0..<25).map { i in honEntry(89 - i * 3) }.filter { $0.startedAt < cutoff }
+        return history + [honEntry(14)]
+    }
+
+    func honConsecutiveWeeks(_ n: Int) -> [WorkoutLogEntry] {
+        (0..<n).map { w in honEntry((n - 1 - w) * 7 + 2) }
+    }
+
+    func honDeload() -> [WorkoutLogEntry] {
+        var log = (0..<20).map { i in honEntry(56 - i * 3) }
+        log.append(honEntry(0, vol: 200))
+        return log
+    }
+}
+
+// MARK: - C · Strength Tiers
+
+private extension UATScenarioView {
+    func strengthTier(bench bw: Double, squat sw: Double, dead dw: Double, ohp ow: Double) -> [WorkoutLogEntry] {
+        let b = ex("Barbell Bench Press"), s = ex("Barbell Squat")
+        let d = ex("Deadlift"), o = ex("Overhead Press"), r = ex("Barbell Row")
+        return (0..<12).map { i in
+            let da = (11 - i) * 7
+            return entry(da, [wex(b, w:bw,       reps:[5,5,5,5], target:5, base:.ago(da)),
+                              wex(s, w:sw,        reps:[5,5,5,5], target:5, base:.ago(da,900)),
+                              wex(d, w:dw,        reps:[5,5,5],   target:5, base:.ago(da,1800)),
+                              wex(o, w:ow,        reps:[8,8,8],   target:8, base:.ago(da,2700)),
+                              wex(r, w:bw * 0.85, reps:[8,8,8],   target:8, base:.ago(da,3600))])
         }
     }
 
-    // MARK: 5 — 3 Months Progression
-
-    func threeMonthScenario() -> [WorkoutLogEntry] {
-        var entries: [WorkoutLogEntry] = []
-        // 36 sessions over 90 days, every ~2.5 days average
-        let sessionCount = 36
-        for i in 0..<sessionCount {
-            let daysAgo = Int(Double(sessionCount - 1 - i) * 2.5)
-            let week    = i / 3
-            let isA     = i % 2 == 0
-
-            // Weight increases every 2 weeks (~8 sessions)
-            let progression = Double(week) / 2.0   // 0, 0.5, 1.0, ...
-            let bw  = 60.0  + progression * 5.0    // 60→90 over 3 months
-            let ohpW = 40.0 + progression * 2.5    // 40→55
-            let sqW  = 80.0 + progression * 7.5    // 80→120
-            let dlW  = 100.0 + progression * 10.0  // 100→160
-            let rowW = 60.0  + progression * 5.0   // 60→90
-            let base = Date.ago(days: daysAgo)
-
-            if isA {
-                entries.append(entry(daysAgo: daysAgo, exercises: [
-                    workEx(ex("Barbell Bench Press"), weight: bw,   reps: [5,5,5,5], targetReps: 5, base: base),
-                    workEx(ex("Overhead Press"),      weight: ohpW, reps: [8,8,8],   targetReps: 8, base: base.addingTimeInterval(900)),
-                    workEx(ex("Barbell Row"),          weight: rowW, reps: [8,8,8],   targetReps: 8, base: base.addingTimeInterval(1800)),
-                ], minutes: 55, name: "Push / Pull"))
-            } else {
-                entries.append(entry(daysAgo: daysAgo, exercises: [
-                    workEx(ex("Barbell Squat"), weight: sqW, reps: [5,5,5,5], targetReps: 5, base: base),
-                    workEx(ex("Deadlift"),      weight: dlW, reps: [5,5,5],   targetReps: 5, base: base.addingTimeInterval(1200)),
-                ], minutes: 50, name: "Legs"))
-            }
+    func strengthTierMixed() -> [WorkoutLogEntry] {
+        let bench = ex("Barbell Bench Press"), squat = ex("Barbell Squat")
+        let dead  = ex("Deadlift"),            curl  = ex("Dumbbell Curl"), lp = ex("Leg Press")
+        return (0..<12).map { i in
+            let da = (11 - i) * 7
+            return entry(da, [wex(bench, w:130, reps:[5,5,5,5],  target:5,  base:.ago(da)),       // advanced
+                              wex(squat, w:80,  reps:[5,5,5,5],  target:5,  base:.ago(da,900)),   // beginner
+                              wex(dead,  w:200, reps:[5,5,5],    target:5,  base:.ago(da,1800)),  // elite
+                              wex(curl,  w:10,  reps:[12,12,12], target:12, base:.ago(da,2700)),  // beginner
+                              wex(lp,    w:250, reps:[10,10,10], target:10, base:.ago(da,3600))]) // intermediate
         }
-        return entries
     }
+}
 
-    // MARK: 6 — 6 Months Full Analytics
+// MARK: - D · Pattern Balance
 
-    func sixMonthScenario() -> [WorkoutLogEntry] {
-        var entries: [WorkoutLogEntry] = []
-        let sessionCount = 72
-        for i in 0..<sessionCount {
-            let daysAgo    = Int(Double(sessionCount - 1 - i) * 2.5)
-            let week       = i / 3
-            let sessionMod = i % 3   // 0 = push, 1 = pull/legs, 2 = arms/shoulders
-
-            let prog = Double(week) / 3.0
-            let bw   = 70.0  + prog * 25.0    // 70→95
-            let ohpW = 45.0  + prog * 15.0    // 45→60
-            let sqW  = 90.0  + prog * 35.0    // 90→125
-            let dlW  = 120.0 + prog * 40.0    // 120→160
-            let rowW = 65.0  + prog * 25.0    // 65→90
-            let lpdW = 55.0  + prog * 20.0    // 55→75
-            let dbpW = 30.0  + prog * 10.0    // 30→40 per hand
-            let lgpW = 120.0 + prog * 60.0    // 120→180 (leg press)
-            let base = Date.ago(days: daysAgo)
-
-            switch sessionMod {
-            case 0: // Push
-                entries.append(entry(daysAgo: daysAgo, exercises: [
-                    workEx(ex("Barbell Bench Press"),    weight: bw,   reps: [5,5,5,5], targetReps: 5, base: base),
-                    workEx(ex("Incline Barbell Press"),  weight: bw * 0.85, reps: [6,6,6], targetReps: 6, base: base.addingTimeInterval(900)),
-                    workEx(ex("Overhead Press"),         weight: ohpW, reps: [8,8,8],   targetReps: 8, base: base.addingTimeInterval(1800)),
-                    workEx(ex("Dumbbell Fly"),           weight: 20.0, reps: [12,12,12], targetReps: 12, base: base.addingTimeInterval(2700)),
-                ], minutes: 65, name: "Push Day"))
-            case 1: // Pull + Legs
-                entries.append(entry(daysAgo: daysAgo, exercises: [
-                    workEx(ex("Barbell Squat"),    weight: sqW,  reps: [5,5,5,5], targetReps: 5, base: base),
-                    workEx(ex("Deadlift"),         weight: dlW,  reps: [5,5,4],   targetReps: 5, base: base.addingTimeInterval(1200)),
-                    workEx(ex("Barbell Row"),      weight: rowW, reps: [8,8,8],   targetReps: 8, base: base.addingTimeInterval(2400)),
-                    workEx(ex("Lat Pulldown"),     weight: lpdW, reps: [10,10,10], targetReps: 10, base: base.addingTimeInterval(3300)),
-                ], minutes: 70, name: "Pull / Legs"))
-            default: // Arms + Shoulders
-                entries.append(entry(daysAgo: daysAgo, exercises: [
-                    workEx(ex("Dumbbell Shoulder Press"), weight: dbpW, reps: [10,10,10], targetReps: 10, base: base),
-                    workEx(ex("Lateral Raise"),           weight: 12,   reps: [15,15,15], targetReps: 15, base: base.addingTimeInterval(600)),
-                    workEx(ex("Dumbbell Curl"),           weight: 16,   reps: [12,12,12], targetReps: 12, base: base.addingTimeInterval(1200)),
-                    workEx(ex("Tricep Pushdown"),         weight: 40,   reps: [12,12,12], targetReps: 12, base: base.addingTimeInterval(1800)),
-                    workEx(ex("Leg Press"),               weight: lgpW, reps: [12,12,12], targetReps: 12, base: base.addingTimeInterval(2400)),
-                ], minutes: 60, name: "Arms / Shoulders"))
-            }
-        }
-        return entries
-    }
-
-    // MARK: 7 — Upper/Lower Varied Split
-
-    func variedSplitScenario() -> [WorkoutLogEntry] {
-        var entries: [WorkoutLogEntry] = []
-        for i in 0..<30 {
-            let daysAgo = Int(Double(29 - i) * 3.0)
-            let prog    = Double(i) / 29.0
-            let base    = Date.ago(days: daysAgo)
-            let isUpper = i % 2 == 0
-
-            if isUpper {
-                entries.append(entry(daysAgo: daysAgo, exercises: [
-                    workEx(ex("Barbell Bench Press"),   weight: 75.0 + prog*10, reps: [6,6,6,6],   targetReps: 6, base: base),
-                    workEx(ex("Dumbbell Bench Press"),  weight: 32.0 + prog*5,  reps: [10,10,10],  targetReps: 10, base: base.addingTimeInterval(900)),
-                    workEx(ex("Seated Cable Row"),      weight: 65.0 + prog*10, reps: [10,10,10],  targetReps: 10, base: base.addingTimeInterval(1800)),
-                    workEx(ex("Dumbbell Shoulder Press"),weight: 22.0 + prog*4, reps: [12,12,12],  targetReps: 12, base: base.addingTimeInterval(2700)),
-                    workEx(ex("Lateral Raise"),         weight: 10.0 + prog*3,  reps: [15,15,15],  targetReps: 15, base: base.addingTimeInterval(3300)),
-                    workEx(ex("Cable Curl"),            weight: 35.0 + prog*5,  reps: [12,12,12],  targetReps: 12, base: base.addingTimeInterval(3900)),
-                    workEx(ex("Rope Pushdown"),         weight: 30.0 + prog*5,  reps: [12,12,12],  targetReps: 12, base: base.addingTimeInterval(4500)),
-                ], minutes: 75, name: "Upper Body"))
-            } else {
-                entries.append(entry(daysAgo: daysAgo, exercises: [
-                    workEx(ex("Barbell Squat"),        weight: 95.0 + prog*15,  reps: [6,6,6,6],  targetReps: 6,  base: base),
-                    workEx(ex("Romanian Deadlift"),    weight: 85.0 + prog*10,  reps: [10,10,10], targetReps: 10, base: base.addingTimeInterval(1200)),
-                    workEx(ex("Leg Press"),            weight: 140.0 + prog*20, reps: [12,12,12], targetReps: 12, base: base.addingTimeInterval(2100)),
-                    workEx(ex("Leg Extension"),        weight: 55.0 + prog*10,  reps: [15,15,15], targetReps: 15, base: base.addingTimeInterval(2700)),
-                    workEx(ex("Leg Curl"),             weight: 45.0 + prog*8,   reps: [15,15,15], targetReps: 15, base: base.addingTimeInterval(3300)),
-                    workEx(ex("Standing Calf Raise"),  weight: 60.0 + prog*10,  reps: [20,20,20], targetReps: 20, base: base.addingTimeInterval(3900)),
-                ], minutes: 70, name: "Lower Body"))
-            }
-        }
-        return entries
-    }
-
-    // MARK: 8 — Return After Break
-
-    func returningScenario(daysGone: Int) -> [WorkoutLogEntry] {
-        var entries: [WorkoutLogEntry] = []
-        // 40 workouts before the gap
-        let historyStart = daysGone + 120
-        for i in 0..<40 {
-            let daysAgo = historyStart - Int(Double(i) * 3.0)
-            guard daysAgo > daysGone else { break }
-            let prog    = Double(i) / 39.0
-            let bw      = 80.0 + prog * 12.0
-            let sqW     = 100.0 + prog * 20.0
-            let dlW     = 130.0 + prog * 25.0
-            let base    = Date.ago(days: daysAgo)
-            if i % 2 == 0 {
-                entries.append(entry(daysAgo: daysAgo, exercises: [
-                    workEx(ex("Barbell Bench Press"), weight: bw,  reps: [5,5,5,5], targetReps: 5, base: base),
-                    workEx(ex("Overhead Press"),      weight: 52,  reps: [8,8,8],   targetReps: 8, base: base.addingTimeInterval(900)),
-                    workEx(ex("Barbell Row"),          weight: 75,  reps: [8,8,8],   targetReps: 8, base: base.addingTimeInterval(1800)),
-                ], minutes: 55, name: "Push / Pull"))
-            } else {
-                entries.append(entry(daysAgo: daysAgo, exercises: [
-                    workEx(ex("Barbell Squat"), weight: sqW, reps: [5,5,5,5], targetReps: 5, base: base),
-                    workEx(ex("Deadlift"),      weight: dlW, reps: [5,5,5],   targetReps: 5, base: base.addingTimeInterval(1200)),
-                ], minutes: 45, name: "Legs"))
-            }
-        }
-        // 1 comeback workout today — lighter weights after the break
-        let comebackBase = Date.ago(days: 0)
-        entries.append(entry(daysAgo: 0, exercises: [
-            workEx(ex("Barbell Bench Press"), weight: 77.5, reps: [5,5,5,4], targetReps: 5, base: comebackBase),
-            workEx(ex("Barbell Squat"),       weight: 90,   reps: [5,5,5,5], targetReps: 5, base: comebackBase.addingTimeInterval(900)),
-            workEx(ex("Overhead Press"),      weight: 47.5, reps: [8,8,7],   targetReps: 8, base: comebackBase.addingTimeInterval(1800)),
-        ], minutes: 50, name: "Back At It"))
-        return entries
-    }
-
-    // MARK: 9 — Sporadic Lifter
-
-    func sporadicScenario() -> [WorkoutLogEntry] {
-        // Irregular days — some weeks 2-3 sessions, then 2-3 week gaps
-        let daysAgo = [88, 85, 72, 69, 67, 52, 49, 35, 33, 30, 17, 15, 11, 8, 6, 4, 2, 1]
-        return daysAgo.enumerated().map { i, d in
-            let base = Date.ago(days: d)
-            return entry(daysAgo: d, exercises: [
-                workEx(ex("Barbell Bench Press"), weight: 70.0 + Double(i) * 0.5, reps: [5,5,5], targetReps: 5, base: base),
-                workEx(ex("Barbell Squat"),       weight: 90.0 + Double(i) * 0.5, reps: [5,5,5], targetReps: 5, base: base.addingTimeInterval(900)),
-            ], minutes: 40, name: "Workout")
+private extension UATScenarioView {
+    func patternBalanced() -> [WorkoutLogEntry] {
+        // All 7 movement patterns in every session
+        let bench = ex("Barbell Bench Press"),     ohp   = ex("Overhead Press")
+        let row   = ex("Barbell Row"),             pull  = ex("Lat Pulldown")
+        let dead  = ex("Deadlift"),                squat = ex("Barbell Squat")
+        let curl  = ex("Dumbbell Curl")
+        return (0..<12).map { i in
+            let da = (11 - i) * 5
+            return entry(da, [wex(bench, w:85,  reps:[6,6,6],    target:6,  base:.ago(da)),
+                              wex(ohp,   w:55,  reps:[8,8,8],    target:8,  base:.ago(da,900)),
+                              wex(row,   w:75,  reps:[8,8,8],    target:8,  base:.ago(da,1800)),
+                              wex(pull,  w:65,  reps:[10,10,10], target:10, base:.ago(da,2700)),
+                              wex(dead,  w:150, reps:[5,5,5],    target:5,  base:.ago(da,3600)),
+                              wex(squat, w:120, reps:[5,5,5],    target:5,  base:.ago(da,4500)),
+                              wex(curl,  w:18,  reps:[12,12,12], target:12, base:.ago(da,5400))],
+                         min: 80, name: "Full Body")
         }
     }
 
-    // MARK: 10 — Short Sessions Only
-
-    func shortSessionsScenario() -> [WorkoutLogEntry] {
-        return (0..<20).map { i in
-            let daysAgo = (19 - i) * 4
-            let base    = Date.ago(days: daysAgo)
-            let prog    = Double(i) / 19.0
-            return entry(daysAgo: daysAgo, exercises: [
-                workEx(ex("Barbell Bench Press"), weight: 60.0 + prog * 10, reps: [5,5],    targetReps: 5, base: base),
-                workEx(ex("Barbell Squat"),       weight: 80.0 + prog * 15, reps: [5,5],    targetReps: 5, base: base.addingTimeInterval(600)),
-                workEx(ex("Deadlift"),            weight: 100.0 + prog * 20, reps: [3,3],   targetReps: 5, base: base.addingTimeInterval(1200)),
-            ], minutes: 18, name: "Quick Session")
+    func patternPushHeavy() -> [WorkoutLogEntry] {
+        let bench   = ex("Barbell Bench Press"), incline = ex("Incline Barbell Press")
+        let ohp     = ex("Overhead Press"),      dbOhp   = ex("Dumbbell Shoulder Press")
+        let dip     = ex("Dip")
+        return (0..<12).map { i in
+            let da = (11 - i) * 5
+            return entry(da, [wex(bench,   w:90, reps:[5,5,5,5],  target:5,  base:.ago(da)),
+                              wex(incline, w:75, reps:[6,6,6],    target:6,  base:.ago(da,900)),
+                              wex(ohp,     w:60, reps:[8,8,8],    target:8,  base:.ago(da,1800)),
+                              wex(dbOhp,   w:28, reps:[10,10,10], target:10, base:.ago(da,2700)),
+                              wex(dip,     w:20, reps:[12,12,12], target:12, base:.ago(da,3600))],
+                         name: "Push Day")
         }
     }
 
-    // MARK: 11 — Marathon Sessions
-
-    func marathonSessionsScenario() -> [WorkoutLogEntry] {
-        return (0..<20).map { i in
-            let daysAgo = (19 - i) * 4
-            let base    = Date.ago(days: daysAgo)
-            let prog    = Double(i) / 19.0
-            return entry(daysAgo: daysAgo, exercises: [
-                workEx(ex("Barbell Bench Press"),     weight: 80.0 + prog*10,  reps: [5,5,5,5,5],   targetReps: 5,  base: base),
-                workEx(ex("Incline Barbell Press"),   weight: 65.0 + prog*8,   reps: [6,6,6,6],      targetReps: 6,  base: base.addingTimeInterval(1200)),
-                workEx(ex("Overhead Press"),          weight: 50.0 + prog*7,   reps: [8,8,8,8],      targetReps: 8,  base: base.addingTimeInterval(2400)),
-                workEx(ex("Barbell Row"),             weight: 75.0 + prog*10,  reps: [8,8,8,8],      targetReps: 8,  base: base.addingTimeInterval(3600)),
-                workEx(ex("Lat Pulldown"),            weight: 65.0 + prog*8,   reps: [10,10,10,10],  targetReps: 10, base: base.addingTimeInterval(4800)),
-                workEx(ex("Barbell Squat"),           weight: 100.0 + prog*15, reps: [5,5,5,5],      targetReps: 5,  base: base.addingTimeInterval(6000)),
-                workEx(ex("Romanian Deadlift"),       weight: 90.0 + prog*12,  reps: [10,10,10],     targetReps: 10, base: base.addingTimeInterval(7200)),
-                workEx(ex("Dumbbell Curl"),           weight: 18.0 + prog*3,   reps: [12,12,12],     targetReps: 12, base: base.addingTimeInterval(8100)),
-                workEx(ex("Tricep Pushdown"),         weight: 40.0 + prog*5,   reps: [12,12,12],     targetReps: 12, base: base.addingTimeInterval(8700)),
-                workEx(ex("Lateral Raise"),           weight: 12.0 + prog*2,   reps: [15,15,15],     targetReps: 15, base: base.addingTimeInterval(9300)),
-            ], minutes: Int(95 + prog * 20), name: "Full Body Marathon")
+    func patternPullHeavy() -> [WorkoutLogEntry] {
+        let dead = ex("Deadlift"),         row  = ex("Barbell Row"),       pullUp = ex("Pull-Up")
+        let lpd  = ex("Lat Pulldown"),     cable = ex("Seated Cable Row"), face   = ex("Face Pull")
+        return (0..<12).map { i in
+            let da = (11 - i) * 5
+            return entry(da, [wex(dead,   w:150, reps:[5,5,5],    target:5,  base:.ago(da)),
+                              wex(row,    w:80,  reps:[8,8,8],    target:8,  base:.ago(da,900)),
+                              wex(pullUp, w:0,   reps:[8,8,8],    target:8,  base:.ago(da,1800)),
+                              wex(lpd,    w:70,  reps:[10,10,10], target:10, base:.ago(da,2700)),
+                              wex(cable,  w:65,  reps:[12,12,12], target:12, base:.ago(da,3600)),
+                              wex(face,   w:30,  reps:[15,15,15], target:15, base:.ago(da,4500))],
+                         name: "Pull Day")
         }
     }
 
-    // MARK: 12 — Deload Week
-
-    func deloadScenario() -> [WorkoutLogEntry] {
-        var entries: [WorkoutLogEntry] = []
-        // 20 normal sessions over 60 days
-        for i in 0..<20 {
-            let daysAgo = (19 - i) * 3 + 7
-            let prog    = Double(i) / 19.0
-            let bw      = 80.0 + prog * 10.0
-            let sqW     = 100.0 + prog * 15.0
-            let base    = Date.ago(days: daysAgo)
-            if i % 2 == 0 {
-                entries.append(entry(daysAgo: daysAgo, exercises: [
-                    workEx(ex("Barbell Bench Press"), weight: bw,  reps: [5,5,5,5], targetReps: 5, base: base),
-                    workEx(ex("Overhead Press"),      weight: 52,  reps: [8,8,8],   targetReps: 8, base: base.addingTimeInterval(900)),
-                ], minutes: 55))
-            } else {
-                entries.append(entry(daysAgo: daysAgo, exercises: [
-                    workEx(ex("Barbell Squat"), weight: sqW, reps: [5,5,5,5], targetReps: 5, base: base),
-                    workEx(ex("Deadlift"),      weight: 140, reps: [5,5,5],   targetReps: 5, base: base.addingTimeInterval(1200)),
-                ], minutes: 45))
-            }
+    func patternLegDominant() -> [WorkoutLogEntry] {
+        let squat = ex("Barbell Squat"),     dead = ex("Deadlift"),  rdl = ex("Romanian Deadlift")
+        let lp    = ex("Leg Press"),         lcurl = ex("Leg Curl"), lext = ex("Leg Extension")
+        return (0..<12).map { i in
+            let da = (11 - i) * 5
+            return entry(da, [wex(squat, w:130, reps:[5,5,5,5],  target:5,  base:.ago(da)),
+                              wex(dead,  w:170, reps:[5,5,5],    target:5,  base:.ago(da,1200)),
+                              wex(rdl,   w:100, reps:[10,10,10], target:10, base:.ago(da,2400)),
+                              wex(lp,    w:200, reps:[12,12,12], target:12, base:.ago(da,3300)),
+                              wex(lcurl, w:50,  reps:[15,15,15], target:15, base:.ago(da,4200)),
+                              wex(lext,  w:60,  reps:[15,15,15], target:15, base:.ago(da,5100))],
+                         min: 75, name: "Leg Day")
         }
-        // Deload sessions: last 3 days at ~50% volume
-        let deloadWeights: [(bench: Double, sq: Double)] = [(45, 55), (47.5, 57.5), (50, 60)]
-        for (i, dw) in deloadWeights.enumerated() {
-            let daysAgo = (2 - i)
-            let base    = Date.ago(days: daysAgo)
-            entries.append(entry(daysAgo: daysAgo, exercises: [
-                workEx(ex("Barbell Bench Press"), weight: dw.bench, reps: [5,5,5], targetReps: 5, base: base),
-                workEx(ex("Barbell Squat"),       weight: dw.sq,   reps: [5,5,5], targetReps: 5, base: base.addingTimeInterval(900)),
-            ], minutes: 35, name: "Deload"))
-        }
-        return entries
     }
 
-    // MARK: 13 — Plateau Zone
-
-    func plateauScenario() -> [WorkoutLogEntry] {
-        var entries: [WorkoutLogEntry] = []
-        // 20 sessions with progression, then 8 sessions with no increase
-        for i in 0..<28 {
-            let daysAgo = (27 - i) * 3
-            let isPlateauPhase = i >= 20
-            let prog    = isPlateauPhase ? 1.0 : Double(i) / 19.0
-            let bw      = 80.0 + prog * 10.0   // plateaus at 90 for last 8 sessions
-            let sqW     = 100.0 + prog * 15.0  // plateaus at 115
-            let base    = Date.ago(days: daysAgo)
-            if i % 2 == 0 {
-                entries.append(entry(daysAgo: daysAgo, exercises: [
-                    workEx(ex("Barbell Bench Press"), weight: bw,  reps: [5,5,5,5], targetReps: 5, base: base),
-                    workEx(ex("Overhead Press"),      weight: 55,  reps: [8,8,8],   targetReps: 8, base: base.addingTimeInterval(900)),
-                ], minutes: 55))
-            } else {
-                entries.append(entry(daysAgo: daysAgo, exercises: [
-                    workEx(ex("Barbell Squat"), weight: sqW, reps: [5,5,5,5], targetReps: 5, base: base),
-                    workEx(ex("Deadlift"),      weight: 140, reps: [5,5,5],   targetReps: 5, base: base.addingTimeInterval(1200)),
-                ], minutes: 45))
-            }
+    func patternNoLegs() -> [WorkoutLogEntry] {
+        let bench = ex("Barbell Bench Press"), ohp = ex("Overhead Press")
+        let row   = ex("Barbell Row"),         pull = ex("Lat Pulldown")
+        let curl  = ex("Dumbbell Curl"),        tri  = ex("Tricep Pushdown")
+        return (0..<12).map { i in
+            let da = (11 - i) * 5
+            return entry(da, [wex(bench, w:90, reps:[5,5,5,5],  target:5,  base:.ago(da)),
+                              wex(ohp,   w:60, reps:[8,8,8],    target:8,  base:.ago(da,900)),
+                              wex(row,   w:80, reps:[8,8,8],    target:8,  base:.ago(da,1800)),
+                              wex(pull,  w:70, reps:[10,10,10], target:10, base:.ago(da,2700)),
+                              wex(curl,  w:18, reps:[12,12,12], target:12, base:.ago(da,3600)),
+                              wex(tri,   w:40, reps:[12,12,12], target:12, base:.ago(da,4500))],
+                         name: "Upper Body")
         }
-        return entries
     }
 
-    // MARK: 14 — Bench Only
-
-    func benchOnlyScenario() -> [WorkoutLogEntry] {
-        return (0..<30).map { i in
-            let daysAgo = (29 - i) * 3
-            let prog    = Double(i) / 29.0
-            let bw      = 60.0 + prog * 30.0   // 60→90 over 30 sessions
-            let base    = Date.ago(days: daysAgo)
-            return entry(daysAgo: daysAgo, exercises: [
-                workEx(ex("Barbell Bench Press"), weight: bw, reps: [5,5,5,5,5], targetReps: 5, base: base),
-            ], minutes: 25, name: "Bench Only")
+    func patternIsolationOnly() -> [WorkoutLogEntry] {
+        let curl  = ex("Dumbbell Curl"),    tri   = ex("Tricep Pushdown")
+        let lat   = ex("Lateral Raise"),    fly   = ex("Dumbbell Fly")
+        let lcurl = ex("Leg Curl"),          lext  = ex("Leg Extension")
+        return (0..<12).map { i in
+            let da = (11 - i) * 5
+            return entry(da, [wex(curl,  w:16, reps:[15,15,15], target:15, base:.ago(da)),
+                              wex(tri,   w:35, reps:[15,15,15], target:15, base:.ago(da,600)),
+                              wex(lat,   w:10, reps:[15,15,15], target:15, base:.ago(da,1200)),
+                              wex(fly,   w:16, reps:[12,12,12], target:12, base:.ago(da,1800)),
+                              wex(lcurl, w:45, reps:[15,15,15], target:15, base:.ago(da,2400)),
+                              wex(lext,  w:50, reps:[15,15,15], target:15, base:.ago(da,3000))],
+                         min: 50, name: "Isolation Day")
         }
+    }
+
+    func patternCompoundOnly() -> [WorkoutLogEntry] {
+        let bench = ex("Barbell Bench Press"), ohp  = ex("Overhead Press"), squat = ex("Barbell Squat")
+        let dead  = ex("Deadlift"),            row  = ex("Barbell Row"),    pull  = ex("Pull-Up")
+        let rdl   = ex("Romanian Deadlift")
+        return (0..<12).map { i in
+            let da = (11 - i) * 5
+            return entry(da, [wex(bench, w:90,  reps:[5,5,5,5], target:5, base:.ago(da)),
+                              wex(ohp,   w:60,  reps:[5,5,5],   target:5, base:.ago(da,900)),
+                              wex(squat, w:125, reps:[5,5,5,5], target:5, base:.ago(da,1800)),
+                              wex(dead,  w:160, reps:[5,5,5],   target:5, base:.ago(da,2700)),
+                              wex(row,   w:80,  reps:[5,5,5],   target:5, base:.ago(da,3600)),
+                              wex(pull,  w:0,   reps:[8,8,8],   target:8, base:.ago(da,4500)),
+                              wex(rdl,   w:100, reps:[8,8,8],   target:8, base:.ago(da,5400))],
+                         min: 80, name: "Compound Day")
+        }
+    }
+}
+
+// MARK: - E · Equipment Mix
+
+private extension UATScenarioView {
+    func equipmentOnly(_ equipment: Equipment) -> [WorkoutLogEntry] {
+        let pool = store.exercises.filter { $0.equipment == equipment }.prefix(5)
+        guard !pool.isEmpty else { return [] }
+        return (0..<12).map { i in
+            let da = (11 - i) * 6
+            return entry(da, pool.enumerated().map { j, ex in
+                wex(ex, w: 80, reps: [8,8,8], target: 8, base: .ago(da, Double(j) * 900))
+            })
+        }
+    }
+
+    func equipmentFull() -> [WorkoutLogEntry] {
+        let bb  = ex("Barbell Bench Press"),  db   = ex("Dumbbell Curl")
+        let cbl = ex("Seated Cable Row"),     mch  = ex("Leg Press")
+        let bw  = ex("Pull-Up"),              kb   = ex("Goblet Squat")
+        return (0..<12).map { i in
+            let da = (11 - i) * 6
+            return entry(da, [wex(bb,  w:85,  reps:[5,5,5,5],  target:5,  base:.ago(da)),
+                              wex(db,  w:16,  reps:[12,12,12], target:12, base:.ago(da,900)),
+                              wex(cbl, w:65,  reps:[10,10,10], target:10, base:.ago(da,1800)),
+                              wex(mch, w:150, reps:[12,12,12], target:12, base:.ago(da,2700)),
+                              wex(bw,  w:0,   reps:[8,8,8],    target:8,  base:.ago(da,3600)),
+                              wex(kb,  w:24,  reps:[12,12,12], target:12, base:.ago(da,4500))],
+                         min: 70, name: "Full Mix")
+        }
+    }
+}
+
+// MARK: - F · Personas
+
+private extension UATScenarioView {
+    func personaPowerlifter() -> [WorkoutLogEntry] {
+        let bench = ex("Barbell Bench Press"), squat = ex("Barbell Squat")
+        let dead  = ex("Deadlift"),            ohp   = ex("Overhead Press")
+        return (0..<24).map { i in
+            let da   = (23 - i) * 7
+            let prog = Double(i) / 23.0
+            return entry(da, [wex(bench, w:120+prog*20, reps:[3,3,3,3,3], target:3, base:.ago(da)),
+                              wex(squat, w:160+prog*25, reps:[3,3,3,3,3], target:3, base:.ago(da,1200)),
+                              wex(dead,  w:200+prog*30, reps:[2,2,2],     target:2, base:.ago(da,2400)),
+                              wex(ohp,   w:80+prog*10,  reps:[5,5,5],     target:5, base:.ago(da,3300))],
+                         min: 90, name: "Powerlifting")
+        }
+    }
+
+    func personaBodybuilder() -> [WorkoutLogEntry] {
+        let bench = ex("Barbell Bench Press"),  incline = ex("Incline Dumbbell Press")
+        let fly   = ex("Cable Fly"),             pull    = ex("Lat Pulldown")
+        let row   = ex("Seated Cable Row"),      curl    = ex("Dumbbell Curl")
+        let tri   = ex("Rope Pushdown"),          lat     = ex("Lateral Raise")
+        let lp    = ex("Leg Press"),              lcurl   = ex("Leg Curl")
+        return (0..<36).map { i in
+            let da   = (35 - i) * 5
+            let p    = Double(i) / 35.0
+            return entry(da, [wex(bench,   w:80+p*10,  reps:[10,10,10,10], target:10, base:.ago(da)),
+                              wex(incline,  w:26+p*5,   reps:[12,12,12],    target:12, base:.ago(da,900)),
+                              wex(fly,      w:40+p*5,   reps:[15,15,15],    target:15, base:.ago(da,1800)),
+                              wex(pull,     w:60+p*10,  reps:[12,12,12],    target:12, base:.ago(da,2700)),
+                              wex(row,      w:55+p*10,  reps:[12,12,12],    target:12, base:.ago(da,3600)),
+                              wex(curl,     w:14+p*4,   reps:[15,15,15],    target:15, base:.ago(da,4500)),
+                              wex(tri,      w:35+p*5,   reps:[15,15,15],    target:15, base:.ago(da,5400)),
+                              wex(lat,      w:10+p*3,   reps:[20,20,20],    target:20, base:.ago(da,6300)),
+                              wex(lp,       w:140+p*20, reps:[12,12,12],    target:12, base:.ago(da,7200)),
+                              wex(lcurl,    w:50+p*8,   reps:[15,15,15],    target:15, base:.ago(da,8100))],
+                         min: Int(90 + p*15), name: "Body Split")
+        }
+    }
+
+    func personaBeginner() -> [WorkoutLogEntry] {
+        let bench = ex("Barbell Bench Press"), squat = ex("Barbell Squat"), dead = ex("Deadlift")
+        return (0..<6).map { i in
+            let da = (5 - i) * 4; let p = Double(i) / 5.0
+            return entry(da, [wex(bench, w:40+p*5, reps:[5,5,5], target:5, base:.ago(da)),
+                              wex(squat, w:60+p*5, reps:[5,5,5], target:5, base:.ago(da,900)),
+                              wex(dead,  w:80+p*5, reps:[5,5,5], target:5, base:.ago(da,1800))],
+                         min: 35, name: "Beginner Workout")
+        }
+    }
+
+    func personaElite() -> [WorkoutLogEntry] {
+        let bench = ex("Barbell Bench Press"), squat = ex("Barbell Squat"), dead = ex("Deadlift")
+        let ohp   = ex("Overhead Press"),      row   = ex("Barbell Row"),   pull = ex("Pull-Up")
+        let rdl   = ex("Romanian Deadlift")
+        return (0..<52).map { i in
+            let da = (51 - i) * 7
+            return entry(da, [wex(bench, w:155, reps:[3,3,3,3], target:3, base:.ago(da)),
+                              wex(squat, w:210, reps:[3,3,3,3], target:3, base:.ago(da,1200)),
+                              wex(dead,  w:270, reps:[3,3,3],   target:3, base:.ago(da,2400)),
+                              wex(ohp,   w:100, reps:[5,5,5],   target:5, base:.ago(da,3300)),
+                              wex(row,   w:120, reps:[5,5,5],   target:5, base:.ago(da,4200)),
+                              wex(pull,  w:40,  reps:[8,8,8],   target:8, base:.ago(da,5100)),
+                              wex(rdl,   w:150, reps:[6,6,6],   target:6, base:.ago(da,6000))],
+                         min: 100, name: "Elite Training")
+        }
+    }
+
+    func personaSporadic() -> [WorkoutLogEntry] {
+        let bench = ex("Barbell Bench Press"), squat = ex("Barbell Squat")
+        let days  = [88,85,72,69,67,52,49,46,35,33,28,17,15,8,6,3]
+        return days.enumerated().map { i, da in
+            let p = Double(i) / Double(days.count - 1)
+            return entry(da, [wex(bench, w:70+p*5, reps:[5,5,5], target:5, base:.ago(da)),
+                              wex(squat, w:90+p*5, reps:[5,5,5], target:5, base:.ago(da,900))],
+                         min: 40)
+        }
+    }
+
+    func personaComeback() -> [WorkoutLogEntry] {
+        let bench = ex("Barbell Bench Press"), squat = ex("Barbell Squat"), dead = ex("Deadlift")
+        var log = (0..<20).map { i -> WorkoutLogEntry in
+            let da = 160 - i * 6; let p = Double(i) / 19.0
+            return entry(da, [wex(bench, w:85+p*10,  reps:[5,5,5,5], target:5, base:.ago(da)),
+                              wex(squat, w:110+p*15, reps:[5,5,5,5], target:5, base:.ago(da,1200)),
+                              wex(dead,  w:140+p*20, reps:[5,5,5],   target:5, base:.ago(da,2400))],
+                         min: 60)
+        }
+        log.append(entry(0, [wex(bench, w:80,  reps:[5,5,5,4], target:5, base:.ago(0)),
+                             wex(squat, w:100, reps:[5,5,5,5], target:5, base:.ago(0,1200)),
+                             wex(dead,  w:130, reps:[5,5,5],   target:5, base:.ago(0,2400))],
+                         min: 55, name: "Back At It"))
+        return log
     }
 }
 
 // MARK: - Date Helper
 
 private extension Date {
-    static func ago(days: Int, offset: TimeInterval = 0) -> Date {
-        Date().addingTimeInterval(-Double(days) * 86_400 + offset)
+    static func ago(_ days: Int, _ offsetSec: Double = 0) -> Date {
+        Date().addingTimeInterval(-Double(days) * 86_400 + offsetSec)
     }
 }
 
