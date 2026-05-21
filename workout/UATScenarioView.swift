@@ -73,6 +73,14 @@ private func buildCatalogue() -> [UATScenario] { [
     .init(name: "Streak · 30-Day",           category: "I · Streaks", hint: "Progress → 30-day streak; HON streak-celebration banner", needsHON: true),
     .init(name: "Streak · Just Broken",      category: "I · Streaks", hint: "Progress → streak = 0; 14-day run ended 2 days ago — verify reset state"),
     .init(name: "Streak · Veteran, Lapsed",  category: "I · Streaks", hint: "Progress → 40 sessions over 6 months, nothing for 3 weeks; streak 0, strong history"),
+    // J — Volume / intensity extremes
+    .init(name: "Volume · Mega Session",     category: "J · Volume Extremes", hint: "History → 10 exercises × 5 sets (50 sets/session); scroll + render stress"),
+    .init(name: "Volume · Micro Session",    category: "J · Volume Extremes", hint: "History → 1 exercise, 2 sets per session; minimum meaningful log entry"),
+    .init(name: "Volume · Deload Week",      category: "J · Volume Extremes", hint: "Home: last 3 sessions at 50% weight — feedback card should acknowledge deload"),
+    // K — Progression arcs
+    .init(name: "Arc · Linear PR Run",       category: "K · Progression Arcs", hint: "Lab: 8-week steady weight climb — strength score rising, trend positive"),
+    .init(name: "Arc · Injury Return",       category: "K · Progression Arcs", hint: "Lab: strong build → weights crash to 60% → 6-week rebuild; V-shape trend"),
+    .init(name: "Arc · Stall → Breakthrough",category: "K · Progression Arcs", hint: "Home: 4-week plateau at same weights, then one big PR session today"),
 ] }
 
 // MARK: - View
@@ -260,6 +268,12 @@ private extension UATScenarioView {
         case 49: return streak30Days()
         case 50: return streakJustBroken()
         case 51: return streakVeteranLapsed()
+        case 52: return volumeMegaSession()
+        case 53: return volumeMicroSession()
+        case 54: return volumeDeloadWeek()
+        case 55: return arcLinearPR()
+        case 56: return arcInjuryReturn()
+        case 57: return arcStallBreakthrough()
         default: return []
         }
     }
@@ -918,6 +932,120 @@ private extension UATScenarioView {
                               wex(dead,  w:145, reps:[5,5,5],   target:5, base:.ago(da, 2400))],
                          min: 65)
         }
+    }
+}
+
+// MARK: - J · Volume Extremes
+
+private extension UATScenarioView {
+    func volumeMegaSession() -> [WorkoutLogEntry] {
+        let bench  = ex("Barbell Bench Press"), incline = ex("Incline Barbell Press")
+        let ohp    = ex("Overhead Press"),      dip     = ex("Dip")
+        let row    = ex("Barbell Row"),          pull    = ex("Lat Pulldown")
+        let cable  = ex("Seated Cable Row"),     pullUp  = ex("Pull-Up")
+        let squat  = ex("Barbell Squat"),        lp      = ex("Leg Press")
+        return (0..<8).map { i in
+            let da = (7 - i) * 7
+            return entry(da, [wex(bench,   w:85,  reps:[8,8,8,8,8],     target:8,  base:.ago(da)),
+                              wex(incline, w:70,  reps:[10,10,10,10,10], target:10, base:.ago(da, 1000)),
+                              wex(ohp,     w:55,  reps:[8,8,8,8,8],     target:8,  base:.ago(da, 2000)),
+                              wex(dip,     w:15,  reps:[12,12,12,12,12], target:12, base:.ago(da, 3000)),
+                              wex(row,     w:75,  reps:[8,8,8,8,8],     target:8,  base:.ago(da, 4000)),
+                              wex(pull,    w:65,  reps:[10,10,10,10,10], target:10, base:.ago(da, 5000)),
+                              wex(cable,   w:60,  reps:[12,12,12,12,12], target:12, base:.ago(da, 6000)),
+                              wex(pullUp,  w:0,   reps:[8,8,8,8,8],     target:8,  base:.ago(da, 7000)),
+                              wex(squat,   w:110, reps:[8,8,8,8,8],     target:8,  base:.ago(da, 8000)),
+                              wex(lp,      w:160, reps:[12,12,12,12,12], target:12, base:.ago(da, 9000))],
+                         min: 130, name: "Volume Mega Session")
+        }
+    }
+
+    func volumeMicroSession() -> [WorkoutLogEntry] {
+        let bench = ex("Barbell Bench Press")
+        return (0..<8).map { i in
+            let da = (7 - i) * 7
+            return entry(da, [wex(bench, w:80, reps:[5,5], target:5, base:.ago(da))],
+                         min: 15, name: "Quick Session")
+        }
+    }
+
+    func volumeDeloadWeek() -> [WorkoutLogEntry] {
+        let bench = ex("Barbell Bench Press"), squat = ex("Barbell Squat")
+        let dead  = ex("Deadlift"),            ohp   = ex("Overhead Press"), row = ex("Barbell Row")
+        var log = (0..<8).map { i -> WorkoutLogEntry in
+            let da = (8 - i) * 7; let p = Double(i) / 7.0
+            return entry(da, [wex(bench, w:88 + p * 5,  reps:[5,5,5,5], target:5, base:.ago(da)),
+                              wex(squat, w:118 + p * 8, reps:[5,5,5,5], target:5, base:.ago(da, 1200)),
+                              wex(dead,  w:148 + p * 10,reps:[5,5,5],   target:5, base:.ago(da, 2400)),
+                              wex(ohp,   w:59 + p * 3,  reps:[8,8,8],   target:8, base:.ago(da, 3300)),
+                              wex(row,   w:74 + p * 5,  reps:[8,8,8],   target:8, base:.ago(da, 4200))],
+                         min: 70)
+        }
+        for da in [4, 2, 0] {
+            log.append(entry(da, [wex(bench, w:47.5, reps:[5,5,5], target:5, base:.ago(da)),
+                                  wex(squat, w:60,   reps:[5,5,5], target:5, base:.ago(da, 1200)),
+                                  wex(dead,  w:75,   reps:[5,5,5], target:5, base:.ago(da, 2400))],
+                             min: 40, name: "Deload"))
+        }
+        return log.sorted { $0.startedAt > $1.startedAt }
+    }
+}
+
+// MARK: - K · Progression Arcs
+
+private extension UATScenarioView {
+    func arcLinearPR() -> [WorkoutLogEntry] {
+        let bench = ex("Barbell Bench Press"), squat = ex("Barbell Squat")
+        let dead  = ex("Deadlift"),            ohp   = ex("Overhead Press")
+        // 24 sessions over 8 weeks — weight climbs every session
+        return (0..<24).map { i in
+            let da = (23 - i) * 3
+            let p  = Double(i) / 23.0
+            return entry(da, [wex(bench, w:80  + p * 22.5, reps:[5,5,5,5], target:5, base:.ago(da)),
+                              wex(squat, w:100 + p * 32.5, reps:[5,5,5,5], target:5, base:.ago(da, 1200)),
+                              wex(dead,  w:130 + p * 35,   reps:[5,5,5],   target:5, base:.ago(da, 2400)),
+                              wex(ohp,   w:55  + p * 12.5, reps:[5,5,5],   target:5, base:.ago(da, 3300))],
+                         min: 70, name: "Strength")
+        }
+    }
+
+    func arcInjuryReturn() -> [WorkoutLogEntry] {
+        let bench = ex("Barbell Bench Press"), squat = ex("Barbell Squat"), dead = ex("Deadlift")
+        // Build-up: 12 sessions 84→29 days ago, peaking near 95/130/165
+        let buildUp: [WorkoutLogEntry] = (0..<12).map { i in
+            let da = 84 - i * 5; let p = Double(i) / 11.0
+            return entry(da, [wex(bench, w:75 + p * 20, reps:[5,5,5,5], target:5, base:.ago(da)),
+                              wex(squat, w:95 + p * 35, reps:[5,5,5,5], target:5, base:.ago(da, 1200)),
+                              wex(dead,  w:120 + p * 45, reps:[5,5,5],  target:5, base:.ago(da, 2400))],
+                         min: 65)
+        }
+        // Recovery: 6 sessions last 24 days, weights ~60% of peak, slowly rebuilding
+        let recovery: [WorkoutLogEntry] = (0..<6).map { i in
+            let da = 24 - i * 4; let p = Double(i) / 5.0
+            return entry(da, [wex(bench, w:57 + p * 15, reps:[5,5,5], target:5, base:.ago(da)),
+                              wex(squat, w:75 + p * 20, reps:[5,5,5], target:5, base:.ago(da, 1200)),
+                              wex(dead,  w:95 + p * 25, reps:[5,5,5], target:5, base:.ago(da, 2400))],
+                         min: 45, name: "Rehab — Strength")
+        }
+        return (buildUp + recovery).sorted { $0.startedAt > $1.startedAt }
+    }
+
+    func arcStallBreakthrough() -> [WorkoutLogEntry] {
+        let bench = ex("Barbell Bench Press"), ohp = ex("Overhead Press"), row = ex("Barbell Row")
+        // 4-week plateau: same weights, reps hit but never exceeded
+        let plateau: [WorkoutLogEntry] = (0..<12).map { i in
+            let da = 42 - i * 3
+            return entry(da, [wex(bench, w:95,   reps:[5,5,5,5], target:5, base:.ago(da)),
+                              wex(ohp,   w:62.5, reps:[8,8,8],   target:8, base:.ago(da, 900)),
+                              wex(row,   w:78,   reps:[8,8,8],   target:8, base:.ago(da, 1800))],
+                         min: 60)
+        }
+        // Breakthrough: heavier weight, all sets exceeded — triggers Add Weight signal
+        let breakthrough = entry(0, [wex(bench, w:100, reps:[5,5,5,6], target:5, base:.ago(0)),
+                                     wex(ohp,   w:65,  reps:[8,8,9,9], target:8, base:.ago(0, 900)),
+                                     wex(row,   w:80,  reps:[8,8,8,9], target:8, base:.ago(0, 1800))],
+                                 min: 60, name: "Breakthrough Session")
+        return ([breakthrough] + plateau).sorted { $0.startedAt > $1.startedAt }
     }
 }
 
