@@ -467,6 +467,9 @@ enum WorkoutFeedbackEngine {
         let avgRecentScore = recentScores.reduce(0, +) / Double(recentScores.count)
 
         let lastWeight = history.first?.sets.first?.weight ?? currentWeight
+        let daysSinceLast: Int? = history.first.map {
+            Calendar.current.dateComponents([.day], from: $0.date, to: Date()).day
+        }
         var points: [FeedbackPoint] = []
         var recommendation: String? = nil
 
@@ -509,6 +512,9 @@ enum WorkoutFeedbackEngine {
             if recommendation == nil {
                 if currentWeight > lastWeight + 0.1 {
                     recommendation = "Roll back \(name) to \(lastWeight.weightFormatted) kg — the jump was too much. Rebuild from there."
+                } else if consecutiveStruggle == 0, let gap = daysSinceLast, gap <= 5 {
+                    // Previous session was clean and the gap is short — likely accumulated fatigue, not a real decline
+                    recommendation = "Your last \(name) session was solid. Today's dip is probably fatigue — hold the weight and see how the next session feels before drawing conclusions."
                 } else {
                     recommendation = "Keep \(name) at \(currentWeight.weightFormatted) kg. Hit your reps before adding weight."
                 }
