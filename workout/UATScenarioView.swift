@@ -663,10 +663,20 @@ private extension UATScenarioView {
     func equipmentOnly(_ equipment: Equipment) -> [WorkoutLogEntry] {
         let pool = store.exercises.filter { $0.equipment == equipment }.prefix(5)
         guard !pool.isEmpty else { return [] }
+        // Use realistic per-equipment reference weights so strength tiers aren't inflated.
+        // Dumbbell w = per-hand; barbell/machine w = total loaded.
+        let refWeight: Double
+        switch equipment {
+        case .dumbbell:    refWeight = 25   // ~intermediate per-hand (e.g., 25 kg DB press)
+        case .barbell:     refWeight = 80   // ~intermediate total (80 kg bench)
+        case .machine:     refWeight = 60   // ~intermediate stack weight
+        case .kettlebell:  refWeight = 20   // standard 20 kg kettlebell
+        default:           refWeight = 40
+        }
         return (0..<12).map { i in
             let da = (11 - i) * 6
             return entry(da, pool.enumerated().map { j, ex in
-                wex(ex, w: 80, reps: [8,8,8], target: 8, base: .ago(da, Double(j) * 900))
+                wex(ex, w: refWeight, reps: [8,8,8], target: 8, base: .ago(da, Double(j) * 900))
             })
         }
     }
