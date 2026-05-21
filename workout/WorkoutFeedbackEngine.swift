@@ -466,6 +466,7 @@ enum WorkoutFeedbackEngine {
         let recentScores = ([current] + Array(pastQuality.prefix(2))).map(\.score)
         let avgRecentScore = recentScores.reduce(0, +) / Double(recentScores.count)
 
+        let lastWeight = history.first?.sets.first?.weight ?? currentWeight
         var points: [FeedbackPoint] = []
         var recommendation: String? = nil
 
@@ -506,7 +507,11 @@ enum WorkoutFeedbackEngine {
         else if current.isStruggling {
             points.append(.init(text: "\(name): only hit \(Int(current.repHitRate * 100))% of target reps.", type: .warning))
             if recommendation == nil {
-                recommendation = "Keep \(name) at \(currentWeight.weightFormatted) kg. Hit your reps before adding weight."
+                if currentWeight > lastWeight + 0.1 {
+                    recommendation = "Roll back \(name) to \(lastWeight.weightFormatted) kg — the jump was too much. Rebuild from there."
+                } else {
+                    recommendation = "Keep \(name) at \(currentWeight.weightFormatted) kg. Hit your reps before adding weight."
+                }
             }
         }
 
@@ -516,9 +521,8 @@ enum WorkoutFeedbackEngine {
         }
 
         // Weight increased and held
-        let lastWeight = history.first?.sets.first?.weight ?? currentWeight
         if currentWeight > lastWeight + 0.1 && current.repHitRate >= 0.85 && recommendation == nil {
-            points.append(.init(text: "\(name): up \(( currentWeight - lastWeight).weightFormatted) kg vs last session and hit your reps.", type: .positive))
+            points.append(.init(text: "\(name): up \((currentWeight - lastWeight).weightFormatted) kg vs last session and hit your reps.", type: .positive))
         }
 
         return .init(points: points, recommendation: recommendation)
