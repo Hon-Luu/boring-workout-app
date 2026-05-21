@@ -14,22 +14,22 @@ private struct UATScenario {
 private func buildCatalogue() -> [UATScenario] { [
     // A — Feedback Engine (Home card)
     .init(name: "Empty State",              category: "A · Feedback Engine", hint: "All tabs → empty-state illustrations"),
-    .init(name: "Add Weight Signal",         category: "A · Feedback Engine", hint: "Home → feedback card: bench shows 'Add weight NOW'"),
-    .init(name: "Standard Progression",      category: "A · Feedback Engine", hint: "Home → feedback card: OHP shows standard progression"),
-    .init(name: "Almost Ready to Progress",  category: "A · Feedback Engine", hint: "Home → feedback card: row shows 'Close but not ready'"),
+    .init(name: "Add Weight Signal",         category: "A · Feedback Engine", hint: "Home → bench card: 'Ready to go up' tag (exceeded reps last session)"),
+    .init(name: "Standard Progression",      category: "A · Feedback Engine", hint: "Home → OHP card: 'Ready to go up' tag (2+ consecutive clean sessions at target)"),
+    .init(name: "Almost Ready to Progress",  category: "A · Feedback Engine", hint: "Home → row card: 'Hold weight' tag; note shows 'One more solid session'"),
     .init(name: "Deload Recommended",        category: "A · Feedback Engine", hint: "Home → feedback card: deadlift shows deload advice"),
     .init(name: "Struggling — Hold Weight",  category: "A · Feedback Engine", hint: "Home → feedback card: squat shows 'Hold weight'"),
     // B — HON Messages
     .init(name: "HON · Session 1",           category: "B · HON Messages", hint: "Home: new-user welcome banner appears", needsHON: true),
     .init(name: "HON · Session 10",          category: "B · HON Messages", hint: "Home: '10 sessions' milestone banner", needsHON: true),
     .init(name: "HON · Session 25",          category: "B · HON Messages", hint: "Home: '25 sessions' milestone banner", needsHON: true),
-    .init(name: "HON · Return (14-day gap)", category: "B · HON Messages", hint: "Home: comeback message banner", needsHON: true),
-    .init(name: "HON · Return (30-day gap)", category: "B · HON Messages", hint: "Home: long-absence comeback banner", needsHON: true),
-    .init(name: "HON · Type A Pattern",      category: "B · HON Messages", hint: "Settings → HON Debug → Day Pattern: strong MWF bars", needsHON: true),
-    .init(name: "HON · Frequency Ramp",      category: "B · HON Messages", hint: "Home: high-frequency warning banner", needsHON: true),
-    .init(name: "HON · Drift Detected",      category: "B · HON Messages", hint: "Home: slowing-down warning banner", needsHON: true),
-    .init(name: "HON · 12 Consecutive Wks",  category: "B · HON Messages", hint: "Home: streak-celebration banner", needsHON: true),
-    .init(name: "HON · Deload Week",         category: "B · HON Messages", hint: "Home: deload-acknowledgment banner", needsHON: true),
+    .init(name: "HON · Return (14-day gap)", category: "B · HON Messages", hint: "Home: comeback banner (14-day absence → return message fires immediately)", needsHON: true),
+    .init(name: "HON · Return (30-day gap)", category: "B · HON Messages", hint: "Home: long-absence comeback banner (30-day gap, same trigger — compare message copy)", needsHON: true),
+    .init(name: "HON · Type A Pattern",      category: "B · HON Messages", hint: "Settings → HON Debug: strong day-probability bars; pattern banner fires if today matches dominant day", needsHON: true),
+    .init(name: "HON · Frequency Ramp",      category: "B · HON Messages", hint: "Home: high-frequency warning banner (6 sessions last 5 days vs 2/week rolling avg)", needsHON: true),
+    .init(name: "HON · Drift Detected",      category: "B · HON Messages", hint: "Navigate Home after applying — drift banner fires on next foreground (checkForDriftOrDeload, not simulateLog)", needsHON: true),
+    .init(name: "HON · 12 Consecutive Wks",  category: "B · HON Messages", hint: "Home: '12 consecutive active weeks' milestone banner", needsHON: true),
+    .init(name: "HON · Deload Week",         category: "B · HON Messages", hint: "Navigate Home after applying — deload banner fires on next foreground (checkForDriftOrDeload, not simulateLog)", needsHON: true),
     // C — Strength Tiers
     .init(name: "Tier · Beginner",           category: "C · Strength Tiers", hint: "Insights → Strength Score: beginner badge on all lifts"),
     .init(name: "Tier · Developing",         category: "C · Strength Tiers", hint: "Insights → Strength Score: developing/novice tier"),
@@ -49,7 +49,7 @@ private func buildCatalogue() -> [UATScenario] { [
     .init(name: "Equipment · All Barbell",   category: "E · Equipment Mix", hint: "History: all BB tags; Insights: barbell-only profile"),
     .init(name: "Equipment · All Dumbbell",  category: "E · Equipment Mix", hint: "History: all DB entries"),
     .init(name: "Equipment · All Machines",  category: "E · Equipment Mix", hint: "History: machine exercises throughout"),
-    .init(name: "Equipment · Bodyweight",    category: "E · Equipment Mix", hint: "History: all BW; no weight numbers > 0"),
+    .init(name: "Equipment · Bodyweight",    category: "E · Equipment Mix", hint: "History: Pull-Up / Dip at w=0; no e1RM in Lab (excluded when weight=0); History tab shows reps only"),
     .init(name: "Equipment · Full Mix",      category: "E · Equipment Mix", hint: "History: BB/DB/Cable/Machine/BW all present"),
     // F — Personas
     .init(name: "Persona · The Powerlifter", category: "F · Personas", hint: "Big 3 dominant; heavy + low-rep; advanced/elite tiers"),
@@ -60,23 +60,23 @@ private func buildCatalogue() -> [UATScenario] { [
     .init(name: "Persona · The Comeback",    category: "F · Personas", hint: "Strong history → 45-day gap → 1 workout today"),
     // G — Edge-case data states
     .init(name: "Edge · Single Workout",     category: "G · Edge Cases", hint: "All tabs → minimum data; 1 session only — check empty-ish states"),
-    .init(name: "Edge · Fully Decayed",      category: "G · Edge Cases", hint: "Lab → e1RM near 50% floor; readiness near zero; last session 3+ months ago"),
+    .init(name: "Edge · Fully Decayed",      category: "G · Edge Cases", hint: "Lab → e1RM at 50% floor (−0.7%/day × 84 days past grace); readiness ~46 (controlled zone, not zero — clamped at 20)"),
     .init(name: "Edge · Two-a-Day",          category: "G · Edge Cases", hint: "History → 2 entries today (AM + PM); verify streak and volume counting"),
     .init(name: "Edge · Mega Log (120)",     category: "G · Edge Cases", hint: "All tabs → 120 sessions over ~1 year; stress-tests list rendering and scroll"),
     // H — Special set types
-    .init(name: "Sets · All Drop Sets",      category: "H · Special Sets", hint: "Lab: dropWeight / dropReps fields active; narrative drop-set slot should fire"),
-    .init(name: "Sets · All To-Failure",     category: "H · Special Sets", hint: "Lab: toFailure flag set on every set; narrative 'To Failure' connective slot"),
-    .init(name: "Sets · High RPE (9)",       category: "H · Special Sets", hint: "Lab: RPE-adjusted e1RM path — scores differ from raw Epley at same weight"),
-    .init(name: "Sets · Mayhew Rep Range",   category: "H · Special Sets", hint: "Lab: 11-15 reps → Mayhew formula; sets >15 excluded from e1RM entirely"),
+    .init(name: "Sets · All Drop Sets",      category: "H · Special Sets", hint: "Lab: drop-adjusted e1RM (max of main / drop set); narrative slot only fires during active logging"),
+    .init(name: "Sets · All To-Failure",     category: "H · Special Sets", hint: "Lab: toFailure field stored on every set; 'To Failure' connective phrase only fires during active logging"),
+    .init(name: "Sets · High RPE (9)",       category: "H · Special Sets", hint: "Lab: Zourdos RPE-adjusted e1RM — higher than raw Epley at same weight; compare scores in Lab"),
+    .init(name: "Sets · Mayhew Rep Range",   category: "H · Special Sets", hint: "Lab: 11-20 reps → Mayhew formula (not Epley); all sets included in e1RM (no cutoff at 15)"),
     // I — Streak milestones
-    .init(name: "Streak · 7-Day",            category: "I · Streaks", hint: "Progress → 7-day streak counter; HON milestone banner may appear", needsHON: true),
-    .init(name: "Streak · 30-Day",           category: "I · Streaks", hint: "Progress → 30-day streak; HON streak-celebration banner", needsHON: true),
+    .init(name: "Streak · 7-Day",            category: "I · Streaks", hint: "Progress → 7-day streak counter; HON fires 'consecutive active weeks' or weekly count (not a day-streak banner)", needsHON: true),
+    .init(name: "Streak · 30-Day",           category: "I · Streaks", hint: "Progress → 30-day streak counter; HON fires '4 consecutive active weeks' milestone", needsHON: true),
     .init(name: "Streak · Just Broken",      category: "I · Streaks", hint: "Progress → streak = 0; 14-day run ended 2 days ago — verify reset state"),
     .init(name: "Streak · Veteran, Lapsed",  category: "I · Streaks", hint: "Progress → 40 sessions over 6 months, nothing for 3 weeks; streak 0, strong history"),
     // J — Volume / intensity extremes
     .init(name: "Volume · Mega Session",     category: "J · Volume Extremes", hint: "History → 10 exercises × 5 sets (50 sets/session); scroll + render stress"),
     .init(name: "Volume · Micro Session",    category: "J · Volume Extremes", hint: "History → 1 exercise, 2 sets per session; minimum meaningful log entry"),
-    .init(name: "Volume · Deload Week",      category: "J · Volume Extremes", hint: "Home: last 3 sessions at 50% weight — feedback card should acknowledge deload"),
+    .init(name: "Volume · Deload Week",      category: "J · Volume Extremes", hint: "Home: 3 light sessions this week — readiness +12 (today); HON deload fires on next foreground only"),
     // K — Progression arcs
     .init(name: "Arc · Linear PR Run",       category: "K · Progression Arcs", hint: "Lab: 8-week steady weight climb — strength score rising, trend positive"),
     .init(name: "Arc · Injury Return",       category: "K · Progression Arcs", hint: "Lab: strong build → weights crash to 60% → 6-week rebuild; V-shape trend"),
@@ -248,7 +248,7 @@ private extension UATScenarioView {
         case 29: return equipmentOnly(.barbell)
         case 30: return equipmentOnly(.dumbbell)
         case 31: return equipmentOnly(.machine)
-        case 32: return equipmentOnly(.bodyweight)
+        case 32: return equipmentBodyweight()
         case 33: return equipmentFull()
         case 34: return personaPowerlifter()
         case 35: return personaBodybuilder()
@@ -327,7 +327,7 @@ private extension UATScenarioView {
         return s
     }
 
-    func csetRPE(_ w: Double, _ r: Int, rpe: Int, at t: Date? = nil) -> SetRecord {
+    func csetRPE(_ w: Double, _ r: Int, rpe: Double, at t: Date? = nil) -> SetRecord {
         var s = SetRecord(weight: w, reps: r, targetWeight: w, targetReps: r)
         s.isCompleted = true; s.completedAt = t
         s.rpe = rpe
@@ -349,7 +349,7 @@ private extension UATScenarioView {
                         })
     }
 
-    func wexRPE(_ exercise: Exercise, w: Double, reps: [Int], rpe: Int, base: Date) -> WorkoutExercise {
+    func wexRPE(_ exercise: Exercise, w: Double, reps: [Int], rpe: Double, base: Date) -> WorkoutExercise {
         WorkoutExercise(exercise: exercise,
                         sets: reps.enumerated().map { i, r in
                             csetRPE(w, r, rpe: rpe, at: base.addingTimeInterval(Double(i) * 240))
@@ -393,16 +393,20 @@ private extension UATScenarioView {
     }
 
     func feedbackAlmostReady() -> [WorkoutLogEntry] {
+        // Row needs past sessions at repHitRate = 0.75 (stuck, not struggling) so consecutiveStruggle=0.
+        // With 4 sets target 8: [8,7,8,8] → 3/4 = 0.75 (isStuck, not isStruggling which needs < 0.75).
+        // That breaks consecutiveClean=1 so STANDARD PROGRESSION doesn't fire either.
+        // Result: CLOSE BUT NOT READY → hint kind = .hold, label "Hold weight", note = "One more solid session".
         let bench = ex("Barbell Bench Press"), row = ex("Barbell Row")
         return [
             entry(21, [wex(bench, w:87.5, reps:[5,5,5,5], target:5, base:.ago(21)),
-                       wex(row,   w:70,   reps:[8,8,8],   target:8, base:.ago(21,900))]),
+                       wex(row,   w:70,   reps:[8,8,8,8], target:8, base:.ago(21,900))]),
             entry(14, [wex(bench, w:87.5, reps:[5,5,5,5], target:5, base:.ago(14)),
-                       wex(row,   w:70,   reps:[8,8,6],   target:8, base:.ago(14,900))]),  // missed set
+                       wex(row,   w:70,   reps:[8,7,8,8], target:8, base:.ago(14,900))]),  // stuck (3/4 = 0.75)
             entry(7,  [wex(bench, w:87.5, reps:[5,5,5,5], target:5, base:.ago(7)),
-                       wex(row,   w:70,   reps:[8,7,7],   target:8, base:.ago(7,900))]),   // still off
+                       wex(row,   w:70,   reps:[8,8,7,8], target:8, base:.ago(7,900))]),   // stuck (3/4 = 0.75)
             entry(3,  [wex(bench, w:87.5, reps:[5,5,5,5], target:5, base:.ago(3)),
-                       wex(row,   w:70,   reps:[8,8,8],   target:8, base:.ago(3,900))]),   // clean today, avg score 60-71 → Almost Ready
+                       wex(row,   w:70,   reps:[8,8,8,8], target:8, base:.ago(3,900))]),   // clean → CLOSE BUT NOT READY
         ]
     }
 
@@ -455,9 +459,17 @@ private extension UATScenarioView {
     }
 
     func honLapse(days: Int) -> [WorkoutLogEntry] {
-        let cutoff = Date().addingTimeInterval(-Double(days) * 86_400)
-        var log = (0..<15).map { i in honEntry(89 - i * 4) }.filter { $0.startedAt < cutoff }
-        log.append(honEntry(0))
+        // Build history up to `days` days ago, then today — gap = exactly `days` days.
+        // Previous version filtered on cutoff date and both B3/B4 ended up with the same
+        // ~33-day most-recent session regardless of the `days` parameter.
+        var log: [WorkoutLogEntry] = []
+        var da = days + 60
+        while da > days {
+            log.append(honEntry(da))
+            da -= 4
+        }
+        log.append(honEntry(days))  // last historical session exactly `days` ago
+        log.append(honEntry(0))     // today — gap = `days` days
         return log
     }
 
@@ -470,7 +482,9 @@ private extension UATScenarioView {
     }
 
     func honRamp() -> [WorkoutLogEntry] {
-        var log = (0..<20).map { i in honEntry(59 - i * 3) }
+        // Prior history from 63→6 days ago (step 3 = ~2-3 sessions/week).
+        // Recent burst: 5 consecutive days ending today. No date overlap between batches.
+        var log = (0..<20).map { i in honEntry(6 + (19 - i) * 3) }
         (0..<6).forEach { i in log.append(honEntry(i)) }
         return log
     }
@@ -486,8 +500,12 @@ private extension UATScenarioView {
     }
 
     func honDeload() -> [WorkoutLogEntry] {
-        var log = (0..<20).map { i in honEntry(56 - i * 3) }
-        log.append(honEntry(0, vol: 200))
+        // Prior history from 63→3 days ago (i=19: 63-57=6... use step 3 starting at 63).
+        // honEntry(56-19*3) = honEntry(-1) → was clamped to day 0, creating a regular
+        // session today that cancelled the deload signal. Fixed: start at 63 so the
+        // most recent regular session is 3 days ago, leaving only the low-vol session today.
+        var log = (0..<20).map { i in honEntry(63 - i * 3) }  // 63→6 days ago
+        log.append(honEntry(0, vol: 200))                       // today: low-volume only
         return log
     }
 }
@@ -650,6 +668,20 @@ private extension UATScenarioView {
             return entry(da, pool.enumerated().map { j, ex in
                 wex(ex, w: 80, reps: [8,8,8], target: 8, base: .ago(da, Double(j) * 900))
             })
+        }
+    }
+
+    func equipmentBodyweight() -> [WorkoutLogEntry] {
+        // Bodyweight at w=0 — no e1RM computable (excluded by progressTrend guard).
+        // Tests History tab rep-only display and that Lab/Lab trend shows nothing for these exercises.
+        let pullUp = ex("Pull-Up"), dip = ex("Dip")
+        let pool = [pullUp, dip].filter { $0.equipment == .bodyweight }
+        guard !pool.isEmpty else { return [] }
+        return (0..<12).map { i in
+            let da = (11 - i) * 6
+            return entry(da, pool.enumerated().map { j, exercise in
+                wex(exercise, w: 0, reps: [10, 10, 8], target: 10, base: .ago(da, Double(j) * 900))
+            }, name: "Bodyweight Session")
         }
     }
 
@@ -861,10 +893,10 @@ private extension UATScenarioView {
         let dead  = ex("Deadlift"),            ohp   = ex("Overhead Press")
         return (0..<10).map { i in
             let da = (9 - i) * 7
-            return entry(da, [wexRPE(bench, w:105, reps:[3,3,3,3], rpe:9, base:.ago(da)),
-                              wexRPE(squat, w:140, reps:[3,3,3,3], rpe:9, base:.ago(da, 1200)),
-                              wexRPE(dead,  w:180, reps:[2,2,2],   rpe:9, base:.ago(da, 2400)),
-                              wexRPE(ohp,   w:72,  reps:[5,5,5],   rpe:8, base:.ago(da, 3300))],
+            return entry(da, [wexRPE(bench, w:105, reps:[3,3,3,3], rpe:9.0, base:.ago(da)),
+                              wexRPE(squat, w:140, reps:[3,3,3,3], rpe:9.0, base:.ago(da, 1200)),
+                              wexRPE(dead,  w:180, reps:[2,2,2],   rpe:9.0, base:.ago(da, 2400)),
+                              wexRPE(ohp,   w:72,  reps:[5,5,5],   rpe:8.0, base:.ago(da, 3300))],
                          min: 80, name: "Heavy Day (RPE 9)")
         }
     }
