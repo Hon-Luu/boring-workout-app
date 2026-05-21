@@ -284,8 +284,12 @@ enum StrengthScoreEngine {
                 let profile = activationProfile(for: we.exercise)
                 let activationWeight = profile.reduce(0.0) { $0 + $1.pctMVC * $1.muscle.pcsa }
                 let isBodyweight = we.exercise.equipment == .bodyweight
+                let isAssisted  = we.exercise.isAssistedCounterweight
                 for set in we.completedSets where set.reps > 0 {
-                    let setWeight = isBodyweight ? (bw ?? 0) : set.weight
+                    let setWeight: Double
+                    if isBodyweight    { setWeight = bw ?? 0 }
+                    else if isAssisted { setWeight = max(0, (bw ?? 0) - set.weight) }
+                    else               { setWeight = set.weight }
                     guard setWeight > 0 else { continue }
                     let rel = min(setWeight / refE1RM, 1.0)
                     sessionLoad += pow(rel, 1.8) * Double(set.reps) * activationWeight
@@ -310,6 +314,14 @@ enum StrengthScoreEngine {
             return we.completedSets
                 .filter { $0.reps > 0 && $0.reps <= 20 }
                 .map { SetRecord.e1RM(weight: bodyWt, reps: $0.reps) }
+                .max() ?? 0
+        }
+        // Assisted machines log the counterbalance weight; effective load = BW − assist.
+        // Higher assist = lighter work, so we look for the MINIMUM assist (hardest set).
+        if we.exercise.isAssistedCounterweight, let bodyWt = bw, bodyWt > 0 {
+            return we.completedSets
+                .filter { $0.reps > 0 && $0.reps <= 20 && $0.weight < bodyWt }
+                .map { SetRecord.e1RM(weight: bodyWt - $0.weight, reps: $0.reps) }
                 .max() ?? 0
         }
         return we.completedSets
@@ -750,8 +762,12 @@ enum StrengthScoreEngine {
                 let profile = activationProfile(for: we.exercise)
                 let aw = profile.reduce(0.0) { $0 + $1.pctMVC * $1.muscle.pcsa }
                 let isBodyweight = we.exercise.equipment == .bodyweight
+                let isAssisted  = we.exercise.isAssistedCounterweight
                 for set in we.completedSets where set.reps > 0 {
-                    let setWeight = isBodyweight ? (bw ?? 0) : set.weight
+                    let setWeight: Double
+                    if isBodyweight    { setWeight = bw ?? 0 }
+                    else if isAssisted { setWeight = max(0, (bw ?? 0) - set.weight) }
+                    else               { setWeight = set.weight }
                     guard setWeight > 0 else { continue }
                     let rel = min(setWeight / refE1RM, 1.0)
                     sessionLoads[group, default: 0] += pow(rel, 1.8) * Double(set.reps) * aw

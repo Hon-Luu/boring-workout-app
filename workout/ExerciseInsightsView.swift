@@ -245,18 +245,25 @@ struct ExerciseInsightDetailView: View {
     }
 
     private var dataPoints: [E1RMPoint] {
-        history.compactMap { session in
+        let bw = store.userProfile.bodyWeightKg
+        let assisted = exercise.isAssistedCounterweight
+        return history.compactMap { session in
             let completed = session.sets.filter { $0.isCompleted && $0.weight > 0 && $0.reps > 0 }
             guard !completed.isEmpty else { return nil }
-            let best = completed.max { epley($0) < epley($1) }!
-            let vol  = completed.reduce(0.0) { $0 + $1.weight * Double($1.reps) }
-            // Find the matching workout log entry by date proximity
+            // For assisted machines pick the set with the lowest assist (hardest = best effective load).
+            let best = assisted
+                ? (completed.min { $0.weight < $1.weight } ?? completed[0])
+                : completed.max { epley($0, bw: bw, assisted: false) < epley($1, bw: bw, assisted: false) }!
+            let vol = completed.reduce(0.0) {
+                let load = assisted ? max(0, (bw ?? 0) - $1.weight) : $1.weight
+                return $0 + load * Double($1.reps)
+            }
             let entry = store.workoutLog.first {
                 abs($0.startedAt.timeIntervalSince(session.date)) < 60
                     && $0.exercises.contains { $0.exercise.id == exercise.id }
             }
             return E1RMPoint(
-                date: session.date, e1RM: epley(best),
+                date: session.date, e1RM: epley(best, bw: bw, assisted: assisted),
                 bestWeight: best.weight, bestReps: best.reps,
                 volume: vol, setCount: completed.count,
                 entryId: entry?.id
@@ -264,8 +271,9 @@ struct ExerciseInsightDetailView: View {
         }
     }
 
-    private func epley(_ s: SetRecord) -> Double {
-        s.reps == 1 ? s.weight : s.weight * (1 + Double(s.reps) / 30.0)
+    private func epley(_ s: SetRecord, bw: Double?, assisted: Bool) -> Double {
+        let load = assisted ? max(0, (bw ?? 0) - s.weight) : s.weight
+        return s.reps == 1 ? load : load * (1 + Double(s.reps) / 30.0)
     }
 
     private func nextTierInfo(for rs: RelativeStrengthPoint) -> (label: String, multiplier: Double)? {

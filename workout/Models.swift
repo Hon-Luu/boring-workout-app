@@ -162,6 +162,12 @@ struct Exercise: Identifiable, Codable, Hashable {
         self.movementPattern = movementPattern
     }
 
+    // Machines where the logged weight is the counterbalance, not the load.
+    // Effective load = bodyweight − loggedWeight (higher assist → lighter work).
+    var isAssistedCounterweight: Bool {
+        name == "Assisted Pull-Up Machine" || name == "Assisted Dip Machine"
+    }
+
     enum CodingKeys: String, CodingKey {
         case id, name, bodyRegion, equipment, isCompound, movementPattern
     }

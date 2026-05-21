@@ -468,7 +468,7 @@ enum WorkoutFeedbackEngine {
 
         let lastWeight = history.first?.sets.first?.weight ?? currentWeight
         let daysSinceLast: Int? = history.first.map {
-            Calendar.current.dateComponents([.day], from: $0.date, to: Date()).day
+            Calendar.current.dateComponents([.day], from: $0.date, to: Date()).day ?? 0
         }
         var points: [FeedbackPoint] = []
         var recommendation: String? = nil
