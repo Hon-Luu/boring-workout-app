@@ -493,6 +493,7 @@ struct ExerciseSwapperView: View {
     @Environment(SeedStore.self) private var store
     @Environment(\.dismiss) private var dismiss
     @State private var selectedEquipment: Equipment? = nil
+    @State private var selectedRegion: BodyRegion? = nil
     @State private var swapForTemplate = false
 
     init(current: Exercise,
@@ -504,14 +505,9 @@ struct ExerciseSwapperView: View {
     }
 
     private var alternatives: [Exercise] {
-        let candidates: [Exercise]
-        if let groupNames = ExerciseEquivalenceMap.equivalentNames(for: current) {
-            let nameSet = Set(groupNames)
-            candidates = store.exercises.filter { nameSet.contains($0.name) && $0.id != current.id }
-        } else {
-            candidates = store.exercises.filter { $0.bodyRegion == current.bodyRegion && $0.id != current.id }
-        }
-        return candidates
+        store.exercises
+            .filter { $0.id != current.id }
+            .filter { selectedRegion  == nil || $0.bodyRegion  == selectedRegion }
             .filter { selectedEquipment == nil || $0.equipment == selectedEquipment }
             .sorted { $0.name < $1.name }
     }
@@ -519,6 +515,22 @@ struct ExerciseSwapperView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
+                // Body region filter
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        FilterChip(title: "Any", isSelected: selectedRegion == nil) {
+                            selectedRegion = nil
+                        }
+                        ForEach(BodyRegion.allCases, id: \.self) { region in
+                            FilterChip(title: region.rawValue, isSelected: selectedRegion == region) {
+                                selectedRegion = selectedRegion == region ? nil : region
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.vertical, 8)
+                }
+                Divider()
                 // Equipment filter
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
@@ -551,7 +563,7 @@ struct ExerciseSwapperView: View {
                             VStack(alignment: .leading, spacing: 3) {
                                 Text(exercise.name)
                                     .foregroundStyle(.primary)
-                                Text(exercise.equipment.rawValue)
+                                Text("\(exercise.bodyRegion.rawValue) · \(exercise.equipment.rawValue)")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
