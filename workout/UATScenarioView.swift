@@ -58,6 +58,21 @@ private func buildCatalogue() -> [UATScenario] { [
     .init(name: "Persona · The Elite",       category: "F · Personas", hint: "Elite tier across the board; all 7 patterns covered"),
     .init(name: "Persona · The Sporadic",    category: "F · Personas", hint: "Broken streaks; irregular gaps; low pattern confidence"),
     .init(name: "Persona · The Comeback",    category: "F · Personas", hint: "Strong history → 45-day gap → 1 workout today"),
+    // G — Edge-case data states
+    .init(name: "Edge · Single Workout",     category: "G · Edge Cases", hint: "All tabs → minimum data; 1 session only — check empty-ish states"),
+    .init(name: "Edge · Fully Decayed",      category: "G · Edge Cases", hint: "Lab → e1RM near 50% floor; readiness near zero; last session 3+ months ago"),
+    .init(name: "Edge · Two-a-Day",          category: "G · Edge Cases", hint: "History → 2 entries today (AM + PM); verify streak and volume counting"),
+    .init(name: "Edge · Mega Log (120)",     category: "G · Edge Cases", hint: "All tabs → 120 sessions over ~1 year; stress-tests list rendering and scroll"),
+    // H — Special set types
+    .init(name: "Sets · All Drop Sets",      category: "H · Special Sets", hint: "Lab: dropWeight / dropReps fields active; narrative drop-set slot should fire"),
+    .init(name: "Sets · All To-Failure",     category: "H · Special Sets", hint: "Lab: toFailure flag set on every set; narrative 'To Failure' connective slot"),
+    .init(name: "Sets · High RPE (9)",       category: "H · Special Sets", hint: "Lab: RPE-adjusted e1RM path — scores differ from raw Epley at same weight"),
+    .init(name: "Sets · Mayhew Rep Range",   category: "H · Special Sets", hint: "Lab: 11-15 reps → Mayhew formula; sets >15 excluded from e1RM entirely"),
+    // I — Streak milestones
+    .init(name: "Streak · 7-Day",            category: "I · Streaks", hint: "Progress → 7-day streak counter; HON milestone banner may appear", needsHON: true),
+    .init(name: "Streak · 30-Day",           category: "I · Streaks", hint: "Progress → 30-day streak; HON streak-celebration banner", needsHON: true),
+    .init(name: "Streak · Just Broken",      category: "I · Streaks", hint: "Progress → streak = 0; 14-day run ended 2 days ago — verify reset state"),
+    .init(name: "Streak · Veteran, Lapsed",  category: "I · Streaks", hint: "Progress → 40 sessions over 6 months, nothing for 3 weeks; streak 0, strong history"),
 ] }
 
 // MARK: - View
@@ -233,6 +248,18 @@ private extension UATScenarioView {
         case 37: return personaElite()
         case 38: return personaSporadic()
         case 39: return personaComeback()
+        case 40: return edgeSingleWorkout()
+        case 41: return edgeDecayedData()
+        case 42: return edgeTwoADay()
+        case 43: return edgeMassiveLog()
+        case 44: return specialDropSets()
+        case 45: return specialToFailure()
+        case 46: return specialHighRPE()
+        case 47: return specialMayhewReps()
+        case 48: return streak7Days()
+        case 49: return streak30Days()
+        case 50: return streakJustBroken()
+        case 51: return streakVeteranLapsed()
         default: return []
         }
     }
@@ -263,6 +290,56 @@ private extension UATScenarioView {
         e.finishedAt = start.addingTimeInterval(Double(min) * 60)
         e.name = name
         return e
+    }
+
+    func entryAt(_ date: Date, _ exs: [WorkoutExercise], min: Int = 60, name: String = "Strength Workout") -> WorkoutLogEntry {
+        var e = WorkoutLogEntry(startedAt: date, exercises: exs)
+        e.finishedAt = date.addingTimeInterval(Double(min) * 60)
+        e.name = name
+        return e
+    }
+
+    func csetDrop(_ w: Double, _ r: Int, dropW: Double, dropR: Int, at t: Date? = nil) -> SetRecord {
+        var s = SetRecord(weight: w, reps: r, targetWeight: w, targetReps: r)
+        s.isCompleted = true; s.completedAt = t
+        s.isDropCompleted = true; s.dropWeight = dropW; s.dropReps = dropR
+        return s
+    }
+
+    func csetFailure(_ w: Double, _ r: Int, at t: Date? = nil) -> SetRecord {
+        var s = SetRecord(weight: w, reps: r, targetWeight: w, targetReps: r + 2)
+        s.isCompleted = true; s.completedAt = t
+        s.toFailure = true
+        return s
+    }
+
+    func csetRPE(_ w: Double, _ r: Int, rpe: Int, at t: Date? = nil) -> SetRecord {
+        var s = SetRecord(weight: w, reps: r, targetWeight: w, targetReps: r)
+        s.isCompleted = true; s.completedAt = t
+        s.rpe = rpe
+        return s
+    }
+
+    func wexDrop(_ exercise: Exercise, w: Double, dropW: Double, reps: Int, sets: Int, base: Date) -> WorkoutExercise {
+        WorkoutExercise(exercise: exercise,
+                        sets: (0..<sets).map { i in
+                            csetDrop(w, reps, dropW: dropW, dropR: max(1, reps - 3),
+                                     at: base.addingTimeInterval(Double(i) * 240))
+                        })
+    }
+
+    func wexFailure(_ exercise: Exercise, w: Double, repsPerSet: [Int], base: Date) -> WorkoutExercise {
+        WorkoutExercise(exercise: exercise,
+                        sets: repsPerSet.enumerated().map { i, r in
+                            csetFailure(w, r, at: base.addingTimeInterval(Double(i) * 210))
+                        })
+    }
+
+    func wexRPE(_ exercise: Exercise, w: Double, reps: [Int], rpe: Int, base: Date) -> WorkoutExercise {
+        WorkoutExercise(exercise: exercise,
+                        sets: reps.enumerated().map { i, r in
+                            csetRPE(w, r, rpe: rpe, at: base.addingTimeInterval(Double(i) * 240))
+                        })
     }
 }
 
@@ -672,6 +749,175 @@ private extension UATScenarioView {
                              wex(dead,  w:130, reps:[5,5,5],   target:5, base:.ago(0,2400))],
                          min: 55, name: "Back At It"))
         return log
+    }
+}
+
+// MARK: - G · Edge Cases
+
+private extension UATScenarioView {
+    func edgeSingleWorkout() -> [WorkoutLogEntry] {
+        let bench = ex("Barbell Bench Press"), squat = ex("Barbell Squat"), dead = ex("Deadlift")
+        return [entry(0, [wex(bench, w:80,  reps:[5,5,5], target:5, base:.ago(0)),
+                          wex(squat, w:100, reps:[5,5,5], target:5, base:.ago(0, 900)),
+                          wex(dead,  w:120, reps:[5,5,5], target:5, base:.ago(0, 1800))],
+                      min: 40, name: "First Workout")]
+    }
+
+    func edgeDecayedData() -> [WorkoutLogEntry] {
+        let bench = ex("Barbell Bench Press"), squat = ex("Barbell Squat"), dead = ex("Deadlift")
+        // Span 365→98 days ago — well past 14-day no-decay window; e1RM decays to 50% floor
+        return (0..<15).map { i in
+            let da = 365 - i * 18
+            return entry(da, [wex(bench, w:90,  reps:[5,5,5,5], target:5, base:.ago(da)),
+                              wex(squat, w:120, reps:[5,5,5,5], target:5, base:.ago(da, 1200)),
+                              wex(dead,  w:150, reps:[5,5,5],   target:5, base:.ago(da, 2400))],
+                         min: 65)
+        }
+    }
+
+    func edgeTwoADay() -> [WorkoutLogEntry] {
+        let bench = ex("Barbell Bench Press"), row   = ex("Barbell Row")
+        let squat = ex("Barbell Squat"),       dead  = ex("Deadlift")
+        var log = (0..<8).map { i -> WorkoutLogEntry in
+            let da = (8 - i) * 7
+            return entry(da, [wex(bench, w:85,  reps:[5,5,5,5], target:5, base:.ago(da)),
+                              wex(row,   w:70,  reps:[8,8,8],   target:8, base:.ago(da, 900)),
+                              wex(squat, w:115, reps:[5,5,5,5], target:5, base:.ago(da, 1800)),
+                              wex(dead,  w:150, reps:[5,5,5],   target:5, base:.ago(da, 2700))])
+        }
+        let amBase = Date().addingTimeInterval(-8.0 * 3600)
+        log.append(entryAt(amBase,
+                            [wex(bench, w:87.5, reps:[5,5,5,5], target:5, base:amBase),
+                             wex(row,   w:72.5, reps:[8,8,8],   target:8, base:amBase.addingTimeInterval(900))],
+                            min: 45, name: "AM — Upper"))
+        let pmBase = Date().addingTimeInterval(-2.0 * 3600)
+        log.append(entryAt(pmBase,
+                            [wex(squat, w:117.5, reps:[5,5,5,5], target:5, base:pmBase),
+                             wex(dead,  w:152.5, reps:[5,5,5],   target:5, base:pmBase.addingTimeInterval(1200))],
+                            min: 50, name: "PM — Lower"))
+        return log.sorted { $0.startedAt > $1.startedAt }
+    }
+
+    func edgeMassiveLog() -> [WorkoutLogEntry] {
+        let bench = ex("Barbell Bench Press"), squat = ex("Barbell Squat")
+        let dead  = ex("Deadlift"),            row   = ex("Barbell Row")
+        return (0..<120).map { i in
+            let da = (119 - i) * 3
+            let p  = Double(i) / 119.0
+            return entry(da, [wex(bench, w:70 + p * 25, reps:[5,5,5,5], target:5, base:.ago(da)),
+                              wex(squat, w:90 + p * 35, reps:[5,5,5,5], target:5, base:.ago(da, 1200)),
+                              wex(dead,  w:110 + p * 45, reps:[5,5,5],  target:5, base:.ago(da, 2400)),
+                              wex(row,   w:60 + p * 20, reps:[8,8,8],   target:8, base:.ago(da, 3600))],
+                         min: 65)
+        }
+    }
+}
+
+// MARK: - H · Special Sets
+
+private extension UATScenarioView {
+    func specialDropSets() -> [WorkoutLogEntry] {
+        let bench = ex("Barbell Bench Press"), row  = ex("Barbell Row")
+        let curl  = ex("Dumbbell Curl"),       tri  = ex("Tricep Pushdown")
+        return (0..<8).map { i in
+            let da = (7 - i) * 7
+            return entry(da, [wexDrop(bench, w:90, dropW:70, reps:6, sets:4, base:.ago(da)),
+                              wexDrop(row,   w:75, dropW:55, reps:8, sets:3, base:.ago(da, 1000)),
+                              wexDrop(curl,  w:18, dropW:13, reps:10, sets:3, base:.ago(da, 2000)),
+                              wexDrop(tri,   w:40, dropW:30, reps:10, sets:3, base:.ago(da, 3000))],
+                         min: 65, name: "Drop Set Session")
+        }
+    }
+
+    func specialToFailure() -> [WorkoutLogEntry] {
+        let bench = ex("Barbell Bench Press"), squat = ex("Barbell Squat")
+        let row   = ex("Barbell Row"),         curl  = ex("Dumbbell Curl")
+        return (0..<8).map { i in
+            let da = (7 - i) * 7
+            return entry(da, [wexFailure(bench, w:85,  repsPerSet:[8,7,6,5],  base:.ago(da)),
+                              wexFailure(squat, w:100, repsPerSet:[10,9,8,7], base:.ago(da, 1200)),
+                              wexFailure(row,   w:70,  repsPerSet:[10,9,8],   base:.ago(da, 2200)),
+                              wexFailure(curl,  w:16,  repsPerSet:[12,11,10], base:.ago(da, 3000))],
+                         min: 60, name: "Failure Training")
+        }
+    }
+
+    func specialHighRPE() -> [WorkoutLogEntry] {
+        let bench = ex("Barbell Bench Press"), squat = ex("Barbell Squat")
+        let dead  = ex("Deadlift"),            ohp   = ex("Overhead Press")
+        return (0..<10).map { i in
+            let da = (9 - i) * 7
+            return entry(da, [wexRPE(bench, w:105, reps:[3,3,3,3], rpe:9, base:.ago(da)),
+                              wexRPE(squat, w:140, reps:[3,3,3,3], rpe:9, base:.ago(da, 1200)),
+                              wexRPE(dead,  w:180, reps:[2,2,2],   rpe:9, base:.ago(da, 2400)),
+                              wexRPE(ohp,   w:72,  reps:[5,5,5],   rpe:8, base:.ago(da, 3300))],
+                         min: 80, name: "Heavy Day (RPE 9)")
+        }
+    }
+
+    func specialMayhewReps() -> [WorkoutLogEntry] {
+        let pull  = ex("Lat Pulldown"),     row   = ex("Seated Cable Row")
+        let lp    = ex("Leg Press"),        curl  = ex("Dumbbell Curl")
+        let lat   = ex("Lateral Raise"),    tri   = ex("Tricep Pushdown")
+        return (0..<10).map { i in
+            let da = (9 - i) * 6
+            return entry(da, [wex(pull, w:60,  reps:[15,13,12], target:15, base:.ago(da)),
+                              wex(row,  w:55,  reps:[15,13,12], target:15, base:.ago(da, 800)),
+                              wex(lp,   w:130, reps:[15,13,12], target:15, base:.ago(da, 1600)),
+                              wex(curl, w:14,  reps:[15,13,12], target:15, base:.ago(da, 2400)),
+                              wex(lat,  w:9,   reps:[15,15,15], target:15, base:.ago(da, 3200)),
+                              wex(tri,  w:35,  reps:[15,13,12], target:15, base:.ago(da, 4000))],
+                         min: 55, name: "Hypertrophy — Mayhew Range")
+        }
+    }
+}
+
+// MARK: - I · Streaks
+
+private extension UATScenarioView {
+    func streak7Days() -> [WorkoutLogEntry] {
+        let bench = ex("Barbell Bench Press"), squat = ex("Barbell Squat"), row = ex("Barbell Row")
+        return (0..<7).map { i in
+            let da = 6 - i
+            return entry(da, [wex(bench, w:85,  reps:[5,5,5,5], target:5, base:.ago(da)),
+                              wex(squat, w:110, reps:[5,5,5,5], target:5, base:.ago(da, 900)),
+                              wex(row,   w:70,  reps:[8,8,8],   target:8, base:.ago(da, 1800))],
+                         min: 50)
+        }
+    }
+
+    func streak30Days() -> [WorkoutLogEntry] {
+        let bench = ex("Barbell Bench Press"), squat = ex("Barbell Squat"), row = ex("Barbell Row")
+        return (0..<30).map { i in
+            let da = 29 - i
+            return entry(da, [wex(bench, w:85,  reps:[5,5,5,5], target:5, base:.ago(da)),
+                              wex(squat, w:110, reps:[5,5,5,5], target:5, base:.ago(da, 900)),
+                              wex(row,   w:70,  reps:[8,8,8],   target:8, base:.ago(da, 1800))],
+                         min: 50)
+        }
+    }
+
+    func streakJustBroken() -> [WorkoutLogEntry] {
+        let bench = ex("Barbell Bench Press"), squat = ex("Barbell Squat")
+        // Sessions 15→2 days ago; yesterday (1 day ago) missing → streak resets to 0
+        return (0..<14).map { i in
+            let da = 15 - i
+            return entry(da, [wex(bench, w:82,  reps:[5,5,5,5], target:5, base:.ago(da)),
+                              wex(squat, w:105, reps:[5,5,5,5], target:5, base:.ago(da, 900))],
+                         min: 45)
+        }
+    }
+
+    func streakVeteranLapsed() -> [WorkoutLogEntry] {
+        let bench = ex("Barbell Bench Press"), squat = ex("Barbell Squat"), dead = ex("Deadlift")
+        // 40 sessions over 6 months; most recent 21 days ago — streak 0, rich history
+        return (0..<40).map { i in
+            let da = 21 + (39 - i) * 4   // 177 → 21 days ago
+            return entry(da, [wex(bench, w:88,  reps:[5,5,5,5], target:5, base:.ago(da)),
+                              wex(squat, w:115, reps:[5,5,5,5], target:5, base:.ago(da, 1200)),
+                              wex(dead,  w:145, reps:[5,5,5],   target:5, base:.ago(da, 2400))],
+                         min: 65)
+        }
     }
 }
 
