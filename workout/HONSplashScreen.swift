@@ -1,5 +1,13 @@
 import SwiftUI
 
+private struct SplashAnchorKey: PreferenceKey {
+    static var defaultValue: CGRect = .zero
+    static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
+        let next = nextValue()
+        if next != .zero { value = next }
+    }
+}
+
 // Exact SwiftUI replication of the H.O.N. HTML splash.
 // Timing, easing, and element order match the original JS animation sequence.
 //
@@ -8,6 +16,7 @@ import SwiftUI
 //   t=1200ms — H.O.N. pure opacity fade (3.5s ease-in-out)
 //   t=3200ms — "HABIT OVER NUMBERS" subtitle fades (3s ease-in-out)
 //   t=4400ms — dots light up left-to-right, one per 320ms (1.4s each)
+//   lastAmberDot+500ms — particle burst fires on the last amber dot
 //   lastDot+1800ms — tagline fades (3.5s ease-in-out)
 //   tagline settled + 1s hold → screen fades out → onComplete()
 
@@ -22,16 +31,30 @@ struct HONSplashScreen: View {
     @State private var subOpacity:     Double   = 0
     @State private var dotOpacities:   [Double] = Array(repeating: 0, count: 7)
     @State private var taglineOpacity: Double   = 0
+    @State private var particleFired:  Bool     = false
+    @State private var particleOrigin: CGPoint  = .zero
+
+    private var lastAmberIndex: Int {
+        streak.indices.last(where: { streak[$0] }) ?? streak.count - 1
+    }
 
     var body: some View {
         ZStack {
             Color(hex: "111111")
+
+            ParticleBurst(trigger: particleFired, origin: particleOrigin)
+
             VStack {
                 Spacer()
                 card
                 Spacer()
             }
             .padding(.horizontal, 24)
+        }
+        .coordinateSpace(name: "splash")
+        .onPreferenceChange(SplashAnchorKey.self) { rect in
+            guard rect != .zero else { return }
+            particleOrigin = CGPoint(x: rect.midX, y: rect.midY)
         }
         .ignoresSafeArea()
         .preferredColorScheme(.dark)
@@ -123,7 +146,8 @@ struct HONSplashScreen: View {
             .foregroundStyle(HONTheme.textSecondary)
     }
 
-    // 7 streak dots: amber = active day, iron = missed
+    // 7 streak dots: amber = active day, iron = missed.
+    // Last amber dot reports its screen position for the particle burst.
     private var dotsRow: some View {
         HStack(spacing: 9) {
             ForEach(Array(streak.enumerated()), id: \.offset) { i, on in
@@ -131,6 +155,16 @@ struct HONSplashScreen: View {
                     .fill(on ? HONTheme.accent : HONTheme.textSecondary)
                     .frame(width: 6, height: 6)
                     .opacity(dotOpacities[i])
+                    .overlay {
+                        if i == lastAmberIndex {
+                            GeometryReader { geo in
+                                Color.clear.preference(
+                                    key: SplashAnchorKey.self,
+                                    value: geo.frame(in: .named("splash"))
+                                )
+                            }
+                        }
+                    }
             }
         }
     }
@@ -168,6 +202,12 @@ struct HONSplashScreen: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                 withAnimation(.easeInOut(duration: 1.4)) { dotOpacities[i] = 1 }
             }
+        }
+
+        // 4b. Particle burst — fires 500ms after the last amber dot starts lighting
+        let lastAmberDelay = 4.4 + Double(lastAmberIndex) * 0.32
+        DispatchQueue.main.asyncAfter(deadline: .now() + lastAmberDelay + 0.5) {
+            particleFired = true
         }
 
         // 5. Tagline — after last dot + 1800ms

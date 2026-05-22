@@ -23,7 +23,7 @@ enum HONMessageScheduler {
             let trigger      = UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)
 
             let request = UNNotificationRequest(
-                identifier: "hon-\(message.id.uuidString)",
+                identifier: "hon-pending",   // fixed — replaces any existing pending HON notification
                 content: content,
                 trigger: trigger
             )
