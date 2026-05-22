@@ -9,6 +9,8 @@ struct HomeView: View {
     @AppStorage("progressNudgeDismissed") private var progressNudgeDismissed: Bool = false
     @AppStorage("bodyweightNudgeDismissed") private var bodyweightNudgeDismissed: Bool = false
     @State private var activeCircuit: CardioCircuit? = nil
+    @State private var circuitCelebration: CelebrationKind? = nil
+    @State private var showCircuitCelebration = false
     @State private var weather = WeatherService()
 
     // MARK: - Computed helpers
@@ -33,11 +35,13 @@ struct HomeView: View {
         pastWorkouts.count > 1 ? Array(pastWorkouts.dropFirst()) : []
     }
 
-    // MARK: - Weekly stats (Sun–Sat current calendar week)
+    // MARK: - Weekly stats (Mon–Sun, matching the celebration screen)
 
     private var weekStart: Date {
-        let cal = Calendar.current
-        return cal.date(from: cal.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date()))!
+        let cal   = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        let daysFromMon = (cal.component(.weekday, from: today) + 5) % 7
+        return cal.date(byAdding: .day, value: -daysFromMon, to: today)!
     }
 
     private var weeklyWorkouts: [WorkoutLogEntry] {
@@ -103,6 +107,12 @@ struct HomeView: View {
     private var todayCircuits: [CardioCircuit] {
         let weekday = Calendar.current.component(.weekday, from: Date())
         return store.cardioCircuits.filter { $0.assignedDays.contains(weekday) }
+    }
+
+    private var todayCompletedCircuits: [CardioLogEntry] {
+        store.cardioLog
+            .filter { Calendar.current.isDateInToday($0.startedAt) }
+            .sorted { $0.startedAt < $1.startedAt }
     }
 
     private var isPM: Bool {
@@ -203,6 +213,14 @@ struct HomeView: View {
                         }
                     }
 
+                    // MARK: Today's Circuit Recap
+                    if !todayCompletedCircuits.isEmpty {
+                        sectionHeader("Today's Circuit\(todayCompletedCircuits.count > 1 ? "s" : "")")
+                        ForEach(todayCompletedCircuits) { entry in
+                            CircuitRecapCard(entry: entry)
+                        }
+                    }
+
                     // MARK: Today's Plan (shown when no workout done yet and plan exists)
                     if todayWorkouts.isEmpty && !todayPlan.isEmpty {
                         sectionHeader("Today's Plan")
@@ -228,8 +246,8 @@ struct HomeView: View {
                         }
                     }
 
-                    // MARK: No-plan CTA
-                    if todayWorkouts.isEmpty && todayPlan.isEmpty {
+                    // MARK: No-plan CTA (hidden when a circuit is scheduled for today)
+                    if todayWorkouts.isEmpty && todayPlan.isEmpty && todayCircuits.isEmpty {
                         startFreeWorkoutBanner
                         if !store.isTodayRestDay {
                             restDayBanner
@@ -274,8 +292,13 @@ struct HomeView: View {
         }
         .fullScreenCover(item: $activeCircuit) { circuit in
             switch circuit.format {
-            case .amrap: AMRAPSessionView(circuit: circuit, onDone: { activeCircuit = nil })
-            case .emom:  EMOMSessionView(circuit: circuit,  onDone: { activeCircuit = nil })
+            case .amrap: AMRAPSessionView(circuit: circuit, onDone: { activeCircuit = nil; scheduleCircuitCelebration() })
+            case .emom:  EMOMSessionView(circuit: circuit,  onDone: { activeCircuit = nil; scheduleCircuitCelebration() })
+            }
+        }
+        .fullScreenCover(isPresented: $showCircuitCelebration) {
+            if let kind = circuitCelebration {
+                CelebrationOverlay(kind: kind) { showCircuitCelebration = false }
             }
         }
         .onAppear {
@@ -375,6 +398,44 @@ struct HomeView: View {
     }
 
     // MARK: - Helpers
+
+    private func scheduleCircuitCelebration() {
+        guard let entry = store.cardioLog.first(where: { Calendar.current.isDateInToday($0.startedAt) }) else { return }
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        let daysFromMon = (cal.component(.weekday, from: today) + 5) % 7
+        let wkStart = cal.date(byAdding: .day, value: -daysFromMon, to: today)!
+
+        // Build unique active days this week (strength + circuits)
+        let strengthDays = store.workoutLog
+            .filter { $0.startedAt >= wkStart }
+            .map { (cal.component(.weekday, from: $0.startedAt) + 5) % 7 }
+        let circuitDays = store.cardioLog
+            .filter { $0.startedAt >= wkStart }
+            .map { (cal.component(.weekday, from: $0.startedAt) + 5) % 7 }
+        let sessionDays = Array(Set(strengthDays + circuitDays)).sorted()
+
+        let todayIdx = (cal.component(.weekday, from: Date()) + 5) % 7
+        let dur = entry.formattedDuration
+        let sets = entry.completedRounds
+        let vol  = entry.totalReps
+
+        let isComeback: Bool = {
+            let allPrev = (store.workoutLog.map(\.startedAt) + store.cardioLog.dropFirst().map(\.startedAt))
+                .filter { !cal.isDateInToday($0) }
+                .max()
+            guard let prev = allPrev else { return false }
+            return Date().timeIntervalSince(prev) / 86_400 >= 7
+        }()
+
+        circuitCelebration = .sessionComplete(
+            duration: dur, sets: sets, volume: vol,
+            sessionDays: sessionDays, isComeback: isComeback, completedDayIndex: todayIdx
+        )
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            showCircuitCelebration = true
+        }
+    }
 
     private func sectionHeader(_ title: String) -> some View {
         Text(title)
@@ -1659,6 +1720,50 @@ private struct TodayCircuitCard: View {
             .background(AppTheme.cardBG, in: RoundedRectangle(cornerRadius: 14))
         }
         .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Circuit Recap Card
+
+private struct CircuitRecapCard: View {
+    let entry: CardioLogEntry
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(entry.circuitName)
+                        .font(.subheadline.bold())
+                    Text(entry.format.rawValue)
+                        .font(.caption)
+                        .foregroundStyle(entry.format.color)
+                }
+                Spacer()
+                Text(entry.formattedDuration)
+                    .font(.caption.bold())
+                    .padding(.horizontal, 8).padding(.vertical, 4)
+                    .background(HONTheme.accent.opacity(0.1), in: Capsule())
+                    .foregroundStyle(HONTheme.accent)
+            }
+
+            HStack(spacing: 20) {
+                statPill(label: "Rounds", value: "\(entry.completedRounds)")
+                statPill(label: "Reps", value: "\(entry.totalReps)")
+                statPill(label: "Exercises", value: "\(entry.exercises.count)")
+            }
+        }
+        .padding(14)
+        .background(AppTheme.cardBG, in: RoundedRectangle(cornerRadius: 14))
+    }
+
+    private func statPill(label: String, value: String) -> some View {
+        VStack(spacing: 2) {
+            Text(value)
+                .font(.system(.headline, design: .rounded).bold())
+            Text(label)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
     }
 }
 
