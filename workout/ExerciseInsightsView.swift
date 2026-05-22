@@ -459,7 +459,7 @@ struct ExerciseInsightDetailView: View {
 
     private var volumeChart: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Volume per Session (kg)")
+            Text(exercise.equipment == .dumbbell ? "Volume per Session (kg per hand)" : "Volume per Session (kg)")
                 .font(.caption.bold())
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 4)
@@ -594,7 +594,7 @@ struct ExerciseInsightDetailView: View {
                             Text(pt.date, format: .dateTime.month(.abbreviated).day().year())
                                 .font(.subheadline.weight(.medium))
                                 .foregroundStyle(.primary)
-                            Text("\(pt.setCount) set\(pt.setCount == 1 ? "" : "s") · \(Int(pt.volume))kg total")
+                            Text("\(pt.setCount) set\(pt.setCount == 1 ? "" : "s") · \(Int(pt.volume))kg\(exercise.equipment == .dumbbell ? " per hand" : "") total")
                                 .font(.caption).foregroundStyle(.secondary)
                         }
                         Spacer()

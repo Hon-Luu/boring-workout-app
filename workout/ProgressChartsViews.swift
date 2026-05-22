@@ -922,6 +922,20 @@ struct MomentumDetailSheet: View {
                             .font(.system(size: 14, weight: .semibold))
                             .padding(.horizontal)
 
+                        #if DEBUG
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("DEBUG — \(analytics.exercise.name) · equip: \(analytics.exercise.equipment.rawValue) · \(analytics.sessions.count) sessions")
+                                .font(.system(size: 10, design: .monospaced))
+                                .foregroundStyle(.orange)
+                            ForEach(Array(analytics.sessions.enumerated()), id: \.offset) { idx, pt in
+                                Text("[\(idx)] \(pt.date.formatted(.dateTime.month().day())) · e1RM=\(String(format:"%.1f",pt.estimated1RM))kg · w=\(String(format:"%.1f",pt.bestWeight))kg · r=\(pt.bestReps)")
+                                    .font(.system(size: 10, design: .monospaced))
+                                    .foregroundStyle(.orange)
+                            }
+                        }
+                        .padding(.horizontal)
+                        #endif
+
                         if analytics.sessions.count >= 2 {
                             Chart {
                                 ForEach(analytics.sessions) { pt in

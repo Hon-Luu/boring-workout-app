@@ -928,6 +928,17 @@ struct StrongerSectionContent: View {
                     .foregroundStyle(.secondary)
             }
 
+            #if DEBUG
+            VStack(alignment: .leading, spacing: 2) {
+                Text("DEBUG — equip:\(ex.exercise.equipment.rawValue) sessions:\(ex.sessions.count) PRs:\(ex.prProgression.count)")
+                    .font(.system(size: 10, design: .monospaced)).foregroundStyle(.orange)
+                ForEach(Array(ex.sessions.enumerated()), id: \.offset) { i, pt in
+                    Text("s[\(i)] \(pt.date.formatted(.dateTime.month().day())) e1RM=\(String(format:"%.1f",pt.estimated1RM)) w=\(String(format:"%.1f",pt.bestWeight)) r=\(pt.bestReps)")
+                        .font(.system(size: 10, design: .monospaced)).foregroundStyle(.orange)
+                }
+            }
+            #endif
+
             Chart {
                 // Smoothed rolling average (background trend) — separate series to avoid zigzag
                 ForEach(ex.rollingAvg) { pt in
