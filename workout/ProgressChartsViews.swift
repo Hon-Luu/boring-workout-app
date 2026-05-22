@@ -2169,7 +2169,18 @@ struct PRWindowForecastDetailSheet: View {
             Text(ea.exercise.name)
                 .font(.system(size: 15, weight: .semibold))
 
-            if ea.prProgression.count >= 2 {
+            #if DEBUG
+            VStack(alignment: .leading, spacing: 2) {
+                Text("equip:\(ea.exercise.equipment.rawValue) sessions:\(ea.sessions.count) PRs:\(ea.prProgression.count) peak:\(String(format:"%.1f",ea.sessions.map(\.estimated1RM).max() ?? 0))kg")
+                    .font(.system(size: 10, design: .monospaced)).foregroundStyle(.orange)
+                ForEach(Array(ea.sessions.enumerated()), id: \.offset) { i, pt in
+                    Text("[\(i)] \(pt.date.formatted(.dateTime.month().day().year())) e1RM=\(String(format:"%.1f",pt.estimated1RM)) w=\(String(format:"%.1f",pt.bestWeight)) r=\(pt.bestReps)")
+                        .font(.system(size: 10, design: .monospaced)).foregroundStyle(.orange)
+                }
+            }
+            #endif
+
+            if ea.prProgression.count >= 1 {
                 prStepChart(ea.prProgression)
             }
 
