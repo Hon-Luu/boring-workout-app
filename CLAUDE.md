@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 xcodebuild -scheme workout \
-  -destination 'platform=iOS Simulator,arch=arm64,id=3A3A3886-7553-418E-844C-E2DBBE846836' \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
   build
 ```
 
@@ -124,3 +124,51 @@ Two methods on `SeedStore`, split by cost:
 - `bestVariant(equipment:matching:)` — O(n_log), called only on tap; returns the best `Exercise` match for the chosen equipment
 
 `EquipmentChipRow` in `ActiveWorkoutView` takes `[Equipment]` (not exercise tuples) and calls `onSelect: (Equipment) -> Void`. The parent resolves the exercise lazily on tap via `bestVariant`.
+
+---
+
+## Session Workflow
+
+At the start of every session, read these files to restore context:
+
+```
+docs/BACKLOG.md        — open items, priorities, what's been done
+docs/UAT_INBOX.md      — unreviewed UAT notes from testing
+```
+
+Also read if relevant to the current task:
+```
+docs/architecture/DECISIONS.md     — why things are the way they are
+docs/architecture/ANALYTICS.md     — engine map and inputs
+docs/design/DESIGN_SYSTEM.md       — color tokens, typography, layout rules
+docs/research/USER_RESEARCH.md     — who we're building for
+```
+
+### Scripts (run from project root)
+
+```bash
+./scripts/hon-status          # terminal backlog + UAT summary
+./scripts/hon-dashboard-gen   # regenerate docs/dashboard.html (phone-viewable)
+./scripts/hon-simulate <name> # screenshot running simulator; saves to docs/screenshots/
+```
+
+### UAT capture (from any terminal)
+
+```bash
+uat "note here"   # appends timestamped entry to docs/UAT_INBOX.md
+```
+
+### Source Layout
+
+Swift source lives in `iOSApp/` (not `workout/`):
+- `iOSApp/App/` — entry points, ContentView
+- `iOSApp/Design/` — HONTheme, shared styling
+- `iOSApp/Models/` — Models.swift and data types
+- `iOSApp/Services/` — HealthKit, persistence
+- `iOSApp/Engines/` — ReadinessEngine, HONHabitEngine, StrengthAnalyticsEngine, etc.
+- `iOSApp/Views/` — screen views grouped by area
+- `iOSApp/Features/` — larger feature flows
+
+### SourceKit Note
+
+SourceKit reports false positives for cross-file types ("Cannot find type X in scope"). Always verify with `xcodebuild` — SourceKit errors alone are not reliable.

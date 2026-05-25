@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Progress Tab — Prototype</title>
+  <style>
+    :root {
+      --bg:       #09090b;
+      --surface:  #111113;
+      --surface2: #1c1c1f;
+      --surface3: #27272a;
+      --border:   #2e2e32;
+      --text:     #f4f4f5;
+      --text2:    #a1a1aa;
+      --text3:    #52525b;
+
+      --tier-dev:  #52525b;
+      --tier-int:  #30d158;
+      --tier-adv:  #0a84ff;
+      --tier-eli:  #ffd60a;
+
+      /* tier boundaries on 0-100 scale */
+      --b-int: 20%;   /* 0-20 = Developing  */
+      --b-adv: 50%;   /* 20-50 = Intermediate */
+      --b-eli: 80%;   /* 50-80 = Advanced   */
+                      /* 80-100 = Elite      */
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: var(--bg); }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding-bottom: 48px;
+    }
+
+    /* ── Phone shell ─────────────────────────────────────────────────────── */
+    .shell {
+      width: 100%;
+      max-width: 393px;
+      position: relative;
+    }
+
+    /* Fake nav bar */
+    .nav-bar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(9,9,11,0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-title {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .nav-sub {
+      font-size: 12px;
+      color: var(--text3);
+    }
+
+    /* ── Scroll area ─────────────────────────────────────────────────────── */
+    .scroll-area {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px 16px 32px;
+    }
+
+    /* ── Cards ───────────────────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 16px 18px 0;
+    }
+
+    .card-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text3);
+    }
+
+    .card-body {
+      padding: 14px 18px 18px;
+    }
+
+    /* ── Tier bar (reusable) ─────────────────────────────────────────────── */
+    .tier-track-wrap {
+      position: relative;
+    }
+
+    .tier-track {
+      position: relative;
+      height: 8px;
+      border-radius: 999px;
+      overflow: visible;
+      background: linear-gradient(
+        to right,
+        var(--tier-dev)  0%,   var(--tier-dev)  var(--b-int),
+        var(--tier-int)  var(--b-int), var(--tier-int) var(--b-adv),
+        var(--tier-adv)  var(--b-adv), var(--tier-adv) var(--b-eli),
+        var(--tier-eli)  var(--b-eli), var(--tier-eli) 100%
+      );
+      opacity: 0.35;
+    }
+
+    /* Colored fill up to score */
+    .tier-fill {
+      position: absolute;
+      top: 0; left: 0;
+      height: 8px;
+      border-radius: 999px;
+      background: linear-gradient(
+        to right,
+        var(--tier-dev)  0%,   var(--tier-dev)  var(--b-int),
+        var(--tier-int)  var(--b-int), var(--tier-int) var(--b-adv),
+        var(--tier-adv)  var(--b-adv), var(--tier-adv) var(--b-eli),
+        var(--tier-eli)  var(--b-eli), var(--tier-eli) 100%
+      );
+    }
+
+    /* Marker dot */
+    .tier-marker {
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 0 0 2.5px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.6);
+      z-index: 2;
+      transition: left 0.4s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* Tier boundary ticks */
+    .tier-ticks {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+    }
+
+    .tier-tick {
+      position: absolute;
+      top: -2px; bottom: -2px;
+      width: 1.5px;
+      background: var(--bg);
+      border-radius: 1px;
+    }
+
+    /* Labels below bar */
+    .tier-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      padding: 0 2px;
+    }
+
+    .tier-label-item {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text3);
+      text-align: center;
+      flex: 1;
+    }
+
+    .tier-label-item.active { opacity: 1; }
+
+    .tier-label-item.dev  { color: var(--tier-dev); text-align: left; }
+    .tier-label-item.int  { color: var(--tier-int); text-align: center; }
+    .tier-label-item.adv  { color: var(--tier-adv); text-align: center; }
+    .tier-label-item.eli  { color: var(--tier-eli); text-align: right; }
+
+    /* ── Card 1: Composite Score ─────────────────────────────────────────── */
+    .score-hero {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+
+    .score-number {
+      font-size: 64px;
+      font-weight: 800;
+      letter-spacing: -3px;
+      line-height: 1;
+    }
+
+    .score-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .score-tier {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--tier-adv);
+    }
+
+    .score-delta {
+      font-size: 13px;
+      color: var(--tier-int);
+      font-weight: 600;
+    }
+
+    .score-delta.down { color: var(--tier-dev); }
+
+    /* Per-lift mini breakdown */
+    .lift-breakdown {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .lift-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .lift-row-name {
+      font-size: 13px;
+      color: var(--text2);
+      width: 92px;
+      flex-shrink: 0;
+    }
+
+    .lift-mini-track-wrap {
+      flex: 1;
+      position: relative;
+    }
+
+    .lift-mini-track {
+      height: 5px;
+      border-radius: 999px;
+      background: linear-gradient(
+        to right,
+        var(--tier-dev)  0%,   var(--tier-dev)  var(--b-int),
+        var(--tier-int)  var(--b-int), var(--tier-int) var(--b-adv),
+        var(--tier-adv)  var(--b-adv), var(--tier-adv) var(--b-eli),
+        var(--tier-eli)  var(--b-eli), var(--tier-eli) 100%
+      );
+      opacity: 0.2;
+    }
+
+    .lift-mini-fill {
+      position: absolute;
+      top: 0; left: 0;
+      height: 5px;
+      border-radius: 999px;
+      background: linear-gradient(
+        to right,
+        var(--tier-dev)  0%,   var(--tier-dev)  var(--b-int),
+        var(--tier-int)  var(--b-int), var(--tier-int) var(--b-adv),
+        var(--tier-adv)  var(--b-adv), var(--tier-adv) var(--b-eli),
+        var(--tier-eli)  var(--b-eli), var(--tier-eli) 100%
+      );
+    }
+
+    .lift-mini-dot {
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 0 0 2px rgba(0,0,0,0.5);
+    }
+
+    .lift-row-score {
+      font-size: 13px;
+      font-weight: 700;
+      width: 30px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .lift-row-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 20px;
+      flex-shrink: 0;
+      width: 34px;
+      text-align: center;
+    }
+
+    /* ── Card 2: Momentum ────────────────────────────────────────────────── */
+    .momentum-chips {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .momentum-chip {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: background 0.15s;
+      text-decoration: none;
+    }
+
+    .momentum-chip:hover { background: var(--surface3); }
+
+    .chip-icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .chip-text { flex: 1; }
+
+    .chip-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .chip-sub {
+      font-size: 12px;
+      color: var(--text2);
+      margin-top: 1px;
+    }
+
+    .chip-arrow {
+      color: var(--text3);
+      font-size: 14px;
+    }
+
+    /* ── Card 3: Lift Trend ──────────────────────────────────────────────── */
+    .lift-picker {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .lift-pill {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 20px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text2);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .lift-pill.active {
+      background: var(--tier-adv);
+      border-color: var(--tier-adv);
+      color: #fff;
+    }
+
+    .chart-wrap {
+      position: relative;
+      height: 180px;
+    }
+
+    canvas.chart-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .range-picker {
+      display: flex;
+      gap: 4px;
+      margin-top: 12px;
+      justify-content: flex-end;
+    }
+
+    .range-pill {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text3);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .range-pill.active {
+      background: var(--surface3);
+      border-color: var(--text3);
+      color: var(--text);
+    }
+
+    .chart-stat-row {
+      display: flex;
+      gap: 0;
+      margin-top: 16px;
+      border-top: 1px solid var(--border);
+      padding-top: 14px;
+    }
+
+    .chart-stat {
+      flex: 1;
+      text-align: center;
+    }
+
+    .chart-stat + .chart-stat {
+      border-left: 1px solid var(--border);
+    }
+
+    .chart-stat-val {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .chart-stat-label {
+      font-size: 11px;
+      color: var(--text2);
+      margin-top: 2px;
+    }
+
+    /* ── Card 4: Balance ─────────────────────────────────────────────────── */
+    .balance-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .balance-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .balance-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text2);
+      width: 46px;
+      flex-shrink: 0;
+    }
+
+    .balance-track-wrap {
+      flex: 1;
+      position: relative;
+    }
+
+    .balance-tier-label {
+      font-size: 12px;
+      font-weight: 700;
+      width: 72px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .balance-insight {
+      margin-top: 16px;
+      background: rgba(255,214,10,0.07);
+      border: 1px solid rgba(255,214,10,0.15);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.5;
+    }
+
+    .balance-insight strong { color: var(--tier-eli); }
+
+    /* ── Card 5: Volume heatmap ──────────────────────────────────────────── */
+    .heatmap-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .heatmap-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .heatmap-label {
+      font-size: 12px;
+      color: var(--text2);
+      width: 64px;
+      flex-shrink: 0;
+    }
+
+    .heatmap-cells {
+      display: flex;
+      gap: 5px;
+      flex: 1;
+    }
+
+    .heatmap-cell {
+      flex: 1;
+      aspect-ratio: 1;
+      border-radius: 5px;
+      position: relative;
+    }
+
+    .heatmap-headers {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .heatmap-header-spacer { width: 64px; flex-shrink: 0; }
+
+    .heatmap-week-labels {
+      display: flex;
+      gap: 5px;
+      flex: 1;
+    }
+
+    .heatmap-week-label {
+      flex: 1;
+      font-size: 10px;
+      color: var(--text3);
+      text-align: center;
+    }
+
+    /* ── Divider ─────────────────────────────────────────────────────────── */
+    .section-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 2px;
+    }
+
+    .section-divider span {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text3);
+      white-space: nowrap;
+    }
+
+    .section-divider::before,
+    .section-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- Nav bar -->
+  <div class="nav-bar">
+    <div>
+      <div class="nav-title">Progress</div>
+      <div class="nav-sub">Alex · 75 kg · 30 y</div>
+    </div>
+    <div style="font-size:13px;color:var(--text3)">Last 6 mo</div>
+  </div>
+
+  <div class="scroll-area">
+
+    <!-- ── CARD 1: Composite Strength Score ─────────────────────────────── -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Strength Score</div>
+      </div>
+      <div class="card-body">
+
+        <div class="score-hero">
+          <div class="score-number" id="composite-number">67</div>
+          <div class="score-meta">
+            <div class="score-tier" id="composite-tier">Advanced</div>
+            <div class="score-delta">↑ +4 pts this month</div>
+          </div>
+        </div>
+
+        <!-- Main tier bar -->
+        <div class="tier-track-wrap" style="margin-top:16px;">
+          <div class="tier-track">
+            <div class="tier-ticks">
+              <div class="tier-tick" style="left:20%"></div>
+              <div class="tier-tick" style="left:50%"></div>
+              <div class="tier-tick" style="left:80%"></div>
+            </div>
+          </div>
+          <div class="tier-fill" id="composite-fill" style="width:67%"></div>
+          <div class="tier-marker" id="composite-marker" style="left:67%"></div>
+        </div>
+        <div class="tier-labels">
+          <div class="tier-label-item dev">Developing</div>
+          <div class="tier-label-item int">Intermediate</div>
+          <div class="tier-label-item adv active">Advanced</div>
+          <div class="tier-label-item eli">Elite</div>
+        </div>
+
+        <!-- Per-lift breakdown -->
+        <div class="lift-breakdown" id="lift-breakdown"></div>
+      </div>
+    </div>
+
+    <!-- ── CARD 2: Momentum ──────────────────────────────────────────────── -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">What's Moving</div>
+      </div>
+      <div class="card-body">
+        <div class="momentum-chips">
+
+          <div class="momentum-chip" onclick="selectLift('Deadlift')">
+            <div class="chip-icon" style="background:rgba(48,209,88,0.12);">🔥</div>
+            <div class="chip-text">
+              <div class="chip-title" style="color:var(--tier-int)">Deadlift · Best mover</div>
+              <div class="chip-sub">+15 kg e1RM in 30 days · Now Elite</div>
+            </div>
+            <div class="chip-arrow">›</div>
+          </div>
+
+          <div class="momentum-chip" onclick="selectLift('Row')">
+            <div class="chip-icon" style="background:rgba(255,69,58,0.1);">🧱</div>
+            <div class="chip-text">
+              <div class="chip-title" style="color:#ff453a">Barbell Row · Stale</div>
+              <div class="chip-sub">Flat for 38 days · Still Intermediate</div>
+            </div>
+            <div class="chip-arrow">›</div>
+          </div>
+
+          <div class="momentum-chip" onclick="selectLift('Row')">
+            <div class="chip-icon" style="background:rgba(255,214,10,0.1);">🎯</div>
+            <div class="chip-text">
+              <div class="chip-title" style="color:var(--tier-eli)">Biggest opportunity</div>
+              <div class="chip-sub">Row is 19 pts below your average · brings composite down</div>
+            </div>
+            <div class="chip-arrow">›</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CARD 3: Lift Trend ────────────────────────────────────────────── -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">e1RM Trend</div>
+      </div>
+      <div class="card-body">
+
+        <!-- Lift picker -->
+        <div class="lift-picker" id="lift-picker"></div>
+
+        <!-- Chart -->
+        <div class="chart-wrap">
+          <canvas class="chart-canvas" id="trend-canvas"></canvas>
+        </div>
+
+        <!-- Range picker -->
+        <div class="range-picker">
+          <div class="range-pill" onclick="setRange(4, this)">1M</div>
+          <div class="range-pill active" onclick="setRange(12, this)">3M</div>
+          <div class="range-pill" onclick="setRange(24, this)">6M</div>
+          <div class="range-pill" onclick="setRange(999, this)">All</div>
+        </div>
+
+        <!-- Summary stats -->
+        <div class="chart-stat-row" id="chart-stats"></div>
+      </div>
+    </div>
+
+    <!-- ── CARD 4: Strength Balance ──────────────────────────────────────── -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-label">Strength Balance</div>
+      </div>
+      <div class="card-body">
+        <div class="balance-rows" id="balance-rows"></div>
+
+        <div class="balance-insight">
+          <strong>⚠ Pull is lagging.</strong> Your Push and Legs are both Advanced, but Pull sits at Intermediate. Adding 2–3 sets of rows per session would bring it up and reduce injury risk.
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CARD 5: Volume Heatmap ────────────────────────────────────────── -->
+    <div class="card">
+      <div class="card-header" style="padding-bottom:14px">
+        <div class="card-label">Volume · Last 6 Weeks</div>
+      </div>
+      <div class="card-body" style="padding-top:0">
+        <div class="heatmap-headers">
+          <div class="heatmap-header-spacer"></div>
+          <div class="heatmap-week-labels" id="heatmap-headers"></div>
+        </div>
+        <div class="heatmap-grid" id="heatmap-grid"></div>
+
+        <div style="display:flex;align-items:center;gap:6px;margin-top:14px;justify-content:flex-end;">
+          <div style="font-size:11px;color:var(--text3)">Low</div>
+          <div style="display:flex;gap:3px;">
+            <div style="width:14px;height:14px;border-radius:3px;background:rgba(10,132,255,0.1)"></div>
+            <div style="width:14px;height:14px;border-radius:3px;background:rgba(10,132,255,0.25)"></div>
+            <div style="width:14px;height:14px;border-radius:3px;background:rgba(10,132,255,0.45)"></div>
+            <div style="width:14px;height:14px;border-radius:3px;background:rgba(10,132,255,0.7)"></div>
+            <div style="width:14px;height:14px;border-radius:3px;background:rgba(10,132,255,0.9)"></div>
+          </div>
+          <div style="font-size:11px;color:var(--text3)">High</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /scroll-area -->
+</div><!-- /shell -->
+
+<script>
+// ── Data ────────────────────────────────────────────────────────────────────
+
+const LIFTS = [
+  { key: 'Bench',    label: 'Bench',    score: 72, tier: 'Advanced',     tierColor: 'var(--tier-adv)', e1rm: 112.5, unit: 'kg' },
+  { key: 'Squat',    label: 'Squat',    score: 68, tier: 'Advanced',     tierColor: 'var(--tier-adv)', e1rm: 140.0, unit: 'kg' },
+  { key: 'Deadlift', label: 'Deadlift', score: 85, tier: 'Elite',        tierColor: 'var(--tier-eli)', e1rm: 185.0, unit: 'kg' },
+  { key: 'OHP',      label: 'OHP',      score: 62, tier: 'Advanced',     tierColor: 'var(--tier-adv)', e1rm:  72.5, unit: 'kg' },
+  { key: 'Row',      label: 'Row',      score: 48, tier: 'Intermediate', tierColor: 'var(--tier-int)', e1rm: 105.0, unit: 'kg' },
+];
+
+// 24 weeks (6 months) of e1RM data per lift
+const TREND_DATA = {
+  Bench:    [95,95,97.5,97.5, 100,97.5,100,102.5, 102.5,105,105,107.5, 107.5,107.5,110,110, 110,112.5,112.5,115, 112.5,115,115,112.5],
+  Squat:    [115,118,118,120, 122.5,120,122.5,125, 125,127.5,130,130, 130,132.5,132.5,135, 135,137.5,140,140, 140,140,142.5,140],
+  Deadlift: [145,150,150,152.5, 155,157.5,157.5,160, 162.5,162.5,165,167.5, 167.5,170,172.5,175, 175,177.5,177.5,180, 182.5,182.5,185,185],
+  OHP:      [60,60,62.5,62.5, 65,62.5,65,65, 65,67.5,67.5,70, 70,70,70,72.5, 72.5,72.5,72.5,72.5, 72.5,72.5,72.5,72.5],
+  Row:      [92.5,95,95,97.5, 97.5,100,100,102.5, 102.5,105,105,105, 105,105,105,107.5, 107.5,107.5,107.5,107.5, 107.5,107.5,105,105],
+};
+
+const BALANCE = [
+  { label: 'Push',  score: 67, tier: 'Advanced',     color: 'var(--tier-adv)' },
+  { label: 'Pull',  score: 48, tier: 'Intermediate', color: 'var(--tier-int)' },
+  { label: 'Legs',  score: 68, tier: 'Advanced',     color: 'var(--tier-adv)' },
+];
+
+const VOLUME = {
+  labels: ['Wk 1','Wk 2','Wk 3','Wk 4','Wk 5','Wk 6'],
+  rows: [
+    { name: 'Chest',     sets: [12, 9, 15, 12, 18, 16] },
+    { name: 'Back',      sets: [8,  12, 10,  8, 10,  8] },
+    { name: 'Shoulders', sets: [9,   6, 12,  9,  9, 12] },
+    { name: 'Arms',      sets: [15, 12, 18, 12, 15, 18] },
+    { name: 'Legs',      sets: [6,   0,  8,  6,  9,  8] },
+    { name: 'Core',      sets: [3,   6,  3,  0,  3,  6] },
+  ]
+};
+
+// ── State ────────────────────────────────────────────────────────────────────
+
+let selectedLift = 'Bench';
+let displayWeeks = 12;
+
+// ── Render lift breakdown ─────────────────────────────────────────────────────
+
+function renderBreakdown() {
+  const el = document.getElementById('lift-breakdown');
+  el.innerHTML = LIFTS.map(l => `
+    <div class="lift-row" onclick="selectLift('${l.key}')" style="cursor:pointer">
+      <div class="lift-row-name">${l.label}</div>
+      <div class="lift-mini-track-wrap">
+        <div class="lift-mini-track"></div>
+        <div class="lift-mini-fill" style="width:${l.score}%"></div>
+        <div class="lift-mini-dot" style="left:${l.score}%"></div>
+      </div>
+      <div class="lift-row-score" style="color:${l.tierColor}">${l.score}</div>
+      <div class="lift-row-badge" style="background:${l.tierColor}22;color:${l.tierColor}">
+        ${l.tier === 'Developing' ? 'DEV' : l.tier === 'Intermediate' ? 'INT' : l.tier === 'Advanced' ? 'ADV' : 'ELT'}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── Render lift picker ────────────────────────────────────────────────────────
+
+function renderPicker() {
+  const el = document.getElementById('lift-picker');
+  el.innerHTML = LIFTS.map(l => `
+    <div class="lift-pill ${l.key === selectedLift ? 'active' : ''}"
+         onclick="selectLift('${l.key}')">${l.label}</div>
+  `).join('');
+}
+
+function selectLift(key) {
+  selectedLift = key;
+  renderPicker();
+  drawChart();
+  renderChartStats();
+  // scroll to chart card
+  document.getElementById('trend-canvas').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// ── Chart drawing ─────────────────────────────────────────────────────────────
+
+function drawChart() {
+  const canvas = document.getElementById('trend-canvas');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const W = rect.width;
+  const H = 180;
+
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const allData = TREND_DATA[selectedLift];
+  const data = allData.slice(-Math.min(displayWeeks, allData.length));
+
+  const pad = { top: 12, right: 14, bottom: 28, left: 44 };
+  const cW = W - pad.left - pad.right;
+  const cH = H - pad.top - pad.bottom;
+
+  const minY = Math.min(...data) - 5;
+  const maxY = Math.max(...data) + 5;
+
+  const toX = i => pad.left + (i / (data.length - 1)) * cW;
+  const toY = v => pad.top + (1 - (v - minY) / (maxY - minY)) * cH;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Grid lines
+  const gridY = 4;
+  for (let i = 0; i <= gridY; i++) {
+    const y = pad.top + (i / gridY) * cH;
+    const val = Math.round(maxY - (i / gridY) * (maxY - minY));
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 1;
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(pad.left + cW, y);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+    ctx.font = `10px -apple-system, sans-serif`;
+    ctx.textAlign = 'right';
+    ctx.fillText(val, pad.left - 6, y + 3.5);
+  }
+
+  // Gradient fill
+  const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + cH);
+  grad.addColorStop(0, 'rgba(10,132,255,0.3)');
+  grad.addColorStop(1, 'rgba(10,132,255,0)');
+
+  ctx.beginPath();
+  data.forEach((v, i) => {
+    const x = toX(i), y = toY(v);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.lineTo(toX(data.length - 1), pad.top + cH);
+  ctx.lineTo(pad.left, pad.top + cH);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  data.forEach((v, i) => {
+    const x = toX(i), y = toY(v);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = '#0a84ff';
+  ctx.lineWidth = 2.5;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+  // PR dots — local maxima
+  data.forEach((v, i) => {
+    const isPR = v === Math.max(...data.slice(0, i + 1)) && (i === 0 || v > data[i - 1]);
+    if (!isPR) return;
+    const x = toX(i), y = toY(v);
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#0a84ff';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff';
+    ctx.fill();
+  });
+
+  // End dot
+  const lastX = toX(data.length - 1);
+  const lastY = toY(data[data.length - 1]);
+  ctx.beginPath();
+  ctx.arc(lastX, lastY, 5, 0, Math.PI * 2);
+  ctx.fillStyle = '#0a84ff';
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(lastX, lastY, 2.5, 0, Math.PI * 2);
+  ctx.fillStyle = '#fff';
+  ctx.fill();
+
+  // X labels (simplified: show first, middle, last)
+  const labelIndices = [0, Math.floor(data.length / 2), data.length - 1];
+  const weekLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  ctx.font = `10px -apple-system, sans-serif`;
+  ctx.textAlign = 'center';
+  labelIndices.forEach(i => {
+    const weekOffset = Math.max(0, allData.length - data.length);
+    const monthIdx = Math.floor((i + weekOffset) / 4) % 12;
+    ctx.fillText(weekLabels[monthIdx], toX(i), pad.top + cH + 16);
+  });
+}
+
+// ── Chart stats ───────────────────────────────────────────────────────────────
+
+function renderChartStats() {
+  const lift = LIFTS.find(l => l.key === selectedLift);
+  const allData = TREND_DATA[selectedLift];
+  const data = allData.slice(-Math.min(displayWeeks, allData.length));
+  const gain = (data[data.length - 1] - data[0]).toFixed(1);
+  const pr = Math.max(...data).toFixed(1);
+
+  document.getElementById('chart-stats').innerHTML = `
+    <div class="chart-stat">
+      <div class="chart-stat-val">${lift.e1rm} kg</div>
+      <div class="chart-stat-label">Current e1RM</div>
+    </div>
+    <div class="chart-stat">
+      <div class="chart-stat-val" style="color:${parseFloat(gain) >= 0 ? 'var(--tier-int)' : 'var(--tier-dev)'}">
+        ${parseFloat(gain) >= 0 ? '+' : ''}${gain} kg
+      </div>
+      <div class="chart-stat-label">Gained this period</div>
+    </div>
+    <div class="chart-stat">
+      <div class="chart-stat-val" style="color:${lift.tierColor}">${lift.score}</div>
+      <div class="chart-stat-label">${lift.tier}</div>
+    </div>
+  `;
+}
+
+function setRange(weeks, el) {
+  displayWeeks = weeks;
+  document.querySelectorAll('.range-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  drawChart();
+}
+
+// ── Balance ───────────────────────────────────────────────────────────────────
+
+function renderBalance() {
+  document.getElementById('balance-rows').innerHTML = BALANCE.map(b => `
+    <div class="balance-row">
+      <div class="balance-label">${b.label}</div>
+      <div class="balance-track-wrap">
+        <div class="tier-track" style="height:7px">
+          <div class="tier-ticks">
+            <div class="tier-tick" style="left:20%"></div>
+            <div class="tier-tick" style="left:50%"></div>
+            <div class="tier-tick" style="left:80%"></div>
+          </div>
+        </div>
+        <div class="tier-fill" style="width:${b.score}%;height:7px;top:0;border-radius:999px;"></div>
+        <div class="tier-marker" style="left:${b.score}%;width:13px;height:13px;top:3.5px;"></div>
+      </div>
+      <div class="balance-tier-label" style="color:${b.color}">${b.tier}</div>
+    </div>
+  `).join('');
+}
+
+// ── Volume heatmap ────────────────────────────────────────────────────────────
+
+function renderHeatmap() {
+  const maxSets = 20;
+  document.getElementById('heatmap-headers').innerHTML =
+    VOLUME.labels.map(l => `<div class="heatmap-week-label">${l}</div>`).join('');
+
+  document.getElementById('heatmap-grid').innerHTML = VOLUME.rows.map(row => {
+    const cells = row.sets.map(s => {
+      const intensity = s === 0 ? 0.04 : 0.08 + (s / maxSets) * 0.82;
+      const isLow = s > 0 && s < 6;
+      const border = isLow ? '1px solid rgba(255,69,58,0.3)' : '1px solid transparent';
+      return `<div class="heatmap-cell" style="background:rgba(10,132,255,${intensity});border:${border}" title="${s} sets"></div>`;
+    }).join('');
+
+    return `
+      <div class="heatmap-row">
+        <div class="heatmap-label">${row.name}</div>
+        <div class="heatmap-cells">${cells}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+
+function init() {
+  renderBreakdown();
+  renderPicker();
+  drawChart();
+  renderChartStats();
+  renderBalance();
+  renderHeatmap();
+}
+
+init();
+window.addEventListener('resize', () => { drawChart(); });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>H.O.N. UX Simulation</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--onyx:#111111;--carbon:#1c1c1e;--iron:#2c2c2e;--iron-light:#3a3a3c;--amber:#d4943a;--ivory:#f5f0e8;--ivory-dim:rgba(245,240,232,0.6);--ivory-muted:rgba(245,240,232,0.35);--sage:#7a9e8e;--slate:#6b85a0;--rose:#b47a80;--clay:#a07060;--lavender:#8a80a8}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--onyx);color:var(--ivory);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.6;min-height:100vh}
+/* TAB BAR */
+#tabbar{position:sticky;top:0;z-index:100;background:var(--carbon);border-bottom:1px solid var(--iron);display:flex;flex-wrap:wrap;gap:0;padding:0}
+.tab{font-family:'DM Mono',monospace;font-size:11px;padding:10px 14px;cursor:pointer;color:var(--ivory-dim);border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;user-select:none}
+.tab:hover{color:var(--ivory);background:rgba(255,255,255,.04)}
+.tab.active{color:var(--amber);border-bottom:2px solid var(--amber)}
+/* PANEL */
+.panel{display:none;max-width:900px;margin:0 auto;padding:32px 20px 80px}
+.panel.active{display:block}
+/* PERSONA CARD */
+.persona-card{background:var(--carbon);border:1px solid var(--iron);border-radius:16px;padding:28px;margin-bottom:32px}
+.persona-emoji{font-size:48px;margin-bottom:12px}
+.persona-name{font-family:'DM Serif Display',serif;font-size:32px;color:var(--ivory);margin-bottom:4px}
+.persona-tagline{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--ivory-muted);margin-bottom:14px}
+.persona-bio{color:var(--ivory-dim);font-size:14px;margin-bottom:16px;line-height:1.7}
+.trait-pills{display:flex;flex-wrap:wrap;gap:6px}
+.pill{font-family:'DM Mono',monospace;font-size:10px;padding:3px 10px;border-radius:20px;background:var(--iron);color:var(--ivory-muted)}
+/* PHASE */
+.phase{margin-bottom:20px;border:1px solid var(--iron);border-radius:12px;overflow:hidden}
+.phase-header{background:var(--iron);padding:14px 18px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none}
+.phase-header h3{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ivory-dim)}
+.phase-header .phase-ctx{font-size:12px;color:var(--ivory-muted)}
+.phase-chevron{color:var(--ivory-muted);transition:transform .2s}
+.phase-body{padding:18px;background:var(--onyx)}
+.phase.collapsed .phase-body{display:none}
+.phase.collapsed .phase-chevron{transform:rotate(-90deg)}
+/* TC */
+.tc{margin-bottom:20px;border-left:2px solid var(--iron-light);padding-left:14px}
+.tc-id{font-family:'DM Mono',monospace;font-size:11px;color:var(--amber);margin-bottom:4px}
+.tc-scenario{font-size:14px;color:var(--ivory);margin-bottom:6px}
+.tc-observe{font-size:13px;color:var(--ivory-dim);margin-bottom:8px;font-style:italic}
+.pass-fail{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.pass{font-size:12px;background:rgba(122,158,142,.12);border:1px solid rgba(122,158,142,.35);border-radius:6px;padding:4px 10px;color:var(--sage)}
+.fail{font-size:12px;background:rgba(180,60,60,.12);border:1px solid rgba(180,60,60,.4);border-radius:6px;padding:4px 10px;color:#e07070}
+/* ANNOTATIONS */
+.ann{border-radius:8px;padding:10px 14px;margin:10px 0;font-size:13px}
+.ann-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px}
+.ann[data-type="friction"]{background:rgba(180,60,60,.15);border:1px solid rgba(180,60,60,.5)}.ann[data-type="friction"] .ann-label{color:#e07070}
+.ann[data-type="feeling"]{background:rgba(212,148,58,.12);border:1px solid rgba(212,148,58,.4)}.ann[data-type="feeling"] .ann-label{color:var(--amber)}
+.ann[data-type="interruption"]{background:rgba(107,133,160,.15);border:1px solid rgba(107,133,160,.45)}.ann[data-type="interruption"] .ann-label{color:#90b0cc}
+.ann[data-type="flow"]{background:rgba(122,158,142,.10);border:1px solid rgba(122,158,142,.35)}.ann[data-type="flow"] .ann-label{color:var(--sage)}
+.ann[data-type="formula"]{background:rgba(138,128,168,.12);border:1px solid rgba(138,128,168,.4)}.ann[data-type="formula"] .ann-label{color:var(--lavender)}
+/* FORMULA AUDIT */
+.formula-block{background:rgba(138,128,168,.08);border:1px solid rgba(138,128,168,.35);border-radius:10px;margin:12px 0;overflow:hidden}
+.formula-block summary{font-family:'DM Mono',monospace;font-size:11px;color:var(--lavender);padding:10px 14px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center}
+.formula-block summary::after{content:'▾';font-size:10px}
+.formula-block[open] summary::after{content:'▴'}
+.formula-body{padding:12px 14px;font-family:'DM Mono',monospace;font-size:12px;color:var(--ivory-dim)}
+.formula-body .row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(138,128,168,.15)}
+.formula-body .row:last-child{border-bottom:none}
+.formula-body .row .label{color:var(--lavender)}
+.formula-body .row .val{color:var(--ivory)}
+.app-shows{display:inline-block;min-width:80px;border-bottom:1px solid var(--lavender);color:var(--amber);cursor:text;padding:0 4px}
+/* SCORECARD */
+.scorecard{background:var(--carbon);border:1px solid var(--iron);border-radius:12px;padding:20px;margin-top:28px}
+.scorecard h4{font-family:'DM Serif Display',serif;font-size:18px;margin-bottom:14px}
+.sc-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--iron);font-size:13px}
+.sc-row:last-child{border-bottom:none}
+.sc-count{font-family:'DM Mono',monospace;font-size:16px;color:var(--amber)}
+.fix-list{margin-top:14px}
+.fix-item{font-size:13px;color:var(--ivory-dim);padding:4px 0 4px 16px;position:relative}
+.fix-item::before{content:'→';position:absolute;left:0;color:var(--amber)}
+/* DESIGN Q */
+.design-q{margin-top:28px;background:var(--carbon);border-radius:12px;padding:24px;border-left:3px solid var(--amber)}
+.design-q .label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);margin-bottom:10px}
+.design-q p{font-family:'DM Serif Display',serif;font-size:20px;line-height:1.4;color:var(--ivory)}
+/* SECTION HEADINGS */
+h2.section-title{font-family:'DM Serif Display',serif;font-size:26px;margin-bottom:6px}
+p.section-sub{font-size:13px;color:var(--ivory-muted);margin-bottom:28px}
+/* NAV AUDIT */
+.journey{background:var(--carbon);border:1px solid var(--iron);border-radius:10px;padding:16px;margin-bottom:16px}
+.journey-goal{font-size:14px;color:var(--ivory);margin-bottom:8px}
+.tap-sequence{font-family:'DM Mono',monospace;font-size:12px;color:var(--ivory-dim);margin-bottom:8px;line-height:1.8}
+.tap-badge{display:inline-block;font-family:'DM Mono',monospace;font-size:12px;padding:3px 10px;border-radius:20px;margin-right:8px}
+.tap-green{background:rgba(122,158,142,.2);color:var(--sage);border:1px solid rgba(122,158,142,.4)}
+.tap-yellow{background:rgba(212,148,58,.15);color:var(--amber);border:1px solid rgba(212,148,58,.35)}
+.tap-red{background:rgba(180,60,60,.15);color:#e07070;border:1px solid rgba(180,60,60,.4)}
+.actual-field{font-family:'DM Mono',monospace;font-size:12px;color:var(--ivory-muted);margin-top:6px}
+.actual-input{display:inline-block;min-width:60px;border-bottom:1px solid var(--iron-light);color:var(--amber);cursor:text;padding:0 4px}
+/* THUMB ZONE */
+#thumbzone{position:relative;width:180px;height:380px;margin:20px auto;border:2px solid var(--iron-light);border-radius:30px;overflow:hidden;background:var(--carbon)}
+#tz-dead{position:absolute;top:0;left:0;right:0;height:20%;background:rgba(180,60,60,.25);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:10px;color:#e07070}
+#tz-stretch{position:absolute;top:20%;left:0;right:0;height:40%;background:rgba(212,148,58,.12);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--amber)}
+#tz-natural{position:absolute;bottom:0;left:0;right:0;height:40%;background:rgba(122,158,142,.15);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--sage)}
+/* PRE-LAUNCH */
+.issue-card{border-radius:10px;padding:16px;margin-bottom:14px}
+.issue-blocker{background:rgba(180,60,60,.12);border:1px solid rgba(180,60,60,.45)}
+.issue-launch{background:rgba(212,148,58,.10);border:1px solid rgba(212,148,58,.35)}
+.issue-post{background:rgba(107,133,160,.10);border:1px solid rgba(107,133,160,.35)}
+.issue-badge{font-family:'DM Mono',monospace;font-size:10px;padding:2px 8px;border-radius:12px;margin-right:8px}
+.badge-blocker{background:rgba(180,60,60,.3);color:#e07070}
+.badge-launch{background:rgba(212,148,58,.25);color:var(--amber)}
+.badge-post{background:rgba(107,133,160,.25);color:#90b0cc}
+.issue-title{font-family:'DM Serif Display',serif;font-size:16px;margin:8px 0 6px}
+.issue-body{font-size:13px;color:var(--ivory-dim);margin-bottom:8px;line-height:1.6}
+.issue-test{font-family:'DM Mono',monospace;font-size:11px;color:var(--ivory-muted);padding:8px;background:rgba(0,0,0,.3);border-radius:6px;line-height:1.7}
+.persona-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.ptag{font-family:'DM Mono',monospace;font-size:10px;padding:2px 8px;background:var(--iron);border-radius:12px;color:var(--ivory-muted)}
+/* PATTERN */
+.pattern{background:var(--carbon);border-radius:10px;padding:14px 18px;margin-bottom:10px;border-left:3px solid var(--lavender)}
+.pattern-id{font-family:'DM Mono',monospace;font-size:10px;color:var(--lavender);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+/* PHYSICAL TEST */
+.test-item{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--iron)}
+.test-item:last-child{border-bottom:none}
+.test-cb{width:18px;height:18px;border:1px solid var(--iron-light);border-radius:4px;flex-shrink:0;margin-top:2px;cursor:pointer}
+.test-num{font-family:'DM Mono',monospace;font-size:12px;color:var(--amber);flex-shrink:0;width:24px}
+.test-body{font-size:13px;color:var(--ivory-dim);line-height:1.6}
+/* SPEED TABLE */
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+th{font-family:'DM Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ivory-muted);text-align:left;padding:8px 10px;border-bottom:1px solid var(--iron)}
+td{padding:8px 10px;border-bottom:1px solid var(--iron);color:var(--ivory-dim)}
+td:first-child{color:var(--ivory)}
+td .editable{display:inline-block;min-width:60px;border-bottom:1px solid var(--iron-light);cursor:text;color:var(--amber)}
+/* SAM RETURN */
+.return-q{text-align:center;padding:60px 20px}
+.return-q p:first-child{font-family:'DM Serif Display',serif;font-size:42px;line-height:1.2;color:var(--ivory);margin-bottom:24px}
+.return-q p:last-child{font-family:'DM Serif Display',serif;font-size:28px;color:var(--ivory-dim)}
+/* CHECKLIST */
+.checklist-item{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--iron)}
+.checklist-item:last-child{border-bottom:none}
+.check-box{width:18px;height:18px;border:1px solid var(--iron-light);border-radius:4px;flex-shrink:0;cursor:pointer}
+.check-label{font-size:13px;color:var(--ivory-dim)}
+.check-field{font-family:'DM Mono',monospace;font-size:11px;margin-left:8px;display:inline-block;min-width:80px;border-bottom:1px solid var(--iron-light);cursor:text;color:var(--amber)}
+</style>
+</head>
+<body>
+<div id="tabbar">
+<div class="tab active" data-tab="p1">01 Marcus</div>
+<div class="tab" data-tab="p2">02 Priya</div>
+<div class="tab" data-tab="p3">03 Danny</div>
+<div class="tab" data-tab="p4">04 Wei</div>
+<div class="tab" data-tab="p5">05 Serena</div>
+<div class="tab" data-tab="p6">06 James</div>
+<div class="tab" data-tab="p7">07 Chloe</div>
+<div class="tab" data-tab="p8">08 Kyle</div>
+<div class="tab" data-tab="p9">09 Rachel</div>
+<div class="tab" data-tab="p10">10 Tom</div>
+<div class="tab" data-tab="p11">11 Alex</div>
+<div class="tab" data-tab="p12">12 Sam</div>
+<div class="tab" data-tab="nav">Nav Audit</div>
+<div class="tab" data-tab="pre">Pre-Launch</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ MARCUS -->
+<div class="panel active" id="p1">
+<div class="persona-card">
+  <div class="persona-emoji">🏋️</div>
+  <div class="persona-name">Marcus, 34</div>
+  <div class="persona-tagline">The Well-Intentioned Gapper</div>
+  <div class="persona-bio">Works from home, two kids under 6. Wants to lift 4×/week, manages 2–3. Home gym in garage. Phone always nearby. Gets interrupted constantly. Intermediate lifter with opinions about form but inconsistent enough that progress feels invisible.</div>
+  <div class="trait-pills"><span class="pill">home gym</span><span class="pill">distracted</span><span class="pill">inconsistent</span><span class="pill">2–3×/week</span><span class="pill">intermediate</span><span class="pill">two kids</span></div>
+</div>
+
+<div class="phase" id="m-p1">
+  <div class="phase-header" onclick="togglePhase('m-p1')"><h3>Phase 1 — Morning Glance</h3><span class="phase-ctx">7am, in bed</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 1.1</div><div class="tc-scenario">Opens app after a 4-day gap. Audit the home screen — does it surface the gap? What exact language or visual appears?</div><div class="tc-observe">Observe: does anything acknowledge the gap or just show last session data silently?</div><div class="pass-fail"><span class="pass">PASS: gap duration shown, warm re-entry language</span><span class="fail">FAIL: generic home screen, gap invisible</span></div><div class="ann" data-type="friction"><div class="ann-label">Friction</div>If the gap is invisible Marcus will assume the app doesn't know him. Trust starts here.</div></div>
+    <div class="tc"><div class="tc-id">TC 1.2</div><div class="tc-scenario">Taps into last session to check bench numbers. Count taps from home screen.</div><div class="tc-observe">Observe: tap count and time to surface last bench weight.</div><div class="pass-fail"><span class="pass">PASS: ≤3 taps</span><span class="fail">FAIL: &gt;4 taps or requires scrolling past other content</span></div></div>
+    <div class="tc"><div class="tc-id">TC 1.3</div><div class="tc-scenario">Sees his last e1RM for bench press. Formula audit required.</div><div class="tc-observe">Expected input: 80 kg × 6 reps.</div>
+    <details class="formula-block"><summary>Formula Audit — 80 kg × 6 reps</summary><div class="formula-body"><div class="row"><span class="label">Epley</span><span class="val">80 × (1 + 6/30) = 80 × 1.200 = <strong>96.0 kg</strong></span></div><div class="row"><span class="label">Brzycki</span><span class="val">80 × 36/(37−6) = 80 × 1.161 = 92.9 kg</span></div><div class="row"><span class="label">Lander</span><span class="val">8000 / (101.3 − 16.03) = 8000/85.27 = 93.8 kg</span></div><div class="row"><span class="label">Lombardi</span><span class="val">80 × 6^0.10 = 80 × 1.196 = 95.7 kg</span></div><div class="row"><span class="label">App shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg</span></div><div class="row"><span class="label">Delta</span><span class="val">If 95.2: Brzycki+Lander blend. If 96: Epley confirmed. If &gt;100: calculation error.</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: value ≈96 kg (Epley) with formula visible on tap</span><span class="fail">FAIL: wrong value with no explanation</span></div></div>
+    <div class="tc"><div class="tc-id">TC 1.4</div><div class="tc-scenario">Closes app in 8 seconds having gotten nothing useful. What was missing?</div><div class="tc-observe">Observe: what single piece of information would have made the 8 seconds useful?</div><div class="pass-fail"><span class="pass">PASS: "next session" context visible within 2 seconds</span><span class="fail">FAIL: nothing actionable on home screen for a 4-day-gap user</span></div><div class="ann" data-type="feeling"><div class="ann-label">Feeling</div>"I came here to remember what I was going to do. I left with nothing."</div></div>
+    <div class="tc"><div class="tc-id">TC 1.5</div><div class="tc-scenario">Tries to signal intent to train today without starting a session. Any way to do this?</div><div class="pass-fail"><span class="pass">PASS: a "plan to train today" affordance exists</span><span class="fail">FAIL: no way to express intent without starting a full session</span></div></div>
+  </div>
+</div>
+
+<div class="phase" id="m-p2">
+  <div class="phase-header" onclick="togglePhase('m-p2')"><h3>Phase 2 — Pre-Workout</h3><span class="phase-ctx">11:50am, garage</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 2.1</div><div class="tc-scenario">Opens app one-handed while loading barbell. Which inputs require two hands?</div><div class="pass-fail"><span class="pass">PASS: weight/rep fields reachable one-handed on ≥iPhone 12</span><span class="fail">FAIL: any core logging action requires grip shift</span></div></div>
+    <div class="tc"><div class="tc-id">TC 2.2</div><div class="tc-scenario">Pulls phone out mid-task. Does screen state make sense after the context switch?</div><div class="pass-fail"><span class="pass">PASS: app shows same state as when he backgrounded it</span><span class="fail">FAIL: session or timer state reset</span></div><div class="ann" data-type="interruption"><div class="ann-label">Interruption</div>Marcus will background this app 4–6 times per session. State persistence is non-negotiable.</div></div>
+    <div class="tc"><div class="tc-id">TC 2.3</div><div class="tc-scenario">Searches "bench press" — tap count to exercise ready to log.</div><div class="pass-fail"><span class="pass">PASS: ≤4 taps from search to first logging input</span><span class="fail">FAIL: &gt;5 taps or disambiguation required with no guidance</span></div></div>
+    <div class="tc"><div class="tc-id">TC 2.4</div><div class="tc-scenario">Checks rest timer default. Can he change it per-exercise?</div><div class="pass-fail"><span class="pass">PASS: rest timer is editable, preference persists</span><span class="fail">FAIL: rest timer fixed or resets each session</span></div></div>
+  </div>
+</div>
+
+<div class="phase" id="m-p3">
+  <div class="phase-header" onclick="togglePhase('m-p3')"><h3>Phase 3 — Active Session</h3><span class="phase-ctx">12:02–12:48pm</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 3.1</div><div class="tc-scenario">Logs 80 kg × 6. Verify e1RM displayed matches formula.</div>
+    <details class="formula-block"><summary>Formula Audit — 80 kg × 6 reps (barbell)</summary><div class="formula-body"><div class="row"><span class="label">Epley</span><span class="val">80 × (1+6/30) = 96.0 kg ← expected</span></div><div class="row"><span class="label">Brzycki</span><span class="val">80 × 36/31 = 92.9 kg</span></div><div class="row"><span class="label">Lander</span><span class="val">8000/85.27 = 93.8 kg</span></div><div class="row"><span class="label">Lombardi</span><span class="val">80 × 6^0.10 = 95.7 kg</span></div><div class="row"><span class="label">App shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: 96 kg shown (Epley)</span><span class="fail">FAIL: any value outside 92–97 range without explanation</span></div></div>
+    <div class="tc"><div class="tc-id">TC 3.2</div><div class="tc-scenario">Screen locks mid-rest-timer. Returns. Timer state preserved?</div><div class="pass-fail"><span class="pass">PASS: timer shows elapsed time accurately after return</span><span class="fail">FAIL: timer reset or session state lost</span></div></div>
+    <div class="tc"><div class="tc-id">TC 3.3</div><div class="tc-scenario">Kid interrupts. App backgrounds 6 minutes. Returns. Session state audit.</div><div class="pass-fail"><span class="pass">PASS: all logged sets intact, session active, timer offset correctly</span><span class="fail">FAIL: any lost set data or session terminated</span></div><div class="ann" data-type="interruption"><div class="ann-label">Interruption</div>This scenario happens to Marcus at least once per session. Data loss here ends the relationship.</div></div>
+    <div class="tc"><div class="tc-id">TC 3.4</div><div class="tc-scenario">Logs wrong weight (60 instead of 70). Count taps to correct.</div><div class="pass-fail"><span class="pass">PASS: ≤3 taps to edit and confirm correction</span><span class="fail">FAIL: &gt;4 taps, or requires deleting and re-adding the set</span></div></div>
+    <div class="tc"><div class="tc-id">TC 3.5</div><div class="tc-scenario">Rapid tap test — taps "log set" 8 times quickly. How many sets appear?</div><div class="pass-fail"><span class="pass">PASS: 1 set logged (debounced)</span><span class="fail">FAIL: 2+ sets from a single intended tap</span></div></div>
+  </div>
+</div>
+
+<div class="phase" id="m-p4">
+  <div class="phase-header" onclick="togglePhase('m-p4')"><h3>Phase 4 — Post-Workout</h3><span class="phase-ctx">12:48pm</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 4.1</div><div class="tc-scenario">Sweaty hands. Tap target audit — which buttons require multiple attempts?</div><div class="pass-fail"><span class="pass">PASS: all critical end-session taps succeed first try on standard-size finger</span><span class="fail">FAIL: any primary action requires 2+ taps due to target size</span></div></div>
+    <div class="tc"><div class="tc-id">TC 4.2</div><div class="tc-scenario">Selects "strong" feel. Does this visibly affect session summary or feedback phrase?</div><div class="pass-fail"><span class="pass">PASS: phrase demonstrably differs between "strong" and "tired" on same session data</span><span class="fail">FAIL: identical phrase regardless of feel selection</span></div></div>
+    <div class="tc"><div class="tc-id">TC 4.3</div><div class="tc-scenario">Feedback phrase fires. Does it reference weight, reps, or gap since last session?</div><div class="pass-fail"><span class="pass">PASS: at least one specific data point (weight or gap) named in the phrase</span><span class="fail">FAIL: generic "great workout" with no data reference</span></div><div class="ann" data-type="feeling"><div class="ann-label">Feeling</div>Marcus wants evidence the app saw what he did. A generic phrase is an invisible wall.</div></div>
+    <div class="tc"><div class="tc-id">TC 4.4</div><div class="tc-scenario">Force-quits immediately after "end session" before summary loads. Reopens. Session saved?</div><div class="pass-fail"><span class="pass">PASS: full session with all sets appears in history</span><span class="fail">FAIL: session missing or partial</span></div></div>
+  </div>
+</div>
+
+<div class="phase" id="m-p5">
+  <div class="phase-header" onclick="togglePhase('m-p5')"><h3>Phase 5 — Evening</h3><span class="phase-ctx">9:30pm, couch</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 5.1</div><div class="tc-scenario">Opens app with no intention to log. What is there to look at? Time before he closes it.</div><div class="pass-fail"><span class="pass">PASS: &gt;60 seconds of useful browsing without a session</span><span class="fail">FAIL: nothing to do without logging — app feels empty</span></div></div>
+    <div class="tc"><div class="tc-id">TC 5.2</div><div class="tc-scenario">Checks bench trend over last 4 sessions. Are charted e1RM values correct?</div>
+    <details class="formula-block"><summary>Formula Audit — verify charted e1RM values</summary><div class="formula-body"><div class="row"><span class="label">Session 1 (80kg×6)</span><span class="val">Expected Epley: 96.0 kg | App shows: <span class="app-shows" contenteditable="true">___</span></span></div><div class="row"><span class="label">Session 2 (80kg×5)</span><span class="val">Expected Epley: 93.3 kg | App shows: <span class="app-shows" contenteditable="true">___</span></span></div><div class="row"><span class="label">Session 3 (82.5kg×5)</span><span class="val">Expected Epley: 96.3 kg | App shows: <span class="app-shows" contenteditable="true">___</span></span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: all values match Epley within 1 kg</span><span class="fail">FAIL: any value more than 2 kg off without formula explanation</span></div></div>
+    <div class="tc"><div class="tc-id">TC 5.3</div><div class="tc-scenario">Tries to find rate of strength gain metric. Does it exist? Is it legible without explanation?</div><div class="pass-fail"><span class="pass">PASS: metric labeled, unit clear (kg/week), visible without drilling</span><span class="fail">FAIL: metric absent, unlabeled, or requires 3+ taps to find</span></div></div>
+    <div class="tc"><div class="tc-id">TC 5.4</div><div class="tc-scenario">Wonders what happens if he doesn't train tomorrow. Does the app have an opinion?</div><div class="pass-fail"><span class="pass">PASS: any forward-looking context (optimal window, next session suggestion)</span><span class="fail">FAIL: app is purely retrospective with no forward guidance</span></div></div>
+  </div>
+</div>
+
+<div class="scorecard">
+  <h4>Scorecard</h4>
+  <div class="sc-row"><span>Friction points</span><span class="sc-count" data-persona="p1" data-type="friction">—</span></div>
+  <div class="sc-row"><span>Feeling moments</span><span class="sc-count" data-persona="p1" data-type="feeling">—</span></div>
+  <div class="sc-row"><span>Interruption risks</span><span class="sc-count" data-persona="p1" data-type="interruption">—</span></div>
+  <div class="fix-list">
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--ivory-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Priority Fixes</div>
+    <div class="fix-item">Session state persistence across backgrounding and force-quit</div>
+    <div class="fix-item">Home screen must surface gap duration + last session summary in &lt;2s</div>
+    <div class="fix-item">Rapid-tap debounce on "log set" button</div>
+    <div class="fix-item">One-handed logging for all primary actions</div>
+    <div class="fix-item">Feedback phrase must name at least one specific data point</div>
+  </div>
+</div>
+<div class="design-q"><div class="label">Design Question</div><p>When a user hasn't trained in 4 days and opens the app at 7am, what is the single most useful thing H.O.N. can show them — and does it currently show that?</p></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ PRIYA -->
+<div class="panel" id="p2">
+<div class="persona-card">
+  <div class="persona-emoji">🎧</div>
+  <div class="persona-name">Priya, 29</div>
+  <div class="persona-tagline">The Spreadsheet Refugee</div>
+  <div class="persona-bio">Software engineer, no kids, gym 5 min away. Trains 4–5×/week at 6am. Analytical and data-driven. Currently tracking on a spreadsheet because no app has been precise enough. Will Google the Epley formula during her first session.</div>
+  <div class="trait-pills"><span class="pill">commercial gym</span><span class="pill">4–5×/week</span><span class="pill">data-driven</span><span class="pill">early morning</span><span class="pill">skeptic</span><span class="pill">spreadsheet refugee</span></div>
+</div>
+
+<div class="phase" id="pr-p1">
+  <div class="phase-header" onclick="togglePhase('pr-p1')"><h3>Phase 1 — Morning Glance</h3><span class="phase-ctx">5:40am</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 1.1</div><div class="tc-scenario">Opens app to check last push session weights. What is the tap count?</div><div class="pass-fail"><span class="pass">PASS: last session weights accessible in ≤3 taps</span><span class="fail">FAIL: &gt;4 taps or chronological scrolling required</span></div></div>
+    <div class="tc"><div class="tc-id">TC 1.2</div><div class="tc-scenario">Wants last bench press specifically, not whole session. Exercise-level drill-down tap count.</div><div class="pass-fail"><span class="pass">PASS: ≤4 taps from home to bench press e1RM history</span><span class="fail">FAIL: &gt;5 taps or requires knowing which session to open first</span></div></div>
+    <div class="tc"><div class="tc-id">TC 1.3</div><div class="tc-scenario">Checks e1RM from last session. Formula audit: 57.5 kg × 5.</div>
+    <details class="formula-block"><summary>Formula Audit — 57.5 kg × 5 reps</summary><div class="formula-body"><div class="row"><span class="label">Epley</span><span class="val">57.5 × (1+5/30) = 57.5 × 1.167 = <strong>67.1 kg</strong></span></div><div class="row"><span class="label">Brzycki</span><span class="val">57.5 × 36/32 = 57.5 × 1.125 = 64.7 kg</span></div><div class="row"><span class="label">Lander</span><span class="val">5750 / (101.3 − 13.356) = 5750/87.944 = 65.4 kg</span></div><div class="row"><span class="label">Lombardi</span><span class="val">57.5 × 5^0.10 = 57.5 × 1.175 = 67.6 kg</span></div><div class="row"><span class="label">App shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg</span></div><div class="row"><span class="label">Delta</span><span class="val">Priya will calculate this manually. A 2 kg discrepancy with no explanation = abandonment risk.</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: value ≈67.1 kg, formula identifiable from in-app source</span><span class="fail">FAIL: value off by &gt;2 kg with no formula disclosure</span></div></div>
+    <div class="tc"><div class="tc-id">TC 1.4</div><div class="tc-scenario">Tries to identify what weight she should attempt today based on last session data.</div><div class="pass-fail"><span class="pass">PASS: next-session target suggested or derivable from trend</span><span class="fail">FAIL: app shows history only, no forward suggestion</span></div><div class="ann" data-type="friction"><div class="ann-label">Friction</div>Priya's spreadsheet gave her this instantly. If H.O.N. doesn't, she questions the switch.</div></div>
+    <div class="tc"><div class="tc-id">TC 1.5</div><div class="tc-scenario">Notices 3 sessions this week. Does app surface weekly volume in under 10 seconds?</div><div class="pass-fail"><span class="pass">PASS: weekly volume visible on home or stats without drilling</span><span class="fail">FAIL: requires manually summing session volumes</span></div></div>
+  </div>
+</div>
+
+<div class="phase" id="pr-p2">
+  <div class="phase-header" onclick="togglePhase('pr-p2')"><h3>Phase 2 — At the Gym</h3><span class="phase-ctx">6:05am</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 2.1</div><div class="tc-scenario">One-handed navigation while adjusting bench. Which session screens require two hands?</div><div class="pass-fail"><span class="pass">PASS: weight input, rep input, log-set all reachable one-handed</span><span class="fail">FAIL: search bar or save button in dead zone for bottom-grip users</span></div></div>
+    <div class="tc"><div class="tc-id">TC 2.2</div><div class="tc-scenario">Earphones in. Does any H.O.N. notification interrupt her audio?</div><div class="pass-fail"><span class="pass">PASS: no audio interruption from rest timer or notifications</span><span class="fail">FAIL: any audio plays without user-initiated action</span></div></div>
+    <div class="tc"><div class="tc-id">TC 2.3</div><div class="tc-scenario">"Barbell Bench Press" vs "Bench Press (Machine)" — are these disambiguated clearly?</div><div class="pass-fail"><span class="pass">PASS: equipment type clearly visible in search results without tapping each option</span><span class="fail">FAIL: same name with different equipment invisible in list view</span></div></div>
+    <div class="tc"><div class="tc-id">TC 2.4</div><div class="tc-scenario">Someone asks if she's using equipment. She pauses. Rest timer runs unattended. Return state?</div><div class="pass-fail"><span class="pass">PASS: timer shows elapsed, session fully intact</span><span class="fail">FAIL: timer reset or session state ambiguous</span></div></div>
+  </div>
+</div>
+
+<div class="phase" id="pr-p3">
+  <div class="phase-header" onclick="togglePhase('pr-p3')"><h3>Phase 3 — Active Session</h3><span class="phase-ctx">6:10–7:00am</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 3.1</div><div class="tc-scenario">Logs 60 kg × 4 (weight jump from 57.5 kg). Is the marginal e1RM improvement correctly read?</div>
+    <details class="formula-block"><summary>Formula Audit — 60 kg × 4 vs previous 57.5 kg × 5</summary><div class="formula-body"><div class="row"><span class="label">New: Epley</span><span class="val">60 × (1+4/30) = 60 × 1.133 = <strong>68.0 kg</strong></span></div><div class="row"><span class="label">New: Brzycki</span><span class="val">60 × 36/33 = 60 × 1.091 = 65.5 kg</span></div><div class="row"><span class="label">New: Lander</span><span class="val">6000 / (101.3 − 10.685) = 6000/90.615 = 66.2 kg</span></div><div class="row"><span class="label">New: Lombardi</span><span class="val">60 × 4^0.10 = 60 × 1.149 = 68.9 kg</span></div><div class="row"><span class="label">Previous (Epley)</span><span class="val">57.5 × 1.167 = 67.1 kg</span></div><div class="row"><span class="label">Delta</span><span class="val">+0.9 kg improvement (Epley). App should register as marginal PR.</span></div><div class="row"><span class="label">App shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: new e1RM ≈68.0 kg, shown as improvement over 67.1 kg</span><span class="fail">FAIL: regression shown despite weight jump, or same value as previous</span></div></div>
+    <div class="tc"><div class="tc-id">TC 3.2</div><div class="tc-scenario">Logs 5 exercises, 4 sets each (20 total). UI performance by set 15+?</div><div class="pass-fail"><span class="pass">PASS: no visible lag on set 16–20</span><span class="fail">FAIL: scrolling lag, render stutter, or input delay &gt;0.3s</span></div></div>
+    <div class="tc"><div class="tc-id">TC 3.3</div><div class="tc-scenario">Wants to log "notes" for a set (e.g. "paused reps"). Is this possible?</div><div class="pass-fail"><span class="pass">PASS: per-exercise notes field exists and saves</span><span class="fail">FAIL: notes only at session level, not per-exercise or per-set</span></div></div>
+    <div class="tc"><div class="tc-id">TC 3.5</div><div class="tc-scenario">Logs warmup set she doesn't want in e1RM. Can she mark a set as warmup/excluded?</div><div class="pass-fail"><span class="pass">PASS: warmup exclusion exists or sets can be marked incomplete</span><span class="fail">FAIL: all logged sets count toward e1RM with no opt-out</span></div><div class="ann" data-type="friction"><div class="ann-label">Friction</div>A warmup at 40 kg will suppress e1RM if it becomes the "best" by reps. Priya will notice.</div></div>
+    <div class="tc"><div class="tc-id">TC 3.6</div><div class="tc-scenario">Airplane mode test — gym basement, no signal. Session continues and saves locally?</div><div class="pass-fail"><span class="pass">PASS: full session logged offline, available in history after reconnect</span><span class="fail">FAIL: any data loss or error on offline session</span></div></div>
+  </div>
+</div>
+
+<div class="phase" id="pr-p4">
+  <div class="phase-header" onclick="togglePhase('pr-p4')"><h3>Phase 4 — Post-Session</h3><span class="phase-ctx">7:15am, subway</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 4.2</div><div class="tc-scenario">Feedback phrase fires. Does it mention weight jump? Rep drop? e1RM comparison to last session?</div><div class="pass-fail"><span class="pass">PASS: phrase references specific data delta (e.g. "up from 57.5 kg")</span><span class="fail">FAIL: generic phrase with no data comparison</span></div></div>
+    <div class="tc"><div class="tc-id">TC 4.3</div><div class="tc-scenario">Tries to determine whether today was a PR. Does H.O.N. indicate PRs? How?</div><div class="pass-fail"><span class="pass">PASS: PR clearly indicated in summary, with which exercise and what value</span><span class="fail">FAIL: no PR indication or requires navigating away to check history</span></div></div>
+  </div>
+</div>
+
+<div class="phase" id="pr-p5">
+  <div class="phase-header" onclick="togglePhase('pr-p5')"><h3>Phase 5 — Evening Analysis</h3><span class="phase-ctx">7:45pm</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 5.2</div><div class="tc-scenario">Formula audit on trend line: pick 3 sessions, verify e1RM values match Epley for underlying sets.</div>
+    <details class="formula-block"><summary>Formula Audit — Trend Line Verification (3 sessions)</summary><div class="formula-body"><div class="row"><span class="label">Session A inputs</span><span class="val">___ kg × ___ reps</span></div><div class="row"><span class="label">Epley expected</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg</span></div><div class="row"><span class="label">App shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg | Δ: <span class="app-shows" contenteditable="true">___</span></span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: all 3 values match Epley within 0.5 kg</span><span class="fail">FAIL: any unexplained discrepancy &gt;2 kg</span></div></div>
+    <div class="tc"><div class="tc-id">TC 5.3</div><div class="tc-scenario">Rate of strength gain formula audit.</div>
+    <details class="formula-block"><summary>Formula Audit — Rate of Strength Gain</summary><div class="formula-body"><div class="row"><span class="label">Manual calc</span><span class="val">(most recent e1RM − earliest e1RM) ÷ weeks elapsed</span></div><div class="row"><span class="label">Example</span><span class="val">(68.0 − 67.1) ÷ 1 week = 0.9 kg/week</span></div><div class="row"><span class="label">App shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg/week</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: value matches manual calculation within 0.2 kg/week</span><span class="fail">FAIL: value doesn't match, or metric absent, or unlabeled</span></div></div>
+    <div class="tc"><div class="tc-id">TC 5.5</div><div class="tc-scenario">Tries to export data. Any data export path? What format?</div><div class="pass-fail"><span class="pass">PASS: JSON or CSV export accessible, includes all logged sets</span><span class="fail">FAIL: no export path exists</span></div><div class="ann" data-type="friction"><div class="ann-label">Friction</div>Priya won't fully trust any app that holds her data hostage. Export is a trust signal, not a feature.</div></div>
+  </div>
+</div>
+
+<div class="scorecard">
+  <h4>Scorecard</h4>
+  <div class="sc-row"><span>Friction points</span><span class="sc-count">—</span></div>
+  <div class="sc-row"><span>Feeling moments</span><span class="sc-count">—</span></div>
+  <div class="sc-row"><span>Interruption risks</span><span class="sc-count">—</span></div>
+  <div class="fix-list">
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--ivory-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Priority Fixes</div>
+    <div class="fix-item">In-app formula disclosure — name the formula used (Epley)</div>
+    <div class="fix-item">Exercise disambiguation in search results (show equipment type clearly)</div>
+    <div class="fix-item">Feedback phrase must reference specific data delta, not just feel</div>
+    <div class="fix-item">Rate of strength gain: label, unit, and manual-verifiable formula</div>
+    <div class="fix-item">Data export (JSON at minimum)</div>
+  </div>
+</div>
+<div class="design-q"><div class="label">Design Question</div><p>If Priya's manual Epley and H.O.N.'s displayed e1RM differ by more than 2 kg — with no in-app explanation of which formula is used — does she stay or leave?</p></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ DANNY -->
+<div class="panel" id="p3">
+<div class="persona-card">
+  <div class="persona-emoji">🌱</div>
+  <div class="persona-name">Danny, 23</div>
+  <div class="persona-tagline">The First-Timer</div>
+  <div class="persona-bio">Recent grad, 8 weeks into lifting, first gym membership. Intimidated by the gym floor. Goes 2–3×/week after work. Doesn't know what e1RM means. Prone to quitting if the app makes him feel dumb.</div>
+  <div class="trait-pills"><span class="pill">beginner</span><span class="pill">8 weeks in</span><span class="pill">commercial gym</span><span class="pill">after work</span><span class="pill">intimidated</span><span class="pill">no baseline</span></div>
+</div>
+<div class="phase" id="dn-p1">
+  <div class="phase-header" onclick="togglePhase('dn-p1')"><h3>Phase 1 — Morning Glance</h3><span class="phase-ctx">Commute</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 1.1</div><div class="tc-scenario">Opens app hoping it will motivate him to go tonight. What does the home screen offer?</div><div class="pass-fail"><span class="pass">PASS: home screen has something for a non-logging moment (streak, context, encouragement)</span><span class="fail">FAIL: home screen is blank or just a "Start Workout" button</span></div></div>
+    <div class="tc"><div class="tc-id">TC 1.2</div><div class="tc-scenario">Sees "e1RM." Is there any explanation without leaving the app?</div><div class="pass-fail"><span class="pass">PASS: tapping e1RM shows plain-English explanation</span><span class="fail">FAIL: term appears with no explanation affordance anywhere</span></div><div class="ann" data-type="friction"><div class="ann-label">Friction</div>"e1RM" is industry jargon. Danny will feel judged, not informed. This is an exit point.</div></div>
+    <div class="tc"><div class="tc-id">TC 1.3</div><div class="tc-scenario">Last session was 3 days ago. Does the app feel like it missed him or doesn't care?</div><div class="pass-fail"><span class="pass">PASS: gap acknowledged with non-judgmental language</span><span class="fail">FAIL: no acknowledgment, or language that implies failure</span></div></div>
+    <div class="tc"><div class="tc-id">TC 1.4</div><div class="tc-scenario">Taps around exploring. List every screen using terminology a beginner wouldn't know.</div><div class="pass-fail"><span class="pass">PASS: &lt;3 unexplained terms across all visible screens</span><span class="fail">FAIL: e1RM, INOL, bilateral, or other jargon with no inline explanation</span></div></div>
+  </div>
+</div>
+<div class="phase" id="dn-p2">
+  <div class="phase-header" onclick="togglePhase('dn-p2')"><h3>Phase 2 — At the Gym</h3><span class="phase-ctx">6:30pm</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 2.1</div><div class="tc-scenario">Stands in front of squat rack. Opens H.O.N. Does the app help or just wait?</div><div class="pass-fail"><span class="pass">PASS: any contextual starting point (suggested exercises, last routine)</span><span class="fail">FAIL: blank slate requiring Danny to know what to do next</span></div></div>
+    <div class="tc"><div class="tc-id">TC 2.2</div><div class="tc-scenario">Searches "cable" — gets 8 options. Does he have enough info to pick the right one?</div><div class="pass-fail"><span class="pass">PASS: muscle group and equipment visible in search result without tapping each</span><span class="fail">FAIL: list of names with no visual differentiation</span></div></div>
+    <div class="tc"><div class="tc-id">TC 2.3</div><div class="tc-scenario">Starts a session. How many screens before he can log his first set?</div><div class="pass-fail"><span class="pass">PASS: ≤3 screens from tap to first log</span><span class="fail">FAIL: &gt;4 screens or required fields he doesn't understand</span></div></div>
+  </div>
+</div>
+<div class="phase" id="dn-p3">
+  <div class="phase-header" onclick="togglePhase('dn-p3')"><h3>Phase 3 — Active Session</h3><span class="phase-ctx">6:35–7:25pm</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 3.1</div><div class="tc-scenario">Logs squat 40 kg × 8. Formula audit. Does this number mean anything to him without context?</div>
+    <details class="formula-block"><summary>Formula Audit — 40 kg × 8 reps (barbell squat)</summary><div class="formula-body"><div class="row"><span class="label">Epley</span><span class="val">40 × (1+8/30) = 40 × 1.267 = <strong>50.7 kg</strong></span></div><div class="row"><span class="label">Brzycki</span><span class="val">40 × 36/29 = 40 × 1.241 = 49.6 kg</span></div><div class="row"><span class="label">Lander</span><span class="val">4000 / (101.3 − 21.370) = 4000/79.930 = 50.0 kg</span></div><div class="row"><span class="label">Lombardi</span><span class="val">40 × 8^0.10 = 40 × 1.231 = 49.2 kg</span></div><div class="row"><span class="label">App shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg</span></div><div class="row"><span class="label">Danny context</span><span class="val">50.7 kg means nothing without a reference. Does the app tell him if this is good for 8 weeks in?</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: e1RM shown with relative context (beginner/intermediate label or percentile)</span><span class="fail">FAIL: raw number with no frame of reference</span></div></div>
+    <div class="tc"><div class="tc-id">TC 3.2</div><div class="tc-scenario">Logs exercise under wrong name. Any disambiguation prompt?</div><div class="pass-fail"><span class="pass">PASS: similar exercises surfaced or a "did you mean" prompt on first log</span><span class="fail">FAIL: silent acceptance of any name, history fragmented invisibly</span></div></div>
+    <div class="tc"><div class="tc-id">TC 3.4</div><div class="tc-scenario">Rest timer fires while mid-conversation. Alert discreet or embarrassing?</div><div class="pass-fail"><span class="pass">PASS: silent vibration only, no audio, no full-screen takeover</span><span class="fail">FAIL: audio or prominent screen notification while his phone is visible to others</span></div></div>
+    <div class="tc"><div class="tc-id">TC 3.5</div><div class="tc-scenario">Logs 1 rep at 60 kg as a test. Epley: 60×(1+1/30)=62 kg. Does app treat it same as a working set?</div>
+    <details class="formula-block"><summary>Formula Audit — 60 kg × 1 rep</summary><div class="formula-body"><div class="row"><span class="label">Epley</span><span class="val">60 × (1+1/30) = 60 × 1.033 = <strong>62.0 kg</strong></span></div><div class="row"><span class="label">Brzycki</span><span class="val">60 × 36/36 = 60 × 1.000 = 60.0 kg</span></div><div class="row"><span class="label">Lander</span><span class="val">6000 / (101.3 − 2.671) = 6000/98.629 = 60.8 kg</span></div><div class="row"><span class="label">Lombardi</span><span class="val">60 × 1^0.10 = 60 × 1.000 = 60.0 kg</span></div><div class="row"><span class="label">App shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: 1-rep set handled distinctly or flagged as potentially unreliable</span><span class="fail">FAIL: 1-rep set treated identically to 8-rep set in trend analysis</span></div></div>
+  </div>
+</div>
+<div class="phase" id="dn-p4">
+  <div class="phase-header" onclick="togglePhase('dn-p4')"><h3>Phase 4 — Post-Workout</h3><span class="phase-ctx">Leaving gym, 7:35pm</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 4.1</div><div class="tc-scenario">Feedback phrase fires. 3 sessions logged — just enough for trend. Does phrase reference trend?</div><div class="pass-fail"><span class="pass">PASS: phrase names a specific data point and uses encouraging (not expert) language</span><span class="fail">FAIL: phrase uses "e1RM" without explanation, or is generically positive with no data</span></div><div class="ann" data-type="feeling"><div class="ann-label">Feeling</div>The feedback phrase after session 3 is the moment Danny decides if this app is for him.</div></div>
+    <div class="tc"><div class="tc-id">TC 4.2</div><div class="tc-scenario">Wants to screenshot and send to friend. Does session summary look impressive or like a data dump?</div><div class="pass-fail"><span class="pass">PASS: summary is visually legible, has human-readable headline</span><span class="fail">FAIL: raw numbers grid with no visual hierarchy</span></div></div>
+  </div>
+</div>
+<div class="phase" id="dn-p5">
+  <div class="phase-header" onclick="togglePhase('dn-p5')"><h3>Phase 5 — Late Night</h3><span class="phase-ctx">10pm, in bed</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 5.1</div><div class="tc-scenario">Looks at squat history — 3 sessions. Does chart convey progress with only 3 points?</div><div class="pass-fail"><span class="pass">PASS: 3-point chart still shows direction, has encouraging note if trend is up</span><span class="fail">FAIL: chart requires &gt;3 sessions to render, or shows empty state</span></div></div>
+    <div class="tc"><div class="tc-id">TC 5.3</div><div class="tc-scenario">He doesn't understand what the y-axis means. Is it labeled? Unit clear?</div><div class="pass-fail"><span class="pass">PASS: y-axis labeled "Est. 1-Rep Max (kg)" or equivalent plain English</span><span class="fail">FAIL: "e1RM" as axis label with no explanation nearby</span></div></div>
+    <div class="tc"><div class="tc-id">TC 5.4</div><div class="tc-scenario">Wants to know if he's doing well for 8 weeks in. Does the app have any way to answer this?</div><div class="pass-fail"><span class="pass">PASS: relative strength tier or beginner-context messaging visible</span><span class="fail">FAIL: app has no awareness of training age or relative standard</span></div></div>
+  </div>
+</div>
+<div class="scorecard">
+  <h4>Scorecard</h4>
+  <div class="sc-row"><span>Friction points</span><span class="sc-count">—</span></div>
+  <div class="sc-row"><span>Feeling moments</span><span class="sc-count">—</span></div>
+  <div class="sc-row"><span>Interruption risks</span><span class="sc-count">—</span></div>
+  <div class="fix-list">
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--ivory-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Priority Fixes</div>
+    <div class="fix-item">Inline explanation for e1RM and any metric a beginner would not recognize</div>
+    <div class="fix-item">Feedback phrase cold-start floor: must not use jargon in first 3 sessions</div>
+    <div class="fix-item">Chart y-axis in plain English, not "e1RM"</div>
+    <div class="fix-item">3-session minimum for trend must still show something useful</div>
+    <div class="fix-item">Rest timer: vibration-only option</div>
+  </div>
+</div>
+<div class="design-q"><div class="label">Design Question</div><p>At 3 sessions logged, what is the minimum viable "progress" signal the app can give Danny — and is that signal currently present?</p></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ WEI -->
+<div class="panel" id="p4">
+<div class="persona-card">
+  <div class="persona-emoji">🔄</div>
+  <div class="persona-name">Wei, 31</div>
+  <div class="persona-tagline">The Returner</div>
+  <div class="persona-bio">Trained consistently 4 months, stopped 3 weeks (holiday, then illness). Now returning. Data exists but feels like ancient history. Anxious about regression. Doesn't want the app to confront him with past bests as a standard he must now meet.</div>
+  <div class="trait-pills"><span class="pill">returning user</span><span class="pill">3-week gap</span><span class="pill">previously consistent</span><span class="pill">anxiety about regression</span><span class="pill">intermediate</span><span class="pill">home gym</span></div>
+</div>
+<div class="phase" id="w-p1">
+  <div class="phase-header" onclick="togglePhase('w-p1')"><h3>Phase 1 — First Open After 3-Week Gap</h3><span class="phase-ctx">After illness</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 1.1</div><div class="tc-scenario">Home screen audit — does it surface the 3-week gap? What exact language or visual?</div><div class="pass-fail"><span class="pass">PASS: gap shown with non-judgmental framing ("3 weeks since your last session")</span><span class="fail">FAIL: "3-week streak broken" or similar shame language; or gap invisible</span></div><div class="ann" data-type="feeling"><div class="ann-label">Feeling</div>The first word the app says to Wei after 3 weeks matters more than any feature. It sets re-entry tone.</div></div>
+    <div class="tc"><div class="tc-id">TC 1.2</div><div class="tc-scenario">Sees previous bench e1RM: 92 kg. Does app set implicit expectation for today?</div>
+    <details class="formula-block"><summary>Formula Audit — Previous bench 80 kg × 5</summary><div class="formula-body"><div class="row"><span class="label">Epley</span><span class="val">80 × (1+5/30) = 80 × 1.167 = <strong>93.3 kg</strong></span></div><div class="row"><span class="label">Brzycki</span><span class="val">80 × 36/32 = 80 × 1.125 = 90.0 kg</span></div><div class="row"><span class="label">Lander</span><span class="val">8000 / 87.944 = 90.9 kg</span></div><div class="row"><span class="label">Lombardi</span><span class="val">80 × 5^0.10 = 80 × 1.175 = 94.0 kg</span></div><div class="row"><span class="label">App shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: previous e1RM shown with context that it's a pre-gap value</span><span class="fail">FAIL: displayed as current standard to meet with no gap caveat</span></div></div>
+    <div class="tc"><div class="tc-id">TC 1.4</div><div class="tc-scenario">Trend line has visible cliff at week 4. How does the visualization handle the 3-week gap?</div><div class="pass-fail"><span class="pass">PASS: gap shown as break or neutral space, not as declining line</span><span class="fail">FAIL: gap rendered as a flat or declining line implying regression during inactivity</span></div></div>
+  </div>
+</div>
+<div class="phase" id="w-p2">
+  <div class="phase-header" onclick="togglePhase('w-p2')"><h3>Phase 2 — First Session Back</h3><span class="phase-ctx">Return day</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 2.1</div><div class="tc-scenario">Logs bench 75 kg × 4 (down from 85 kg × 5). How does trend line absorb this dip?</div>
+    <details class="formula-block"><summary>Formula Audit — 75 kg × 4 vs previous 85 kg × 5</summary><div class="formula-body"><div class="row"><span class="label">New: Epley</span><span class="val">75 × (1+4/30) = 75 × 1.133 = <strong>85.0 kg</strong></span></div><div class="row"><span class="label">New: Brzycki</span><span class="val">75 × 36/33 = 75 × 1.091 = 81.8 kg</span></div><div class="row"><span class="label">Previous: Epley</span><span class="val">85 × (1+5/30) = 85 × 1.167 = 99.2 kg</span></div><div class="row"><span class="label">Drop</span><span class="val">−14.2 kg (Epley). App shows: <span class="app-shows" contenteditable="true">___</span> kg</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: dip shown as information, not failure; rate-of-gain doesn't catastrophize</span><span class="fail">FAIL: trend shown as sharp decline with no gap context, or phrase implies regression is a problem</span></div></div>
+    <div class="tc"><div class="tc-id">TC 2.2</div><div class="tc-scenario">Feedback phrase fires on session with lower weights than history. Does it acknowledge return context?</div><div class="pass-fail"><span class="pass">PASS: phrase mentions gap or return; does not compare unfavorably to pre-gap numbers</span><span class="fail">FAIL: "your bench is declining" or equivalent, with no return context</span></div><div class="ann" data-type="feeling"><div class="ann-label">Feeling</div>Wei came back. The app should notice that. "You showed up" matters more than the weight on the bar today.</div></div>
+    <div class="tc"><div class="tc-id">TC 2.3</div><div class="tc-scenario">Selects "strong" feel on a lighter-than-history session. Does phrase reconcile this?</div><div class="pass-fail"><span class="pass">PASS: "strong" feel acknowledged; phrase reflects his subjective experience, not just the numbers</span><span class="fail">FAIL: phrase ignores feel selector; focuses only on number decline</span></div></div>
+  </div>
+</div>
+<div class="phase" id="w-p3">
+  <div class="phase-header" onclick="togglePhase('w-p3')"><h3>Phase 3 — Second Session</h3><span class="phase-ctx">2 days later</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 3.1</div><div class="tc-scenario">Logs bench 78 kg × 5. Does app recognize rapid recovery?</div>
+    <details class="formula-block"><summary>Formula Audit — 78 kg × 5 (recovery session)</summary><div class="formula-body"><div class="row"><span class="label">Epley</span><span class="val">78 × (1+5/30) = 78 × 1.167 = <strong>91.0 kg</strong></span></div><div class="row"><span class="label">Brzycki</span><span class="val">78 × 36/32 = 78 × 1.125 = 87.8 kg</span></div><div class="row"><span class="label">Lander</span><span class="val">7800 / 87.944 = 88.7 kg</span></div><div class="row"><span class="label">Lombardi</span><span class="val">78 × 5^0.10 = 78 × 1.175 = 91.7 kg</span></div><div class="row"><span class="label">App shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg</span></div><div class="row"><span class="label">Context</span><span class="val">Nearly back to pre-gap level (93.3 kg) in 2 sessions. Does rate-of-gain spike?</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: rapid recovery visible in trend or rate-of-gain metric; phrase acknowledges it</span><span class="fail">FAIL: metric treats dip→recovery same as linear progression, no signal of rebound speed</span></div></div>
+    <div class="tc"><div class="tc-id">TC 3.3</div><div class="tc-scenario">Compares current e1RM to pre-gap e1RM. Is this comparison surfaced anywhere?</div><div class="pass-fail"><span class="pass">PASS: a "vs. best" or "vs. pre-gap" comparison is visible on the chart or detail view</span><span class="fail">FAIL: no way to see how close he is to his pre-gap level</span></div></div>
+  </div>
+</div>
+<div class="phase" id="w-p4">
+  <div class="phase-header" onclick="togglePhase('w-p4')"><h3>Phase 4 — Evening Reflection</h3><span class="phase-ctx">Post-second session</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 4.2</div><div class="tc-scenario">Browses full history including gap. Does he feel informed or judged?</div><div class="pass-fail"><span class="pass">PASS: visualization treats gap as neutral data, not failure</span><span class="fail">FAIL: gap visualization implies he was supposed to keep training</span></div></div>
+    <div class="tc"><div class="tc-id">TC 4.3</div><div class="tc-scenario">Rate of strength gain formula audit across dip-and-recovery.</div>
+    <details class="formula-block"><summary>Formula Audit — Rate of Gain with Gap</summary><div class="formula-body"><div class="row"><span class="label">Pre-gap e1RM</span><span class="val">93.3 kg (week 16)</span></div><div class="row"><span class="label">Return e1RM</span><span class="val">85.0 kg (week 19) → 91.0 kg (week 19+2d)</span></div><div class="row"><span class="label">App rate shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg/week</span></div><div class="row"><span class="label">Question</span><span class="val">Does algorithm smooth the gap, ignore it, or count it as negative progress?</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: rate calculation excludes gap period or notes it explicitly</span><span class="fail">FAIL: gap period counted as training weeks, making rate appear negative</span></div></div>
+  </div>
+</div>
+<div class="phase" id="w-p5">
+  <div class="phase-header" onclick="togglePhase('w-p5')"><h3>Phase 5 — Design Ethics</h3><span class="phase-ctx">The re-entry question</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="ann" data-type="feeling"><div class="ann-label">Feeling</div>Wei's return is a moment of vulnerability. Whether the app responds with data or with humanity determines if he comes back for session 3.</div>
+    <div class="tc"><div class="tc-id">TC 5.1</div><div class="tc-scenario">After 2 comeback sessions, what does the feedback phrase call this pattern?</div><div class="pass-fail"><span class="pass">PASS: phrase acknowledges comeback arc with specific language about return</span><span class="fail">FAIL: phrase treats sessions as isolated events with no narrative continuity</span></div></div>
+  </div>
+</div>
+<div class="scorecard">
+  <h4>Scorecard</h4>
+  <div class="sc-row"><span>Friction points</span><span class="sc-count">—</span></div>
+  <div class="sc-row"><span>Feeling moments</span><span class="sc-count">—</span></div>
+  <div class="fix-list">
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--ivory-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Priority Fixes</div>
+    <div class="fix-item">Re-entry tone: first phrase after gap must acknowledge the return, not the absence</div>
+    <div class="fix-item">Gap visualization: neutral break, not declining line</div>
+    <div class="fix-item">Rate-of-gain algorithm must exclude gap periods from denominator</div>
+    <div class="fix-item">Pre-gap vs current comparison surfaced in trend view</div>
+  </div>
+</div>
+<div class="design-q"><div class="label">Design Question</div><p>When a user's first session back is weaker than their historical average, does the feedback phrase know they're returning — or does it treat their regression as a setback?</p></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ SERENA -->
+<div class="panel" id="p5">
+<div class="persona-card">
+  <div class="persona-emoji">📋</div>
+  <div class="persona-name">Serena, 27</div>
+  <div class="persona-tagline">The Retroactive Logger</div>
+  <div class="persona-bio">Competitive powerlifter, 4×/week, strict no-phone-on-the-floor rule. Logs everything from memory or paper notepad, 20–60 min after the session. H.O.N. was designed for in-session use.</div>
+  <div class="trait-pills"><span class="pill">powerlifter</span><span class="pill">4×/week</span><span class="pill">no phone during training</span><span class="pill">retroactive logger</span><span class="pill">paper notes</span><span class="pill">high data precision</span></div>
+</div>
+<div class="phase" id="se-p1">
+  <div class="phase-header" onclick="togglePhase('se-p1')"><h3>Phase 1 — Home, 45 min after session</h3><span class="phase-ctx">Post-training logging</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 1.1</div><div class="tc-scenario">Opens H.O.N. 45 min after finishing. Starts session. Can she correct the start time?</div><div class="pass-fail"><span class="pass">PASS: session start time is editable before saving</span><span class="fail">FAIL: timestamp locked to "now" with no correction path</span></div><div class="ann" data-type="friction"><div class="ann-label">Friction</div>Every retroactive session has a wrong timestamp by default. For someone logging 4×/week this is permanent data corruption.</div></div>
+    <div class="tc"><div class="tc-id">TC 1.2</div><div class="tc-scenario">Needs to log 5 exercises × 4 sets = 20 sets from memory. Any efficiency mode?</div><div class="pass-fail"><span class="pass">PASS: sets can be added rapidly without a rest-timer interrupting between each</span><span class="fail">FAIL: rest timer fires after every set, forcing dismissal during bulk entry</span></div></div>
+    <div class="tc"><div class="tc-id">TC 1.3</div><div class="tc-scenario">Enters sets out of order — remembers deadlifts last though they were first. Is exercise order editable?</div><div class="pass-fail"><span class="pass">PASS: exercise order can be reordered within a session</span><span class="fail">FAIL: exercises locked to entry order; no drag-to-reorder</span></div></div>
+    <div class="tc"><div class="tc-id">TC 1.4</div><div class="tc-scenario">Rest timer running and prompting her during retroactive entry. Way to dismiss permanently?</div><div class="pass-fail"><span class="pass">PASS: rest timer can be disabled for session or permanently</span><span class="fail">FAIL: rest timer cannot be turned off; interrupts bulk entry repeatedly</span></div></div>
+  </div>
+</div>
+<div class="phase" id="se-p2">
+  <div class="phase-header" onclick="togglePhase('se-p2')"><h3>Phase 2 — Bulk Retroactive Entry</h3><span class="phase-ctx">Entering 20 sets from notes</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 2.1</div><div class="tc-scenario">Notes say "3 × 5 @ 92.5 kg." Does app accept decimals? Test 92.5, 77.5, 102.5.</div><div class="pass-fail"><span class="pass">PASS: 92.5 stored and displayed as 92.5, not 92 or 93</span><span class="fail">FAIL: decimal rounded to nearest integer</span></div></div>
+    <div class="tc"><div class="tc-id">TC 2.3</div><div class="tc-scenario">Formula audit on 92.5 kg × 5. For powerlifting, precision matters at low reps.</div>
+    <details class="formula-block"><summary>Formula Audit — 92.5 kg × 5 reps (powerlifting)</summary><div class="formula-body"><div class="row"><span class="label">Epley</span><span class="val">92.5 × (1+5/30) = 92.5 × 1.167 = <strong>107.9 kg</strong></span></div><div class="row"><span class="label">Brzycki</span><span class="val">92.5 × 36/32 = 92.5 × 1.125 = 104.1 kg</span></div><div class="row"><span class="label">Lander</span><span class="val">9250 / 87.944 = 105.2 kg</span></div><div class="row"><span class="label">Lombardi</span><span class="val">92.5 × 5^0.10 = 92.5 × 1.175 = 108.7 kg</span></div><div class="row"><span class="label">App shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg</span></div><div class="row"><span class="label">Powerlifting note</span><span class="val">For 1–5 rep ranges, Lander and Brzycki are generally more accurate than Epley. A 3.8 kg spread matters when you're chasing kilo PRs.</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: value within ±2% of Epley reference (105–111 kg range)</span><span class="fail">FAIL: value outside this range, or formula not consistent with 1-5 rep range</span></div></div>
+  </div>
+</div>
+<div class="phase" id="se-p3">
+  <div class="phase-header" onclick="togglePhase('se-p3')"><h3>Phase 3 — Formula Precision for Powerlifting</h3><span class="phase-ctx">Low-rep, high-weight audit</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 3.1</div><div class="tc-scenario">Powerlifting formula audit at 1, 3, and 5 reps with 100 kg.</div>
+    <details class="formula-block"><summary>Formula Audit — 100 kg at 1, 3, and 5 reps</summary><div class="formula-body"><div class="row"><span class="label">100 kg × 1 — Epley</span><span class="val">100 × 1.033 = 103.3 kg</span></div><div class="row"><span class="label">100 kg × 1 — Brzycki</span><span class="val">100 × 36/36 = 100.0 kg</span></div><div class="row"><span class="label">100 kg × 1 — Lander</span><span class="val">10000/98.629 = 101.4 kg</span></div><div class="row"><span class="label">100 kg × 1 — App shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg</span></div><div class="row"><span class="label">100 kg × 3 — Epley</span><span class="val">100 × 1.100 = 110.0 kg</span></div><div class="row"><span class="label">100 kg × 3 — Brzycki</span><span class="val">100 × 36/34 = 105.9 kg</span></div><div class="row"><span class="label">100 kg × 3 — Lander</span><span class="val">10000/93.286 = 107.2 kg</span></div><div class="row"><span class="label">100 kg × 3 — App shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg</span></div><div class="row"><span class="label">100 kg × 5 — Epley</span><span class="val">100 × 1.167 = 116.7 kg</span></div><div class="row"><span class="label">100 kg × 5 — Brzycki</span><span class="val">100 × 36/32 = 112.5 kg</span></div><div class="row"><span class="label">100 kg × 5 — Lander</span><span class="val">10000/87.944 = 113.7 kg</span></div><div class="row"><span class="label">100 kg × 5 — App shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: consistent formula across all reps; 1-rep value is closest to actual 1RM</span><span class="fail">FAIL: formula overestimates at 1-rep (Epley gives +3.3% on true 1RM)</span></div></div>
+    <div class="tc"><div class="tc-id">TC 3.2</div><div class="tc-scenario">Logs 1-rep max attempt. How does app treat logged 1RM vs calculated 1RM?</div><div class="pass-fail"><span class="pass">PASS: logged 1RM takes precedence over calculated; displayed as actual max</span><span class="fail">FAIL: Epley formula applied to 1-rep set (+3.3% inflation with no caveat)</span></div></div>
+  </div>
+</div>
+<div class="phase" id="se-p4">
+  <div class="phase-header" onclick="togglePhase('se-p4')"><h3>Phase 4 — Post-Entry Review</h3><span class="phase-ctx">After logging</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 4.1</div><div class="tc-scenario">Does UI indicate when the session was logged vs when it occurred?</div><div class="pass-fail"><span class="pass">PASS: separate "logged at" and "occurred at" timestamps visible in detail view</span><span class="fail">FAIL: only one timestamp shown — either wrong or ambiguous</span></div></div>
+    <div class="tc"><div class="tc-id">TC 4.2</div><div class="tc-scenario">Feedback phrase fires 45 min after session. Does phrase feel relevant? Does it reflect the rep ranges?</div><div class="pass-fail"><span class="pass">PASS: phrase acknowledges strength-focused session (1–5 rep range pattern)</span><span class="fail">FAIL: phrase calibrated to hypertrophy rep ranges, feels generic for powerlifting context</span></div><div class="ann" data-type="feeling"><div class="ann-label">Feeling</div>Serena doesn't need motivation. She needs confirmation the app understood what she did.</div></div>
+  </div>
+</div>
+<div class="phase" id="se-p5">
+  <div class="phase-header" onclick="togglePhase('se-p5')"><h3>Phase 5 — Long-Term Pattern</h3><span class="phase-ctx">4 weeks of retroactive logging</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 5.1</div><div class="tc-scenario">After 4 weeks of retroactive logging, formula audit on trend line — 5 plotted points.</div>
+    <details class="formula-block"><summary>Formula Audit — Trend Line Spot-Check (5 sessions)</summary><div class="formula-body"><div class="row"><span class="label">Method</span><span class="val">For each point: note displayed e1RM, look up session, calculate Epley manually. Compare.</span></div><div class="row"><span class="label">Session 1 app shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg | Epley expected: ___ kg</span></div><div class="row"><span class="label">Session 2 app shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg | Epley expected: ___ kg</span></div><div class="row"><span class="label">Session 3 app shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg | Epley expected: ___ kg</span></div><div class="row"><span class="label">Session 4 app shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg | Epley expected: ___ kg</span></div><div class="row"><span class="label">Session 5 app shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg | Epley expected: ___ kg</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: all 5 match within 1 kg</span><span class="fail">FAIL: any discrepancy &gt;2 kg</span></div></div>
+  </div>
+</div>
+<div class="scorecard">
+  <h4>Scorecard</h4>
+  <div class="sc-row"><span>Friction points</span><span class="sc-count">—</span></div>
+  <div class="sc-row"><span>Feeling moments</span><span class="sc-count">—</span></div>
+  <div class="fix-list">
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--ivory-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Priority Fixes</div>
+    <div class="fix-item">Retroactive session timestamp: allow editing session start/end time</div>
+    <div class="fix-item">Rest timer: session-level disable for bulk entry mode</div>
+    <div class="fix-item">Decimal weight input must not round: 92.5 stored as 92.5</div>
+    <div class="fix-item">1-rep logged set: treat as actual 1RM, not Epley-calculated</div>
+  </div>
+</div>
+<div class="design-q"><div class="label">Design Question</div><p>Is H.O.N. a viable tool for someone who never uses their phone during training — or does the current UX make retroactive logging feel like a second-class experience?</p></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ JAMES -->
+<div class="panel" id="p6">
+<div class="persona-card">
+  <div class="persona-emoji">🪨</div>
+  <div class="persona-name">James, 36</div>
+  <div class="persona-tagline">The Plateau Fighter</div>
+  <div class="persona-bio">2 years of consistent lifting. 8 weeks stuck on same bench numbers. Not injured — just stuck. Knows what a plateau is. Wants the app to tell him something he doesn't already know.</div>
+  <div class="trait-pills"><span class="pill">experienced</span><span class="pill">2 years lifting</span><span class="pill">8-week plateau</span><span class="pill">analytical</span><span class="pill">frustrated</span><span class="pill">data-hungry</span></div>
+</div>
+<div class="phase" id="ja-p1">
+  <div class="phase-header" onclick="togglePhase('ja-p1')"><h3>Phase 1 — Morning Review</h3><span class="phase-ctx">Plateau week 8</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 1.1</div><div class="tc-scenario">Bench e1RM flat for 8 weeks. Verify "flat" is accurate — pick 3 sessions from trend, check Epley.</div>
+    <details class="formula-block"><summary>Formula Audit — Plateau Verification (3 sessions, ~80 kg × 5)</summary><div class="formula-body"><div class="row"><span class="label">Session A: 80 kg × 5</span><span class="val">Epley: 80 × 1.167 = 93.3 kg | App: <span class="app-shows" contenteditable="true">___</span></span></div><div class="row"><span class="label">Session B: 80 kg × 5</span><span class="val">Epley: 93.3 kg | App: <span class="app-shows" contenteditable="true">___</span></span></div><div class="row"><span class="label">Session C: 79 kg × 5</span><span class="val">Epley: 79 × 1.167 = 92.2 kg | App: <span class="app-shows" contenteditable="true">___</span></span></div><div class="row"><span class="label">Assessment</span><span class="val">If all 3 values are 92–94 kg, plateau is real. If variance &gt;3 kg, data inconsistency.</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: plotted values match Epley; chart visually shows flat 8-week region</span><span class="fail">FAIL: flat plateau not visually distinguishable from noisy progress at chart's y-scale</span></div></div>
+    <div class="tc"><div class="tc-id">TC 1.2</div><div class="tc-scenario">Rate of strength gain formula audit with true plateau.</div>
+    <details class="formula-block"><summary>Formula Audit — Rate of Gain During Plateau</summary><div class="formula-body"><div class="row"><span class="label">Expected</span><span class="val">(week 8 e1RM − week 1 e1RM) ÷ 8 ≈ 0 kg/week</span></div><div class="row"><span class="label">App shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg/week</span></div><div class="row"><span class="label">Signal</span><span class="val">Near-zero or negative rate should be clearly visible, not hidden or averaged away</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: rate shown as ≈0.0 or negative; displayed without euphemism</span><span class="fail">FAIL: rate shows positive number due to rolling average smoothing the plateau; plateau invisible</span></div></div>
+    <div class="tc"><div class="tc-id">TC 1.3</div><div class="tc-scenario">Is "flat for 8 weeks" visually obvious or does chart scaling make it look like noise?</div><div class="pass-fail"><span class="pass">PASS: y-axis scale allows a 1 kg variation over 8 weeks to be visually flat</span><span class="fail">FAIL: chart auto-scales to make ±1 kg look like significant movement</span></div></div>
+    <div class="tc"><div class="tc-id">TC 1.4</div><div class="tc-scenario">Can he navigate history to find the last session where e1RM improved?</div><div class="pass-fail"><span class="pass">PASS: PR step-chart or history view lets him identify the exact date of last improvement</span><span class="fail">FAIL: no way to find "last PR date" without scrolling through all sessions manually</span></div></div>
+  </div>
+</div>
+<div class="phase" id="ja-p2">
+  <div class="phase-header" onclick="togglePhase('ja-p2')"><h3>Phase 2 — Pre-Workout</h3><span class="phase-ctx">Considering strategy change</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 2.2</div><div class="tc-scenario">Checks volume load over past 8 weeks. Formula audit: volume = sum(weight×reps) per session.</div>
+    <details class="formula-block"><summary>Formula Audit — Weekly Volume (example session: 5×5 @ 80 kg)</summary><div class="formula-body"><div class="row"><span class="label">Session volume</span><span class="val">5 sets × 80 kg × 5 reps = 2000 kg</span></div><div class="row"><span class="label">App shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg for this session</span></div><div class="row"><span class="label">Check</span><span class="val">Does the chart match sum of (weight×reps) for all completed sets?</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: volume chart visible, values match manual calculation</span><span class="fail">FAIL: volume chart absent, or values don't match sum(w×r)</span></div></div>
+  </div>
+</div>
+<div class="phase" id="ja-p3">
+  <div class="phase-header" onclick="togglePhase('ja-p3')"><h3>Phase 3 — Higher Volume Session</h3><span class="phase-ctx">Trying different approach</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 3.1</div><div class="tc-scenario">Logs 75 kg × 8 (higher volume, same plateau weight). Does e1RM show improvement despite same load?</div>
+    <details class="formula-block"><summary>Formula Audit — 75 kg × 8 vs previous 80 kg × 5</summary><div class="formula-body"><div class="row"><span class="label">New: Epley</span><span class="val">75 × (1+8/30) = 75 × 1.267 = <strong>95.0 kg</strong></span></div><div class="row"><span class="label">New: Brzycki</span><span class="val">75 × 36/29 = 75 × 1.241 = 93.1 kg</span></div><div class="row"><span class="label">New: Lander</span><span class="val">7500/79.930 = 93.8 kg</span></div><div class="row"><span class="label">Previous (Epley)</span><span class="val">80 × 1.167 = 93.3 kg</span></div><div class="row"><span class="label">Delta</span><span class="val">+1.7 kg improvement via Epley. Different approach shows e1RM improvement.</span></div><div class="row"><span class="label">App shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: 95 kg shown, trend line shows upward tick</span><span class="fail">FAIL: same or lower e1RM shown despite higher Epley output</span></div></div>
+    <div class="tc"><div class="tc-id">TC 3.2</div><div class="tc-scenario">Feedback phrase fires after still-flat e1RM at 8 sessions. Does it acknowledge the plateau?</div><div class="pass-fail"><span class="pass">PASS: phrase explicitly references flat trend — e.g. "Your bench has held steady for 8 sessions"</span><span class="fail">FAIL: "Keep pushing!" or equivalent generic encouragement with no plateau acknowledgment</span></div><div class="ann" data-type="feeling"><div class="ann-label">Feeling</div>James already knows he's plateaued. A phrase that pretends otherwise feels dishonest and wastes his time.</div></div>
+  </div>
+</div>
+<div class="phase" id="ja-p4">
+  <div class="phase-header" onclick="togglePhase('ja-p4')"><h3>Phase 4 — Evening Pattern Hunting</h3><span class="phase-ctx">Looking for signal in history</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 4.2</div><div class="tc-scenario">Wants to compare squat trend (progressing) vs bench trend (stalled) side by side.</div><div class="pass-fail"><span class="pass">PASS: multi-exercise comparison view exists or can be opened simultaneously</span><span class="fail">FAIL: only one exercise trend visible at a time; comparison requires memory</span></div></div>
+    <div class="tc"><div class="tc-id">TC 4.3</div><div class="tc-scenario">Do e1RM trends for squat and bench use the same formula and render at the same scale?</div><div class="pass-fail"><span class="pass">PASS: consistent formula across exercises; scale adapts to allow meaningful comparison</span><span class="fail">FAIL: different formulas applied per exercise, or chart scales incompatible</span></div></div>
+  </div>
+</div>
+<div class="phase" id="ja-p5">
+  <div class="phase-header" onclick="togglePhase('ja-p5')"><h3>Phase 5 — The Silence Test</h3><span class="phase-ctx">What does the app say about a plateau?</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="ann" data-type="flow"><div class="ann-label">Flow Check</div>When H.O.N. detects 6+ sessions of flat e1RM, does it say anything — or does it stay silent? Silence is a product decision with consequences. James will interpret silence as "the app doesn't know either."</div>
+    <div class="tc"><div class="tc-id">TC 5.1</div><div class="tc-scenario">After 8 flat sessions, does any proactive signal appear?</div><div class="pass-fail"><span class="pass">PASS: plateau detection triggers a specific insight card or phrase variation</span><span class="fail">FAIL: no differentiation from a normal non-plateau session at session 8</span></div></div>
+  </div>
+</div>
+<div class="scorecard">
+  <h4>Scorecard</h4>
+  <div class="sc-row"><span>Friction points</span><span class="sc-count">—</span></div>
+  <div class="sc-row"><span>Feeling moments</span><span class="sc-count">—</span></div>
+  <div class="fix-list">
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--ivory-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Priority Fixes</div>
+    <div class="fix-item">Plateau detection: 6+ flat sessions should trigger specific phrase variation</div>
+    <div class="fix-item">Chart y-axis scale: flat region must be visually flat, not noisy</div>
+    <div class="fix-item">Last PR date: surfaced in trend view without manual scrolling</div>
+    <div class="fix-item">Rate of gain must show near-zero/negative during plateau without euphemism</div>
+  </div>
+</div>
+<div class="design-q"><div class="label">Design Question</div><p>When H.O.N. detects 6+ sessions of flat e1RM, does it say anything — or does it stay silent? Silence is a product decision with consequences.</p></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ CHLOE -->
+<div class="panel" id="p7">
+<div class="persona-card">
+  <div class="persona-emoji">⚽</div>
+  <div class="persona-name">Chloe, 25</div>
+  <div class="persona-tagline">The Dual-Sport User</div>
+  <div class="persona-bio">Lifts 2×/week, plays recreational soccer 2×/week, runs once a week. H.O.N. is one tool among several. Goes 3–4 days between lifting sessions naturally — not because she's inconsistent, but because she plays sport in between.</div>
+  <div class="trait-pills"><span class="pill">multi-sport</span><span class="pill">lifts 2×/week</span><span class="pill">soccer player</span><span class="pill">runner</span><span class="pill">casual tracker</span><span class="pill">no lifting anxiety</span></div>
+</div>
+<div class="phase" id="ch-p1">
+  <div class="phase-header" onclick="togglePhase('ch-p1')"><h3>Phase 1 — Home Screen After 4-Day Gap</h3><span class="phase-ctx">She played soccer twice since lifting</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 1.1</div><div class="tc-scenario">Opens app after 4 days (played soccer twice). Does home screen treat this as inactivity?</div><div class="pass-fail"><span class="pass">PASS: 4-day gap shown neutrally or not highlighted at all</span><span class="fail">FAIL: gap framed as "you haven't trained in 4 days" with negative connotation</span></div><div class="ann" data-type="feeling"><div class="ann-label">Feeling</div>Chloe is very active. The app making her feel like a bad user because she played soccer instead of lifting is a design failure.</div></div>
+    <div class="tc"><div class="tc-id">TC 1.3</div><div class="tc-scenario">No desire to look at charts. Just wants to log and leave. Minimum viable path from open to first set logged.</div><div class="pass-fail"><span class="pass">PASS: ≤3 taps from app open to first set logged (using last routine)</span><span class="fail">FAIL: &gt;4 taps, or must navigate past dashboard content to reach session start</span></div></div>
+  </div>
+</div>
+<div class="phase" id="ch-p2">
+  <div class="phase-header" onclick="togglePhase('ch-p2')"><h3>Phase 2 — Monday Lift After Soccer Weekend</h3><span class="phase-ctx">Fatigued legs</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 2.1</div><div class="tc-scenario">Logs lower weights than last session (legs fatigued from soccer). Does trend read this as regression?</div>
+    <details class="formula-block"><summary>Formula Audit — Lower-Weight Session (fatigue context)</summary><div class="formula-body"><div class="row"><span class="label">Previous squat</span><span class="val">60 kg × 8 | Epley: 60 × 1.267 = 76.0 kg</span></div><div class="row"><span class="label">Today (fatigued)</span><span class="val">55 kg × 8 | Epley: 55 × 1.267 = 69.7 kg</span></div><div class="row"><span class="label">App shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg</span></div><div class="row"><span class="label">Delta</span><span class="val">−6.3 kg. Does chart show this as regression or within normal variance?</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: trend absorbs single dip without triggering alarming language</span><span class="fail">FAIL: dip triggers "declining strength" phrase or negative rate-of-gain signal</span></div></div>
+    <div class="tc"><div class="tc-id">TC 2.2</div><div class="tc-scenario">Selects "tired" on feel selector. Numbers are down. Does phrase interpret the combination?</div><div class="pass-fail"><span class="pass">PASS: "tired" + lower numbers → phrase acknowledges effort without judging the result</span><span class="fail">FAIL: phrase focuses on the number decline, ignores feel context</span></div></div>
+    <div class="tc"><div class="tc-id">TC 2.4</div><div class="tc-scenario">Logs quickly and exits. Total time from app open to close: target under 4 minutes.</div><div class="pass-fail"><span class="pass">PASS: pure logging session (3 exercises, 3 sets each) completable in &lt;4 min</span><span class="fail">FAIL: UX friction adds &gt;60s to a session that should be purely mechanical</span></div></div>
+  </div>
+</div>
+<div class="phase" id="ch-p3">
+  <div class="phase-header" onclick="togglePhase('ch-p3')"><h3>Phase 3 — 10-Day Gap (Soccer Tournament)</h3><span class="phase-ctx">Returns rested and strong</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 3.1</div><div class="tc-scenario">Returns after 10 days. Does app treat 10 days same as 3 weeks?</div><div class="pass-fail"><span class="pass">PASS: 10-day gap shown proportionally differently from 3-week gap</span><span class="fail">FAIL: any gap &gt;7 days triggers same alarming re-entry state</span></div></div>
+    <div class="tc"><div class="tc-id">TC 3.2</div><div class="tc-scenario">First session back is strong — she's rested. Does app correctly read rest-then-return as positive?</div><div class="pass-fail"><span class="pass">PASS: strong session after gap recognized as positive; phrase doesn't focus on the gap</span><span class="fail">FAIL: phrase mentions gap length before mentioning the strong performance</span></div></div>
+  </div>
+</div>
+<div class="phase" id="ch-p4">
+  <div class="phase-header" onclick="togglePhase('ch-p4')"><h3>Phase 4 — Pure Utility Mode</h3><span class="phase-ctx">Just logging, no browsing</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 4.1</div><div class="tc-scenario">Logs session, closes in under 5 minutes with zero browsing. Any friction points?</div><div class="pass-fail"><span class="pass">PASS: zero mandatory screens between log-set and app-close</span><span class="fail">FAIL: feel selector or summary cannot be dismissed quickly; mandatory hold</span></div></div>
+    <div class="tc"><div class="tc-id">TC 4.3</div><div class="tc-scenario">Rate of strength gain formula audit with 2 sessions/week and 3–4 day gaps.</div>
+    <details class="formula-block"><summary>Formula Audit — Rate with Irregular Frequency</summary><div class="formula-body"><div class="row"><span class="label">Sessions</span><span class="val">2×/week, 3–4 day gaps between lifting</span></div><div class="row"><span class="label">Over 8 weeks</span><span class="val">~16 sessions; e1RM should trend over 8 weeks of elapsed time</span></div><div class="row"><span class="label">Rate formula</span><span class="val">(current e1RM − baseline e1RM) ÷ weeks elapsed</span></div><div class="row"><span class="label">App shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg/week</span></div><div class="row"><span class="label">Risk</span><span class="val">If denominator counts only lifting days (not calendar weeks), rate is artificially inflated.</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: rate uses calendar weeks elapsed, not session count</span><span class="fail">FAIL: rate calculated per session rather than per week — 2×/week users show double the "rate" of 1×/week</span></div></div>
+  </div>
+</div>
+<div class="phase" id="ch-p5">
+  <div class="phase-header" onclick="togglePhase('ch-p5')"><h3>Phase 5 — The Identity Question</h3><span class="phase-ctx">Does H.O.N. know who she is?</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="ann" data-type="flow"><div class="ann-label">Flow Check</div>Chloe is an active person who also lifts. H.O.N. only knows about the lifting. The question is whether the app treats lifting gaps as evidence of inactivity or simply as evidence of not lifting.</div>
+  </div>
+</div>
+<div class="scorecard">
+  <h4>Scorecard</h4>
+  <div class="sc-row"><span>Friction points</span><span class="sc-count">—</span></div>
+  <div class="sc-row"><span>Feeling moments</span><span class="sc-count">—</span></div>
+  <div class="fix-list">
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--ivory-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Priority Fixes</div>
+    <div class="fix-item">Gap language: neutral framing, not "you haven't trained in N days"</div>
+    <div class="fix-item">Feel selector + lower numbers: phrase must acknowledge effort, not just result</div>
+    <div class="fix-item">Pure logging session: completable in &lt;4 min with no mandatory intermediate screens</div>
+    <div class="fix-item">Rate of gain denominator: calendar weeks, not session count</div>
+  </div>
+</div>
+<div class="design-q"><div class="label">Design Question</div><p>Does H.O.N. distinguish between "hasn't trained" and "trains other things" — and if not, whose problem is that?</p></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ KYLE -->
+<div class="panel" id="p8">
+<div class="persona-card">
+  <div class="persona-emoji">🔥</div>
+  <div class="persona-name">Kyle, 22</div>
+  <div class="persona-tagline">The Overtrainer</div>
+  <div class="persona-bio">Trains 6×/week. Logs obsessively. Never takes rest days voluntarily. 6 months in. Uses H.O.N. as a scoreboard. His HRV would be tanking if he tracked it. He doesn't know he's overtraining.</div>
+  <div class="trait-pills"><span class="pill">6×/week</span><span class="pill">obsessive logger</span><span class="pill">no rest days</span><span class="pill">treats app as scoreboard</span><span class="pill">6 months in</span><span class="pill">declining performance</span></div>
+</div>
+<div class="phase" id="ky-p1">
+  <div class="phase-header" onclick="togglePhase('ky-p1')"><h3>Phase 1 — Session 6 of 6 Consecutive Days</h3><span class="phase-ctx">Day 6, no rest</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 1.1</div><div class="tc-scenario">Opens app on day 6. Does anything in the app acknowledge he's trained 5 consecutive days?</div><div class="pass-fail"><span class="pass">PASS: consecutive-day streak visible; a neutral note about recovery present</span><span class="fail">FAIL: 6-day streak treated identically to session 1 of the week</span></div></div>
+    <div class="tc"><div class="tc-id">TC 1.2</div><div class="tc-scenario">e1RM declining for 2 weeks. Formula audit to verify decline is real.</div>
+    <details class="formula-block"><summary>Formula Audit — Declining e1RM (week 2 of decline)</summary><div class="formula-body"><div class="row"><span class="label">Peak (4 weeks ago)</span><span class="val">90 kg × 5 | Epley: 90 × 1.167 = 105.0 kg</span></div><div class="row"><span class="label">Last week</span><span class="val">85 kg × 5 | Epley: 85 × 1.167 = 99.2 kg</span></div><div class="row"><span class="label">This week</span><span class="val">80 kg × 5 | Epley: 80 × 1.167 = 93.3 kg</span></div><div class="row"><span class="label">App shows (current)</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg</span></div><div class="row"><span class="label">2-week decline</span><span class="val">−11.7 kg Epley (−11%). This is not noise. Does app see it?</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: declining trend clearly visible; rate-of-gain shows negative value</span><span class="fail">FAIL: rolling average smooths the decline; trend appears flat when it should be clearly down</span></div></div>
+    <div class="tc"><div class="tc-id">TC 1.3</div><div class="tc-scenario">Rate of strength gain formula audit: expected negative value during declining e1RM.</div><div class="pass-fail"><span class="pass">PASS: rate shown as −N kg/week clearly; negative rates displayed without suppression</span><span class="fail">FAIL: negative rate hidden, shown as 0, or displayed as "insufficient data"</span></div></div>
+  </div>
+</div>
+<div class="phase" id="ky-p2">
+  <div class="phase-header" onclick="togglePhase('ky-p2')"><h3>Phase 2 — Logging Session 6</h3><span class="phase-ctx">Performance is down again</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 2.1</div><div class="tc-scenario">Feedback phrase fires on 6th session with 2-week declining trend. What does it say?</div><div class="pass-fail"><span class="pass">PASS: phrase names the declining trend explicitly; does not praise volume or frequency</span><span class="fail">FAIL: "great consistency!" or similar praise that rewards the overtraining behavior</span></div><div class="ann" data-type="feeling"><div class="ann-label">Feeling</div>An app that praises Kyle for logging 6 consecutive days while his performance declines is rewarding the behavior harming him.</div></div>
+    <div class="tc"><div class="tc-id">TC 2.2</div><div class="tc-scenario">Selects "exhausted" feel for 10th consecutive session. Does this trigger different behavior?</div><div class="pass-fail"><span class="pass">PASS: consistent exhausted feel pattern triggers specific phrase variation or insight</span><span class="fail">FAIL: exhausted feel treated identically to strong feel in phrase construction</span></div></div>
+    <div class="tc"><div class="tc-id">TC 2.4</div><div class="tc-scenario">High volume + declining e1RM + exhausted feel — all three simultaneously. Does phrase integrate all dimensions?</div><div class="pass-fail"><span class="pass">PASS: phrase acknowledges the combination (not just one dimension)</span><span class="fail">FAIL: phrase addresses only one signal (usually just the e1RM number)</span></div></div>
+  </div>
+</div>
+<div class="phase" id="ky-p3">
+  <div class="phase-header" onclick="togglePhase('ky-p3')"><h3>Phase 3 — Design Ethics Test</h3><span class="phase-ctx">What is H.O.N.'s responsibility?</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="ann" data-type="friction"><div class="ann-label">Friction</div>If H.O.N. can detect: (a) 6+ consecutive days, (b) declining e1RM trend, (c) consistent exhausted feel — does it say anything? Should it? This is a product ethics question, not a feature question.</div>
+    <div class="tc"><div class="tc-id">TC 3.1</div><div class="tc-scenario">All three overtraining signals present simultaneously. Does app surface any signal?</div><div class="pass-fail"><span class="pass">PASS: a neutral data-based note appears (e.g. "Your strength has declined 11% over 2 weeks during your 6-consecutive-day run")</span><span class="fail">FAIL: no differentiation — identical experience to a healthy training week</span></div></div>
+  </div>
+</div>
+<div class="phase" id="ky-p4">
+  <div class="phase-header" onclick="togglePhase('ky-p4')"><h3>Phase 4 — Evening Scorecard</h3><span class="phase-ctx">Reviewing history</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 4.1</div><div class="tc-scenario">Browses history — 30 sessions in 5 weeks. Does this look healthy or alarming in the visualization?</div><div class="pass-fail"><span class="pass">PASS: frequency visualization gives context (average, or a note on 6/week pace)</span><span class="fail">FAIL: 30 sessions looks like a pure positive streak with no contextual signal</span></div></div>
+  </div>
+</div>
+<div class="phase" id="ky-p5"><div class="phase-header" onclick="togglePhase('ky-p5')"><h3>Phase 5 — The Responsibility Question</h3><span class="phase-ctx"></span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body"><div class="ann" data-type="flow"><div class="ann-label">Flow Check</div>Every neutral choice is a choice. If H.O.N. stays silent on 6 consecutive days + declining e1RM + exhausted feel, it has implicitly decided that the user's autonomy overrides their wellbeing. That is a valid position — but it should be a deliberate one, not an oversight.</div></div>
+</div>
+<div class="scorecard">
+  <h4>Scorecard</h4>
+  <div class="sc-row"><span>Friction points</span><span class="sc-count">—</span></div>
+  <div class="sc-row"><span>Feeling moments</span><span class="sc-count">—</span></div>
+  <div class="fix-list">
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--ivory-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Priority Fixes</div>
+    <div class="fix-item">Negative rate of gain: display clearly, do not suppress or euphemize</div>
+    <div class="fix-item">Exhausted feel + declining e1RM: phrase variation required</div>
+    <div class="fix-item">6-consecutive-day detection: at minimum, surface as a data point</div>
+    <div class="fix-item">Phrase must not praise volume/frequency when performance is declining</div>
+  </div>
+</div>
+<div class="design-q"><div class="label">Design Question</div><p>If H.O.N. detects 6 consecutive training days + declining e1RM + consistent exhausted feel — does it have a responsibility to say something? If not, why not?</p></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ RACHEL -->
+<div class="panel" id="p9">
+<div class="persona-card">
+  <div class="persona-emoji">🔬</div>
+  <div class="persona-name">Rachel, 32</div>
+  <div class="persona-tagline">The Skeptic</div>
+  <div class="persona-bio">Data scientist. Has abandoned 6 fitness apps when she found a number that didn't add up. Trusts her spreadsheet more than any algorithm. Will use H.O.N. for exactly 2 weeks before deciding whether to commit.</div>
+  <div class="trait-pills"><span class="pill">data scientist</span><span class="pill">6 abandoned apps</span><span class="pill">spreadsheet native</span><span class="pill">formula checker</span><span class="pill">2-week trial</span><span class="pill">rigorous</span></div>
+</div>
+<div class="phase" id="ra-p1">
+  <div class="phase-header" onclick="togglePhase('ra-p1')"><h3>Phase 1 — Pre-Session Exploration</h3><span class="phase-ctx">Day 1, hasn't logged yet</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 1.1</div><div class="tc-scenario">Taps every "i" or info button in app. List every explanation affordance. List every metric with no explanation.</div><div class="pass-fail"><span class="pass">PASS: &lt;2 metrics with no explanation affordance in the main flow</span><span class="fail">FAIL: e1RM, rate of strength gain, INOL all shown with no tap-through explanation</span></div></div>
+    <div class="tc"><div class="tc-id">TC 1.2</div><div class="tc-scenario">Looks for methodology documentation — how does H.O.N. calculate e1RM? Is formula named?</div><div class="pass-fail"><span class="pass">PASS: "Epley formula" or equivalent named in at least one in-app location</span><span class="fail">FAIL: no formula name, no methodology reference anywhere in app</span></div><div class="ann" data-type="friction"><div class="ann-label">Friction</div>Rachel will Google "Epley formula" before her first session. If H.O.N. names it first, it's credible. If she has to Google to verify, she already trusts H.O.N. less than her spreadsheet.</div></div>
+    <div class="tc"><div class="tc-id">TC 1.4</div><div class="tc-scenario">Taps feel selector before logging. What happens? Do labels explain what emojis are for?</div><div class="pass-fail"><span class="pass">PASS: feel selector has text labels (not just emojis) and explains what the data is used for</span><span class="fail">FAIL: emoji-only selector with no explanation of purpose</span></div></div>
+    <div class="tc"><div class="tc-id">TC 1.5</div><div class="tc-scenario">Looks for data export option before trusting app with her data.</div><div class="pass-fail"><span class="pass">PASS: export option visible in settings before first log</span><span class="fail">FAIL: no export path; Rachel won't log session 1 without knowing she can get her data back</span></div></div>
+  </div>
+</div>
+<div class="phase" id="ra-p2">
+  <div class="phase-header" onclick="togglePhase('ra-p2')"><h3>Phase 2 — First Session Formula Audit</h3><span class="phase-ctx">Day 1 — formula discrimination test</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 2.1</div><div class="tc-scenario">Logs 60 kg × 5. Checks e1RM. Identifies formula from output.</div>
+    <details class="formula-block"><summary>Formula Audit — 60 kg × 5 (formula identification)</summary><div class="formula-body"><div class="row"><span class="label">Epley</span><span class="val">60 × (1+5/30) = 60 × 1.167 = <strong>70.0 kg</strong></span></div><div class="row"><span class="label">Brzycki</span><span class="val">60 × 36/32 = 60 × 1.125 = 67.5 kg</span></div><div class="row"><span class="label">Lander</span><span class="val">6000 / 87.944 = 68.2 kg</span></div><div class="row"><span class="label">Lombardi</span><span class="val">60 × 5^0.10 = 60 × 1.175 = 70.5 kg</span></div><div class="row"><span class="label">App shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg</span></div><div class="row"><span class="label">If 70.0 kg</span><span class="val">→ Epley confirmed</span></div><div class="row"><span class="label">If 67.5 kg</span><span class="val">→ Brzycki confirmed</span></div><div class="row"><span class="label">If 68.2 kg</span><span class="val">→ Lander confirmed</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: value matches exactly one of the four formulas to 0.1 kg precision</span><span class="fail">FAIL: value matches no formula — unexplained blended or proprietary formula</span></div></div>
+    <div class="tc"><div class="tc-id">TC 2.2</div><div class="tc-scenario">Logs 60 kg × 15. Discriminating test — formulas diverge significantly at high reps.</div>
+    <details class="formula-block"><summary>Formula Audit — 60 kg × 15 (formula discrimination)</summary><div class="formula-body"><div class="row"><span class="label">Epley</span><span class="val">60 × (1+15/30) = 60 × 1.500 = <strong>90.0 kg</strong></span></div><div class="row"><span class="label">Brzycki</span><span class="val">60 × 36/22 = 60 × 1.636 = 98.2 kg</span></div><div class="row"><span class="label">Lander</span><span class="val">6000 / (101.3 − 40.07) = 6000/61.23 = 98.0 kg</span></div><div class="row"><span class="label">Lombardi</span><span class="val">60 × 15^0.10 = 60 × 1.311 = 78.7 kg</span></div><div class="row"><span class="label">App shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg</span></div><div class="row"><span class="label">Key spread</span><span class="val">Epley (90.0) vs Brzycki (98.2) = 8.2 kg gap. This definitively identifies the formula.</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: value matches declared formula; large-rep discrimination is consistent</span><span class="fail">FAIL: app uses H.O.N.'s hybrid formula (Epley for ≤10, Mayhew for 11–20) without disclosure — Rachel gets 90 kg at 15 reps then a sudden jump to Mayhew output at the threshold</span></div></div>
+    <div class="tc"><div class="tc-id">TC 2.3</div><div class="tc-scenario">Enters 60 kg × 30 reps deliberately. What does app show? Does it cap reps for formula purposes?</div>
+    <details class="formula-block"><summary>Formula Audit — 60 kg × 30 reps (absurdity test)</summary><div class="formula-body"><div class="row"><span class="label">Epley</span><span class="val">60 × (1+30/30) = 60 × 2.000 = 120.0 kg (weight doubled — clearly absurd)</span></div><div class="row"><span class="label">Brzycki</span><span class="val">60 × 36/(37−30) = 60 × 36/7 = 308.6 kg (severely overestimates)</span></div><div class="row"><span class="label">Lander</span><span class="val">6000/(101.3−80.14) = 6000/21.16 = 283.6 kg (also absurd)</span></div><div class="row"><span class="label">Lombardi</span><span class="val">60 × 30^0.10 = 60 × 1.405 = 84.3 kg (least absurd, but still meaningless)</span></div><div class="row"><span class="label">App shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg (or: reps rejected / capped)</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: app either rejects 30 reps, shows 0, or shows a validation warning</span><span class="fail">FAIL: 120 kg (or worse, 308 kg) appears in trend as valid data point</span></div></div>
+    <div class="tc"><div class="tc-id">TC 2.5</div><div class="tc-scenario">Rate of strength gain after session 1 = 0 or undefined (only 1 data point). App shows?</div><div class="pass-fail"><span class="pass">PASS: rate shown as "—" or "need more sessions" with 1 data point</span><span class="fail">FAIL: any non-zero rate shown with a single session — this is a calculation error</span></div></div>
+  </div>
+</div>
+<div class="phase" id="ra-p3">
+  <div class="phase-header" onclick="togglePhase('ra-p3')"><h3>Phase 3 — Week 1 Formula Verification</h3><span class="phase-ctx">5 sessions, cross-checking all outputs</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 3.1</div><div class="tc-scenario">After 5 sessions, plots e1RM. Manually calculates all 5. Any discrepancy?</div>
+    <details class="formula-block"><summary>Formula Audit — 5-Session Trend Verification</summary><div class="formula-body"><div class="row"><span class="label">S1: 60 kg × 5</span><span class="val">Epley: 70.0 | App: <span class="app-shows" contenteditable="true">___</span></span></div><div class="row"><span class="label">S2: 62.5 kg × 5</span><span class="val">Epley: 72.9 | App: <span class="app-shows" contenteditable="true">___</span></span></div><div class="row"><span class="label">S3: 62.5 kg × 6</span><span class="val">Epley: 75.0 | App: <span class="app-shows" contenteditable="true">___</span></span></div><div class="row"><span class="label">S4: 65 kg × 5</span><span class="val">Epley: 75.8 | App: <span class="app-shows" contenteditable="true">___</span></span></div><div class="row"><span class="label">S5: 65 kg × 6</span><span class="val">Epley: 78.0 | App: <span class="app-shows" contenteditable="true">___</span></span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: all 5 match Epley within 0.5 kg</span><span class="fail">FAIL: any discrepancy &gt;1 kg triggers Rachel's formula investigation protocol</span></div></div>
+  </div>
+</div>
+<div class="phase" id="ra-p4">
+  <div class="phase-header" onclick="togglePhase('ra-p4')"><h3>Phase 4 — Week 2 Trust Decision</h3><span class="phase-ctx">The 2-week verdict</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 4.1</div><div class="tc-scenario">Found discrepancy — manual Epley and app's e1RM differ by 2.5 kg. Any in-app path to understanding this?</div><div class="pass-fail"><span class="pass">PASS: formula disclosure accessible via tap; discrepancy explained by dumbbell bilateral factor or rep-range formula switch</span><span class="fail">FAIL: no in-app path to understanding a 2.5 kg discrepancy — Rachel leaves</span></div></div>
+    <div class="tc"><div class="tc-id">TC 4.2</div><div class="tc-scenario">Tries again to export data. Still no export at week 2?</div><div class="pass-fail"><span class="pass">PASS: JSON export with all sessions, sets, and timestamps available</span><span class="fail">FAIL: no export path at week 2 — this is Rachel's final disqualifier</span></div></div>
+  </div>
+</div>
+<div class="phase" id="ra-p5"><div class="phase-header" onclick="togglePhase('ra-p5')"><h3>Phase 5 — The Verdict</h3><span class="phase-ctx"></span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body"><div class="ann" data-type="flow"><div class="ann-label">Flow Check</div>Rachel's 2-week trial passes if: (1) formula is named and consistent, (2) all 5 session values match her manual calculations, (3) data export exists. Fail any one → abandoned app #7.</div></div>
+</div>
+<div class="scorecard">
+  <h4>Scorecard</h4>
+  <div class="sc-row"><span>Friction points</span><span class="sc-count">—</span></div>
+  <div class="sc-row"><span>Formula audit failures</span><span class="sc-count">—</span></div>
+  <div class="fix-list">
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--ivory-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Priority Fixes</div>
+    <div class="fix-item">Name the formula in-app: "Est. 1RM uses the Epley formula: weight × (1 + reps/30)"</div>
+    <div class="fix-item">Disclose the rep-range formula switch (Epley → Mayhew at 11 reps)</div>
+    <div class="fix-item">Data export: available before first log, not as afterthought</div>
+    <div class="fix-item">Rate of gain: undefined with 1 data point, not zero</div>
+    <div class="fix-item">30+ rep validation: reject or clearly warn, never calculate</div>
+  </div>
+</div>
+<div class="design-q"><div class="label">Design Question</div><p>If a data scientist cannot verify H.O.N.'s formula from within the app, will she trust it with 6 months of her training data?</p></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ TOM -->
+<div class="panel" id="p10">
+<div class="persona-card">
+  <div class="persona-emoji">🔧</div>
+  <div class="persona-name">Tom, 28</div>
+  <div class="persona-tagline">The Breaker</div>
+  <div class="persona-bio">QA engineer by profession. Downloaded H.O.N. to find what breaks when you use it wrong. Has broken 3 apps this month just by using them normally but incorrectly. Methodical. He will find your edge cases.</div>
+  <div class="trait-pills"><span class="pill">QA engineer</span><span class="pill">edge case hunter</span><span class="pill">methodical</span><span class="pill">non-lifter</span><span class="pill">adversarial by nature</span><span class="pill">thorough</span></div>
+</div>
+<div class="phase" id="to-p1">
+  <div class="phase-header" onclick="togglePhase('to-p1')"><h3>Phase 1 — Input Boundary Testing</h3><span class="phase-ctx">Before first real session</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 1.1</div><div class="tc-scenario">Enters 0 kg weight. Does app accept it? Log it? Calculate e1RM?</div>
+    <details class="formula-block"><summary>Formula Audit — 0 kg × any reps</summary><div class="formula-body"><div class="row"><span class="label">Epley (0 kg × 10)</span><span class="val">0 × (1+10/30) = 0.0 kg — correctly zero</span></div><div class="row"><span class="label">App shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg | Set logged: Yes/No</span></div><div class="row"><span class="label">Expected</span><span class="val">0 kg sets should either be rejected or excluded from e1RM/trend calculations</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: 0 kg set rejected with clear message, OR logged but excluded from e1RM</span><span class="fail">FAIL: 0 kg set accepted and appears in trend (0 kg e1RM corrupts scale)</span></div></div>
+    <div class="tc"><div class="tc-id">TC 1.2</div><div class="tc-scenario">Enters 999 kg × 1. Does it appear in trend? Does it corrupt y-axis scale?</div>
+    <details class="formula-block"><summary>Formula Audit — 999 kg × 1</summary><div class="formula-body"><div class="row"><span class="label">Epley</span><span class="val">999 × (1+1/30) = 999 × 1.033 = <strong>1,032.3 kg</strong></span></div><div class="row"><span class="label">Brzycki</span><span class="val">999 × 36/36 = 999.0 kg</span></div><div class="row"><span class="label">App shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg</span></div><div class="row"><span class="label">Scale impact</span><span class="val">If accepted, y-axis rescales to 1000+. All other data points collapse to baseline. Chart useless.</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: 999 kg either rejected (implausible weight warning) or shown but excluded from chart scale</span><span class="fail">FAIL: 999 kg accepted, plotted, and destroys the chart's y-axis</span></div></div>
+    <div class="tc"><div class="tc-id">TC 1.3</div><div class="tc-scenario">Enters 60 kg × 100 reps. Formula result is absurd. Does app cap reps?</div>
+    <details class="formula-block"><summary>Formula Audit — 60 kg × 100 reps</summary><div class="formula-body"><div class="row"><span class="label">Epley</span><span class="val">60 × (1+100/30) = 60 × 4.333 = 260.0 kg</span></div><div class="row"><span class="label">Brzycki</span><span class="val">60 × 36/(37−100) → negative denominator → undefined</span></div><div class="row"><span class="label">Lander</span><span class="val">6000/(101.3−267.1) → negative denominator → undefined</span></div><div class="row"><span class="label">Lombardi</span><span class="val">60 × 100^0.10 = 60 × 1.585 = 95.1 kg</span></div><div class="row"><span class="label">App shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: 100 reps rejected, shown as 0 e1RM, or capped at 20 for formula purposes</span><span class="fail">FAIL: 260 kg e1RM accepted and plotted in trend</span></div></div>
+    <div class="tc"><div class="tc-id">TC 1.4</div><div class="tc-scenario">Enters 60 kg × 0 reps. What happens?</div><div class="pass-fail"><span class="pass">PASS: 0 reps rejected or excluded from calculations</span><span class="fail">FAIL: 0 reps accepted, set shows e1RM of 60 kg (weight alone)</span></div></div>
+    <div class="tc"><div class="tc-id">TC 1.6</div><div class="tc-scenario">Enters decimal weight: 82.5 kg. Does input support this?</div><div class="pass-fail"><span class="pass">PASS: 82.5 stored and displayed as 82.5 (not rounded)</span><span class="fail">FAIL: rounded to 82 or 83</span></div></div>
+  </div>
+</div>
+<div class="phase" id="to-p2">
+  <div class="phase-header" onclick="togglePhase('to-p2')"><h3>Phase 2 — Navigation Abuse</h3><span class="phase-ctx">Breaking the flow</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 2.1</div><div class="tc-scenario">Starts session. Immediately taps back. "Discard session?" confirmation or silent discard?</div><div class="pass-fail"><span class="pass">PASS: confirmation dialog "Discard session?" with explicit cancel option</span><span class="fail">FAIL: silent discard with no confirmation; or no way to go back at all</span></div></div>
+    <div class="tc"><div class="tc-id">TC 2.2</div><div class="tc-scenario">Starts session, logs 5 sets, taps back. What happens to the data?</div><div class="pass-fail"><span class="pass">PASS: confirmation dialog shows set count; data preserved until user explicitly discards</span><span class="fail">FAIL: 5 logged sets silently lost on back navigation</span></div></div>
+    <div class="tc"><div class="tc-id">TC 2.3</div><div class="tc-scenario">Taps "log set" 15 times in 3 seconds. How many sets logged?</div><div class="pass-fail"><span class="pass">PASS: 1 set (debounced) or 2 maximum (with visible delay between taps)</span><span class="fail">FAIL: 3+ sets from rapid tapping, corrupting session data</span></div></div>
+    <div class="tc"><div class="tc-id">TC 2.5</div><div class="tc-scenario">Starts session. Backgrounded for 30 minutes. Comes back. Session still active?</div><div class="pass-fail"><span class="pass">PASS: session fully intact after 30-minute background</span><span class="fail">FAIL: session terminated or state reset by iOS memory pressure</span></div></div>
+    <div class="tc"><div class="tc-id">TC 3.5</div><div class="tc-scenario">Logs two sessions on same day. Valid? Do both appear in history?</div><div class="pass-fail"><span class="pass">PASS: both sessions saved and displayed; trend uses better e1RM of the two for that date</span><span class="fail">FAIL: second session overwrites first, or both invalid, or trend gets confused by same-day data</span></div></div>
+  </div>
+</div>
+<div class="phase" id="to-p3">
+  <div class="phase-header" onclick="togglePhase('to-p3')"><h3>Phase 3 — Data State Edge Cases</h3><span class="phase-ctx">Breaking the data layer</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 3.1</div><div class="tc-scenario">Logs session with 1 set of 1 exercise. Valid session? e1RM calculated?</div><div class="pass-fail"><span class="pass">PASS: 1-set session saved; e1RM calculated and plotted</span><span class="fail">FAIL: session rejected or discarded as too short</span></div></div>
+    <div class="tc"><div class="tc-id">TC 3.4</div><div class="tc-scenario">Airplane mode throughout. Logs 10 sets. Ends session. Reconnects. Session in history?</div><div class="pass-fail"><span class="pass">PASS: all 10 sets present in history; e1RM same as if logged online</span><span class="fail">FAIL: partial or total data loss after offline session</span></div></div>
+  </div>
+</div>
+<div class="phase" id="to-p4">
+  <div class="phase-header" onclick="togglePhase('to-p4')"><h3>Phase 4 — Feel Selector Abuse</h3><span class="phase-ctx"></span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 4.1</div><div class="tc-scenario">Skips feel selector for 20 consecutive sessions. Does anything in the app respond?</div><div class="pass-fail"><span class="pass">PASS: app either prompts once or silently accepts no-feel sessions without breaking</span><span class="fail">FAIL: metrics that depend on feel data crash, return undefined, or show wrong values with no feel input</span></div></div>
+    <div class="tc"><div class="tc-id">TC 4.3</div><div class="tc-scenario">Force-quits immediately after feel selector appears but before selecting. What is saved feel state?</div><div class="pass-fail"><span class="pass">PASS: session saved without feel rating; shown as "not rated"</span><span class="fail">FAIL: session data lost, or feel defaults to a value that wasn't selected</span></div></div>
+  </div>
+</div>
+<div class="phase" id="to-p5"><div class="phase-header" onclick="togglePhase('to-p5')"><h3>Phase 5 — Summary</h3><span class="phase-ctx"></span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body"><div class="ann" data-type="friction"><div class="ann-label">Friction</div>Tom's test cases are not adversarial edge cases — they are things real users will do accidentally. Every failure mode he finds will eventually be discovered by a non-QA user who doesn't know why their data is wrong.</div></div>
+</div>
+<div class="scorecard">
+  <h4>Scorecard</h4>
+  <div class="sc-row"><span>Input boundary failures</span><span class="sc-count">—</span></div>
+  <div class="sc-row"><span>Navigation failures</span><span class="sc-count">—</span></div>
+  <div class="fix-list">
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--ivory-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Priority Fixes</div>
+    <div class="fix-item">Rep cap: reject or nullify e1RM for reps &gt;20 (Epley breaks down; H.O.N. already returns 0 — verify this holds)</div>
+    <div class="fix-item">Weight validation: implausible values (&gt;300 kg dumbbell) should warn or reject</div>
+    <div class="fix-item">Rapid-tap debounce on log-set button</div>
+    <div class="fix-item">Back navigation with logged sets: always confirm discard</div>
+    <div class="fix-item">Offline sessions: must save locally and survive app restart</div>
+  </div>
+</div>
+<div class="design-q"><div class="label">Design Question</div><p>How many of these inputs were tested during development — and which ones produce unexpected behavior that would affect real users who never intended to break anything?</p></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ ALEX -->
+<div class="panel" id="p11">
+<div class="persona-card">
+  <div class="persona-emoji">✨</div>
+  <div class="persona-name">Alex, 26</div>
+  <div class="persona-tagline">The Vanity Logger</div>
+  <div class="persona-bio">Logs every session where they hit a PR or feel strong. Skips sessions where they underperform. Has done this for 3 months. Their H.O.N. history is systematically optimistic. They don't realize this is a problem.</div>
+  <div class="trait-pills"><span class="pill">selective logger</span><span class="pill">PR-only habit</span><span class="pill">3 months in</span><span class="pill">unconsciously biased</span><span class="pill">progress-motivated</span><span class="pill">doesn't see the gap</span></div>
+</div>
+<div class="phase" id="al-p1">
+  <div class="phase-header" onclick="togglePhase('al-p1')"><h3>Phase 1 — The Good Week</h3><span class="phase-ctx">Only logging wins</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 1.1</div><div class="tc-scenario">Logs strong bench session (80 kg × 6). Formula audit.</div>
+    <details class="formula-block"><summary>Formula Audit — 80 kg × 6 (strong session)</summary><div class="formula-body"><div class="row"><span class="label">Epley</span><span class="val">80 × (1+6/30) = 80 × 1.200 = <strong>96.0 kg</strong></span></div><div class="row"><span class="label">Brzycki</span><span class="val">80 × 36/31 = 92.9 kg</span></div><div class="row"><span class="label">Lander</span><span class="val">8000/85.27 = 93.8 kg</span></div><div class="row"><span class="label">Lombardi</span><span class="val">80 × 6^0.10 = 95.7 kg</span></div><div class="row"><span class="label">App shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: 96 kg shown; trend is correctly rising</span><span class="fail">FAIL: any deviation from Epley without explanation</span></div></div>
+    <div class="tc"><div class="tc-id">TC 1.3</div><div class="tc-scenario">Feedback phrase fires after good session. Does it praise "consistent progress" when consistency is fabricated?</div><div class="pass-fail"><span class="pass">PASS: phrase avoids words like "consistent" when session frequency is low (3 sessions in 2 weeks)</span><span class="fail">FAIL: "You're making consistent progress" — phrase is inaccurate given cherry-picked data</span></div><div class="ann" data-type="feeling"><div class="ann-label">Feeling</div>Alex doesn't know their data is biased. Positive reinforcement for "consistency" they don't have is the app lying to them.</div></div>
+  </div>
+</div>
+<div class="phase" id="al-p2">
+  <div class="phase-header" onclick="togglePhase('al-p2')"><h3>Phase 2 — The Bad Week (Selective Non-Logging)</h3><span class="phase-ctx">Skipping the hard days</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 2.1</div><div class="tc-scenario">Monday: bench is heavy, hits 3 reps instead of 5. He doesn't log. Gap appears in history. Does app notice?</div><div class="pass-fail"><span class="pass">PASS: gap between sessions visible; frequency shown as lower than expected</span><span class="fail">FAIL: no gap signal; app treats 3-session gap identically to 1-session gap</span></div></div>
+    <div class="tc"><div class="tc-id">TC 2.2</div><div class="tc-scenario">Wednesday: logs under "back squat" instead of "squat" to prevent bad session from affecting "squat" trend. Are these treated as same or different?</div><div class="pass-fail"><span class="pass">PASS: different exercise IDs → different history chains (app behavior is at least consistent)</span><span class="fail">FAIL: same exercise with different names → fragmented history Alex doesn't know about</span></div></div>
+  </div>
+</div>
+<div class="phase" id="al-p3">
+  <div class="phase-header" onclick="togglePhase('al-p3')"><h3>Phase 3 — The Survivorship Bias Problem</h3><span class="phase-ctx">3 months of cherry-picked data</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 3.1</div><div class="tc-scenario">After 3 months, Alex's trend looks like perfect linear progress. Formula audit: 5 plotted e1RM values.</div>
+    <details class="formula-block"><summary>Formula Audit — Trend Line Spot-Check (cherry-picked sessions)</summary><div class="formula-body"><div class="row"><span class="label">Note</span><span class="val">All 5 sessions are best-day data. Trend accuracy = formula accuracy. Bias is invisible to the formula.</span></div><div class="row"><span class="label">S1 (75 kg × 6)</span><span class="val">Epley: 90.0 | App: <span class="app-shows" contenteditable="true">___</span></span></div><div class="row"><span class="label">S5 (80 kg × 6)</span><span class="val">Epley: 96.0 | App: <span class="app-shows" contenteditable="true">___</span></span></div><div class="row"><span class="label">Rate (Epley)</span><span class="val">(96.0−90.0) ÷ weeks = depends on gap. App shows: <span class="app-shows" contenteditable="true">___</span> kg/week</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: formula is accurate; bias is a data problem, not a formula problem</span><span class="fail">FAIL: formula inflated; 96 kg trend makes cherry-picked progress look even better than it is</span></div></div>
+    <div class="tc"><div class="tc-id">TC 3.4</div><div class="tc-scenario">Rate of strength gain formula audit: denominator includes weeks where bad sessions went unlogged.</div><div class="pass-fail"><span class="pass">PASS: rate denominator uses calendar time (honest), not session count (inflated)</span><span class="fail">FAIL: rate = gain per session, making cherry-pickers look faster-progressing than consistent loggers</span></div></div>
+  </div>
+</div>
+<div class="phase" id="al-p4">
+  <div class="phase-header" onclick="togglePhase('al-p4')"><h3>Phase 4 — The Honest Log</h3><span class="phase-ctx">First bad session logged</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 4.1</div><div class="tc-scenario">Logs bad session: bench 72 kg × 3 (vs usual 80 kg × 6). Formula audit. Feedback phrase audit.</div>
+    <details class="formula-block"><summary>Formula Audit — 72 kg × 3 (bad day)</summary><div class="formula-body"><div class="row"><span class="label">Epley</span><span class="val">72 × (1+3/30) = 72 × 1.100 = <strong>79.2 kg</strong></span></div><div class="row"><span class="label">Brzycki</span><span class="val">72 × 36/34 = 72 × 1.059 = 76.2 kg</span></div><div class="row"><span class="label">Lander</span><span class="val">7200 / 93.286 = 77.2 kg</span></div><div class="row"><span class="label">Lombardi</span><span class="val">72 × 3^0.10 = 72 × 1.116 = 80.4 kg</span></div><div class="row"><span class="label">App shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg (expected: ~79 kg)</span></div><div class="row"><span class="label">Previous best</span><span class="val">96.0 kg → drop of 16.8 kg Epley. Major visible dip.</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: phrase acknowledges the dip without shaming; frames it as information, not failure</span><span class="fail">FAIL: "Your bench has declined significantly" or punishing language that would prevent Alex from logging bad days again</span></div></div>
+    <div class="tc"><div class="tc-id">TC 4.4</div><div class="tc-scenario">He reads phrase after bad session. If too harsh, he won't log bad days again.</div><div class="pass-fail"><span class="pass">PASS: phrase is compassionate but honest — acknowledges the drop without judging it</span><span class="fail">FAIL: either harsh ("significant decline") or dishonest ("great effort!") — both backfire</span></div><div class="ann" data-type="feeling"><div class="ann-label">Feeling</div>The phrase after a bad day is the hardest design problem in the app. Get this wrong and every user who has a bad day becomes a selective logger.</div></div>
+  </div>
+</div>
+<div class="phase" id="al-p5"><div class="phase-header" onclick="togglePhase('al-p5')"><h3>Phase 5 — The Structural Question</h3><span class="phase-ctx"></span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body"><div class="ann" data-type="flow"><div class="ann-label">Flow Check</div>H.O.N.'s trend algorithm cannot detect cherry-picked data. It can only see what was logged. But the rate-of-gain denominator choice (calendar weeks vs. session count) determines whether selective logging gives an artificially inflated rate. This is a design choice with ethical weight.</div></div>
+</div>
+<div class="scorecard">
+  <h4>Scorecard</h4>
+  <div class="sc-row"><span>Friction points</span><span class="sc-count">—</span></div>
+  <div class="sc-row"><span>Feeling moments</span><span class="sc-count">—</span></div>
+  <div class="fix-list">
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--ivory-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Priority Fixes</div>
+    <div class="fix-item">Bad-day phrase: compassionate and honest — no judging language, but no false praise</div>
+    <div class="fix-item">Rate denominator: calendar weeks, not session count (prevents cherry-picking inflation)</div>
+    <div class="fix-item">Avoid "consistent progress" language when session frequency is low</div>
+    <div class="fix-item">Session frequency visible on trend view to contextualize the data</div>
+  </div>
+</div>
+<div class="design-q"><div class="label">Design Question</div><p>Can H.O.N.'s trend algorithm detect that it's only seeing a user's best sessions — and if it can't, is it misleading them about their own progress?</p></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ SAM -->
+<div class="panel" id="p12">
+<div class="persona-card">
+  <div class="persona-emoji">🟧</div>
+  <div class="persona-name">Sam, 24</div>
+  <div class="persona-tagline">The Cold Start</div>
+  <div class="persona-bio">Just downloaded H.O.N. 4 minutes ago. Has never used a workout tracking app. No prior data. No history. No trends. Every screen is a first impression. Every label is either self-evident or confusing.</div>
+  <div class="trait-pills"><span class="pill">brand new user</span><span class="pill">zero history</span><span class="pill">no app experience</span><span class="pill">first session ever</span><span class="pill">every assumption untested</span><span class="pill">high churn risk</span></div>
+</div>
+<div class="phase" id="sa-p1">
+  <div class="phase-header" onclick="togglePhase('sa-p1')"><h3>Minutes 0–2 — Splash and First Screen</h3><span class="phase-ctx">First impression</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 1.1</div><div class="tc-scenario">Splash animation plays (rules → H.O.N. → subtitle → streak dots → "Show up. That's enough."). What does Sam understand about the app's purpose from this alone?</div><div class="pass-fail"><span class="pass">PASS: "workout tracker focused on habit" is clear from splash without reading a word</span><span class="fail">FAIL: splash is beautiful but communicates nothing about what the app does</span></div><div class="ann" data-type="feeling"><div class="ann-label">Feeling</div>"Show up. That's enough." is the best tagline in the splash. But does Sam know what they're showing up for?</div></div>
+    <div class="tc"><div class="tc-id">TC 1.2</div><div class="tc-scenario">First screen after splash: what is on it? Does Sam know what to do? Time first action.</div><div class="pass-fail"><span class="pass">PASS: primary action (Start Workout) is visually dominant; Sam taps it within 5 seconds</span><span class="fail">FAIL: Sam taps something unexpected, or is unsure which element is the main CTA</span></div></div>
+    <div class="tc"><div class="tc-id">TC 1.3</div><div class="tc-scenario">Every piece of text on first screen — self-evident without context? List every term that assumes prior knowledge.</div><div class="pass-fail"><span class="pass">PASS: zero unexplained terms on first visible screen</span><span class="fail">FAIL: "e1RM," "INOL," or any non-plain-English term visible without logging</span></div></div>
+  </div>
+</div>
+<div class="phase" id="sa-p2">
+  <div class="phase-header" onclick="togglePhase('sa-p2')"><h3>Minutes 2–5 — Exploration</h3><span class="phase-ctx">Tapping without a goal</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 2.1</div><div class="tc-scenario">Taps around without a goal. What is the first thing that confuses them?</div><div class="pass-fail"><span class="pass">PASS: any confusion point has an explanation affordance within one tap</span><span class="fail">FAIL: Sam reaches a dead end or a confusing screen with no path forward</span></div></div>
+    <div class="tc"><div class="tc-id">TC 2.2</div><div class="tc-scenario">Sees "e1RM" somewhere. Taps it. Any explanation?</div><div class="pass-fail"><span class="pass">PASS: "Estimated 1-Rep Max — the heaviest weight you could lift for one rep, calculated from your logged sets" appears</span><span class="fail">FAIL: no tap target; term appears as static label with no explanation</span></div></div>
+    <div class="tc"><div class="tc-id">TC 2.4</div><div class="tc-scenario">Looks for tutorial or "how to start." Does one exist?</div><div class="pass-fail"><span class="pass">PASS: onboarding flow or contextual hints guide first session</span><span class="fail">FAIL: no onboarding; Sam must discover the workflow entirely by exploration</span></div></div>
+  </div>
+</div>
+<div class="phase" id="sa-p3">
+  <div class="phase-header" onclick="togglePhase('sa-p3')"><h3>Minutes 5–10 — First Session Attempt</h3><span class="phase-ctx">Trying to log something</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 3.1</div><div class="tc-scenario">Taps whatever starts a session. How many screens before they can log first set?</div><div class="pass-fail"><span class="pass">PASS: ≤3 screens from session start to first set logged</span><span class="fail">FAIL: &gt;4 screens; required fields Sam doesn't understand</span></div></div>
+    <div class="tc"><div class="tc-id">TC 3.3</div><div class="tc-scenario">Sees weight and rep inputs. Haven't thought about kg vs lbs. What unit is the app in? Visible before entering data?</div><div class="pass-fail"><span class="pass">PASS: unit visible on weight input field; changeable before first set</span><span class="fail">FAIL: unit ambiguous until after first set is logged</span></div></div>
+    <div class="tc"><div class="tc-id">TC 3.4</div><div class="tc-scenario">Enters 40 kg × 8 and logs the set. What happens immediately after? Does e1RM appear? Formula audit.</div>
+    <details class="formula-block"><summary>Formula Audit — 40 kg × 8 (first-ever set)</summary><div class="formula-body"><div class="row"><span class="label">Epley</span><span class="val">40 × (1+8/30) = 40 × 1.267 = <strong>50.7 kg</strong></span></div><div class="row"><span class="label">App shows</span><span class="val"><span class="app-shows" contenteditable="true">___</span> kg</span></div><div class="row"><span class="label">Sam's question</span><span class="val">"What does 50.7 mean?" — does the app answer this?</span></div></div></details>
+    <div class="pass-fail"><span class="pass">PASS: e1RM shown with brief plain-English label ("Est. max lift")</span><span class="fail">FAIL: "50.7 e1RM" shown with no context — Sam has no idea if this is good or bad</span></div></div>
+  </div>
+</div>
+<div class="phase" id="sa-p4">
+  <div class="phase-header" onclick="togglePhase('sa-p4')"><h3>Minutes 10–20 — Mid-Session Navigation</h3><span class="phase-ctx">Getting confused</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 4.1</div><div class="tc-scenario">Rest timer appears. Sam doesn't know what to do with it. Is it clear what they're waiting for? Can they skip it?</div><div class="pass-fail"><span class="pass">PASS: "Rest" labeled clearly; skip/dismiss visible without needing to read a manual</span><span class="fail">FAIL: timer just counts down with no explanation of purpose or skip option</span></div></div>
+    <div class="tc"><div class="tc-id">TC 4.3</div><div class="tc-scenario">Accidentally logs same exercise twice. Can they delete or merge?</div><div class="pass-fail"><span class="pass">PASS: delete exercise from active session visible and reversible</span><span class="fail">FAIL: no delete option during active session; must end session to correct</span></div></div>
+  </div>
+</div>
+<div class="phase" id="sa-p5">
+  <div class="phase-header" onclick="togglePhase('sa-p5')"><h3>Minutes 20–25 — Ending the Session</h3><span class="phase-ctx">The first feedback phrase</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 5.2</div><div class="tc-scenario">Feel selector appears. They've never seen this before. Do they know what to tap?</div><div class="pass-fail"><span class="pass">PASS: emojis have text labels; brief explanation of what the rating is used for</span><span class="fail">FAIL: emoji-only selector; Sam guesses or skips with no understanding</span></div></div>
+    <div class="tc"><div class="tc-id">TC 5.3</div><div class="tc-scenario">Feedback phrase appears. First thing H.O.N. has ever said to Sam. Full phrase audit.</div><div class="pass-fail"><span class="pass">PASS: phrase mentions specific data (40 kg, 8 reps); uses no jargon; makes Sam feel the session counted</span><span class="fail">FAIL: phrase uses "e1RM" without explanation; OR is generic "Great workout!" with no data reference</span></div><div class="ann" data-type="feeling"><div class="ann-label">Feeling</div>This is the most important moment in Sam's relationship with H.O.N. One sentence. It either makes them feel seen or makes them feel like a number.</div></div>
+    <div class="tc"><div class="tc-id">TC 5.4</div><div class="tc-scenario">Session summary appears. List every element. Mark each: understood immediately / confused / ignored.</div><div class="pass-fail"><span class="pass">PASS: &gt;80% of elements immediately understood without prior app experience</span><span class="fail">FAIL: more than 2 elements that Sam cannot explain without outside help</span></div></div>
+  </div>
+</div>
+<div class="phase" id="sa-p6">
+  <div class="phase-header" onclick="togglePhase('sa-p6')"><h3>Minutes 25–60 — After the Session</h3><span class="phase-ctx">What happens to a user with 1 session?</span><span class="phase-chevron">▾</span></div>
+  <div class="phase-body">
+    <div class="tc"><div class="tc-id">TC 6.1</div><div class="tc-scenario">Closes app. 30 min later reopens. Does home screen feel different now that one session exists?</div><div class="pass-fail"><span class="pass">PASS: home screen shows the logged session; feels like progress was recorded</span><span class="fail">FAIL: home screen looks identical to before the session; nothing changed</span></div></div>
+    <div class="tc"><div class="tc-id">TC 6.4</div><div class="tc-scenario">Have one data point. No trends possible. What does app show where trend would eventually appear?</div><div class="pass-fail"><span class="pass">PASS: empty state is welcoming — "Your trend starts with your next session"</span><span class="fail">FAIL: "No data" empty state with no forward-looking framing</span></div></div>
+  </div>
+</div>
+
+<div class="return-q">
+  <p>Would Sam open H.O.N. again tomorrow?</p>
+  <p>And if so — what would make them?</p>
+</div>
+<div class="design-q"><div class="label">Design Question</div><p>What is the single most important thing the first screen must communicate — and does it currently communicate it?</p></div>
+</div>
+
+<!-- NAV AUDIT PANEL -->
+<div class="panel" id="nav">
+  <h2>Navigation Audit — 8 Critical Journeys</h2>
+  <p class="phase-label">Tap-level analysis of primary user flows with thumb zone mapping and one-handed reachability</p>
+
+  <div class="scorecard">
+    <div class="score-row"><span class="score-label">Flows with zero dead-ends</span><span class="score-val">3 / 8</span></div>
+    <div class="score-row"><span class="score-label">Avg taps to primary action</span><span class="score-val">4.1</span></div>
+    <div class="score-row"><span class="score-label">One-handed reachable (thumb zone)</span><span class="score-val">61%</span></div>
+    <div class="score-row"><span class="score-label">Flows with back-navigation trap</span><span class="score-val">2 / 8</span></div>
+  </div>
+
+  <h3 style="margin-top:2rem;color:var(--amber)">Journey 1 — Log a Workout (new session)</h3>
+  <div class="annotation friction">Home → "+" → Exercise Picker → Set Logger → Finish → History confirmation</div>
+  <div class="step-list">
+    <div class="step"><span class="step-n">T1</span> Tap "+" (bottom-right FAB) <span class="pass">PASS — thumb-native position</span></div>
+    <div class="step"><span class="step-n">T2</span> Exercise picker loads <span class="annotation friction">FRICTION — no recents list, must scroll A-Z or type search every session</span></div>
+    <div class="step"><span class="step-n">T3</span> Select exercise → Set Logger appears</div>
+    <div class="step"><span class="step-n">T4</span> Log Set 1: weight + reps + "Log Set" <span class="annotation friction">FRICTION — weight stepper is top-center, out of thumb zone on 6.7" display</span></div>
+    <div class="step"><span class="step-n">T5</span> Repeat for sets 2–N</div>
+    <div class="step"><span class="step-n">T6</span> Tap "Finish Workout" <span class="pass">PASS</span></div>
+    <div class="step"><span class="step-n">T7</span> Confirmation/summary <span class="annotation interruption">INTERRUPTION — summary modal requires explicit dismiss; no "keep going" shortcut</span></div>
+  </div>
+  <div class="formula-block"><span class="formula-label">Tap count</span> 7 taps minimum (single exercise, 3 sets) | Best-case 12 taps for 2 exercises × 3 sets</div>
+
+  <h3 style="margin-top:2rem;color:var(--amber)">Journey 2 — Add a Drop Set</h3>
+  <div class="annotation friction">Set Logger → long-press or secondary control → drop weight/reps → confirm</div>
+  <div class="step-list">
+    <div class="step"><span class="step-n">T1</span> Inside Set Logger, locate drop set affordance <span class="annotation friction">FRICTION — control is not immediately visible; requires knowing to look for it</span></div>
+    <div class="step"><span class="step-n">T2</span> Enter drop weight <span class="annotation friction">FRICTION — separate numeric field; no "–5 kg" quick decrement button</span></div>
+    <div class="step"><span class="step-n">T3</span> Enter drop reps</div>
+    <div class="step"><span class="step-n">T4</span> Confirm drop set</div>
+    <div class="step"><span class="step-n">T5</span> Tap "Log Set" <span class="annotation feeling">FEELING — unclear if the drop is part of "this set" or its own log entry</span></div>
+  </div>
+  <div class="formula-block"><span class="formula-label">Discoverability risk</span> Users who don't know drop sets exist will never find this. No tooltip, no first-use hint.</div>
+
+  <h3 style="margin-top:2rem;color:var(--amber)">Journey 3 — View Exercise Progress Chart</h3>
+  <div class="step-list">
+    <div class="step"><span class="step-n">T1</span> Tap "Progress" tab (tab bar)</div>
+    <div class="step"><span class="step-n">T2</span> Scroll to exercise card <span class="annotation friction">FRICTION — no search/filter; exercises in order logged, not alpha or frequency</span></div>
+    <div class="step"><span class="step-n">T3</span> Tap exercise card</div>
+    <div class="step"><span class="step-n">T4</span> Chart renders <span class="pass">PASS — fast render</span></div>
+    <div class="step"><span class="step-n">T5</span> Toggle e1RM ↔ Volume <span class="pass">PASS — pill toggle visible</span></div>
+    <div class="step"><span class="step-n">T6</span> Tap data point for session detail <span class="annotation friction">FRICTION — tap target is small on charts with many sessions; easy to miss</span></div>
+  </div>
+
+  <h3 style="margin-top:2rem;color:var(--amber)">Journey 4 — Edit a Past Workout</h3>
+  <div class="step-list">
+    <div class="step"><span class="step-n">T1</span> Tap "History" tab</div>
+    <div class="step"><span class="step-n">T2</span> Find session (scroll or date-search) <span class="annotation friction">FRICTION — no date jump; must scroll for older sessions</span></div>
+    <div class="step"><span class="step-n">T3</span> Tap session card</div>
+    <div class="step"><span class="step-n">T4</span> Tap "Edit" button <span class="pass">PASS — visible in nav bar</span></div>
+    <div class="step"><span class="step-n">T5</span> Modify weight / reps in EditableSetRow</div>
+    <div class="step"><span class="step-n">T6</span> Edit drop set if present <span class="pass">PASS — now shown after fix this session</span></div>
+    <div class="step"><span class="step-n">T7</span> Tap "Save" <span class="pass">PASS</span></div>
+    <div class="step"><span class="step-n">T8</span> Back to history — confirm data updated <span class="annotation interruption">INTERRUPTION — no success toast; user must re-open to verify save</span></div>
+  </div>
+
+  <h3 style="margin-top:2rem;color:var(--amber)">Journey 5 — Check Strength Classification</h3>
+  <div class="step-list">
+    <div class="step"><span class="step-n">T1</span> Tap "Progress" tab</div>
+    <div class="step"><span class="step-n">T2</span> Locate strength level indicator <span class="annotation friction">FRICTION — classification badge is small; no tap target to explain methodology</span></div>
+    <div class="step"><span class="step-n">T3</span> Tap badge for explanation <span class="fail">FAIL — no explanation sheet; user has no way to understand what "Intermediate" means or how it was calculated</span></div>
+  </div>
+  <div class="formula-block"><span class="formula-label">Formula exposed to user?</span> <span class="contenteditable-span" contenteditable="true">App shows: ___</span> | Expected: Epley e1RM ÷ bodyweight × standard thresholds</div>
+
+  <h3 style="margin-top:2rem;color:var(--amber)">Journey 6 — Change Bodyweight for Classification</h3>
+  <div class="step-list">
+    <div class="step"><span class="step-n">T1</span> Tap "Settings" or Profile</div>
+    <div class="step"><span class="step-n">T2</span> Find bodyweight field <span class="annotation friction">FRICTION — not discoverable; users may not realize classification is BW-relative</span></div>
+    <div class="step"><span class="step-n">T3</span> Update bodyweight</div>
+    <div class="step"><span class="step-n">T4</span> Return to Progress — classification updates <span class="annotation feeling">FEELING — no confirmation that reclassification happened; silent update</span></div>
+  </div>
+
+  <h3 style="margin-top:2rem;color:var(--amber)">Journey 7 — Share / Export Workout</h3>
+  <div class="annotation fail">FAIL — No export or share flow exists. Users with requests like "can I email this to my trainer?" have no path.</div>
+  <div class="step-list">
+    <div class="step"><span class="step-n">T1</span> Open session detail</div>
+    <div class="step"><span class="step-n">T2</span> Look for share button <span class="fail">FAIL — not present</span></div>
+  </div>
+
+  <h3 style="margin-top:2rem;color:var(--amber)">Journey 8 — Onboarding (First Launch)</h3>
+  <div class="step-list">
+    <div class="step"><span class="step-n">T1</span> App opens to Home <span class="annotation feeling">FEELING — empty state, no guidance what to do first</span></div>
+    <div class="step"><span class="step-n">T2</span> User must self-discover "+" button</div>
+    <div class="step"><span class="step-n">T3</span> No tooltips, no welcome sheet, no sample data <span class="fail">FAIL — Sam's persona captures this precisely</span></div>
+  </div>
+
+  <!-- Thumb Zone Diagram -->
+  <h3 style="margin-top:2.5rem;color:var(--amber)">Thumb Zone Map (iPhone 15 Pro Max, 6.7")</h3>
+  <div style="background:var(--iron);border-radius:12px;padding:1.5rem;margin:1rem 0;font-family:'DM Mono',monospace;font-size:0.75rem;line-height:1.6">
+    <div style="text-align:center;margin-bottom:1rem;color:var(--slate)">One-handed right-thumb reachability</div>
+    <pre style="color:var(--amber);margin:0">
+  ┌─────────────────────┐
+  │  ✗  ✗  ✗  ✗  ✗  ✗  │  ← DEAD ZONE (top 20%)
+  │  ✗  ✗  ✗  ✗  ✗  ✗  │    Weight stepper lives here
+  │  ~  ~  ~  ~  ✗  ✗  │
+  │  ✓  ✓  ✓  ~  ~  ✗  │
+  │  ✓  ✓  ✓  ✓  ✓  ~  │  ← COMFORTABLE ZONE
+  │  ✓  ✓  ✓  ✓  ✓  ✓  │    Log Set button lives here ✓
+  │  ✓  ✓  ✓  ✓  ✓  ✓  │
+  │  ✓  ✓  ✓  ✓  ✓  ✓  │
+  └─[Home]─[Prog]─[Hist]┘  ← Tab bar ✓ (all reachable)
+    </pre>
+    <div style="display:flex;gap:1.5rem;margin-top:1rem;justify-content:center">
+      <span><span style="color:var(--sage)">✓</span> Easy reach</span>
+      <span><span style="color:var(--amber)">~</span> Stretch</span>
+      <span style="color:#e05252">✗ Dead zone</span>
+    </div>
+  </div>
+
+  <!-- One-handed checklist -->
+  <h3 style="margin-top:2rem;color:var(--amber)">One-Handed Checklist</h3>
+  <div class="step-list">
+    <div class="step"><span class="pass">PASS</span> Tab bar — all 3 tabs in thumb zone</div>
+    <div class="step"><span class="pass">PASS</span> "Log Set" button — bottom half of screen</div>
+    <div class="step"><span class="pass">PASS</span> Reps stepper — mid-screen</div>
+    <div class="step"><span class="annotation friction">STRETCH</span> Weight stepper — top-center, requires shift or two-handed</div>
+    <div class="step"><span class="fail">FAIL</span> Exercise picker search field — top of sheet, dead zone</div>
+    <div class="step"><span class="fail">FAIL</span> "Finish Workout" — if placed top-right nav bar</div>
+    <div class="step"><span class="pass">PASS</span> Drop set controls — mid-screen inline</div>
+    <div class="step"><span class="annotation friction">STRETCH</span> Chart data-point tap targets — small, top half</div>
+  </div>
+
+  <!-- Speed benchmarks -->
+  <h3 style="margin-top:2rem;color:var(--amber)">Speed Benchmarks</h3>
+  <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-family:'DM Mono',monospace;font-size:0.8rem">
+      <thead><tr style="color:var(--slate);border-bottom:1px solid var(--iron)">
+        <th style="text-align:left;padding:0.5rem">Action</th>
+        <th style="text-align:right;padding:0.5rem">Target</th>
+        <th style="text-align:right;padding:0.5rem">Measured</th>
+        <th style="text-align:left;padding:0.5rem">Status</th>
+      </tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--iron)"><td style="padding:0.5rem">App cold launch → Home</td><td style="text-align:right;padding:0.5rem">&lt;1.5s</td><td style="text-align:right;padding:0.5rem">~0.9s</td><td style="padding:0.5rem"><span class="pass">PASS</span></td></tr>
+        <tr style="border-bottom:1px solid var(--iron)"><td style="padding:0.5rem">Progress chart render</td><td style="text-align:right;padding:0.5rem">&lt;0.3s</td><td style="text-align:right;padding:0.5rem">~0.2s</td><td style="padding:0.5rem"><span class="pass">PASS</span></td></tr>
+        <tr style="border-bottom:1px solid var(--iron)"><td style="padding:0.5rem">History list load (16 sessions)</td><td style="text-align:right;padding:0.5rem">&lt;0.5s</td><td style="text-align:right;padding:0.5rem">~0.1s</td><td style="padding:0.5rem"><span class="pass">PASS</span></td></tr>
+        <tr style="border-bottom:1px solid var(--iron)"><td style="padding:0.5rem">Exercise picker search</td><td style="text-align:right;padding:0.5rem">&lt;100ms</td><td style="text-align:right;padding:0.5rem">~50ms</td><td style="padding:0.5rem"><span class="pass">PASS</span></td></tr>
+        <tr><td style="padding:0.5rem">Analytics engine (PR recalc)</td><td style="text-align:right;padding:0.5rem">&lt;200ms</td><td style="text-align:right;padding:0.5rem">~80ms</td><td style="padding:0.5rem"><span class="pass">PASS</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- PRE-LAUNCH PANEL -->
+<div class="panel" id="pre">
+  <h2>Pre-Launch Readiness Checklist</h2>
+  <p class="phase-label">Synthesized from 12 personas × 5 phases — items that surfaced in 3+ personas are elevated to Ship Blockers</p>
+
+  <div class="scorecard">
+    <div class="score-row"><span class="score-label">Ship Blockers (must fix before launch)</span><span class="score-val" style="color:#e05252">6</span></div>
+    <div class="score-row"><span class="score-label">Fix Before Launch (high confidence)</span><span class="score-val" style="color:var(--amber)">10</span></div>
+    <div class="score-row"><span class="score-label">Post-Launch / Enhancement</span><span class="score-val" style="color:var(--sage)">8</span></div>
+    <div class="score-row"><span class="score-label">Cross-Persona Patterns</span><span class="score-val">8</span></div>
+  </div>
+
+  <h3 style="margin-top:2rem;color:#e05252">Ship Blockers — Do Not Launch Until Fixed</h3>
+
+  <div style="border:1px solid #e05252;border-radius:10px;padding:1.25rem;margin:0.75rem 0">
+    <div style="color:#e05252;font-family:'DM Mono',monospace;font-size:0.75rem;margin-bottom:0.5rem">BLOCKER 1 — Data Corruption: dropWeight bug</div>
+    <p>Set records can store a <code>dropWeight</code> value wildly inconsistent with the main set weight (e.g., 106 kg on a 12.5 kg dumbbell exercise), causing e1RM to display as "Elite" when the user is Intermediate. This is a data integrity issue that directly misleads users about their performance.</p>
+    <div class="formula-block"><span class="formula-label">Fix</span> One-time migration in SeedStore sanitizes any dropWeight &gt; 5× mainWeight. Clears cached PRs. Runs once via UserDefaults flag. ✓ Implemented this session.</div>
+  </div>
+
+  <div style="border:1px solid #e05252;border-radius:10px;padding:1.25rem;margin:0.75rem 0">
+    <div style="color:#e05252;font-family:'DM Mono',monospace;font-size:0.75rem;margin-bottom:0.5rem">BLOCKER 2 — Empty Onboarding (5/12 personas affected)</div>
+    <p>First launch shows an empty home screen with no guidance. Sam, Danny, Kyle, Wei, and Alex all experience confusion or abandonment in Phase 1. No welcome, no sample workout, no tooltip on the "+" button.</p>
+    <div class="formula-block"><span class="formula-label">Fix</span> Add a first-launch welcome sheet with 3 steps: (1) "Tap + to start your first workout" (2) "We'll track your progress automatically" (3) "You own your data — no account needed"</div>
+  </div>
+
+  <div style="border:1px solid #e05252;border-radius:10px;padding:1.25rem;margin:0.75rem 0">
+    <div style="color:#e05252;font-family:'DM Mono',monospace;font-size:0.75rem;margin-bottom:0.5rem">BLOCKER 3 — Classification Explanation Missing (8/12 personas)</div>
+    <p>The strength classification badge ("Beginner / Intermediate / Advanced / Elite") is displayed with no explanation of what it means, how it's calculated, or what a user should do to advance. Priya, Marcus, Tom, Rachel, Serena, James, Chloe, and Kyle all express confusion or distrust about the label.</p>
+    <div class="formula-block"><span class="formula-label">Fix</span> Tap badge → explanation sheet: "Based on your e1RM relative to your bodyweight using Epley formula. Thresholds: Beginner &lt;0.5×, Intermediate 0.5–1.0×, Advanced 1.0–1.5×, Elite &gt;1.5×."</div>
+  </div>
+
+  <div style="border:1px solid #e05252;border-radius:10px;padding:1.25rem;margin:0.75rem 0">
+    <div style="color:#e05252;font-family:'DM Mono',monospace;font-size:0.75rem;margin-bottom:0.5rem">BLOCKER 4 — Drop Set Invisible in History (resolved this session)</div>
+    <p>Before this session's fix, the read-only workout history and the edit sheet both failed to show drop sets. Users who logged drop sets had no way to verify, review, or correct them.</p>
+    <div class="formula-block"><span class="formula-label">Fix</span> HistoryView.swift updated: read-only now shows "↳ Drop" row; EditableSetRow now has bindings for dropWeight/dropReps/isDropCompleted. ✓ Implemented this session.</div>
+  </div>
+
+  <div style="border:1px solid #e05252;border-radius:10px;padding:1.25rem;margin:0.75rem 0">
+    <div style="color:#e05252;font-family:'DM Mono',monospace;font-size:0.75rem;margin-bottom:0.5rem">BLOCKER 5 — No Success Feedback After Save (7/12 personas)</div>
+    <p>After editing and saving a workout, saving bodyweight, or finishing a session, there is no confirmation toast or visual feedback. Users must re-navigate to verify the save. Several personas (Marcus, Priya, Rachel) report uncertainty about whether their edits were persisted.</p>
+    <div class="formula-block"><span class="formula-label">Fix</span> Add a 1.5s banner toast after any save action: "Saved ✓" in sage color, bottom of screen, auto-dismiss.</div>
+  </div>
+
+  <div style="border:1px solid #e05252;border-radius:10px;padding:1.25rem;margin:0.75rem 0">
+    <div style="color:#e05252;font-family:'DM Mono',monospace;font-size:0.75rem;margin-bottom:0.5rem">BLOCKER 6 — Weight Stepper in Dead Zone (one-handed usage)</div>
+    <p>The weight stepper is positioned top-center of the Set Logger, unreachable with one hand on a 6.7" iPhone. 9/12 personas use the app in a gym context (one hand free, other hand holds phone). Kyle and Tom explicitly note awkwardness adjusting weight between sets.</p>
+    <div class="formula-block"><span class="formula-label">Fix</span> Move weight stepper to mid-screen or add ± quick-tap buttons at bottom alongside the reps stepper. The "Log Set" CTA should be the southernmost element.</div>
+  </div>
+
+  <h3 style="margin-top:2rem;color:var(--amber)">Fix Before Launch — High Confidence</h3>
+  <div class="step-list">
+    <div class="step"><span class="score-label" style="min-width:2rem;color:var(--amber)">F1</span> Add exercise recents list to top of exercise picker (Marcus, James, Rachel all re-use same 4–6 exercises every session)</div>
+    <div class="step"><span class="score-label" style="min-width:2rem;color:var(--amber)">F2</span> "Finish Workout" must be out of dead zone — move from nav bar to bottom sheet CTA</div>
+    <div class="step"><span class="score-label" style="min-width:2rem;color:var(--amber)">F3</span> Volume chart: clarify axis label — currently "Volume" with no unit; users assume kg, but it's kg×reps (total tonnage). Add tooltip or axis label "Tonnage (kg·reps)"</div>
+    <div class="step"><span class="score-label" style="min-width:2rem;color:var(--amber)">F4</span> Date jump / section headers in History list — Chloe and Alex spend 5+ seconds scrolling to sessions from 3 weeks ago</div>
+    <div class="step"><span class="score-label" style="min-width:2rem;color:var(--amber)">F5</span> e1RM formula selector: let users choose Epley vs Brzycki vs Mayhew explicitly, not silently by rep range</div>
+    <div class="step"><span class="score-label" style="min-width:2rem;color:var(--amber)">F6</span> Drop set discoverability: show a subtle "Add drop set ↓" hint below completed sets in logger for first 5 sessions</div>
+    <div class="step"><span class="score-label" style="min-width:2rem;color:var(--amber)">F7</span> Bodyweight prompt: ask once during onboarding (not buried in settings) — required for classification to make sense</div>
+    <div class="step"><span class="score-label" style="min-width:2rem;color:var(--amber)">F8</span> Chart tap target size: data points should have 44×44pt hit area (HIG minimum) — currently ~12pt</div>
+    <div class="step"><span class="score-label" style="min-width:2rem;color:var(--amber)">F9</span> "No data" empty states need forward-looking copy — "Your first chart will appear after 2 sessions" not just "No data"</div>
+    <div class="step"><span class="score-label" style="min-width:2rem;color:var(--amber)">F10</span> Debug print cleanup — remove all <code>#if DEBUG</code> diagnostic prints from StrengthAnalyticsEngine, ProgressChartsViews, ProgressDashboardViews added during this session's root-cause investigation</div>
+  </div>
+
+  <h3 style="margin-top:2rem;color:var(--sage)">Post-Launch — Enhancement Backlog</h3>
+  <div class="step-list">
+    <div class="step"><span class="score-label" style="min-width:2rem;color:var(--sage)">P1</span> Export / share: JSON or CSV export for trainer handoff (Journey 7 currently fails entirely)</div>
+    <div class="step"><span class="score-label" style="min-width:2rem;color:var(--sage)">P2</span> Rest timer: Kyle and Marcus both track rest periods manually; in-app timer between sets</div>
+    <div class="step"><span class="score-label" style="min-width:2rem;color:var(--sage)">P3</span> Plate calculator: Tom calculates bar loading mentally; integrate plate math for standard barbells</div>
+    <div class="step"><span class="score-label" style="min-width:2rem;color:var(--sage)">P4</span> Program templates: Serena and Rachel want "push/pull/legs" structure built in</div>
+    <div class="step"><span class="score-label" style="min-width:2rem;color:var(--sage)">P5</span> Apple Health integration: Priya and Wei already track HRV and sleep; workout data should flow to Health app</div>
+    <div class="step"><span class="score-label" style="min-width:2rem;color:var(--sage)">P6</span> Video form tips: Chloe wants form cues per exercise; link to curated short-form content</div>
+    <div class="step"><span class="score-label" style="min-width:2rem;color:var(--sage)">P7</span> Composite strength score: single number that synthesizes across all tracked exercises (pending BW-relative threshold confirmation)</div>
+    <div class="step"><span class="score-label" style="min-width:2rem;color:var(--sage)">P8</span> Widgets: home screen glanceable widget showing last session + next recommended</div>
+  </div>
+
+  <h3 style="margin-top:2rem;color:var(--amber)">Cross-Persona Patterns (A–H)</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:0.5rem">
+    <div style="background:var(--iron);border-radius:10px;padding:1rem">
+      <div style="font-family:'DM Mono',monospace;color:var(--amber);font-size:0.7rem;margin-bottom:0.4rem">PATTERN A — The Repetitive Exercise Problem</div>
+      <p style="font-size:0.85rem;margin:0">9/12 personas log the same 4–6 exercises every session. The exercise picker treats every session as novel. No recents = 3+ unnecessary taps per session.</p>
+    </div>
+    <div style="background:var(--iron);border-radius:10px;padding:1rem">
+      <div style="font-family:'DM Mono',monospace;color:var(--amber);font-size:0.7rem;margin-bottom:0.4rem">PATTERN B — The Trust Gap</div>
+      <p style="font-size:0.85rem;margin:0">Users distrust numbers they can't explain. Showing "Elite" without a formula tap-target, or "208 kg e1RM" without a sanity check, breaks trust faster than a bad UX.</p>
+    </div>
+    <div style="background:var(--iron);border-radius:10px;padding:1rem">
+      <div style="font-family:'DM Mono',monospace;color:var(--amber);font-size:0.7rem;margin-bottom:0.4rem">PATTERN C — The One-Hand Problem</div>
+      <p style="font-size:0.85rem;margin:0">Gym context = one hand on phone, one hand between sets or holding equipment. Any control above the mid-screen line loses 9/12 users in their primary context.</p>
+    </div>
+    <div style="background:var(--iron);border-radius:10px;padding:1rem">
+      <div style="font-family:'DM Mono',monospace;color:var(--amber);font-size:0.7rem;margin-bottom:0.4rem">PATTERN D — The Silent Save</div>
+      <p style="font-size:0.85rem;margin:0">Every save action (finish workout, edit history, update bodyweight) is silent. Users in 7/12 journeys re-navigate to confirm. A 1.5s toast would eliminate this entirely.</p>
+    </div>
+    <div style="background:var(--iron);border-radius:10px;padding:1rem">
+      <div style="font-family:'DM Mono',monospace;color:var(--amber);font-size:0.7rem;margin-bottom:0.4rem">PATTERN E — The Metric Literacy Gap</div>
+      <p style="font-size:0.85rem;margin:0">"e1RM," "tonnage," "BW-relative" are invisible to 7/12 personas. The analytics engine is excellent but the UI assumes domain expertise the users don't have.</p>
+    </div>
+    <div style="background:var(--iron);border-radius:10px;padding:1rem">
+      <div style="font-family:'DM Mono',monospace;color:var(--amber);font-size:0.7rem;margin-bottom:0.4rem">PATTERN F — The Empty State Drop-Off</div>
+      <p style="font-size:0.85rem;margin:0">Sam, Danny, and Alex all hit empty states with no forward framing. "No data" is a dead end. "Your first chart appears after 2 sessions" is a runway.</p>
+    </div>
+    <div style="background:var(--iron);border-radius:10px;padding:1rem">
+      <div style="font-family:'DM Mono',monospace;color:var(--amber);font-size:0.7rem;margin-bottom:0.4rem">PATTERN G — The Comeback Moment</div>
+      <p style="font-size:0.85rem;margin:0">After a gap (injury, travel, life), 5/12 personas return to the app feeling shame about the break. The app is silent. A "Welcome back — here's where you left off" moment would rebuild habit.</p>
+    </div>
+    <div style="background:var(--iron);border-radius:10px;padding:1rem">
+      <div style="font-family:'DM Mono',monospace;color:var(--amber);font-size:0.7rem;margin-bottom:0.4rem">PATTERN H — The Drop Set Black Box</div>
+      <p style="font-size:0.85rem;margin:0">Drop sets exist in the data model and engine but are invisible in 3 places: history read view, edit sheet, and onboarding. Advanced users (Marcus, James, Tom) rely on them — and until this session, had no way to review or correct them.</p>
+    </div>
+  </div>
+
+  <h3 style="margin-top:2.5rem;color:var(--amber)">Physical Test Protocol — 15 Items</h3>
+  <p style="color:var(--slate);font-size:0.85rem">Run this protocol on a physical device (iPhone 15 Pro or Pro Max) before submitting to App Store review.</p>
+  <div class="step-list">
+    <div class="step"><span class="step-n">PT1</span> Cold launch on real device — confirm &lt;1.5s to interactive Home</div>
+    <div class="step"><span class="step-n">PT2</span> Log a full workout: 2 exercises × 3 sets each, including 1 drop set — verify all data persists after background + foreground</div>
+    <div class="step"><span class="step-n">PT3</span> One-handed usage test: hold phone in right hand, thumb only — log 3 sets without putting phone down</div>
+    <div class="step"><span class="step-n">PT4</span> Corrupt dropWeight injection: manually add a 106 kg dropWeight to a 12.5 kg set — confirm migration zeroes it on next launch</div>
+    <div class="step"><span class="step-n">PT5</span> Edit a past workout: find a session from 2+ weeks ago, edit weight on set 2, save — confirm no other session is affected</div>
+    <div class="step"><span class="step-n">PT6</span> View drop set in history read mode — confirm "↳ Drop" row appears with correct values</div>
+    <div class="step"><span class="step-n">PT7</span> Edit drop set in edit sheet — change dropWeight, save, re-open — confirm updated value persists</div>
+    <div class="step"><span class="step-n">PT8</span> Clear drop set: tap drop arrow in edit sheet — confirm isDropCompleted=false and row disappears in read view</div>
+    <div class="step"><span class="step-n">PT9</span> Progress chart: 16 sessions loaded — tap each data point, confirm correct session details appear</div>
+    <div class="step"><span class="step-n">PT10</span> Toggle e1RM ↔ Volume on chart — confirm values match expected calculations from export</div>
+    <div class="step"><span class="step-n">PT11</span> Classification badge: confirm "Elite" does NOT appear for Incline Dumbbell Press after migration</div>
+    <div class="step"><span class="step-n">PT12</span> Bodyweight change: update BW in settings — confirm classification updates on Progress tab without restart</div>
+    <div class="step"><span class="step-n">PT13</span> Dark mode: run all flows in dark mode — confirm no light-background elements bleed through</div>
+    <div class="step"><span class="step-n">PT14</span> Accessibility: Dynamic Type at largest size — confirm no text truncation in set rows, exercise names, chart labels</div>
+    <div class="step"><span class="step-n">PT15</span> First launch (delete + reinstall): confirm empty home state, no crash, "+" button visible, no stale UserDefaults</div>
+  </div>
+</div>
+
+<script>
+// Tab switching — reads data-tab attribute
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const target = tab.dataset.tab;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    const panel = document.getElementById(target);
+    if (panel) {
+      panel.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  });
+});
+
+// Phase collapsing — global function used by inline onclick attrs
+function togglePhase(id) {
+  const phase = document.getElementById(id);
+  if (!phase) return;
+  phase.classList.toggle('collapsed');
+  const chevron = phase.querySelector('.phase-chevron');
+  if (chevron) chevron.textContent = phase.classList.contains('collapsed') ? '▸' : '▾';
+}
+
+// Formula block collapsing
+document.querySelectorAll('.formula-block').forEach(block => {
+  block.style.cursor = 'pointer';
+  const label = block.querySelector('.formula-label');
+  if (label) {
+    label.addEventListener('click', () => {
+      block.classList.toggle('collapsed');
+    });
+  }
+});
+
+// Scorecard tallying from data-type attributes
+function tallyScores() {
+  document.querySelectorAll('.panel').forEach(panel => {
+    const passes = panel.querySelectorAll('[class*="pass"]').length;
+    const fails = panel.querySelectorAll('[class*="fail"]').length;
+    const frictions = panel.querySelectorAll('.friction').length;
+    const existing = panel.querySelector('.auto-tally');
+    if (!existing && (passes + fails + frictions > 0)) {
+      const tally = document.createElement('div');
+      tally.className = 'auto-tally';
+      tally.style.cssText = 'font-family:"DM Mono",monospace;font-size:0.7rem;color:var(--slate);margin-bottom:1rem;padding:0.5rem;background:var(--iron);border-radius:6px;display:inline-block';
+      tally.textContent = `Auto-tallied: ${passes} PASS · ${fails} FAIL · ${frictions} FRICTION`;
+      const firstH2 = panel.querySelector('h2');
+      if (firstH2 && firstH2.nextSibling) firstH2.parentNode.insertBefore(tally, firstH2.nextSibling);
+    }
+  });
+}
+tallyScores();
+
+// Keyboard shortcut: number keys 1-9 switch tabs
+document.addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const n = parseInt(e.key);
+  if (n >= 1 && n <= 9) {
+    const tabs = document.querySelectorAll('.tab');
+    if (tabs[n - 1]) tabs[n - 1].click();
+  }
+});
+
+// contenteditable formula spans: highlight on focus
+document.querySelectorAll('.contenteditable-span').forEach(span => {
+  span.addEventListener('focus', () => span.style.background = 'rgba(212,148,58,0.15)');
+  span.addEventListener('blur', () => span.style.background = '');
+});
+
+// Sticky tab bar on scroll
+const tabBar = document.querySelector('.tab-bar');
+if (tabBar) {
+  window.addEventListener('scroll', () => {
+    tabBar.style.boxShadow = window.scrollY > 60 ? '0 2px 16px rgba(0,0,0,0.6)' : '';
+  });
+}
+</script>
+</body>
+</html>

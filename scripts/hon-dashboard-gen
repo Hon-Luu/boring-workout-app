@@ -1,0 +1,173 @@
+#!/bin/bash
+# hon-dashboard-gen — generate the HTML dashboard from BACKLOG.md and UAT_INBOX.md
+# Open docs/dashboard.html in Safari (or share via AirDrop/iCloud) to view on phone
+
+PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+BACKLOG="$PROJECT_ROOT/docs/BACKLOG.md"
+UAT="$PROJECT_ROOT/docs/UAT_INBOX.md"
+OUTPUT="$PROJECT_ROOT/docs/dashboard.html"
+
+GENERATED=$(date '+%Y-%m-%d %H:%M')
+
+# Parse backlog
+DONE=$(grep -c "^- \[x\]" "$BACKLOG" 2>/dev/null; true)
+PENDING=$(grep -c "^- \[ \]" "$BACKLOG" 2>/dev/null; true)
+DONE=${DONE:-0}
+PENDING=${PENDING:-0}
+TOTAL=$((DONE + PENDING))
+if [ "$TOTAL" -gt 0 ]; then
+    PCT=$((DONE * 100 / TOTAL))
+else
+    PCT=0
+fi
+
+UAT_ITEMS=$(grep -c "^- \[ \]" "$UAT" 2>/dev/null; true)
+UAT_ITEMS=${UAT_ITEMS:-0}
+
+# Build backlog item HTML
+p1_html=""
+while IFS= read -r line; do
+    text=$(echo "$line" | sed 's/^- \[ \] //' | sed 's/\*\*//g')
+    p1_html+="<li class=\"pending\">$text</li>"$'\n'
+done < <(grep "^- \[ \]" "$BACKLOG" | head -20 | grep -v "^$")
+
+completed_html=""
+while IFS= read -r line; do
+    text=$(echo "$line" | sed 's/^- \[x\] //' | sed 's/\*\*//g')
+    completed_html+="<li class=\"done\">$text</li>"$'\n'
+done < <(grep "^- \[x\]" "$BACKLOG" | head -10)
+
+# Build UAT HTML
+uat_html=""
+if [ "$UAT_ITEMS" -gt 0 ]; then
+    while IFS= read -r line; do
+        text=$(echo "$line" | sed 's/^- \[ \] //')
+        uat_html+="<li class=\"uat-item\">$text</li>"$'\n'
+    done < <(grep "^- \[ \]" "$UAT")
+else
+    uat_html="<li class=\"empty\">No unreviewed items</li>"
+fi
+
+cat > "$OUTPUT" << HTMLEOF
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>H.O.N. Dashboard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+    background: #0f0f0f;
+    color: #e5e5e5;
+    padding: 20px 16px 40px;
+    max-width: 480px;
+    margin: 0 auto;
+    font-size: 15px;
+  }
+  h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #666; margin-bottom: 24px; }
+  .card {
+    background: #1a1a1a;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 14px;
+    border: 1px solid #2a2a2a;
+  }
+  .card-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #888;
+    margin-bottom: 12px;
+  }
+  .progress-bar-bg {
+    background: #2a2a2a;
+    border-radius: 8px;
+    height: 8px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 8px;
+    background: #7cb99a;
+    width: ${PCT}%;
+    transition: width 0.5s ease;
+  }
+  .progress-label {
+    font-size: 13px;
+    color: #999;
+  }
+  .progress-label strong { color: #e5e5e5; }
+  ul { list-style: none; }
+  li { padding: 7px 0; border-bottom: 1px solid #222; font-size: 14px; line-height: 1.4; }
+  li:last-child { border-bottom: none; }
+  li.pending::before { content: "○ "; color: #c4a45a; }
+  li.done::before { content: "✓ "; color: #7cb99a; color: #7cb99a; }
+  li.done { color: #666; text-decoration: line-through; }
+  li.uat-item::before { content: "⚑ "; color: #c47a5a; }
+  li.empty { color: #555; font-style: italic; }
+  li.empty::before { content: ""; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: 6px;
+  }
+  .badge-amber { background: rgba(196,164,90,0.2); color: #c4a45a; }
+  .badge-green { background: rgba(124,185,154,0.2); color: #7cb99a; }
+  .badge-rose  { background: rgba(196,106,90,0.2);  color: #c46a5a; }
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #c4a45a;
+    margin: 12px 0 6px;
+  }
+  .section-label:first-child { margin-top: 0; }
+</style>
+</head>
+<body>
+
+<h1>H.O.N.</h1>
+<div class="subtitle">Generated $GENERATED</div>
+
+<div class="card">
+  <div class="card-title">Backlog Progress</div>
+  <div class="progress-bar-bg"><div class="progress-bar-fill"></div></div>
+  <div class="progress-label"><strong>$DONE done</strong> · $PENDING pending · $TOTAL total ($PCT%)</div>
+</div>
+
+<div class="card">
+  <div class="card-title">Open Items <span class="badge badge-amber">$PENDING</span></div>
+  <ul>
+$p1_html
+  </ul>
+</div>
+
+<div class="card">
+  <div class="card-title">UAT Inbox <span class="badge badge-rose">$UAT_ITEMS</span></div>
+  <ul>
+$uat_html
+  </ul>
+</div>
+
+<div class="card">
+  <div class="card-title">Recently Completed <span class="badge badge-green">$DONE</span></div>
+  <ul>
+$completed_html
+  </ul>
+</div>
+
+</body>
+</html>
+HTMLEOF
+
+echo "Dashboard generated: $OUTPUT"
+open "$OUTPUT"

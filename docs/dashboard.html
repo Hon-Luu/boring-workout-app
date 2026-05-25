@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>H.O.N. Dashboard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+    background: #0f0f0f;
+    color: #e5e5e5;
+    padding: 20px 16px 40px;
+    max-width: 480px;
+    margin: 0 auto;
+    font-size: 15px;
+  }
+  h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #666; margin-bottom: 24px; }
+  .card {
+    background: #1a1a1a;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 14px;
+    border: 1px solid #2a2a2a;
+  }
+  .card-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #888;
+    margin-bottom: 12px;
+  }
+  .progress-bar-bg {
+    background: #2a2a2a;
+    border-radius: 8px;
+    height: 8px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 8px;
+    background: #7cb99a;
+    width: 67%;
+    transition: width 0.5s ease;
+  }
+  .progress-label {
+    font-size: 13px;
+    color: #999;
+  }
+  .progress-label strong { color: #e5e5e5; }
+  ul { list-style: none; }
+  li { padding: 7px 0; border-bottom: 1px solid #222; font-size: 14px; line-height: 1.4; }
+  li:last-child { border-bottom: none; }
+  li.pending::before { content: "○ "; color: #c4a45a; }
+  li.done::before { content: "✓ "; color: #7cb99a; color: #7cb99a; }
+  li.done { color: #666; text-decoration: line-through; }
+  li.uat-item::before { content: "⚑ "; color: #c47a5a; }
+  li.empty { color: #555; font-style: italic; }
+  li.empty::before { content: ""; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: 6px;
+  }
+  .badge-amber { background: rgba(196,164,90,0.2); color: #c4a45a; }
+  .badge-green { background: rgba(124,185,154,0.2); color: #7cb99a; }
+  .badge-rose  { background: rgba(196,106,90,0.2);  color: #c46a5a; }
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #c4a45a;
+    margin: 12px 0 6px;
+  }
+  .section-label:first-child { margin-top: 0; }
+</style>
+</head>
+<body>
+
+<h1>H.O.N.</h1>
+<div class="subtitle">Generated 2026-05-25 15:22</div>
+
+<div class="card">
+  <div class="card-title">Backlog Progress</div>
+  <div class="progress-bar-bg"><div class="progress-bar-fill"></div></div>
+  <div class="progress-label"><strong>33 done</strong> · 16 pending · 49 total (67%)</div>
+</div>
+
+<div class="card">
+  <div class="card-title">Open Items <span class="badge badge-amber">16</span></div>
+  <ul>
+<li class="pending">S3 — EmergentInsightCard on Home: rotate 1 cross-domain insight/day (persisted so it doesn't change mid-session) — ~4h</li>
+<li class="pending">S4 — Best Week Blueprint: analyze historical data, surface the user's best-performing week pattern as a repeatable target — ~3h</li>
+<li class="pending">V7 — INOL/PSI tap-to-explain in Expert mode (no in-context definition for new Expert users)</li>
+<li class="pending">18.2 — Hardcoded absolute font sizes in some views — accessibility impact at non-default text sizes</li>
+<li class="pending">19.1 — HONTheme.accent (amber) contrast ratio not formally verified against WCAG AA</li>
+<li class="pending">22.4 — No "home workout / minimal equipment" setup path in onboarding</li>
+<li class="pending">V4 — CSV export missing health biometrics (sleep, HR) — requires daily health snapshot storage model</li>
+<li class="pending">21.5 — HON message library voice tone consistency check across all 10 kinds</li>
+<li class="pending">S1 — ActivitySession protocol: unified interface for strength/cardio/general — enables EmergentInsightEngine to detect cross-modality feel patterns — ~6h refactor</li>
+<li class="pending">S2 — Recovery Score card on Home alongside Readiness (separate concept: can-I-perform vs. am-I-recovered)</li>
+<li class="pending">6.5 — No HealthKit permission request during onboarding (intentional — post-onboarding card is the design decision; revisit if adoption is low)</li>
+<li class="pending">16.1 — Home can show 8+ cards simultaneously (design decision: intentional scroll; revisit if user research shows overwhelm)</li>
+<li class="pending">29.3 — VO2 Max displayed but generates no training insights</li>
+<li class="pending">29.5 — HRV available in HealthKit but not used in any calculation</li>
+<li class="pending">31.1 — Body weight changes vs. strength changes not correlated</li>
+<li class="pending">31.2 — Sleep trend vs. strength trend not connected</li>
+
+  </ul>
+</div>
+
+<div class="card">
+  <div class="card-title">UAT Inbox <span class="badge badge-rose">0</span></div>
+  <ul>
+<li class="empty">No unreviewed items</li>
+  </ul>
+</div>
+
+<div class="card">
+  <div class="card-title">Recently Completed <span class="badge badge-green">33</span></div>
+  <ul>
+<li class="done">BLOCK-1 — Sleep hours influence readiness score</li>
+<li class="done">BLOCK-2 — Resting HR influences readiness score</li>
+<li class="done">BLOCK-3 — HONHabitEngine counts all session modalities (strength + cardio + general)</li>
+<li class="done">BLOCK-4 — ExerciseTierGoalBar edge case message fixed</li>
+<li class="done">FIX-1 — generalLog included in JSON backup</li>
+<li class="done">FIX-2 — CSV export includes feelRating and readinessBefore</li>
+<li class="done">FIX-3 — JSON export filename uses yyyy-MM-dd_HH-mm format</li>
+<li class="done">FIX-4 — SettingsView "Body Weight" label is unit-aware</li>
+<li class="done">FIX-5 — WelcomeBackCard shows for all session types</li>
+<li class="done">FIX-6 — StreakHeatMap weekday labels align correctly</li>
+
+  </ul>
+</div>
+
+</body>
+</html>

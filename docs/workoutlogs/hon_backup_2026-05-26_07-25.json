@@ -1,0 +1,2987 @@
+{
+  "userProfile" : {
+    "bodyFatPercent" : 20.200000000000003,
+    "muscleMassPercent" : 79.85018726472136,
+    "weightHistory" : [
+
+    ],
+    "bodyWeightKg" : 66.7493150727085
+  },
+  "cardioLog" : [
+    {
+      "durationMinutes" : 10,
+      "circuitId" : "64E5679E-F113-42C5-A9EC-3AC94C299C7E",
+      "circuitName" : "Friday HITT",
+      "startedAt" : "2026-05-22T00:14:22Z",
+      "exercises" : [
+        {
+          "exercise" : {
+            "bodyRegion" : "Chest",
+            "equipment" : "Bodyweight",
+            "movementPattern" : "Horizontal Push",
+            "name" : "Push-Up",
+            "id" : "00000000-0000-0000-0000-010007000000",
+            "isCompound" : true
+          },
+          "id" : "7A07F766-F652-4A9B-9433-508518E79459",
+          "targetReps" : 10
+        },
+        {
+          "exercise" : {
+            "bodyRegion" : "Core",
+            "equipment" : "Bodyweight",
+            "id" : "00000000-0000-0000-0000-060024000000",
+            "isCompound" : true,
+            "movementPattern" : "Isolation",
+            "name" : "Burpee"
+          },
+          "id" : "DC467A0A-34A9-4576-9E3A-3A4A06E85734",
+          "targetReps" : 10
+        },
+        {
+          "exercise" : {
+            "bodyRegion" : "Core",
+            "equipment" : "Bodyweight",
+            "movementPattern" : "Isolation",
+            "name" : "Mountain Climber",
+            "id" : "00000000-0000-0000-0000-060021000000",
+            "isCompound" : true
+          },
+          "id" : "AA5B99C8-3688-474B-9E2D-0FAED61B9EEA",
+          "targetReps" : 10
+        },
+        {
+          "exercise" : {
+            "bodyRegion" : "Legs",
+            "equipment" : "Bodyweight",
+            "id" : "00000000-0000-0000-0000-050034000000",
+            "isCompound" : true,
+            "movementPattern" : "Knee Flexion",
+            "name" : "Bodyweight Lunge"
+          },
+          "id" : "2AA1AB27-F908-4B7F-9878-DFB7424590D1",
+          "targetReps" : 10
+        }
+      ],
+      "results" : [
+        {
+          "repsCompleted" : 10,
+          "id" : "CD04E93E-4565-4839-9D1E-B87EB7A7E2E7",
+          "exerciseId" : "7A07F766-F652-4A9B-9433-508518E79459",
+          "exerciseName" : "Push-Up",
+          "round" : 0
+        },
+        {
+          "repsCompleted" : 10,
+          "id" : "2A65C44C-6AFE-49B8-BB6D-996E1847CAA2",
+          "exerciseId" : "DC467A0A-34A9-4576-9E3A-3A4A06E85734",
+          "exerciseName" : "Burpee",
+          "round" : 1
+        },
+        {
+          "repsCompleted" : 10,
+          "id" : "72F8D1FA-A6DF-4507-BEF8-DD549883339C",
+          "exerciseId" : "AA5B99C8-3688-474B-9E2D-0FAED61B9EEA",
+          "exerciseName" : "Mountain Climber",
+          "round" : 2
+        },
+        {
+          "repsCompleted" : 10,
+          "id" : "C0E0E8F5-875B-4369-91B6-CC614EF65B0F",
+          "exerciseId" : "2AA1AB27-F908-4B7F-9878-DFB7424590D1",
+          "exerciseName" : "Bodyweight Lunge",
+          "round" : 3
+        },
+        {
+          "repsCompleted" : 10,
+          "id" : "BB4722F9-0CEB-41ED-8DC5-60240FC7DF3E",
+          "exerciseId" : "7A07F766-F652-4A9B-9433-508518E79459",
+          "exerciseName" : "Push-Up",
+          "round" : 4
+        },
+        {
+          "repsCompleted" : 10,
+          "id" : "E017F01A-28BB-4669-BDFD-4906E7277B5C",
+          "exerciseId" : "DC467A0A-34A9-4576-9E3A-3A4A06E85734",
+          "exerciseName" : "Burpee",
+          "round" : 5
+        },
+        {
+          "repsCompleted" : 10,
+          "id" : "BD172BDF-1579-4E9C-B9E3-CD8F508CB3AD",
+          "exerciseId" : "AA5B99C8-3688-474B-9E2D-0FAED61B9EEA",
+          "exerciseName" : "Mountain Climber",
+          "round" : 6
+        },
+        {
+          "repsCompleted" : 10,
+          "id" : "354F4C19-C015-4170-9744-A4A594D9537F",
+          "exerciseId" : "2AA1AB27-F908-4B7F-9878-DFB7424590D1",
+          "exerciseName" : "Bodyweight Lunge",
+          "round" : 7
+        },
+        {
+          "repsCompleted" : 10,
+          "id" : "1BAF05F6-CCA9-4F5F-B01B-BA136511C41A",
+          "exerciseId" : "7A07F766-F652-4A9B-9433-508518E79459",
+          "exerciseName" : "Push-Up",
+          "round" : 8
+        },
+        {
+          "repsCompleted" : 10,
+          "id" : "D441A217-9A6D-426B-BAAE-1F6134A70CC2",
+          "exerciseId" : "DC467A0A-34A9-4576-9E3A-3A4A06E85734",
+          "exerciseName" : "Burpee",
+          "round" : 9
+        },
+        {
+          "repsCompleted" : 10,
+          "id" : "AE4894FA-436E-402D-B8B1-DF3FC574DFE9",
+          "exerciseId" : "AA5B99C8-3688-474B-9E2D-0FAED61B9EEA",
+          "exerciseName" : "Mountain Climber",
+          "round" : 10
+        },
+        {
+          "repsCompleted" : 10,
+          "id" : "0B0DA208-7D3F-4303-A61D-477218B0A6A3",
+          "exerciseId" : "DC467A0A-34A9-4576-9E3A-3A4A06E85734",
+          "exerciseName" : "Burpee",
+          "round" : 9
+        }
+      ],
+      "format" : "EMOM",
+      "finishedAt" : "2026-05-22T00:26:07Z",
+      "id" : "B39D4F61-D20E-44CB-846C-F3A92DE5C8A5"
+    }
+  ],
+  "exportedAt" : "2026-05-25T23:25:42Z",
+  "routines" : [
+    {
+      "name" : "Hon’s Routine",
+      "exercises" : [
+        {
+          "exercise" : {
+            "bodyRegion" : "Chest",
+            "equipment" : "Dumbbell",
+            "movementPattern" : "Isolation",
+            "name" : "Dumbbell Bench Press",
+            "id" : "00000000-0000-0000-0000-010003000000",
+            "isCompound" : true
+          },
+          "targetSets" : 3,
+          "id" : "842F1E29-69EE-47DC-9F63-B8FC13420D76",
+          "targetReps" : 10,
+          "assignedDays" : [
+            2
+          ]
+        },
+        {
+          "exercise" : {
+            "bodyRegion" : "Shoulders",
+            "equipment" : "Dumbbell",
+            "id" : "00000000-0000-0000-0000-030002000000",
+            "isCompound" : true,
+            "movementPattern" : "Isolation",
+            "name" : "Dumbbell Shoulder Press"
+          },
+          "targetSets" : 3,
+          "id" : "A1C20E9D-7827-4C14-885A-722C9FE58E5E",
+          "assignedDays" : [
+            2
+          ],
+          "targetReps" : 10
+        },
+        {
+          "exercise" : {
+            "bodyRegion" : "Arms",
+            "equipment" : "Cable",
+            "movementPattern" : "Isolation",
+            "name" : "Cable Overhead Tricep Extension",
+            "id" : "00000000-0000-0000-0000-040013000000",
+            "isCompound" : false
+          },
+          "targetSets" : 3,
+          "id" : "CEC2831C-6DFD-4924-844D-D3A1E18EBE11",
+          "targetReps" : 10,
+          "assignedDays" : [
+            2
+          ]
+        },
+        {
+          "exercise" : {
+            "bodyRegion" : "Legs",
+            "equipment" : "Barbell",
+            "id" : "00000000-0000-0000-0000-050001000000",
+            "isCompound" : true,
+            "movementPattern" : "Isolation",
+            "name" : "Barbell Squat"
+          },
+          "targetSets" : 3,
+          "id" : "2EA96A6F-0869-4C6C-9BF5-79D1E8DF1F2F",
+          "assignedDays" : [
+            3
+          ],
+          "targetReps" : 10
+        },
+        {
+          "exercise" : {
+            "bodyRegion" : "Legs",
+            "equipment" : "Barbell",
+            "movementPattern" : "Isolation",
+            "name" : "Romanian Deadlift",
+            "id" : "00000000-0000-0000-0000-050002000000",
+            "isCompound" : true
+          },
+          "targetSets" : 3,
+          "id" : "E6A48495-F989-45DD-B062-9FA8EC263AC6",
+          "targetReps" : 10,
+          "assignedDays" : [
+            3
+          ]
+        },
+        {
+          "exercise" : {
+            "bodyRegion" : "Legs",
+            "equipment" : "Machine",
+            "id" : "00000000-0000-0000-0000-050003000000",
+            "isCompound" : true,
+            "movementPattern" : "Isolation",
+            "name" : "Leg Press"
+          },
+          "targetSets" : 3,
+          "id" : "1B0E4C6F-BB4E-450B-8C2E-8AEE0C2ED218",
+          "assignedDays" : [
+            3
+          ],
+          "targetReps" : 10
+        },
+        {
+          "exercise" : {
+            "bodyRegion" : "Legs",
+            "equipment" : "Machine",
+            "movementPattern" : "Isolation",
+            "name" : "Standing Calf Raise",
+            "id" : "00000000-0000-0000-0000-050008000000",
+            "isCompound" : false
+          },
+          "targetSets" : 3,
+          "id" : "8DB75A0D-C7FB-435F-A6A1-97ACEFC3FC87",
+          "targetReps" : 10,
+          "assignedDays" : [
+            3
+          ]
+        },
+        {
+          "exercise" : {
+            "bodyRegion" : "Back",
+            "equipment" : "Cable",
+            "id" : "00000000-0000-0000-0000-020004000000",
+            "isCompound" : true,
+            "movementPattern" : "Isolation",
+            "name" : "Lat Pulldown"
+          },
+          "targetSets" : 3,
+          "id" : "47918A02-5A56-4DC9-A813-99C9E2325C15",
+          "assignedDays" : [
+            4
+          ],
+          "targetReps" : 10
+        },
+        {
+          "exercise" : {
+            "bodyRegion" : "Back",
+            "equipment" : "Cable",
+            "movementPattern" : "Isolation",
+            "name" : "Seated Cable Row",
+            "id" : "00000000-0000-0000-0000-020005000000",
+            "isCompound" : true
+          },
+          "targetSets" : 3,
+          "id" : "D431DD9E-9271-4063-B05E-97E6BED44451",
+          "targetReps" : 10,
+          "assignedDays" : [
+            4
+          ]
+        },
+        {
+          "exercise" : {
+            "bodyRegion" : "Chest",
+            "equipment" : "Dumbbell",
+            "id" : "00000000-0000-0000-0000-010004000000",
+            "isCompound" : true,
+            "movementPattern" : "Horizontal Push",
+            "name" : "Incline Dumbbell Press"
+          },
+          "targetSets" : 3,
+          "id" : "FBF4B558-93AD-408A-A18A-BFDABB0B6870",
+          "assignedDays" : [
+            5
+          ],
+          "targetReps" : 10
+        },
+        {
+          "exercise" : {
+            "bodyRegion" : "Back",
+            "equipment" : "Machine",
+            "movementPattern" : "Horizontal Pull",
+            "name" : "Low Row Machine",
+            "id" : "00000000-0000-0000-0000-020010000000",
+            "isCompound" : true
+          },
+          "targetSets" : 3,
+          "id" : "D632B0B5-AA28-48C4-A9EE-1EEE5C0FA969",
+          "targetReps" : 10,
+          "assignedDays" : [
+            5
+          ]
+        }
+      ],
+      "circuitIds" : [
+        "64E5679E-F113-42C5-A9EC-3AC94C299C7E"
+      ],
+      "restDayWeekdays" : [
+
+      ],
+      "id" : "BA240410-D8B1-4D0E-B1A4-5D7D99B9CD8A"
+    }
+  ],
+  "workoutLog" : [
+    {
+      "startedAt" : "2026-05-21T00:28:18Z",
+      "exercises" : [
+        {
+          "notes" : "",
+          "exercise" : {
+            "bodyRegion" : "Back",
+            "name" : "Assisted Pull-Up Machine",
+            "equipment" : "Machine",
+            "isCompound" : true,
+            "movementPattern" : "Vertical Pull",
+            "id" : "00000000-0000-0000-0000-020009000000"
+          },
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-21T00:28:47Z",
+              "weight" : 40,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 10,
+              "reps" : 10,
+              "id" : "AE906533-54FC-4DE6-9595-133E470E7428"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-21T00:29:41Z",
+              "weight" : 40,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 10,
+              "id" : "2C87BD66-2449-4A41-9D12-FE776198F3BC"
+            }
+          ],
+          "id" : "6DB99031-B047-4BF9-9E96-DD7011BB8C11"
+        }
+      ],
+      "finishedAt" : "2026-05-21T00:29:45Z",
+      "activeCalories" : 8.011565122046141,
+      "notes" : "",
+      "feelRating" : "Normal",
+      "name" : "Back Workout",
+      "averageHeartRate" : 120,
+      "id" : "A57BD140-1572-4C7E-9E43-09568DB47CE3"
+    },
+    {
+      "startedAt" : "2026-05-21T00:13:51Z",
+      "exercises" : [
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-21T00:17:17Z",
+              "weight" : 15,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 15,
+              "reps" : 10,
+              "id" : "96BC2E81-79B0-4C15-B1C9-1D717DA1ED6C"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-21T00:19:40Z",
+              "weight" : 15,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 15,
+              "reps" : 10,
+              "id" : "75CF1FC6-A024-4E9C-95B0-5C8CBD2CB62E"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-21T00:22:56Z",
+              "weight" : 15,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 15,
+              "reps" : 10,
+              "id" : "C15283E8-0609-405E-B2FB-5A2D3C68BA0F"
+            }
+          ],
+          "exercise" : {
+            "bodyRegion" : "Chest",
+            "equipment" : "Dumbbell",
+            "movementPattern" : "Horizontal Push",
+            "name" : "Incline Dumbbell Press",
+            "id" : "00000000-0000-0000-0000-010004000000",
+            "isCompound" : true
+          },
+          "id" : "2B7BF480-1CBD-43D7-8651-683121BA1B03",
+          "notes" : ""
+        }
+      ],
+      "finishedAt" : "2026-05-21T00:25:53Z",
+      "activeCalories" : 66.9445061981034,
+      "notes" : "",
+      "feelRating" : "Strong",
+      "name" : "Hon’s Routine",
+      "averageHeartRate" : 118.99999999999999,
+      "id" : "F5FD2D50-864D-4473-977E-D144378BDF27"
+    },
+    {
+      "startedAt" : "2026-05-20T00:15:42Z",
+      "exercises" : [
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-20T00:17:41Z",
+              "weight" : 25,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 25,
+              "reps" : 10,
+              "id" : "35868BD7-C18E-4177-A662-E7EFEE80AD48"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-20T00:19:01Z",
+              "weight" : 21.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 21.5,
+              "reps" : 10,
+              "id" : "FCAD755E-6F01-44E4-A8FE-1AC237F01B69"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-20T00:21:08Z",
+              "weight" : 21.5,
+              "toFailure" : false,
+              "dropWeight" : 17.5,
+              "targetWeight" : 21.5,
+              "isDropCompleted" : true,
+              "reps" : 9,
+              "id" : "8A4C8343-C819-4D80-A9E6-B9453B1B2625",
+              "dropReps" : 1
+            }
+          ],
+          "notes" : "",
+          "exercise" : {
+            "bodyRegion" : "Back",
+            "equipment" : "Cable",
+            "id" : "00000000-0000-0000-0000-020004000000",
+            "isCompound" : true,
+            "movementPattern" : "Isolation",
+            "name" : "Lat Pulldown"
+          },
+          "supersetGroup" : "E",
+          "id" : "26A49F47-C4FA-414D-9FE2-77A055DBE5E0"
+        },
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-20T00:23:59Z",
+              "weight" : 16.2,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 16.2,
+              "reps" : 10,
+              "id" : "81370472-FBA0-4B33-9DCE-4A3942284B36"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-20T00:24:38Z",
+              "weight" : 17.5,
+              "toFailure" : false,
+              "dropWeight" : 13.75,
+              "targetWeight" : 16.2,
+              "isDropCompleted" : true,
+              "reps" : 4,
+              "id" : "54F3C49F-4BF5-4A51-86FA-EF215E7ABEBB",
+              "dropReps" : 6
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-20T00:27:29Z",
+              "weight" : 17.5,
+              "toFailure" : false,
+              "dropWeight" : 13.75,
+              "targetWeight" : 16.2,
+              "isDropCompleted" : true,
+              "reps" : 4,
+              "id" : "47BA8E6B-1ABC-42D7-BD2D-519BE1C253A1",
+              "dropReps" : 6
+            }
+          ],
+          "notes" : "",
+          "exercise" : {
+            "bodyRegion" : "Back",
+            "equipment" : "Cable",
+            "id" : "00000000-0000-0000-0000-020005000000",
+            "isCompound" : true,
+            "movementPattern" : "Isolation",
+            "name" : "Seated Cable Row"
+          },
+          "supersetGroup" : "E",
+          "id" : "FC5CA9E3-148A-4CDE-ADE0-7CD49B40F2C3"
+        },
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 0,
+              "completedAt" : "2026-05-20T00:31:09Z",
+              "weight" : 22.5,
+              "toFailure" : true,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 20,
+              "id" : "AC69136A-0685-49E6-A1A6-DFCA1856C8D4"
+            }
+          ],
+          "notes" : "",
+          "exercise" : {
+            "bodyRegion" : "Back",
+            "equipment" : "Machine",
+            "id" : "00000000-0000-0000-0000-020014000000",
+            "isCompound" : false,
+            "movementPattern" : "Isolation",
+            "name" : "Lat Pullover Machine"
+          },
+          "id" : "EB272D7E-5307-411D-A220-D12CCF90F3E7"
+        }
+      ],
+      "finishedAt" : "2026-05-20T00:31:14Z",
+      "activeCalories" : 86.37855593315753,
+      "notes" : "",
+      "feelRating" : "Strong",
+      "name" : "Hon’s Routine",
+      "averageHeartRate" : 119.49999999999999,
+      "id" : "6AAA2CBE-8204-46FC-8704-1EB19FC0E0AA"
+    },
+    {
+      "startedAt" : "2026-05-19T00:11:25Z",
+      "exercises" : [
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-19T00:23:04Z",
+              "weight" : 20,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 20,
+              "reps" : 10,
+              "id" : "0318E84A-1704-4D25-BE32-014305FD372E"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-19T00:23:05Z",
+              "weight" : 20,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 10,
+              "id" : "8B8416F0-7093-42A5-9F25-71C2E6EB2B89"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-19T00:23:06Z",
+              "weight" : 20,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 10,
+              "id" : "F46C8217-4F64-4791-BDE5-170BA2C84E92"
+            }
+          ],
+          "exercise" : {
+            "bodyRegion" : "Legs",
+            "equipment" : "Machine",
+            "movementPattern" : "Knee Flexion",
+            "name" : "Smith Machine Squat",
+            "id" : "00000000-0000-0000-0000-050011000000",
+            "isCompound" : true
+          },
+          "id" : "AB6992B3-6E37-47F4-BF7F-5F6209B6A4C6",
+          "notes" : ""
+        },
+        {
+          "exercise" : {
+            "bodyRegion" : "Legs",
+            "equipment" : "Machine",
+            "id" : "00000000-0000-0000-0000-050012000000",
+            "isCompound" : true,
+            "movementPattern" : "Hip Hinge",
+            "name" : "Smith Machine Romanian Deadlift"
+          },
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-19T00:17:46Z",
+              "weight" : 37.5,
+              "toFailure" : false,
+              "dropWeight" : 0,
+              "targetWeight" : 40,
+              "isDropCompleted" : true,
+              "reps" : 10,
+              "id" : "0745BB86-7983-4853-B3F4-648A04896D46",
+              "dropReps" : 0
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-19T00:19:11Z",
+              "weight" : 40,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 10,
+              "id" : "FCF34771-99A1-413F-84F1-F4DC1FD1E288"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-19T00:20:17Z",
+              "weight" : 40,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 10,
+              "id" : "AB47AF72-6570-46A6-BAE3-70BC6E2147E4"
+            }
+          ],
+          "notes" : "",
+          "id" : "66C5AF24-7634-42B6-B2A4-9F7A14255D21"
+        },
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-19T00:12:45Z",
+              "weight" : 32.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 32.5,
+              "reps" : 10,
+              "id" : "FB679349-3920-4D01-BEA8-D034AD05FCEC"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-19T00:13:35Z",
+              "weight" : 37.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 32.5,
+              "reps" : 10,
+              "id" : "48478476-195D-4688-86CD-D9CFCA4AEF76"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-19T00:14:58Z",
+              "weight" : 37.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 32.5,
+              "reps" : 0,
+              "id" : "8D7DE119-8151-4280-ADBC-6C08BE08F6F0"
+            }
+          ],
+          "exercise" : {
+            "bodyRegion" : "Legs",
+            "equipment" : "Machine",
+            "movementPattern" : "Isolation",
+            "name" : "Leg Press",
+            "id" : "00000000-0000-0000-0000-050003000000",
+            "isCompound" : true
+          },
+          "supersetGroup" : "D",
+          "id" : "AE5703BA-0848-46B8-BBE5-7905B61A731A",
+          "notes" : ""
+        },
+        {
+          "exercise" : {
+            "bodyRegion" : "Shoulders",
+            "equipment" : "Machine",
+            "id" : "00000000-0000-0000-0000-030007000000",
+            "isCompound" : true,
+            "movementPattern" : "Vertical Push",
+            "name" : "Machine Shoulder Press"
+          },
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-19T00:26:34Z",
+              "weight" : 30,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 15,
+              "reps" : 10,
+              "id" : "FDEC7F12-0723-4815-B7C1-BE75B90E7B53"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-19T00:27:45Z",
+              "weight" : 30,
+              "toFailure" : false,
+              "dropWeight" : 22.5,
+              "targetWeight" : 15,
+              "isDropCompleted" : true,
+              "reps" : 8,
+              "id" : "34D90B93-66CC-4597-8C4A-4299092A4DC7",
+              "dropReps" : 2
+            }
+          ],
+          "notes" : "",
+          "id" : "A0C2747A-507D-49C0-B9DB-96D661AB7B7F"
+        }
+      ],
+      "finishedAt" : "2026-05-19T00:27:58Z",
+      "activeCalories" : 93.54534534661462,
+      "notes" : "",
+      "feelRating" : "Strong",
+      "name" : "Hon’s Routine",
+      "averageHeartRate" : 106.33333333333333,
+      "id" : "B195349D-0CE5-4DE7-AE0C-820F37BFF4BA"
+    },
+    {
+      "startedAt" : "2026-05-18T00:14:19Z",
+      "exercises" : [
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-18T00:16:11Z",
+              "weight" : 15,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 12.5,
+              "reps" : 10,
+              "id" : "A7F30C0A-ACA9-494C-92E1-6CE9600E5BB6"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-18T00:18:48Z",
+              "weight" : 17.5,
+              "toFailure" : false,
+              "dropWeight" : 15,
+              "targetWeight" : 17.5,
+              "isDropCompleted" : true,
+              "reps" : 0,
+              "id" : "BA368C3B-25D3-4060-BD5F-CCEA06054CDA",
+              "dropReps" : 10
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-18T00:22:47Z",
+              "weight" : 17.5,
+              "toFailure" : false,
+              "dropWeight" : 15,
+              "targetWeight" : 17.5,
+              "isDropCompleted" : true,
+              "reps" : 0,
+              "id" : "F796EB83-E8E3-4C86-BC60-D35A68F34F2F",
+              "dropReps" : 10
+            }
+          ],
+          "exercise" : {
+            "bodyRegion" : "Chest",
+            "equipment" : "Dumbbell",
+            "movementPattern" : "Horizontal Push",
+            "name" : "Dumbbell Bench Press",
+            "id" : "00000000-0000-0000-0000-010003000000",
+            "isCompound" : true
+          },
+          "id" : "C5572D98-2676-4984-920C-287F75252E73",
+          "notes" : ""
+        },
+        {
+          "exercise" : {
+            "bodyRegion" : "Shoulders",
+            "equipment" : "Barbell",
+            "id" : "00000000-0000-0000-0000-030001000000",
+            "isCompound" : true,
+            "movementPattern" : "Vertical Push",
+            "name" : "Overhead Press"
+          },
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-18T00:25:16Z",
+              "weight" : 0,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 10,
+              "id" : "03394F0F-AACA-4A93-BE32-2366799D0143"
+            }
+          ],
+          "notes" : "",
+          "id" : "6EEA3763-CE80-46C9-A878-136D476F8C60"
+        },
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 0,
+              "completedAt" : "2026-05-18T00:30:29Z",
+              "weight" : 22.5,
+              "toFailure" : true,
+              "isDropCompleted" : false,
+              "targetWeight" : 15,
+              "reps" : 20,
+              "id" : "EBCA766A-58FD-49A2-BF20-8D9A75B005EB"
+            }
+          ],
+          "exercise" : {
+            "bodyRegion" : "Chest",
+            "equipment" : "Machine",
+            "movementPattern" : "Horizontal Push",
+            "name" : "Chest Press Machine",
+            "id" : "00000000-0000-0000-0000-010009000000",
+            "isCompound" : true
+          },
+          "id" : "F45B544B-06C4-4261-851A-9603AB457CB5",
+          "notes" : ""
+        }
+      ],
+      "finishedAt" : "2026-05-18T00:30:41Z",
+      "activeCalories" : 9.599999999999998,
+      "notes" : "",
+      "feelRating" : "Normal",
+      "name" : "Chest & Shoulders Workout",
+      "averageHeartRate" : 111,
+      "id" : "EA667864-258A-4A26-AD08-7F0E90934C95"
+    },
+    {
+      "startedAt" : "2026-05-13T23:56:38Z",
+      "exercises" : [
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-14T00:01:17Z",
+              "weight" : 15,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 12.5,
+              "reps" : 10,
+              "id" : "3419258B-23F5-47E6-B8EB-79F901FCC7DD"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-14T00:03:27Z",
+              "weight" : 15,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 12.5,
+              "reps" : 10,
+              "id" : "884E8E4D-5AE4-4D80-828A-C54F50D06E45"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-14T00:08:27Z",
+              "weight" : 15,
+              "toFailure" : false,
+              "dropWeight" : 15,
+              "targetWeight" : 12.5,
+              "isDropCompleted" : true,
+              "reps" : 6,
+              "id" : "B99CE839-39D7-48DC-899F-0065E4BEE14E",
+              "dropReps" : 4
+            }
+          ],
+          "notes" : "",
+          "exercise" : {
+            "bodyRegion" : "Chest",
+            "equipment" : "Dumbbell",
+            "id" : "00000000-0000-0000-0000-010004000000",
+            "isCompound" : true,
+            "movementPattern" : "Horizontal Push",
+            "name" : "Incline Dumbbell Press"
+          },
+          "id" : "E4ADE1B7-7A6B-4A6F-925D-8E5C8A39C56F"
+        },
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-14T00:10:34Z",
+              "weight" : 20,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 10,
+              "reps" : 10,
+              "id" : "E56F4798-BD86-440C-AE5C-99FB9AE0ED1F"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-14T00:12:18Z",
+              "weight" : 25,
+              "toFailure" : false,
+              "dropWeight" : 25,
+              "targetWeight" : 10,
+              "isDropCompleted" : true,
+              "reps" : 9,
+              "id" : "9C2B6ACE-A4DE-48A5-BE74-1041B05D4186",
+              "dropReps" : 1
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-14T00:14:02Z",
+              "weight" : 25,
+              "toFailure" : false,
+              "dropWeight" : 25,
+              "targetWeight" : 10,
+              "isDropCompleted" : true,
+              "reps" : 7,
+              "id" : "EE412919-72C6-43C0-A3E3-ACE2755CCBDD",
+              "dropReps" : 3
+            }
+          ],
+          "notes" : "",
+          "exercise" : {
+            "bodyRegion" : "Back",
+            "equipment" : "Machine",
+            "id" : "00000000-0000-0000-0000-020010000000",
+            "isCompound" : true,
+            "movementPattern" : "Horizontal Pull",
+            "name" : "Low Row Machine"
+          },
+          "id" : "374BD451-9E86-470C-8342-EA5C1B52888E"
+        },
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-14T00:18:26Z",
+              "weight" : 10,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 10,
+              "reps" : 10,
+              "id" : "712DB5FC-81CE-4879-87D8-C8AC3B2BF0A6"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-14T00:18:31Z",
+              "weight" : 12.5,
+              "toFailure" : false,
+              "dropWeight" : 12.5,
+              "targetWeight" : 10,
+              "isDropCompleted" : true,
+              "reps" : 8,
+              "id" : "69946E45-C1F8-4E41-BE89-B62D87478766",
+              "dropReps" : 2
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-14T00:20:50Z",
+              "weight" : 12.5,
+              "toFailure" : false,
+              "dropWeight" : 10,
+              "targetWeight" : 10,
+              "isDropCompleted" : false,
+              "reps" : 2,
+              "id" : "2DC5717B-2E4D-4960-8E16-24693DEA2667",
+              "dropReps" : 8
+            }
+          ],
+          "notes" : "",
+          "exercise" : {
+            "bodyRegion" : "Arms",
+            "equipment" : "Cable",
+            "id" : "00000000-0000-0000-0000-040013000000",
+            "isCompound" : false,
+            "movementPattern" : "Isolation",
+            "name" : "Cable Overhead Tricep Extension"
+          },
+          "id" : "6E7B1827-D1A0-493C-8E59-AB3DD2C99B89"
+        }
+      ],
+      "finishedAt" : "2026-05-14T00:21:12Z",
+      "activeCalories" : 138.8969625007271,
+      "notes" : "",
+      "feelRating" : "Strong",
+      "name" : "Hon’s Routine",
+      "averageHeartRate" : 118.99999999999999,
+      "id" : "74276758-5284-4501-A387-627B5D9F3E2C"
+    },
+    {
+      "startedAt" : "2026-05-13T00:13:58Z",
+      "exercises" : [
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-13T00:15:28Z",
+              "weight" : 25,
+              "toFailure" : false,
+              "dropWeight" : 25,
+              "targetWeight" : 21.5,
+              "isDropCompleted" : true,
+              "reps" : 8,
+              "id" : "B6910704-0EF6-4767-BE50-26845524F629",
+              "dropReps" : 2
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-13T00:17:40Z",
+              "weight" : 21.5,
+              "toFailure" : false,
+              "dropWeight" : 25,
+              "targetWeight" : 25,
+              "isDropCompleted" : true,
+              "reps" : 8,
+              "id" : "A0F7B7AE-3B04-461B-B8D8-73EA778A6197",
+              "dropReps" : 2
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-13T00:20:34Z",
+              "weight" : 21.5,
+              "toFailure" : false,
+              "dropWeight" : 25,
+              "targetWeight" : 25,
+              "isDropCompleted" : true,
+              "reps" : 7,
+              "id" : "BD7C25A9-DF01-4492-8F12-615C7866FD18",
+              "dropReps" : 3
+            }
+          ],
+          "exercise" : {
+            "bodyRegion" : "Back",
+            "equipment" : "Cable",
+            "movementPattern" : "Isolation",
+            "name" : "Lat Pulldown",
+            "id" : "00000000-0000-0000-0000-020004000000",
+            "isCompound" : true
+          },
+          "supersetGroup" : "E",
+          "id" : "585ED220-35BF-422F-A2FD-053D1A977660",
+          "notes" : ""
+        },
+        {
+          "exercise" : {
+            "bodyRegion" : "Back",
+            "equipment" : "Cable",
+            "id" : "00000000-0000-0000-0000-020005000000",
+            "isCompound" : true,
+            "movementPattern" : "Horizontal Pull",
+            "name" : "Seated Cable Row"
+          },
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-13T00:26:44Z",
+              "weight" : 13.7,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 13.7,
+              "reps" : 10,
+              "id" : "CC0F55D7-1D8E-45A9-88AA-27DC6BE0C872"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-13T00:26:45Z",
+              "weight" : 13.7,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 10,
+              "id" : "77C5C8AE-DF9C-42CB-B1B7-19C7D823CA20"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-13T00:27:33Z",
+              "weight" : 13.7,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 10,
+              "id" : "38268C98-A2C3-42F0-84D5-586FE05DE00D"
+            }
+          ],
+          "notes" : "",
+          "id" : "F64F5B8F-13DF-46C7-AB3E-35EA24309333"
+        },
+        {
+          "sets" : [
+            {
+              "isCompleted" : false,
+              "targetReps" : 0,
+              "weight" : 30,
+              "toFailure" : true,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 0,
+              "id" : "7D0E2C4A-D166-4B02-ADCA-03941F6FFA64"
+            }
+          ],
+          "exercise" : {
+            "bodyRegion" : "Back",
+            "equipment" : "Machine",
+            "movementPattern" : "Isolation",
+            "name" : "Lat Pullover Machine",
+            "id" : "00000000-0000-0000-0000-020014000000",
+            "isCompound" : false
+          },
+          "id" : "B975E0A5-0D81-498E-A569-1D9C882BE405",
+          "notes" : ""
+        }
+      ],
+      "finishedAt" : "2026-05-13T00:32:30Z",
+      "activeCalories" : 104.79182457411376,
+      "notes" : "",
+      "feelRating" : "Tired",
+      "name" : "Hon’s Routine",
+      "averageHeartRate" : 122.33333333333333,
+      "id" : "7715606B-C56B-4812-963E-FAED9E8302CE"
+    },
+    {
+      "startedAt" : "2026-05-12T00:09:27Z",
+      "exercises" : [
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-12T00:11:25Z",
+              "weight" : 5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 2.5,
+              "reps" : 10,
+              "id" : "B1639917-7EF0-4B85-88D6-B9D714508651"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-12T00:13:34Z",
+              "weight" : 7.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 5,
+              "reps" : 10,
+              "id" : "D3480B9C-C8B2-402C-8A6A-B45D66DE641C"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-12T00:15:41Z",
+              "weight" : 7.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 7.5,
+              "reps" : 10,
+              "id" : "C32DEC80-4452-4D74-A95F-1F0A59C74835"
+            }
+          ],
+          "notes" : "",
+          "exercise" : {
+            "bodyRegion" : "Legs",
+            "equipment" : "Barbell",
+            "id" : "00000000-0000-0000-0000-050001000000",
+            "isCompound" : true,
+            "movementPattern" : "Isolation",
+            "name" : "Barbell Squat"
+          },
+          "supersetGroup" : "C",
+          "id" : "CEA902FC-FE69-4F0B-9DE9-ADD80FFC3396"
+        },
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-12T00:17:23Z",
+              "weight" : 10,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 10,
+              "id" : "2B3E9FD4-9132-4EF2-9292-13998719AFE2"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-12T00:19:30Z",
+              "weight" : 20,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 10,
+              "id" : "7B30473C-D33E-4264-8934-EAB1D730ADC8"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-12T00:21:38Z",
+              "weight" : 30,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 10,
+              "id" : "3712E058-122E-400B-A437-C551885FA213"
+            }
+          ],
+          "notes" : "",
+          "exercise" : {
+            "bodyRegion" : "Legs",
+            "equipment" : "Barbell",
+            "id" : "00000000-0000-0000-0000-050002000000",
+            "isCompound" : true,
+            "movementPattern" : "Isolation",
+            "name" : "Romanian Deadlift"
+          },
+          "supersetGroup" : "C",
+          "id" : "DF4EEA67-ACA0-4788-B7D5-5A8CF7EB5D8D"
+        },
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-12T00:24:19Z",
+              "weight" : 0,
+              "toFailure" : false,
+              "dropWeight" : 0,
+              "targetWeight" : 0,
+              "isDropCompleted" : true,
+              "reps" : 8,
+              "id" : "6F063D61-52B2-4414-81AA-615023334841",
+              "dropReps" : 2
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-12T00:25:12Z",
+              "weight" : 0,
+              "toFailure" : false,
+              "dropWeight" : 6,
+              "targetWeight" : 0,
+              "isDropCompleted" : true,
+              "reps" : 4,
+              "id" : "C8BE4BCB-116A-4190-9E86-0F6896C635F2",
+              "dropReps" : 6
+            },
+            {
+              "isCompleted" : false,
+              "targetReps" : 10,
+              "weight" : 0,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 0,
+              "id" : "BCDCB0CD-B46A-4A22-BF97-17D356508F62"
+            }
+          ],
+          "notes" : "",
+          "exercise" : {
+            "bodyRegion" : "Shoulders",
+            "equipment" : "Barbell",
+            "id" : "00000000-0000-0000-0000-030001000000",
+            "isCompound" : true,
+            "movementPattern" : "Vertical Push",
+            "name" : "Overhead Press"
+          },
+          "id" : "E3D0FC14-AC0C-45BE-A5BF-E038A8F9F605"
+        },
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-12T00:29:41Z",
+              "weight" : 15,
+              "toFailure" : true,
+              "isDropCompleted" : false,
+              "targetWeight" : 20,
+              "reps" : 0,
+              "id" : "75C33E65-7F75-4AFE-BA9E-7FC1FC4030B5"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-12T00:29:54Z",
+              "weight" : 15,
+              "toFailure" : true,
+              "isDropCompleted" : false,
+              "targetWeight" : 20,
+              "reps" : 0,
+              "id" : "85B04FEF-2B02-49F5-A2B7-30E89CC3F1D1"
+            }
+          ],
+          "notes" : "",
+          "exercise" : {
+            "bodyRegion" : "Shoulders",
+            "equipment" : "Machine",
+            "id" : "00000000-0000-0000-0000-030007000000",
+            "isCompound" : true,
+            "movementPattern" : "Vertical Push",
+            "name" : "Machine Shoulder Press"
+          },
+          "id" : "F02DB172-711E-46EF-9729-97191BA07360"
+        }
+      ],
+      "finishedAt" : "2026-05-12T00:31:06Z",
+      "activeCalories" : 123.76726931983066,
+      "notes" : "",
+      "feelRating" : "Strong",
+      "name" : "Hon’s Routine",
+      "averageHeartRate" : 126,
+      "id" : "06F3FDB6-3758-4859-8D7D-2F657AB19532"
+    },
+    {
+      "startedAt" : "2026-05-11T00:08:53Z",
+      "exercises" : [
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-11T00:15:52Z",
+              "weight" : 12.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 12.5,
+              "reps" : 10,
+              "id" : "2406D108-1E3D-4542-A7DC-B0959FA30DCB"
+            },
+            {
+              "isCompleted" : false,
+              "targetReps" : 10,
+              "weight" : 15,
+              "toFailure" : false,
+              "dropWeight" : 12.5,
+              "targetWeight" : 14,
+              "isDropCompleted" : true,
+              "reps" : 8,
+              "id" : "1556A17B-95FA-48EC-A41D-9EDD297E420B",
+              "dropReps" : 2
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-11T00:18:45Z",
+              "weight" : 17.5,
+              "toFailure" : false,
+              "dropWeight" : 12.5,
+              "targetWeight" : 15,
+              "isDropCompleted" : true,
+              "reps" : 8,
+              "id" : "16CB2B02-3C88-4886-8BB9-0A4502F07F92",
+              "dropReps" : 2
+            }
+          ],
+          "exercise" : {
+            "bodyRegion" : "Chest",
+            "equipment" : "Dumbbell",
+            "movementPattern" : "Horizontal Push",
+            "name" : "Dumbbell Bench Press",
+            "id" : "00000000-0000-0000-0000-010003000000",
+            "isCompound" : true
+          },
+          "id" : "70F420C1-8CEB-44A1-AD5B-0D7329743447",
+          "notes" : ""
+        },
+        {
+          "exercise" : {
+            "bodyRegion" : "Shoulders",
+            "equipment" : "Dumbbell",
+            "id" : "00000000-0000-0000-0000-030002000000",
+            "isCompound" : true,
+            "movementPattern" : "Isolation",
+            "name" : "Dumbbell Shoulder Press"
+          },
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-11T00:20:10Z",
+              "weight" : 7.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 7.5,
+              "reps" : 10,
+              "id" : "4478F64E-E4E7-4F24-B462-FFFE6D0ED788"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-11T00:21:47Z",
+              "weight" : 7.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 7.5,
+              "reps" : 10,
+              "id" : "B0753620-04AF-416A-A4BD-6FC083582777"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-11T00:23:50Z",
+              "weight" : 7.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 5,
+              "reps" : 10,
+              "id" : "EE72DC2B-A253-48D7-A09E-B39B65DBD985"
+            }
+          ],
+          "notes" : "",
+          "id" : "281224F6-2256-4B61-B8B4-9178CA1F88C9",
+          "supersetGroup" : "A"
+        },
+        {
+          "sets" : [
+            {
+              "isCompleted" : false,
+              "targetReps" : 0,
+              "weight" : 20,
+              "toFailure" : true,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 15,
+              "id" : "ED110E22-A5C3-42FD-9FC9-C31E9CC3CA0D"
+            },
+            {
+              "isCompleted" : false,
+              "targetReps" : 0,
+              "weight" : 20,
+              "toFailure" : true,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 15,
+              "id" : "D5544107-467E-4923-B0AB-D2CCB71F7FC0"
+            }
+          ],
+          "exercise" : {
+            "bodyRegion" : "Chest",
+            "equipment" : "Machine",
+            "movementPattern" : "Horizontal Push",
+            "name" : "Incline Chest Press Machine",
+            "id" : "00000000-0000-0000-0000-010014000000",
+            "isCompound" : true
+          },
+          "id" : "4EA3ED7C-B3A8-45FF-8FC5-0BD66C1923C9",
+          "notes" : ""
+        },
+        {
+          "exercise" : {
+            "bodyRegion" : "Shoulders",
+            "equipment" : "Machine",
+            "id" : "00000000-0000-0000-0000-030007000000",
+            "isCompound" : true,
+            "movementPattern" : "Vertical Push",
+            "name" : "Machine Shoulder Press"
+          },
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 1,
+              "completedAt" : "2026-05-11T00:30:50Z",
+              "weight" : 20,
+              "toFailure" : true,
+              "isDropCompleted" : false,
+              "targetWeight" : 10,
+              "reps" : 10,
+              "id" : "3EA11C80-ACC9-43B8-B5B1-0763880B011A"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 0,
+              "completedAt" : "2026-05-11T00:31:05Z",
+              "weight" : 20,
+              "toFailure" : true,
+              "isDropCompleted" : false,
+              "targetWeight" : 10,
+              "reps" : 10,
+              "id" : "522FEE16-973C-42F3-8680-8F30CE997209"
+            }
+          ],
+          "notes" : "",
+          "id" : "73C81AA9-AFDB-40EF-A3F6-02EE66FE745A"
+        }
+      ],
+      "finishedAt" : "2026-05-11T00:31:17Z",
+      "activeCalories" : 128.08814289919363,
+      "notes" : "",
+      "feelRating" : "Strong",
+      "name" : "Hon’s Routine",
+      "averageHeartRate" : 109.50000000000001,
+      "id" : "997ADF1D-EC6D-4800-82E0-A24CC1B2681E"
+    },
+    {
+      "startedAt" : "2026-05-07T00:19:53Z",
+      "exercises" : [
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-07T00:22:27Z",
+              "weight" : 12.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 10,
+              "reps" : 10,
+              "id" : "535871EA-71E5-48BA-8F51-822ADDED9171"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-07T00:24:13Z",
+              "weight" : 12.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 10,
+              "id" : "DBD5428E-8558-4783-9D16-20E7F99DC3BF"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-07T00:27:16Z",
+              "weight" : 12.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 8,
+              "id" : "701BCCE5-2C1B-485C-A340-97074CA030A7"
+            },
+            {
+              "isCompleted" : false,
+              "targetReps" : 10,
+              "weight" : 12.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 8,
+              "id" : "F2256EBA-51C1-4405-AB61-8E7658562E92"
+            }
+          ],
+          "exercise" : {
+            "bodyRegion" : "Chest",
+            "equipment" : "Dumbbell",
+            "movementPattern" : "Horizontal Push",
+            "name" : "Incline Dumbbell Press",
+            "id" : "00000000-0000-0000-0000-010004000000",
+            "isCompound" : true
+          },
+          "id" : "1D5AABD2-068B-46EF-83C8-EAE8B16E6777",
+          "notes" : ""
+        },
+        {
+          "exercise" : {
+            "bodyRegion" : "Shoulders",
+            "equipment" : "Machine",
+            "id" : "00000000-0000-0000-0000-030007000000",
+            "isCompound" : true,
+            "movementPattern" : "Vertical Push",
+            "name" : "Machine Shoulder Press"
+          },
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-05-07T00:32:15Z",
+              "weight" : 10,
+              "toFailure" : true,
+              "isDropCompleted" : false,
+              "targetWeight" : 10,
+              "reps" : 0,
+              "id" : "5505DF03-1EAA-4A53-87AC-8E49C9593E8F"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-05-07T00:32:16Z",
+              "weight" : 10,
+              "toFailure" : true,
+              "dropWeight" : 0,
+              "targetWeight" : 10,
+              "isDropCompleted" : true,
+              "reps" : 0,
+              "id" : "33E75AE0-D2FE-4415-A3CF-0FB74A0BD17F",
+              "dropReps" : 12
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-05-07T00:32:18Z",
+              "weight" : 10,
+              "toFailure" : true,
+              "isDropCompleted" : false,
+              "targetWeight" : 10,
+              "reps" : 0,
+              "id" : "7821943E-3EC7-451B-9599-20829D58AC04"
+            }
+          ],
+          "notes" : "",
+          "id" : "FBC18555-69C1-4036-95B3-B6C31AF0B04E"
+        }
+      ],
+      "finishedAt" : "2026-05-07T00:32:24Z",
+      "activeCalories" : 70.73522774338488,
+      "notes" : "",
+      "feelRating" : "Strong",
+      "name" : "Hon’s Routine",
+      "averageHeartRate" : 118.74016784597663,
+      "id" : "9CCD1F77-559B-478A-9B68-8B9965768541"
+    },
+    {
+      "startedAt" : "2026-05-06T00:12:50Z",
+      "exercises" : [
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-06T00:14:41Z",
+              "weight" : 21.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 21.5,
+              "reps" : 10,
+              "id" : "AB6ECAC2-F021-4CB6-9398-67219FD80032"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-06T00:16:26Z",
+              "weight" : 25,
+              "toFailure" : false,
+              "dropWeight" : 21.5,
+              "targetWeight" : 21.5,
+              "isDropCompleted" : true,
+              "reps" : 6,
+              "id" : "5ACF6D92-8BBF-43F0-8C0C-2C29953548DE",
+              "dropReps" : 4
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-06T00:19:20Z",
+              "weight" : 25,
+              "toFailure" : false,
+              "dropWeight" : 4,
+              "targetWeight" : 17.5,
+              "isDropCompleted" : true,
+              "reps" : 4,
+              "id" : "5175450C-E5A3-4E43-A3D2-9A3AC8CC39B1",
+              "dropReps" : 6
+            },
+            {
+              "isCompleted" : false,
+              "targetReps" : 10,
+              "weight" : 15,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 17.5,
+              "reps" : 0,
+              "id" : "277720CC-4C8B-4FAB-ABB6-E95795FA9FA2"
+            },
+            {
+              "isCompleted" : false,
+              "targetReps" : 10,
+              "weight" : 12.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 17.5,
+              "reps" : 0,
+              "id" : "A30511B8-ABA9-47E9-84AD-82EC5F35AD45"
+            }
+          ],
+          "exercise" : {
+            "bodyRegion" : "Back",
+            "equipment" : "Cable",
+            "movementPattern" : "Isolation",
+            "name" : "Lat Pulldown",
+            "id" : "00000000-0000-0000-0000-020004000000",
+            "isCompound" : true
+          },
+          "supersetGroup" : "E",
+          "id" : "CFF984A2-A747-4355-882C-87DF8463D5C6",
+          "notes" : ""
+        },
+        {
+          "exercise" : {
+            "bodyRegion" : "Back",
+            "equipment" : "Machine",
+            "id" : "00000000-0000-0000-0000-020020000000",
+            "isCompound" : true,
+            "movementPattern" : "Horizontal Pull",
+            "name" : "Seated Row Machine (Neutral)"
+          },
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-06T00:22:43Z",
+              "weight" : 22.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 10,
+              "id" : "AFB0CBFE-4E8D-4C86-8F2F-C08A7D1C2F41"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-06T00:24:15Z",
+              "weight" : 30.5,
+              "toFailure" : false,
+              "dropWeight" : 22.5,
+              "targetWeight" : 0,
+              "isDropCompleted" : true,
+              "reps" : 8,
+              "id" : "CB10DD1F-4BC0-492A-9F5C-27906CAD0689",
+              "dropReps" : 2
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-05-06T00:25:32Z",
+              "weight" : 30,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 22.5,
+              "reps" : 10,
+              "id" : "E4E9C4AD-CEDA-478B-B62F-55FC90225E76"
+            }
+          ],
+          "notes" : "",
+          "id" : "B6B98BB4-7960-4114-ACC5-43BA10E2D225"
+        }
+      ],
+      "finishedAt" : "2026-05-06T00:27:13Z",
+      "activeCalories" : 9.579999999999997,
+      "notes" : "",
+      "feelRating" : "Strong",
+      "name" : "Hon’s Routine",
+      "averageHeartRate" : 114.51714285714286,
+      "id" : "7CB05CCD-CAE5-4A6E-8DE8-970389A6414F"
+    },
+    {
+      "startedAt" : "2026-05-01T06:10:00Z",
+      "exercises" : [
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-05-01T06:12:56Z",
+              "weight" : 12.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 12.5,
+              "reps" : 12,
+              "id" : "865BD8FF-AEB3-4817-8743-AA09D3F49C77"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 7,
+              "completedAt" : "2026-05-01T06:14:22Z",
+              "weight" : 14,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 12.5,
+              "reps" : 12,
+              "id" : "8951937D-73FB-4A28-ABF8-3EC472C1D743"
+            },
+            {
+              "isCompleted" : false,
+              "targetReps" : 12,
+              "weight" : 14,
+              "toFailure" : false,
+              "dropWeight" : 10,
+              "targetWeight" : 7.5,
+              "isDropCompleted" : false,
+              "reps" : 10,
+              "id" : "27640CDD-6AB7-4F7A-9034-403C8FE0CDB0",
+              "dropReps" : 2
+            }
+          ],
+          "exercise" : {
+            "bodyRegion" : "Chest",
+            "equipment" : "Dumbbell",
+            "movementPattern" : "Horizontal Push",
+            "name" : "Dumbbell Bench Press",
+            "id" : "00000000-0000-0000-0000-010003000000",
+            "isCompound" : true
+          },
+          "id" : "21496E16-41BC-4D3C-B572-0448CE401CF0",
+          "notes" : ""
+        },
+        {
+          "exercise" : {
+            "bodyRegion" : "Shoulders",
+            "equipment" : "Machine",
+            "id" : "00000000-0000-0000-0000-030007000000",
+            "isCompound" : true,
+            "movementPattern" : "Vertical Push",
+            "name" : "Machine Shoulder Press"
+          },
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-05-01T06:19:23Z",
+              "weight" : 10,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 10,
+              "reps" : 12,
+              "id" : "A4EE1CA8-D867-4065-85E1-2821BB5069EF"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-05-01T06:22:38Z",
+              "weight" : 10,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 12,
+              "id" : "5282A4C8-AEA6-4FFE-8DBF-1C03EAD86884"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-05-01T06:22:34Z",
+              "weight" : 10,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 12,
+              "id" : "EFE2FA7F-2FDE-4FC9-9AA8-E09555414805"
+            }
+          ],
+          "notes" : "",
+          "id" : "17E80E5C-6C2E-4A29-B781-4D8C86475ED8"
+        },
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-05-01T06:26:36Z",
+              "weight" : 10,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 12,
+              "id" : "07E2F2C7-44E1-4C2D-A4E1-E4EF8BE8D19C"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-05-01T06:27:48Z",
+              "weight" : 10,
+              "toFailure" : false,
+              "dropWeight" : 7.5,
+              "targetWeight" : 0,
+              "isDropCompleted" : false,
+              "reps" : 11,
+              "id" : "9B3BF0B6-B3A4-4C2E-B384-D400C3428649",
+              "dropReps" : 1
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-05-01T06:29:37Z",
+              "weight" : 10,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 7,
+              "id" : "7910BC96-46D9-4E51-A65A-9EC43D79CD48"
+            }
+          ],
+          "exercise" : {
+            "bodyRegion" : "Arms",
+            "equipment" : "Cable",
+            "movementPattern" : "Isolation",
+            "name" : "Cable Overhead Tricep Extension",
+            "id" : "00000000-0000-0000-0000-040013000000",
+            "isCompound" : false
+          },
+          "id" : "65E5B50B-A3C0-4DEB-BF35-F8F9B4251294",
+          "notes" : ""
+        },
+        {
+          "exercise" : {
+            "bodyRegion" : "Chest",
+            "equipment" : "Machine",
+            "id" : "00000000-0000-0000-0000-010009000000",
+            "isCompound" : true,
+            "movementPattern" : "Horizontal Push",
+            "name" : "Chest Press Machine"
+          },
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 0,
+              "completedAt" : "2026-05-01T06:34:30Z",
+              "weight" : 15,
+              "toFailure" : true,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 0,
+              "id" : "4D661F0F-42ED-4510-955C-A799BAF8A76F"
+            }
+          ],
+          "notes" : "",
+          "id" : "A30CB0A0-97F9-4A67-8F3D-DCF3234ED326"
+        }
+      ],
+      "finishedAt" : "2026-05-01T06:34:36Z",
+      "activeCalories" : 20.242999999999995,
+      "notes" : "",
+      "feelRating" : "Normal",
+      "name" : "Hon’s Routine",
+      "averageHeartRate" : 116.76593121738189,
+      "id" : "5D39491D-8C95-46A3-AD98-734716E9AA04"
+    },
+    {
+      "startedAt" : "2026-04-29T00:15:00Z",
+      "exercises" : [
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-29T00:17:31Z",
+              "weight" : 21.5,
+              "toFailure" : false,
+              "dropWeight" : 13.75,
+              "targetWeight" : 0,
+              "isDropCompleted" : false,
+              "reps" : 6,
+              "id" : "FED94B34-F203-4E90-A935-2960937B35EF",
+              "dropReps" : 6
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-29T00:20:06Z",
+              "weight" : 21.5,
+              "toFailure" : false,
+              "dropWeight" : 17.5,
+              "targetWeight" : 0,
+              "isDropCompleted" : false,
+              "reps" : 6,
+              "id" : "4B97ACD0-D3A6-47AA-8CDC-AE924FCF5872",
+              "dropReps" : 6
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-29T00:23:33Z",
+              "weight" : 17.5,
+              "toFailure" : false,
+              "dropWeight" : 1,
+              "targetWeight" : 17.5,
+              "isDropCompleted" : false,
+              "reps" : 11,
+              "id" : "36047BAB-8CB3-4E59-A202-C6A333031C49",
+              "dropReps" : 1
+            },
+            {
+              "isCompleted" : false,
+              "targetReps" : 0,
+              "weight" : 0,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 0,
+              "id" : "B435CA1C-173B-41DE-9DCA-8E133F0AEE4B"
+            }
+          ],
+          "exercise" : {
+            "bodyRegion" : "Back",
+            "equipment" : "Cable",
+            "movementPattern" : "Isolation",
+            "name" : "Lat Pulldown",
+            "id" : "00000000-0000-0000-0000-020004000000",
+            "isCompound" : true
+          },
+          "supersetGroup" : "E",
+          "id" : "016727AF-B959-41C1-8419-CDDB29EC1F59",
+          "notes" : ""
+        },
+        {
+          "exercise" : {
+            "bodyRegion" : "Back",
+            "equipment" : "Machine",
+            "id" : "00000000-0000-0000-0000-020012000000",
+            "isCompound" : true,
+            "movementPattern" : "Horizontal Pull",
+            "name" : "Chest-Supported Row Machine"
+          },
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-29T00:29:03Z",
+              "weight" : 5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 12,
+              "id" : "1272E693-0BD8-40F5-9ABC-64DAFD9DEE1D"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-29T00:31:21Z",
+              "weight" : 2.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 12,
+              "id" : "9A59DC75-9BFF-4072-A03E-ADBDAC5BC824"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-29T00:31:22Z",
+              "weight" : 2.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 12,
+              "id" : "630D637F-1E10-484D-AAAE-8CAE1E03CD8D"
+            }
+          ],
+          "notes" : "",
+          "id" : "E2E736BC-F2EB-4C90-A305-2DA039747D5C"
+        },
+        {
+          "sets" : [
+            {
+              "isCompleted" : false,
+              "targetReps" : 12,
+              "weight" : 0,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 0,
+              "id" : "659F730F-6781-4B80-AD50-004E67B235ED"
+            },
+            {
+              "isCompleted" : false,
+              "targetReps" : 12,
+              "weight" : 0,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 0,
+              "id" : "C5ED8FB8-EFB5-43A3-825C-B71635C4519B"
+            },
+            {
+              "isCompleted" : false,
+              "targetReps" : 12,
+              "weight" : 0,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 0,
+              "id" : "C9E2B918-1AE6-44A7-9F20-A162B19EC7DF"
+            }
+          ],
+          "exercise" : {
+            "bodyRegion" : "Arms",
+            "equipment" : "Dumbbell",
+            "movementPattern" : "Isolation",
+            "name" : "Dumbbell Curl",
+            "id" : "00000000-0000-0000-0000-040002000000",
+            "isCompound" : false
+          },
+          "supersetGroup" : "F",
+          "id" : "A8DBD8A0-0129-4E67-96EF-4773BB523166",
+          "notes" : ""
+        },
+        {
+          "exercise" : {
+            "bodyRegion" : "Back",
+            "equipment" : "Cable",
+            "id" : "00000000-0000-0000-0000-020007000000",
+            "isCompound" : false,
+            "movementPattern" : "Isolation",
+            "name" : "Face Pull"
+          },
+          "sets" : [
+            {
+              "isCompleted" : false,
+              "targetReps" : 12,
+              "weight" : 0,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 0,
+              "id" : "E3056EFD-FC3D-4CDE-A8C5-B7C42747D3AE"
+            },
+            {
+              "isCompleted" : false,
+              "targetReps" : 12,
+              "weight" : 0,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 0,
+              "id" : "E07EF3C0-DB26-4EB4-9FE8-0CA8D71353B8"
+            },
+            {
+              "isCompleted" : false,
+              "targetReps" : 12,
+              "weight" : 0,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 0,
+              "id" : "51E7ED77-81CE-453A-9464-BA2C43B3ADC7"
+            }
+          ],
+          "notes" : "",
+          "id" : "D4792861-5DB7-4995-9F43-30BBD40AA897",
+          "supersetGroup" : "F"
+        },
+        {
+          "sets" : [
+            {
+              "isCompleted" : false,
+              "targetReps" : 0,
+              "weight" : 15,
+              "toFailure" : true,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 20,
+              "id" : "362EEB48-3BA2-49C0-8642-5ABDEDE439F7"
+            },
+            {
+              "isCompleted" : false,
+              "targetReps" : 0,
+              "weight" : 0,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 0,
+              "id" : "338C3F0D-1C4E-4C26-B4D2-589476F611FB"
+            },
+            {
+              "isCompleted" : false,
+              "targetReps" : 0,
+              "weight" : 0,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 0,
+              "id" : "DEC19E7A-2E20-44B7-8256-414F647A5053"
+            }
+          ],
+          "exercise" : {
+            "bodyRegion" : "Back",
+            "equipment" : "Machine",
+            "movementPattern" : "Isolation",
+            "name" : "Lat Pullover Machine",
+            "id" : "00000000-0000-0000-0000-020014000000",
+            "isCompound" : false
+          },
+          "id" : "0F2206D9-B85C-4FC7-806A-191D54DE35A8",
+          "notes" : ""
+        }
+      ],
+      "finishedAt" : "2026-04-29T00:35:17Z",
+      "activeCalories" : 20.919999999999995,
+      "notes" : "",
+      "feelRating" : "Tired",
+      "name" : "Hon’s Routine",
+      "averageHeartRate" : 116.66666666666667,
+      "id" : "1B035D49-B992-4363-8797-E6B997975F28"
+    },
+    {
+      "startedAt" : "2026-04-28T00:11:35Z",
+      "exercises" : [
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-28T00:13:43Z",
+              "weight" : 2.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 12,
+              "id" : "C83ACD93-29D8-4E20-88B2-DE3EB4889F18"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-28T00:16:05Z",
+              "weight" : 5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 12,
+              "id" : "03E59807-F1AD-4C17-AC1B-B41D6B87C8E6"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-28T00:17:59Z",
+              "weight" : 7.5,
+              "toFailure" : false,
+              "dropWeight" : 5,
+              "targetWeight" : 7.5,
+              "isDropCompleted" : false,
+              "reps" : 4,
+              "id" : "8186FD54-1051-40D6-B9FB-2BEB41AED0DB",
+              "dropReps" : 8
+            }
+          ],
+          "notes" : "",
+          "exercise" : {
+            "bodyRegion" : "Legs",
+            "equipment" : "Barbell",
+            "id" : "00000000-0000-0000-0000-050001000000",
+            "isCompound" : true,
+            "movementPattern" : "Isolation",
+            "name" : "Barbell Squat"
+          },
+          "supersetGroup" : "C",
+          "id" : "00FED86F-41A5-4D71-95C0-ADB82DC7EC82"
+        },
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-28T00:22:31Z",
+              "weight" : 30,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 22.5,
+              "reps" : 12,
+              "id" : "3597BCA4-3D9A-4CD8-8506-944088824E47"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-28T00:23:34Z",
+              "weight" : 30,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 22.5,
+              "reps" : 12,
+              "id" : "58DFE76F-2567-44B3-BD77-E96CFB5F03CF"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-28T00:24:53Z",
+              "weight" : 30,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 22.5,
+              "reps" : 12,
+              "id" : "AA4AB924-A171-4071-8D59-918C535630F7"
+            }
+          ],
+          "notes" : "",
+          "exercise" : {
+            "bodyRegion" : "Legs",
+            "equipment" : "Machine",
+            "id" : "00000000-0000-0000-0000-050003000000",
+            "isCompound" : true,
+            "movementPattern" : "Isolation",
+            "name" : "Leg Press"
+          },
+          "supersetGroup" : "D",
+          "id" : "321D5902-6280-416C-B85B-C137B0DF923D"
+        }
+      ],
+      "finishedAt" : "2026-04-28T00:27:40Z",
+      "activeCalories" : 12.306999999999995,
+      "notes" : "",
+      "feelRating" : "Normal",
+      "name" : "Hon’s Routine",
+      "averageHeartRate" : 127,
+      "id" : "5184AD72-8426-4015-9203-C9687229E947"
+    },
+    {
+      "startedAt" : "2026-04-27T00:08:56Z",
+      "exercises" : [
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-27T00:10:57Z",
+              "weight" : 12.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 10,
+              "reps" : 12,
+              "id" : "A643D020-D2AA-4E16-9630-8D33A01454D9"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 11,
+              "completedAt" : "2026-04-27T00:14:57Z",
+              "weight" : 12.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 10,
+              "reps" : 7,
+              "id" : "6F6B12D2-06E6-4B63-8DD9-1CD46A4B8156"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 5,
+              "completedAt" : "2026-04-27T00:18:55Z",
+              "weight" : 7.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 10,
+              "reps" : 12,
+              "id" : "67A8CF24-ABC8-4870-A209-2E14583D351B"
+            }
+          ],
+          "exercise" : {
+            "bodyRegion" : "Chest",
+            "equipment" : "Dumbbell",
+            "movementPattern" : "Isolation",
+            "name" : "Dumbbell Bench Press",
+            "id" : "00000000-0000-0000-0000-010003000000",
+            "isCompound" : true
+          },
+          "supersetGroup" : "A",
+          "id" : "A67C4987-9C57-4EDF-B0C2-DEE29A98AB8C",
+          "notes" : ""
+        },
+        {
+          "exercise" : {
+            "bodyRegion" : "Shoulders",
+            "equipment" : "Dumbbell",
+            "id" : "00000000-0000-0000-0000-030002000000",
+            "isCompound" : true,
+            "movementPattern" : "Isolation",
+            "name" : "Dumbbell Shoulder Press"
+          },
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 5,
+              "completedAt" : "2026-04-27T00:12:22Z",
+              "weight" : 7.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 7.5,
+              "reps" : 10,
+              "id" : "247FE13E-CD1C-4F51-99D8-3725540BF33E"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-27T00:16:33Z",
+              "weight" : 7.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 10,
+              "reps" : 5,
+              "id" : "CA75DC10-6D56-4BC2-A103-DA897826B9C3"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-27T00:20:29Z",
+              "weight" : 5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 5,
+              "reps" : 12,
+              "id" : "1AC0C7C0-B9D6-4E5E-A6C4-9A4D3958CB00"
+            }
+          ],
+          "notes" : "",
+          "id" : "5D435FD3-64FC-46B3-BC13-323FD6BAE4C1",
+          "supersetGroup" : "A"
+        }
+      ],
+      "finishedAt" : "2026-04-27T00:42:51Z",
+      "activeCalories" : 32.54299999999999,
+      "notes" : "",
+      "feelRating" : "Normal",
+      "name" : "Hon’s Routine",
+      "averageHeartRate" : 122.88148148148147,
+      "id" : "7842E5AD-9FFE-4831-8C20-AF85D4B7A68B"
+    },
+    {
+      "startedAt" : "2026-04-23T00:13:53Z",
+      "exercises" : [
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-04-23T00:15:47Z",
+              "weight" : 5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 11,
+              "id" : "58B72C84-53FA-466A-9376-8DFC2BADE0F1"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-04-23T00:17:38Z",
+              "weight" : 7.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 7.5,
+              "reps" : 10,
+              "id" : "B4173EC9-FC13-4B9E-821B-07BABBFBF6EA"
+            },
+            {
+              "isCompleted" : false,
+              "targetReps" : 10,
+              "weight" : 5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 5,
+              "reps" : 10,
+              "id" : "83ACE430-7515-4568-9D23-7595D1A64282"
+            }
+          ],
+          "exercise" : {
+            "bodyRegion" : "Chest",
+            "equipment" : "Barbell",
+            "movementPattern" : "Horizontal Push",
+            "name" : "Incline Barbell Press",
+            "id" : "00000000-0000-0000-0000-010002000000",
+            "isCompound" : true
+          },
+          "id" : "3DA4D20D-0E8C-4AB7-969F-D74F46C2A8F8",
+          "notes" : ""
+        },
+        {
+          "exercise" : {
+            "bodyRegion" : "Back",
+            "equipment" : "Machine",
+            "id" : "00000000-0000-0000-0000-020010000000",
+            "isCompound" : true,
+            "movementPattern" : "Horizontal Pull",
+            "name" : "Low Row Machine"
+          },
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-04-23T00:24:26Z",
+              "weight" : 10,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 10,
+              "id" : "D1032FB6-6F4A-4928-B6C6-043566E7EC21"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-04-23T00:24:27Z",
+              "weight" : 10,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 10,
+              "id" : "9311A690-7E69-4544-BBA4-D758A9EE80FB"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 10,
+              "completedAt" : "2026-04-23T00:25:33Z",
+              "weight" : 10,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 10,
+              "id" : "CC242994-EBAB-4E72-9327-9DEE626D3371"
+            }
+          ],
+          "notes" : "",
+          "id" : "52F60637-781B-454F-84FC-5403369AFCE6"
+        }
+      ],
+      "finishedAt" : "2026-04-23T00:28:48Z",
+      "activeCalories" : 7.534999999999996,
+      "notes" : "",
+      "name" : "Weekly Routine",
+      "averageHeartRate" : 127.5,
+      "id" : "A0221F00-6BF0-4E6E-B096-E7541665EA34"
+    },
+    {
+      "startedAt" : "2026-04-21T00:08:36Z",
+      "exercises" : [
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-21T00:10:03Z",
+              "weight" : 0,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 12,
+              "id" : "0A7414CF-E82A-4DD6-933F-ACC7F37C858B"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-21T00:12:08Z",
+              "weight" : 0,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 12,
+              "id" : "0DC880A2-05FC-40CD-B822-998E1B7EE3A3"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-21T00:13:43Z",
+              "weight" : 0,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 7,
+              "id" : "49AA051E-E875-4F7E-9DBE-BEF1216DA476"
+            }
+          ],
+          "exercise" : {
+            "bodyRegion" : "Legs",
+            "equipment" : "Barbell",
+            "movementPattern" : "Isolation",
+            "name" : "Barbell Squat",
+            "id" : "00000000-0000-0000-0000-050001000000",
+            "isCompound" : true
+          },
+          "supersetGroup" : "C",
+          "id" : "26146700-4FCB-4832-BDA7-845127A96DE2",
+          "notes" : ""
+        },
+        {
+          "exercise" : {
+            "bodyRegion" : "Legs",
+            "equipment" : "Machine",
+            "id" : "00000000-0000-0000-0000-050003000000",
+            "isCompound" : true,
+            "movementPattern" : "Isolation",
+            "name" : "Leg Press"
+          },
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-21T00:16:30Z",
+              "weight" : 22.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 12,
+              "id" : "1B1288B1-FB89-40AF-8496-35F698EE694E"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-21T00:18:16Z",
+              "weight" : 22.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 12,
+              "id" : "A2978583-CAEC-4424-8A59-73231E36B497"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-21T00:19:59Z",
+              "weight" : 22.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 12,
+              "id" : "810DD915-3C83-49D5-B881-7E222C317965"
+            }
+          ],
+          "notes" : "",
+          "id" : "C76421A4-B698-471A-8A3F-07AC2045B599",
+          "supersetGroup" : "D"
+        },
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-21T00:21:07Z",
+              "weight" : 7.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 12,
+              "id" : "42C22EE4-1763-4B5C-AE38-E916597D0DB0"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-21T00:21:40Z",
+              "weight" : 7.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 12,
+              "id" : "2EFDF74D-3F74-44DA-9C8E-762B0C32683C"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-21T00:22:14Z",
+              "weight" : 7.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 12,
+              "id" : "80B5D6DC-CBDB-4C34-9436-35B025AD817C"
+            }
+          ],
+          "exercise" : {
+            "bodyRegion" : "Legs",
+            "equipment" : "Machine",
+            "movementPattern" : "Isolation",
+            "name" : "Standing Calf Raise",
+            "id" : "00000000-0000-0000-0000-050008000000",
+            "isCompound" : false
+          },
+          "supersetGroup" : "D",
+          "id" : "6E6EEC36-7BF9-44CB-BA1A-DA817D0EB30C",
+          "notes" : ""
+        }
+      ],
+      "finishedAt" : "2026-04-21T00:22:21Z",
+      "notes" : "",
+      "name" : "Weekly Routine",
+      "averageHeartRate" : 134.49999999999997,
+      "id" : "A18F889B-ECF7-4973-869B-25709FC26A90"
+    },
+    {
+      "startedAt" : "2026-04-20T00:06:39Z",
+      "exercises" : [
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-20T00:09:34Z",
+              "weight" : 10,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 12,
+              "id" : "1DB6FAE8-C0E8-417A-AE00-919D38388CE2"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-20T00:11:42Z",
+              "weight" : 10,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 11,
+              "id" : "29F78C6F-F454-41ED-9480-FC7D649BF75C"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-20T00:16:51Z",
+              "weight" : 10,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 5,
+              "id" : "657FF280-F385-40D8-AA88-D07414ED06E7"
+            }
+          ],
+          "notes" : "",
+          "exercise" : {
+            "bodyRegion" : "Chest",
+            "equipment" : "Dumbbell",
+            "id" : "00000000-0000-0000-0000-010003000000",
+            "isCompound" : true,
+            "movementPattern" : "Isolation",
+            "name" : "Dumbbell Bench Press"
+          },
+          "supersetGroup" : "A",
+          "id" : "A7C7B08E-6C5A-4C6C-9163-F8CE74F469B3"
+        },
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-20T00:09:44Z",
+              "weight" : 7.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 5,
+              "id" : "0CB02D39-A634-4424-8A25-318683D4356E"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-20T00:13:09Z",
+              "weight" : 10,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 0,
+              "id" : "759A3C12-633E-42AB-88CF-AF2F8498BFE7"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-20T00:18:33Z",
+              "weight" : 5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 12,
+              "id" : "E8B8AC68-1C14-4D4D-BA44-5EBE0565D90D"
+            },
+            {
+              "isCompleted" : false,
+              "targetReps" : 0,
+              "weight" : 0,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 0,
+              "id" : "180A3AD6-2D6C-424C-AF21-3CAFDCEBEB27"
+            },
+            {
+              "isCompleted" : false,
+              "targetReps" : 0,
+              "weight" : 0,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 0,
+              "id" : "CBD1E72C-3B32-4503-82AF-B4971279C5F1"
+            },
+            {
+              "isCompleted" : false,
+              "targetReps" : 0,
+              "weight" : 0,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 0,
+              "id" : "B2A86433-A640-4E3E-806D-56B16EC02DC1"
+            }
+          ],
+          "notes" : "",
+          "exercise" : {
+            "bodyRegion" : "Shoulders",
+            "equipment" : "Dumbbell",
+            "id" : "00000000-0000-0000-0000-030002000000",
+            "isCompound" : true,
+            "movementPattern" : "Isolation",
+            "name" : "Dumbbell Shoulder Press"
+          },
+          "supersetGroup" : "A",
+          "id" : "A91CBA76-5669-4E7D-B8CB-C14A95EFDFA9"
+        },
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-20T00:24:10Z",
+              "weight" : 10,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 120,
+              "reps" : 12,
+              "id" : "B79FD2C3-794E-469A-8AFF-D84231D5B697"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-20T00:24:11Z",
+              "weight" : 10,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 12,
+              "id" : "77CFEE24-1F2A-4AED-9ED8-C2B1CD7474D9"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-20T00:24:11Z",
+              "weight" : 10,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 12,
+              "id" : "93E202F1-12D1-4B9A-83B9-EEE5B653495E"
+            },
+            {
+              "isCompleted" : false,
+              "targetReps" : 0,
+              "weight" : 0,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 0,
+              "id" : "93EDAB27-2A50-40AB-944C-55996A9D7DEF"
+            }
+          ],
+          "notes" : "",
+          "exercise" : {
+            "bodyRegion" : "Arms",
+            "equipment" : "Dumbbell",
+            "id" : "00000000-0000-0000-0000-040007000000",
+            "isCompound" : false,
+            "movementPattern" : "Isolation",
+            "name" : "Overhead Tricep Extension"
+          },
+          "id" : "81C1D8C8-E300-4782-8144-D0A770FE28D2"
+        },
+        {
+          "sets" : [
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-20T00:26:46Z",
+              "weight" : 5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 9,
+              "id" : "0153246A-E3E4-4EB5-A1E7-DBA1BA82B437"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-20T00:27:45Z",
+              "weight" : 2.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 12,
+              "id" : "59B13C12-A645-417E-87D7-2DA7CCE9D09B"
+            },
+            {
+              "isCompleted" : true,
+              "targetReps" : 12,
+              "completedAt" : "2026-04-20T00:29:01Z",
+              "weight" : 2.5,
+              "toFailure" : false,
+              "isDropCompleted" : false,
+              "targetWeight" : 0,
+              "reps" : 12,
+              "id" : "796C6FFB-5092-4D79-BF4C-FE7C8B5E563E"
+            }
+          ],
+          "notes" : "",
+          "exercise" : {
+            "bodyRegion" : "Shoulders",
+            "equipment" : "Dumbbell",
+            "id" : "00000000-0000-0000-0000-030003000000",
+            "isCompound" : false,
+            "movementPattern" : "Isolation",
+            "name" : "Lateral Raise"
+          },
+          "supersetGroup" : "B",
+          "id" : "59ABE1C4-40ED-4988-AF0D-C35C536E73F3"
+        }
+      ],
+      "finishedAt" : "2026-04-20T00:29:04Z",
+      "notes" : "",
+      "name" : "Weekly Routine",
+      "averageHeartRate" : 132,
+      "id" : "0A7B91AF-91DB-460E-8357-D3C06B6BCDD8"
+    }
+  ],
+  "generalLog" : [
+
+  ],
+  "appVersion" : "1.0"
+}

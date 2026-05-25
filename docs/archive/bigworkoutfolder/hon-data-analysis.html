@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H.O.N. Data Analysis — Real Export Audit</title>
+<style>
+  :root {
+    --onyx:#111111;--carbon:#1c1c1e;--iron:#2c2c2e;--steel:#3a3a3c;
+    --amber:#d4943a;--sage:#7a9e8e;--slate:#6b85a0;--lavender:#8a80a8;
+    --text:#f0f0f0;--sub:#a0a0a8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--onyx);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;line-height:1.6;padding:0 0 4rem}
+  code,pre,.mono{font-family:'DM Mono',monospace}
+  h1{font-family:'DM Serif Display',Georgia,serif;font-size:2rem;padding:2rem;background:var(--carbon);border-bottom:1px solid var(--iron)}
+  .meta{font-size:0.8rem;color:var(--sub);font-family:monospace;padding:0.5rem 2rem;background:var(--carbon);border-bottom:1px solid var(--iron)}
+  .toc{background:var(--carbon);border-bottom:1px solid var(--iron);padding:1rem 2rem;display:flex;flex-wrap:wrap;gap:0.5rem}
+  .toc a{color:var(--slate);font-size:0.75rem;font-family:monospace;text-decoration:none;background:var(--iron);padding:0.2rem 0.6rem;border-radius:4px}
+  .toc a:hover{color:var(--amber)}
+  .section{padding:1.5rem 2rem;border-bottom:1px solid var(--iron)}
+  .day-header{background:var(--carbon);border-left:3px solid var(--amber);padding:1rem 1.5rem;margin:0 -2rem 1.5rem;display:flex;align-items:baseline;gap:1rem;flex-wrap:wrap}
+  .day-date{font-family:'DM Serif Display',Georgia,serif;font-size:1.4rem;color:var(--amber)}
+  .day-session{font-family:monospace;font-size:0.75rem;color:var(--sub)}
+  .day-name{color:var(--slate);font-size:0.9rem}
+  .screen{background:var(--carbon);border-radius:10px;padding:1rem 1.2rem;margin:0.75rem 0;border:1px solid var(--iron)}
+  .screen-title{font-family:monospace;font-size:0.65rem;color:var(--amber);letter-spacing:0.08em;margin-bottom:0.75rem;text-transform:uppercase}
+  .exercise-block{background:var(--iron);border-radius:8px;padding:0.75rem 1rem;margin:0.5rem 0}
+  .ex-name{font-weight:600;color:var(--text);margin-bottom:0.4rem}
+  .set-row{display:flex;align-items:center;gap:0.75rem;font-family:monospace;font-size:0.8rem;padding:0.2rem 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+  .set-row:last-child{border-bottom:none}
+  .set-num{color:var(--sub);min-width:2.5rem}
+  .set-data{flex:1}
+  .e1rm{color:var(--amber);margin-left:auto}
+  .drop-row{display:flex;gap:0.75rem;font-family:monospace;font-size:0.75rem;color:var(--sub);padding:0.1rem 0 0.1rem 2.5rem}
+  .skipped{opacity:0.4}
+  .pr-badge{background:var(--amber);color:#000;font-size:0.65rem;font-family:monospace;padding:0.1rem 0.4rem;border-radius:3px;font-weight:700}
+  .anomaly{background:rgba(224,82,82,0.12);border:1px solid rgba(224,82,82,0.35);border-radius:8px;padding:0.75rem 1rem;margin:0.75rem 0;font-size:0.85rem}
+  .anomaly-label{color:#e05252;font-family:monospace;font-size:0.7rem;margin-bottom:0.4rem}
+  .note{background:rgba(107,133,160,0.1);border:1px solid rgba(107,133,160,0.25);border-radius:8px;padding:0.75rem 1rem;margin:0.75rem 0;font-size:0.85rem}
+  .note-label{color:var(--slate);font-family:monospace;font-size:0.7rem;margin-bottom:0.4rem}
+  .stat-row{display:flex;justify-content:space-between;font-size:0.82rem;padding:0.2rem 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+  .stat-row:last-child{border-bottom:none}
+  .stat-val{font-family:monospace;color:var(--amber)}
+  .stat-val.ok{color:var(--sage)}
+  .stat-val.warn{color:#e05252}
+  .chart-mock{background:var(--iron);border-radius:8px;padding:1rem;margin:0.5rem 0;font-family:monospace;font-size:0.75rem}
+  .chart-title{color:var(--sub);margin-bottom:0.75rem}
+  .chart-bar{display:flex;align-items:center;gap:0.5rem;margin:0.3rem 0}
+  .bar-label{color:var(--sub);min-width:6rem;text-align:right;font-size:0.7rem}
+  .bar-track{flex:1;height:16px;background:var(--steel);border-radius:3px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:3px;display:flex;align-items:center;padding-left:4px;font-size:0.65rem;color:#000;font-weight:700}
+  .bar-val{font-size:0.7rem;color:var(--text);min-width:4rem}
+  .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0.75rem;margin:0.75rem 0}
+  .summary-card{background:var(--iron);border-radius:8px;padding:0.75rem;text-align:center}
+  .summary-card .val{font-family:'DM Serif Display',Georgia,serif;font-size:1.6rem;color:var(--amber)}
+  .summary-card .lbl{font-size:0.7rem;color:var(--sub);font-family:monospace;margin-top:0.2rem}
+  .cumulative{background:var(--carbon);border-left:3px solid var(--sage);padding:1rem 1.5rem;margin:1rem 0;border-radius:0 8px 8px 0}
+  .cumulative h4{color:var(--sage);font-family:monospace;font-size:0.75rem;margin-bottom:0.5rem;text-transform:uppercase}
+  table{width:100%;border-collapse:collapse;font-size:0.8rem;font-family:monospace}
+  th{color:var(--sub);text-align:left;padding:0.4rem 0.5rem;border-bottom:1px solid var(--iron);font-size:0.7rem}
+  td{padding:0.35rem 0.5rem;border-bottom:1px solid rgba(255,255,255,0.04)}
+  tr:last-child td{border-bottom:none}
+  .pass{color:var(--sage)}
+  .warn{color:var(--amber)}
+  .fail{color:#e05252}
+  .pill{font-size:0.65rem;padding:0.1rem 0.4rem;border-radius:10px;font-family:monospace}
+  .pill-strong{background:rgba(212,148,58,0.2);color:var(--amber)}
+  .pill-normal{background:rgba(107,133,160,0.2);color:var(--slate)}
+  .pill-tired{background:rgba(138,128,168,0.2);color:var(--lavender)}
+</style>
+</head>
+<body>
+
+<h1>H.O.N. Data Analysis — Real Export Audit</h1>
+<div class="meta">
+  Export: hon_export_1779456488.json · Generated: 2026-05-22 · 18 sessions · Apr 19 – May 21, 2026
+  · Analysis: day-by-day, UI-by-UI, tap-by-tap
+</div>
+
+<div class="toc">
+  <a href="#overview">Overview</a>
+  <a href="#s01">Apr 19</a><a href="#s02">Apr 21</a><a href="#s03">Apr 23</a>
+  <a href="#s04">Apr 27</a><a href="#s05">Apr 28</a><a href="#s06">Apr 29</a>
+  <a href="#s07">May 1</a><a href="#s08">May 6</a><a href="#s09">May 7</a>
+  <a href="#s10">May 11</a><a href="#s11">May 12</a><a href="#s12">May 13</a>
+  <a href="#s13">May 14</a><a href="#s14">May 18</a><a href="#s15">May 19</a>
+  <a href="#s16">May 20</a><a href="#s17a">May 21a</a><a href="#s17b">May 21b</a>
+  <a href="#cumulative">Cumulative</a><a href="#anomalies">Anomalies</a>
+</div>
+
+<!-- OVERVIEW -->
+<div class="section" id="overview">
+  <h2 style="margin-bottom:1rem;color:var(--amber)">Export Overview</h2>
+  <div class="summary-grid">
+    <div class="summary-card"><div class="val">18</div><div class="lbl">Total Sessions</div></div>
+    <div class="summary-card"><div class="val">33 days</div><div class="lbl">Span (Apr 19–May 21)</div></div>
+    <div class="summary-card"><div class="val">~0.55/day</div><div class="lbl">Session Frequency</div></div>
+    <div class="summary-card"><div class="val">15</div><div class="lbl">Unique Exercises</div></div>
+    <div class="summary-card"><div class="val">3</div><div class="lbl">Anomalies Found</div></div>
+    <div class="summary-card"><div class="val">1 critical</div><div class="lbl">Data Corruption</div></div>
+  </div>
+  <div class="note"><div class="note-label">TIMESTAMP CONVERSION</div>
+    All timestamps are Apple epoch (seconds since 2001-01-01). Add 978,307,200 to get Unix.
+    exportedAt=801,149,288 → May 22, 2026 ✓ (today).
+  </div>
+  <div class="screen">
+    <div class="screen-title">Home Screen — Before First Workout (App First Launch)</div>
+    <div class="stat-row"><span>Streak</span><span class="stat-val">0 days</span></div>
+    <div class="stat-row"><span>Recent sessions</span><span class="stat-val">None</span></div>
+    <div class="stat-row"><span>Progress tab</span><span class="stat-val">Empty — "No data"</span></div>
+    <div class="stat-row"><span>History tab</span><span class="stat-val">Empty list</span></div>
+    <div class="note" style="margin-top:0.5rem"><div class="note-label">UX GAP</div>No onboarding, no guidance. "+" button is the only affordance. Sam persona captures this exactly.</div>
+  </div>
+</div>
+
+
+<!-- ════════════════════ SESSION 1 ════════════════════ -->
+<div class="section" id="s01">
+<div class="day-header">
+  <span class="day-date">Apr 19</span>
+  <span class="day-name">Saturday — Weekly Routine</span>
+  <span class="day-session">0A7B91AF · 22 min · avg HR 132 · No feel rating</span>
+</div>
+
+<div class="screen">
+  <div class="screen-title">History View — Session Detail</div>
+  <div class="exercise-block">
+    <div class="ex-name">Dumbbell Bench Press</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">10 kg × 12 reps</span><span class="e1rm">≈25 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">10 kg × 11 reps</span><span class="e1rm">≈25 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">7.5 kg × 5 reps</span><span class="e1rm">≈16 1RM</span></div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Dumbbell Shoulder Press</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">7.5 kg × 10 reps</span><span class="e1rm">≈18 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">7.5 kg × 5 reps</span><span class="e1rm">≈16 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">5 kg × 12 reps</span><span class="e1rm">≈12 1RM</span></div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Overhead Tricep Extension</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">10 kg × 12 reps</span><span class="e1rm">≈25 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">10 kg × 12 reps</span><span class="e1rm">≈25 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">10 kg × 12 reps</span><span class="e1rm">≈25 1RM</span></div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Lateral Raise</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">5 kg × 9 reps</span><span class="e1rm">≈12 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">2.5 kg × 12 reps</span><span class="e1rm">≈6 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">2.5 kg × 12 reps</span><span class="e1rm">≈6 1RM</span></div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-title">e1RM Computed This Session</div>
+  <div class="stat-row"><span>Dumbbell Bench Press</span><span class="stat-val ok">24.9 kg <span class="pr-badge">PR #1</span></span></div>
+  <div class="stat-row"><span>Dumbbell Shoulder Press</span><span class="stat-val ok">18.4 kg <span class="pr-badge">PR #1</span></span></div>
+  <div class="stat-row"><span>Overhead Tricep Extension</span><span class="stat-val ok">24.9 kg <span class="pr-badge">PR #1</span></span></div>
+  <div class="stat-row"><span>Lateral Raise</span><span class="stat-val ok">12.0 kg <span class="pr-badge">PR #1</span></span></div>
+</div>
+
+<div class="note"><div class="note-label">FORMULA PATH</div>
+  DB Bench — effectiveWeight = 10 × 2 × 0.92 = 18.4 kg. Sets 1-2 use Mayhew (11-20 reps): (100×18.4)/(52.2+41.9×e^-0.66) = 24.9 kg. Set 3 uses Epley (5 reps): 13.8×(1+5/30) = 16.1 kg. Session e1RM = max(24.9, 24.5, 16.1) = 24.9 kg.
+</div>
+
+<div class="cumulative">
+  <h4>Cumulative State After Session 1</h4>
+  <div class="stat-row"><span>Total sessions</span><span class="stat-val">1</span></div>
+  <div class="stat-row"><span>Exercises tracked</span><span class="stat-val">4</span></div>
+  <div class="stat-row"><span>Active PRs</span><span class="stat-val">4 (first-session baselines)</span></div>
+  <div class="stat-row"><span>Home screen streak</span><span class="stat-val">1 day</span></div>
+</div>
+</div>
+
+<!-- ════════════════════ SESSION 2 ════════════════════ -->
+<div class="section" id="s02">
+<div class="day-header">
+  <span class="day-date">Apr 20</span>
+  <span class="day-name">Sunday — Weekly Routine</span>
+  <span class="day-session">A18F889B · 15 min · avg HR 134 · No feel rating</span>
+</div>
+
+<div class="screen">
+  <div class="screen-title">History View — Session Detail</div>
+  <div class="exercise-block">
+    <div class="ex-name">Barbell Squat</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">0 kg × 12 reps</span><span class="e1rm" style="color:var(--sub)">no load</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">0 kg × 12 reps</span><span class="e1rm" style="color:var(--sub)">no load</span></div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">0 kg × 7 reps</span><span class="e1rm" style="color:var(--sub)">no load</span></div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Leg Press</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">22.5 kg × 12 reps</span><span class="e1rm">≈30 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">22.5 kg × 12 reps</span><span class="e1rm">≈30 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">22.5 kg × 12 reps</span><span class="e1rm">≈30 1RM</span></div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Standing Calf Raise</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">7.5 kg × 12 reps</span><span class="e1rm">≈10 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">7.5 kg × 12 reps</span><span class="e1rm">≈10 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">7.5 kg × 12 reps</span><span class="e1rm">≈10 1RM</span></div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-title">e1RM Computed This Session</div>
+  <div class="stat-row"><span>Barbell Squat</span><span class="stat-val warn">0 kg — bodyweight only, no e1RM tracked</span></div>
+  <div class="stat-row"><span>Leg Press</span><span class="stat-val ok">30.5 kg <span class="pr-badge">PR #1</span></span></div>
+  <div class="stat-row"><span>Standing Calf Raise</span><span class="stat-val ok">10.2 kg <span class="pr-badge">PR #1</span></span></div>
+</div>
+
+<div class="note"><div class="note-label">UX IMPLICATION</div>
+  Squat chart shows "No data" even though 3 sets were logged — because weight=0 means e1RM=0, excluded. User may wonder why squats don't appear in Progress. The volume chart would also show 0, since volume = weight × reps.
+</div>
+
+<div class="cumulative">
+  <h4>Cumulative State After Session 2</h4>
+  <div class="stat-row"><span>Total sessions</span><span class="stat-val">2</span></div>
+  <div class="stat-row"><span>Exercises tracked</span><span class="stat-val">7</span></div>
+  <div class="stat-row"><span>Streak</span><span class="stat-val">2 consecutive days</span></div>
+</div>
+</div>
+
+<!-- ════════════════════ SESSION 3 ════════════════════ -->
+<div class="section" id="s03">
+<div class="day-header">
+  <span class="day-date">Apr 22</span>
+  <span class="day-name">Tuesday — Weekly Routine</span>
+  <span class="day-session">A0221F00 · 15 min · avg HR 127 · No feel rating</span>
+</div>
+<div class="note"><div class="note-label">GAP</div>1-day gap after Apr 20. Streak resets to 1 day (or 0, depending on streak definition).</div>
+<div class="screen">
+  <div class="screen-title">History View — Session Detail</div>
+  <div class="exercise-block">
+    <div class="ex-name">Incline Barbell Press</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">5 kg × 11 reps</span><span class="e1rm">≈7 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">7.5 kg × 10 reps</span><span class="e1rm">≈10 1RM</span></div>
+    <div class="set-row skipped"><span class="set-num">Set 3</span><span class="set-data">5 kg × 10 reps — NOT completed</span><span class="e1rm" style="color:var(--sub)">—</span></div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Low Row Machine</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">10 kg × 10 reps</span><span class="e1rm">≈13 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">10 kg × 10 reps</span><span class="e1rm">≈13 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">10 kg × 10 reps</span><span class="e1rm">≈13 1RM</span></div>
+  </div>
+</div>
+<div class="screen">
+  <div class="screen-title">e1RM Computed This Session</div>
+  <div class="stat-row"><span>Incline Barbell Press</span><span class="stat-val ok">10.0 kg <span class="pr-badge">PR #1</span></span></div>
+  <div class="stat-row"><span>Low Row Machine</span><span class="stat-val ok">13.3 kg <span class="pr-badge">PR #1</span></span></div>
+</div>
+<div class="cumulative">
+  <h4>Cumulative State After Session 3</h4>
+  <div class="stat-row"><span>Total sessions</span><span class="stat-val">3</span></div>
+  <div class="stat-row"><span>Exercises tracked</span><span class="stat-val">9</span></div>
+</div>
+</div>
+
+<!-- ════════════════════ SESSION 4 ════════════════════ -->
+<div class="section" id="s04">
+<div class="day-header">
+  <span class="day-date">Apr 26</span>
+  <span class="day-name">Saturday — Hon's Routine</span>
+  <span class="day-session">7842E5AD · 33 min · avg HR 123 · <span class="pill pill-normal">Normal</span></span>
+</div>
+<div class="note"><div class="note-label">GAP</div>3-day gap after Apr 22 (Apr 23–25 missed). Streak resets.</div>
+<div class="screen">
+  <div class="screen-title">History View — Session Detail</div>
+  <div class="exercise-block">
+    <div class="ex-name">Dumbbell Bench Press <span style="color:var(--slate);font-size:0.7rem;font-family:monospace">SUPERSET A</span></div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">12.5 kg × 12 reps</span><span class="e1rm">≈31 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">12.5 kg × 7 reps</span><span class="e1rm">≈28 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">7.5 kg × 12 reps</span><span class="e1rm">≈19 1RM</span></div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Dumbbell Shoulder Press <span style="color:var(--slate);font-size:0.7rem;font-family:monospace">SUPERSET A</span></div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">7.5 kg × 10 reps</span><span class="e1rm">≈18 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">7.5 kg × 5 reps</span><span class="e1rm">≈16 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">5 kg × 12 reps</span><span class="e1rm">≈12 1RM</span></div>
+  </div>
+</div>
+<div class="screen">
+  <div class="screen-title">e1RM Computed This Session</div>
+  <div class="stat-row"><span>Dumbbell Bench Press</span><span class="stat-val ok">31.1 kg <span class="pr-badge">NEW PR</span></span></div>
+  <div class="stat-row"><span>  Previous PR</span><span class="stat-val">24.9 kg (+6.2 kg)</span></div>
+  <div class="stat-row"><span>Dumbbell Shoulder Press</span><span class="stat-val">18.4 kg — tied PR, no update</span></div>
+</div>
+<div class="cumulative">
+  <h4>Cumulative State After Session 4</h4>
+  <div class="stat-row"><span>DB Bench e1RM PR</span><span class="stat-val">31.1 kg</span></div>
+  <div class="stat-row"><span>Progress chart — DB Bench</span><span class="stat-val">2 data points (Apr 19→Apr 26)</span></div>
+</div>
+</div>
+
+
+<!-- ════════════════════ SESSION 5 ════════════════════ -->
+<div class="section" id="s05">
+<div class="day-header">
+  <span class="day-date">Apr 27</span>
+  <span class="day-name">Sunday — Hon's Routine</span>
+  <span class="day-session">5184AD72 · 16 min · avg HR 127 · <span class="pill pill-normal">Normal</span></span>
+</div>
+<div class="screen">
+  <div class="screen-title">History View — Session Detail</div>
+  <div class="exercise-block">
+    <div class="ex-name">Barbell Squat <span style="color:var(--slate);font-size:0.7rem;font-family:monospace">SUPERSET C</span></div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">2.5 kg × 12 reps</span><span class="e1rm">≈3 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">5 kg × 12 reps</span><span class="e1rm">≈7 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">7.5 kg × 4 reps</span><span class="e1rm">≈9 1RM</span></div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Leg Press <span style="color:var(--slate);font-size:0.7rem;font-family:monospace">SUPERSET D</span></div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">30 kg × 12 reps</span><span class="e1rm">≈41 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">30 kg × 12 reps</span><span class="e1rm">≈41 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">30 kg × 12 reps</span><span class="e1rm">≈41 1RM</span></div>
+  </div>
+</div>
+<div class="screen">
+  <div class="screen-title">e1RM Computed This Session</div>
+  <div class="stat-row"><span>Barbell Squat</span><span class="stat-val ok">8.5 kg <span class="pr-badge">PR #1</span> (prev 0, bodyweight)</span></div>
+  <div class="stat-row"><span>Leg Press</span><span class="stat-val ok">40.6 kg <span class="pr-badge">NEW PR</span></span></div>
+  <div class="stat-row"><span>  Previous PR</span><span class="stat-val">30.5 kg (+10.1 kg)</span></div>
+</div>
+<div class="note"><div class="note-label">BARBELL SQUAT CHART BEHAVIOUR</div>
+  Apr 20 shows e1RM=0 (bodyweight). Apr 27 shows 8.5 kg. The chart's first non-zero data point is Apr 27 — Apr 20 may render as a zero point or be filtered out. If the app shows Apr 20 as a data point at 0, it will look like a regression from a session with "no data."
+</div>
+</div>
+
+<!-- ════════════════════ SESSION 6 ════════════════════ -->
+<div class="section" id="s06">
+<div class="day-header">
+  <span class="day-date">Apr 28</span>
+  <span class="day-name">Monday — Hon's Routine</span>
+  <span class="day-session">1B035D49 · 20 min · avg HR 117 · <span class="pill pill-tired">Tired</span></span>
+</div>
+<div class="screen">
+  <div class="screen-title">History View — Session Detail</div>
+  <div class="exercise-block">
+    <div class="ex-name">Lat Pulldown <span style="color:var(--slate);font-size:0.7rem;font-family:monospace">SUPERSET E</span></div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">21.5 kg × 6 reps</span><span class="e1rm">≈26 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">21.5 kg × 6 reps</span><span class="e1rm">≈26 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">17.5 kg × 11 reps</span><span class="e1rm">≈23 1RM</span></div>
+    <div class="set-row skipped"><span class="set-num">Set 4</span><span class="set-data">NOT completed</span><span class="e1rm">—</span></div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Chest-Supported Row Machine</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">5 kg × 12 reps</span><span class="e1rm">≈7 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">2.5 kg × 12 reps</span><span class="e1rm">≈3 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">2.5 kg × 12 reps</span><span class="e1rm">≈3 1RM</span></div>
+  </div>
+  <div class="exercise-block" style="opacity:0.5">
+    <div class="ex-name">Dumbbell Curl — <span style="color:#e05252">0 sets completed</span></div>
+    <div class="set-row skipped"><span class="set-num">Sets 1-3</span><span class="set-data">All not completed (reps=0, isCompleted=false)</span></div>
+  </div>
+  <div class="exercise-block" style="opacity:0.5">
+    <div class="ex-name">Face Pull — <span style="color:#e05252">0 sets completed</span></div>
+    <div class="set-row skipped"><span class="set-num">Sets 1-3</span><span class="set-data">All not completed</span></div>
+  </div>
+  <div class="exercise-block" style="opacity:0.5">
+    <div class="ex-name">Lat Pullover Machine — <span style="color:#e05252">0 sets completed</span></div>
+    <div class="set-row skipped"><span class="set-num">Set 1</span><span class="set-data">20 reps @15 kg — isCompleted=false</span></div>
+  </div>
+</div>
+
+<div class="anomaly">
+  <div class="anomaly-label">ANOMALY — 3 EXERCISES WITH ZERO COMPLETED SETS</div>
+  Dumbbell Curl, Face Pull, and Lat Pullover Machine appear in this session but every set has isCompleted=false. The user started these exercises (they're in the log) but logged no completed sets.
+  <br><br>
+  <strong>UI impact:</strong> In History, these exercises show in the session detail with no set rows (or all sets greyed). Progress tab shows no data for these exercises from this session. Volume contribution = 0.
+  <br><br>
+  <strong>Likely cause:</strong> "Tired" feel rating aligns — user added exercises to their session template but stopped early.
+</div>
+
+<div class="note"><div class="note-label">LAT PULLDOWN SETS 1-2: dropWeight populated but isDropCompleted=false</div>
+  Sets 1 and 2 have dropWeight=13.75 / 17.5 and dropReps=6 but isDropCompleted=false. These drop values exist in the data but are not counted. The read-only History view (before this session's fix) would NOT show a drop row. After the fix, isDropCompleted=false means no "↳ Drop" row is shown. Correct behavior — drop wasn't completed.
+</div>
+
+<div class="screen">
+  <div class="screen-title">e1RM Computed This Session</div>
+  <div class="stat-row"><span>Lat Pulldown</span><span class="stat-val ok">25.8 kg <span class="pr-badge">PR #1</span></span></div>
+  <div class="stat-row"><span>Chest-Supported Row Machine</span><span class="stat-val ok">6.8 kg <span class="pr-badge">PR #1</span></span></div>
+  <div class="stat-row"><span>Dumbbell Curl, Face Pull, Lat Pullover</span><span class="stat-val warn">0 — no completed sets</span></div>
+</div>
+</div>
+
+<!-- ════════════════════ SESSION 7 ════════════════════ -->
+<div class="section" id="s07">
+<div class="day-header">
+  <span class="day-date">Apr 30</span>
+  <span class="day-name">Wednesday — Hon's Routine</span>
+  <span class="day-session">5D39491D · 12 min · avg HR 117 · <span class="pill pill-normal">Normal</span></span>
+</div>
+<div class="note"><div class="note-label">GAP</div>1-day gap (Apr 29 missed).</div>
+<div class="screen">
+  <div class="screen-title">History View — Session Detail</div>
+  <div class="exercise-block">
+    <div class="ex-name">Dumbbell Bench Press</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">12.5 kg × 12 reps</span><span class="e1rm">≈31 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">14 kg × 12 reps</span><span class="e1rm">≈35 1RM</span></div>
+    <div class="set-row skipped"><span class="set-num">Set 3</span><span class="set-data">14 kg × 10 reps — NOT completed</span><span class="e1rm">—</span></div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Machine Shoulder Press</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">10 kg × 12 reps</span><span class="e1rm">≈14 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">10 kg × 12 reps</span><span class="e1rm">≈14 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">10 kg × 12 reps</span><span class="e1rm">≈14 1RM</span></div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Cable Overhead Tricep Extension</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">10 kg × 12 reps</span><span class="e1rm">≈14 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">10 kg × 11 reps</span><span class="e1rm">≈13 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">10 kg × 7 reps</span><span class="e1rm">≈12 1RM</span></div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Chest Press Machine</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">15 kg × 0 reps — isCompleted=true, toFailure=true</span><span class="e1rm warn">≈0</span></div>
+  </div>
+</div>
+
+<div class="anomaly">
+  <div class="anomaly-label">ANOMALY — CHEST PRESS MACHINE: isCompleted=true BUT reps=0</div>
+  The set is marked completed and toFailure=true but has 0 reps. This can happen if the user tapped "complete" on a to-failure set without entering reps. The engine computes e1RM=0 (excluded). Volume=0. The set appears in history as "15 kg × 0 reps" which is confusing.
+</div>
+
+<div class="screen">
+  <div class="screen-title">e1RM Computed This Session</div>
+  <div class="stat-row"><span>Dumbbell Bench Press</span><span class="stat-val ok">34.9 kg <span class="pr-badge">NEW PR</span></span></div>
+  <div class="stat-row"><span>  Previous PR</span><span class="stat-val">31.1 kg (+3.8 kg)</span></div>
+  <div class="stat-row"><span>Machine Shoulder Press</span><span class="stat-val ok">13.5 kg <span class="pr-badge">PR #1</span></span></div>
+  <div class="stat-row"><span>Cable Overhead Tricep Extension</span><span class="stat-val ok">13.5 kg <span class="pr-badge">PR #1</span></span></div>
+  <div class="stat-row"><span>Chest Press Machine</span><span class="stat-val warn">0 — reps=0, excluded</span></div>
+</div>
+</div>
+
+
+<!-- ════════════════════ SESSION 8 ════════════════════ -->
+<div class="section" id="s08">
+<div class="day-header">
+  <span class="day-date">May 5</span>
+  <span class="day-name">Monday — Hon's Routine</span>
+  <span class="day-session">7CB05CCD · 14 min · avg HR 115 · <span class="pill pill-strong">Strong</span></span>
+</div>
+<div class="note"><div class="note-label">GAP</div>4-day gap (May 1–4 missed). Streak likely reset to 0 before this session.</div>
+<div class="screen">
+  <div class="screen-title">History View — Session Detail</div>
+  <div class="exercise-block">
+    <div class="ex-name">Lat Pulldown <span style="color:var(--slate);font-size:0.7rem;font-family:monospace">SUPERSET E</span></div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">21.5 kg × 10 reps</span><span class="e1rm">≈29 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">25 kg × 6 reps</span><span class="e1rm">≈30 1RM</span></div>
+    <div class="drop-row">↳ Drop: 21.5 kg × 4 reps</div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">25 kg × 4 reps</span><span class="e1rm">≈28 1RM</span></div>
+    <div class="drop-row">↳ Drop: 4 kg × 6 reps <span style="color:var(--amber);font-size:0.7rem">⚠ dropW very low (4 kg on 25 kg set)</span></div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Seated Row Machine (Neutral)</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">22.5 kg × 10 reps</span><span class="e1rm">≈30 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">30.5 kg × 8 reps</span><span class="e1rm">≈39 1RM</span></div>
+    <div class="drop-row">↳ Drop: 22.5 kg × 2 reps</div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">30 kg × 10 reps</span><span class="e1rm">≈40 1RM</span></div>
+  </div>
+</div>
+<div class="screen">
+  <div class="screen-title">e1RM Computed This Session</div>
+  <div class="stat-row"><span>Lat Pulldown</span><span class="stat-val ok">30.0 kg <span class="pr-badge">NEW PR</span></span></div>
+  <div class="stat-row"><span>  Previous PR</span><span class="stat-val">25.8 kg (+4.2 kg)</span></div>
+  <div class="stat-row"><span>Seated Row Machine (Neutral)</span><span class="stat-val ok">40.0 kg <span class="pr-badge">PR #1</span></span></div>
+</div>
+<div class="anomaly">
+  <div class="anomaly-label">ANOMALY — LAT PULLDOWN SET 3: dropWeight=4 on 25 kg main set</div>
+  dropWeight=4 on a 25 kg set (ratio 0.16×). Not caught by migration (4 &lt; 25×5=125). However the drop is so light it barely affects the session e1RM: dropE1RM=4×1.2=4.8 kg vs mainE1RM=28.33 kg. The dropAdjustedE1RM = max(28.33, 4.8) = 28.33 kg. No corruption. Likely a data entry error — possibly meant 24 kg (missing a digit).
+</div>
+</div>
+
+<!-- ════════════════════ SESSION 9 ════════════════════ -->
+<div class="section" id="s09">
+<div class="day-header">
+  <span class="day-date">May 6</span>
+  <span class="day-name">Tuesday — Hon's Routine</span>
+  <span class="day-session">9CCD1F77 · 13 min · avg HR 119 · <span class="pill pill-strong">Strong</span></span>
+</div>
+
+<div class="anomaly" style="border-color:var(--amber);background:rgba(212,148,58,0.08)">
+  <div class="anomaly-label" style="color:var(--amber)">★ CRITICAL DATA CORRUPTION — dropWeight=106 ON 12.5 kg SET</div>
+  Set ID: 701BCCE5-2C1B-485C-A340-97074CA030A7 · Exercise: Incline Dumbbell Press · Set 3
+  <br><br>
+  <strong>The bug:</strong> dropWeight=106 stored on a set where mainWeight=12.5 kg. Ratio = 106/12.5 = 8.48×, far above the 5× threshold.
+  <br><br>
+  dropEffectiveW = 106 × 2 × 0.92 = 195.04 kg<br>
+  dropE1RM (Epley, 2 reps) = 195.04 × (1 + 2/30) = 195.04 × 1.067 = <strong style="color:#e05252">208.1 kg</strong><br>
+  dropAdjustedE1RM = max(mainE1RM=29.1, dropE1RM=208.1) = <strong style="color:#e05252">208.1 kg → "Elite"</strong>
+  <br><br>
+  <strong>Post-migration values:</strong> dropWeight zeroed → dropE1RM=0 → sessionE1RM = max(30.67, 30.67, 29.13) = 30.67 kg → "Intermediate" ✓
+  <br><br>
+  <strong>Root cause:</strong> User likely meant to enter 10.6 kg but typed 106 (missing decimal point, or entering in a different unit field). The data entry UX for drop weight has no input validation against main set weight.
+</div>
+
+<div class="screen">
+  <div class="screen-title">History View — Session Detail</div>
+  <div class="exercise-block">
+    <div class="ex-name">Incline Dumbbell Press</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">12.5 kg × 10 reps</span><span class="e1rm">≈31 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">12.5 kg × 10 reps</span><span class="e1rm">≈31 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">12.5 kg × 8 reps</span><span class="e1rm warn">≈208 1RM (BUG) → ≈29 (fixed)</span></div>
+    <div class="drop-row">↳ Drop: 106 kg × 2 reps <span style="color:#e05252">← corrupted value</span></div>
+    <div class="set-row skipped"><span class="set-num">Set 4</span><span class="set-data">12.5 kg × 8 reps — NOT completed</span><span class="e1rm">—</span></div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Machine Shoulder Press</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">10 kg × 0 reps — toFailure=true</span><span class="e1rm warn">0</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">10 kg × 0 reps — dropW=0, dropReps=12</span><span class="e1rm warn">0</span></div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">10 kg × 0 reps</span><span class="e1rm warn">0</span></div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-title">Progress Tab — What App Shows (Before Migration)</div>
+  <div class="stat-row"><span>Incline DB Press — e1RM chart peak</span><span class="stat-val" style="color:#e05252">208 kg</span></div>
+  <div class="stat-row"><span>Classification badge</span><span class="stat-val" style="color:#e05252">ELITE</span></div>
+  <div class="stat-row"><span>Feedback phrase likely</span><span class="stat-val">"New personal record!" or similar</span></div>
+</div>
+<div class="screen">
+  <div class="screen-title">Progress Tab — After Migration (Correct)</div>
+  <div class="stat-row"><span>Incline DB Press — e1RM</span><span class="stat-val ok">30.7 kg</span></div>
+  <div class="stat-row"><span>Classification</span><span class="stat-val ok">Intermediate (BW-relative, needs BW set)</span></div>
+  <div class="stat-row"><span>Volume this session</span><span class="stat-val">350 per-hand kg·reps</span></div>
+</div>
+</div>
+
+<!-- ════════════════════ SESSION 10 ════════════════════ -->
+<div class="section" id="s10">
+<div class="day-header">
+  <span class="day-date">May 10</span>
+  <span class="day-name">Saturday — Hon's Routine</span>
+  <span class="day-session">997ADF1D · 22 min · avg HR 110 · <span class="pill pill-strong">Strong</span></span>
+</div>
+<div class="note"><div class="note-label">GAP</div>3-day gap (May 7–9 missed).</div>
+<div class="screen">
+  <div class="screen-title">History View — Session Detail</div>
+  <div class="exercise-block">
+    <div class="ex-name">Dumbbell Bench Press</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">12.5 kg × 10 reps</span><span class="e1rm">≈31 1RM</span></div>
+    <div class="set-row skipped"><span class="set-num">Set 2</span><span class="set-data">15 kg × 8 reps — NOT completed (isCompleted=false)</span><span class="e1rm">—</span></div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">17.5 kg × 8 reps</span><span class="e1rm">≈41 1RM</span></div>
+    <div class="drop-row">↳ Drop: 12.5 kg × 2 reps</div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Dumbbell Shoulder Press <span style="color:var(--slate);font-size:0.7rem;font-family:monospace">SUPERSET A</span></div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">7.5 kg × 10 reps</span><span class="e1rm">≈18 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">7.5 kg × 10 reps</span><span class="e1rm">≈18 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">7.5 kg × 10 reps</span><span class="e1rm">≈18 1RM</span></div>
+  </div>
+  <div class="exercise-block" style="opacity:0.5">
+    <div class="ex-name">Incline Chest Press Machine — <span style="color:#e05252">0 sets completed</span></div>
+    <div class="set-row skipped"><span class="set-num">Sets 1-2</span><span class="set-data">20 reps @20 kg — isCompleted=false</span></div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Machine Shoulder Press</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">20 kg × 10 reps — toFailure</span><span class="e1rm">≈27 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">20 kg × 10 reps — toFailure</span><span class="e1rm">≈27 1RM</span></div>
+  </div>
+</div>
+
+<div class="anomaly">
+  <div class="anomaly-label">ANOMALY — DB BENCH SET 2: isCompleted=false BUT isDropCompleted=true</div>
+  Set 2 (15 kg × 8 reps) has isCompleted=false but isDropCompleted=true. The main set was never completed but the drop set toggle was activated. Engine should exclude this entire set since isCompleted=false. No e1RM or volume contribution from this set. The history view before this session's fix would show nothing for this set, or possibly an orphaned drop row without a main set.
+</div>
+
+<div class="screen">
+  <div class="screen-title">e1RM Computed This Session</div>
+  <div class="stat-row"><span>Dumbbell Bench Press</span><span class="stat-val ok">40.8 kg <span class="pr-badge">NEW PR</span></span></div>
+  <div class="stat-row"><span>  Previous PR</span><span class="stat-val">34.9 kg (+5.9 kg)</span></div>
+  <div class="stat-row"><span>Dumbbell Shoulder Press</span><span class="stat-val">18.4 kg — tied PR</span></div>
+  <div class="stat-row"><span>Machine Shoulder Press</span><span class="stat-val ok">26.7 kg <span class="pr-badge">NEW PR</span></span></div>
+  <div class="stat-row"><span>  Previous PR</span><span class="stat-val">13.5 kg (+13.2 kg jump!)</span></div>
+</div>
+<div class="note"><div class="note-label">MACHINE SHOULDER PRESS PR JUMP</div>
+  13.2 kg jump from 13.5 → 26.7 kg looks extreme but is legitimate: the weight used jumped from 10 kg (3×12 reps in session 7) to 20 kg (2×10 reps here). The Mayhew formula at 12 reps gives a lower e1RM per kg than Epley at 10 reps, compounding the weight increase. No data corruption.
+</div>
+</div>
+
+
+<!-- ════════════════════ SESSION 11 ════════════════════ -->
+<div class="section" id="s11">
+<div class="day-header">
+  <span class="day-date">May 11</span>
+  <span class="day-name">Sunday — Hon's Routine</span>
+  <span class="day-session">06F3FDB6 · 22 min · avg HR 126 · <span class="pill pill-strong">Strong</span></span>
+</div>
+<div class="screen">
+  <div class="screen-title">History View — Session Detail</div>
+  <div class="exercise-block">
+    <div class="ex-name">Barbell Squat <span style="color:var(--slate);font-size:0.7rem;font-family:monospace">SUPERSET C</span></div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">5 kg × 10 reps</span><span class="e1rm">≈7 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">7.5 kg × 10 reps</span><span class="e1rm">≈10 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">7.5 kg × 10 reps</span><span class="e1rm">≈10 1RM</span></div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Romanian Deadlift <span style="color:var(--slate);font-size:0.7rem;font-family:monospace">SUPERSET C</span></div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">10 kg × 10 reps</span><span class="e1rm">≈13 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">20 kg × 10 reps</span><span class="e1rm">≈27 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">30 kg × 10 reps</span><span class="e1rm">≈40 1RM</span></div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Overhead Press</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">0 kg × 8 reps — drop 0 kg × 2</span><span class="e1rm warn">0</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">0 kg × 4 reps</span><span class="e1rm warn">0 main / ≈7 drop</span></div>
+    <div class="drop-row">↳ Drop: 6 kg × 6 reps</div>
+    <div class="set-row skipped"><span class="set-num">Set 3</span><span class="set-data">NOT completed</span><span class="e1rm">—</span></div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Machine Shoulder Press</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">15 kg × 0 reps — toFailure</span><span class="e1rm warn">0</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">15 kg × 0 reps — toFailure</span><span class="e1rm warn">0</span></div>
+  </div>
+</div>
+
+<div class="anomaly">
+  <div class="anomaly-label">ANOMALY — OVERHEAD PRESS: ALL SETS LOGGED AT 0 KG</div>
+  Both completed sets have weight=0. Only the drop set on set 2 has weight=6 kg. The engine picks up the drop e1RM: dropAdjustedE1RM = max(0, 6×1.2) = 7.2 kg. The Progress chart for Overhead Press shows 7.2 kg from this session, but the source is a drop set on a zero-weight main — not a meaningful e1RM.
+  <br><br>
+  This is a recurring pattern: Overhead Press logged at 0 kg in multiple sessions. The user may be logging a bodyweight overhead press (unlikely) or simply forgetting to enter the barbell weight.
+</div>
+
+<div class="screen">
+  <div class="screen-title">e1RM Computed This Session</div>
+  <div class="stat-row"><span>Barbell Squat</span><span class="stat-val ok">10.0 kg <span class="pr-badge">NEW PR</span></span></div>
+  <div class="stat-row"><span>  Previous PR</span><span class="stat-val">8.5 kg (+1.5 kg)</span></div>
+  <div class="stat-row"><span>Romanian Deadlift</span><span class="stat-val ok">40.0 kg <span class="pr-badge">PR #1</span></span></div>
+  <div class="stat-row"><span>Overhead Press</span><span class="stat-val warn">7.2 kg (from drop only — data quality issue)</span></div>
+  <div class="stat-row"><span>Machine Shoulder Press</span><span class="stat-val warn">0 — reps=0 on both sets</span></div>
+</div>
+</div>
+
+<!-- ════════════════════ SESSION 12 ════════════════════ -->
+<div class="section" id="s12">
+<div class="day-header">
+  <span class="day-date">May 12</span>
+  <span class="day-name">Monday — Hon's Routine</span>
+  <span class="day-session">7715606B · 19 min · avg HR 122 · <span class="pill pill-tired">Tired</span></span>
+</div>
+<div class="screen">
+  <div class="screen-title">History View — Session Detail</div>
+  <div class="exercise-block">
+    <div class="ex-name">Lat Pulldown <span style="color:var(--slate);font-size:0.7rem;font-family:monospace">SUPERSET E</span></div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">25 kg × 8 reps</span><span class="e1rm">≈32 1RM</span></div>
+    <div class="drop-row">↳ Drop: 25 kg × 2 reps <span style="color:var(--amber);font-size:0.7rem">⚠ same weight as main</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">21.5 kg × 8 reps</span><span class="e1rm">≈27 1RM</span></div>
+    <div class="drop-row">↳ Drop: 25 kg × 2 reps <span style="color:#e05252;font-size:0.7rem">⚠ dropW HEAVIER than mainW</span></div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">21.5 kg × 7 reps</span><span class="e1rm">≈27 1RM</span></div>
+    <div class="drop-row">↳ Drop: 25 kg × 3 reps <span style="color:#e05252;font-size:0.7rem">⚠ dropW HEAVIER than mainW</span></div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Seated Cable Row</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">13.7 kg × 10 reps</span><span class="e1rm">≈18 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">13.7 kg × 10 reps</span><span class="e1rm">≈18 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">13.7 kg × 10 reps</span><span class="e1rm">≈18 1RM</span></div>
+  </div>
+  <div class="exercise-block" style="opacity:0.5">
+    <div class="ex-name">Lat Pullover Machine — <span style="color:#e05252">0 completed</span></div>
+    <div class="set-row skipped"><span class="set-num">Set 1</span><span class="set-data">30 kg — isCompleted=false</span></div>
+  </div>
+</div>
+
+<div class="anomaly">
+  <div class="anomaly-label">ANOMALY — LAT PULLDOWN SETS 2-3: dropWeight HEAVIER than mainWeight</div>
+  Sets 2 and 3: mainWeight=21.5 kg, dropWeight=25 kg. A "drop set" is by definition a reduction in weight. The engine computes: dropE1RM = 25×(1+2/30)=26.67 and 25×(1+3/30)=27.5. Since dropE1RM &gt; mainE1RM for these sets, dropAdjustedE1RM = 27.5 kg. This slightly inflates the session e1RM but doesn't corrupt it (ratio 25/21.5 ≈ 1.16×, below 5× threshold).
+  <br><br>
+  The user may have mislogged these — intended to enter the cable stack weight before vs. after removal, or confused the order. No fix needed from the migration, but it's a data quality issue.
+</div>
+
+<div class="screen">
+  <div class="screen-title">e1RM Computed This Session</div>
+  <div class="stat-row"><span>Lat Pulldown</span><span class="stat-val ok">31.7 kg <span class="pr-badge">NEW PR</span></span></div>
+  <div class="stat-row"><span>  Previous PR</span><span class="stat-val">30.0 kg (+1.7 kg)</span></div>
+  <div class="stat-row"><span>Seated Cable Row</span><span class="stat-val ok">18.3 kg <span class="pr-badge">PR #1</span></span></div>
+</div>
+</div>
+
+<!-- ════════════════════ SESSION 13 ════════════════════ -->
+<div class="section" id="s13">
+<div class="day-header">
+  <span class="day-date">May 13</span>
+  <span class="day-name">Tuesday — Hon's Routine</span>
+  <span class="day-session">74276758 · 25 min · avg HR 119 · <span class="pill pill-strong">Strong</span></span>
+</div>
+<div class="screen">
+  <div class="screen-title">History View — Session Detail</div>
+  <div class="exercise-block">
+    <div class="ex-name">Incline Dumbbell Press</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">15 kg × 10 reps</span><span class="e1rm">≈37 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">15 kg × 10 reps</span><span class="e1rm">≈37 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">15 kg × 6 reps</span><span class="e1rm">≈33 1RM</span></div>
+    <div class="drop-row">↳ Drop: 15 kg × 4 reps</div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Low Row Machine</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">20 kg × 10 reps</span><span class="e1rm">≈27 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">25 kg × 9 reps</span><span class="e1rm">≈33 1RM</span></div>
+    <div class="drop-row">↳ Drop: 25 kg × 1 reps</div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">25 kg × 7 reps</span><span class="e1rm">≈31 1RM</span></div>
+    <div class="drop-row">↳ Drop: 25 kg × 3 reps</div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Cable Overhead Tricep Extension</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">10 kg × 10 reps</span><span class="e1rm">≈13 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">12.5 kg × 8 reps</span><span class="e1rm">≈16 1RM</span></div>
+    <div class="drop-row">↳ Drop: 12.5 kg × 2 reps</div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">12.5 kg × 2 reps</span><span class="e1rm">≈13 1RM</span></div>
+  </div>
+</div>
+<div class="screen">
+  <div class="screen-title">e1RM Computed This Session</div>
+  <div class="stat-row"><span>Incline Dumbbell Press</span><span class="stat-val ok">36.8 kg <span class="pr-badge">NEW PR</span> (+6.1 kg from 30.7)</span></div>
+  <div class="stat-row"><span>Low Row Machine</span><span class="stat-val ok">32.5 kg <span class="pr-badge">NEW PR</span> (+19.2 kg from 13.3)</span></div>
+  <div class="stat-row"><span>Cable Overhead Tricep Extension</span><span class="stat-val ok">15.8 kg <span class="pr-badge">NEW PR</span> (+2.3 kg from 13.5)</span></div>
+</div>
+<div class="screen">
+  <div class="screen-title">Incline DB Press Chart After This Session</div>
+  <div class="chart-mock">
+    <div class="chart-title">e1RM · 3 sessions</div>
+    <div class="chart-bar"><span class="bar-label">May 7</span><div class="bar-track"><div class="bar-fill" style="width:83%;background:var(--sage)">30.7</div></div><span class="bar-val">30.7 kg</span></div>
+    <div class="chart-bar"><span class="bar-label">May 13</span><div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--amber)">36.8</div></div><span class="bar-val">36.8 kg ★</span></div>
+    <div style="margin-top:0.75rem;color:var(--sub);font-size:0.7rem">Volume chart: 350 → 390</div>
+  </div>
+  <div class="note" style="margin-top:0.5rem"><div class="note-label">BEFORE MIGRATION</div>The e1RM chart would show: May 7 = 208 kg, May 13 = 36.8 kg — a massive drop that would look like a catastrophic regression. After migration: May 7 = 30.7 kg, May 13 = 36.8 kg — a clean PR.</div>
+</div>
+</div>
+
+
+<!-- ════════════════════ SESSION 14 ════════════════════ -->
+<div class="section" id="s14">
+<div class="day-header">
+  <span class="day-date">May 17</span>
+  <span class="day-name">Saturday — Chest &amp; Shoulders Workout</span>
+  <span class="day-session">EA667864 · 16 min · avg HR 111 · <span class="pill pill-normal">Normal</span></span>
+</div>
+<div class="note"><div class="note-label">GAP</div>3-day gap (May 14–16 missed). First session named differently — "Chest &amp; Shoulders Workout" not "Hon's Routine".</div>
+<div class="screen">
+  <div class="screen-title">History View — Session Detail</div>
+  <div class="exercise-block">
+    <div class="ex-name">Dumbbell Bench Press</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">15 kg × 10 reps</span><span class="e1rm">≈37 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">17.5 kg × 0 reps</span><span class="e1rm warn">main=0, drop≈37</span></div>
+    <div class="drop-row">↳ Drop: 15 kg × 10 reps</div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">17.5 kg × 0 reps</span><span class="e1rm warn">main=0, drop≈37</span></div>
+    <div class="drop-row">↳ Drop: 15 kg × 10 reps</div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Overhead Press</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">0 kg × 10 reps — isCompleted=true</span><span class="e1rm warn">0</span></div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Chest Press Machine</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">22.5 kg × 20 reps — toFailure</span><span class="e1rm warn">0 (>20 rule)</span></div>
+  </div>
+</div>
+
+<div class="anomaly">
+  <div class="anomaly-label">ANOMALY — DB BENCH SETS 2-3: mainReps=0 but dropReps=10</div>
+  The user loaded to 17.5 kg but got 0 reps on the main set, then immediately dropped to 15 kg for 10 reps. This is legal "extended drop set" usage. The app stores mainReps=0, dropReps=10. The engine: mainE1RM=0 (reps=0), dropE1RM=27.6×1.333=36.8. dropAdjustedE1RM=max(0,36.8)=36.8 kg. Correct behavior.
+  <br><br>
+  Volume impact: only mainReps contribute to volume. Sets 2-3 contribute 0 to volume. Session volume = 15×10 = 150 kg only. This is lower than previous sessions (350, 390 for Incline DB Press) but the exercise is different (DB Bench vs Incline DB Press).
+</div>
+
+<div class="screen">
+  <div class="screen-title">e1RM Computed This Session</div>
+  <div class="stat-row"><span>Dumbbell Bench Press</span><span class="stat-val">36.8 kg — no new PR (prev 40.8 kg)</span></div>
+  <div class="stat-row"><span>  Regression from PR</span><span class="stat-val warn">−4.0 kg vs Apr 30 PR — chart will show dip</span></div>
+  <div class="stat-row"><span>Overhead Press</span><span class="stat-val warn">0 (weight=0 again)</span></div>
+  <div class="stat-row"><span>Chest Press Machine</span><span class="stat-val warn">0 (>20 reps, excluded)</span></div>
+</div>
+</div>
+
+<!-- ════════════════════ SESSION 15 ════════════════════ -->
+<div class="section" id="s15">
+<div class="day-header">
+  <span class="day-date">May 18</span>
+  <span class="day-name">Sunday — Hon's Routine</span>
+  <span class="day-session">B195349D · 17 min · avg HR 106 · <span class="pill pill-strong">Strong</span></span>
+</div>
+<div class="screen">
+  <div class="screen-title">History View — Session Detail</div>
+  <div class="exercise-block">
+    <div class="ex-name">Smith Machine Squat</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">20 kg × 10 reps</span><span class="e1rm">≈27 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">20 kg × 10 reps</span><span class="e1rm">≈27 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">20 kg × 10 reps</span><span class="e1rm">≈27 1RM</span></div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Smith Machine Romanian Deadlift</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">37.5 kg × 10 reps</span><span class="e1rm">≈50 1RM</span></div>
+    <div class="drop-row">↳ Drop: 0 kg × 0 reps <span style="color:#e05252;font-size:0.7rem">⚠ zero drop (accidental toggle)</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">40 kg × 10 reps</span><span class="e1rm">≈53 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">40 kg × 10 reps</span><span class="e1rm">≈53 1RM</span></div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Leg Press <span style="color:var(--slate);font-size:0.7rem;font-family:monospace">SUPERSET D</span></div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">32.5 kg × 10 reps</span><span class="e1rm">≈43 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">37.5 kg × 10 reps</span><span class="e1rm">≈50 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">37.5 kg × 0 reps — isCompleted=true</span><span class="e1rm warn">0</span></div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Machine Shoulder Press</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">30 kg × 10 reps</span><span class="e1rm">≈40 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">30 kg × 8 reps</span><span class="e1rm">≈38 1RM</span></div>
+    <div class="drop-row">↳ Drop: 22.5 kg × 2 reps</div>
+  </div>
+</div>
+
+<div class="anomaly">
+  <div class="anomaly-label">ANOMALY — SMITH RDL SET 1: isDropCompleted=true, dropW=0, dropReps=0</div>
+  The drop set toggle was activated but both dropWeight and dropReps are 0. dropE1RM = 0. dropAdjustedE1RM = max(mainE1RM=50.0, 0) = 50.0 kg. No corruption — the zero drop is harmless because max() picks the main. The engine handles this correctly. However the history view now shows "↳ Drop: 0 kg × 0 reps" which is visually confusing.
+</div>
+
+<div class="screen">
+  <div class="screen-title">e1RM Computed This Session</div>
+  <div class="stat-row"><span>Smith Machine Squat</span><span class="stat-val ok">26.7 kg <span class="pr-badge">PR #1</span></span></div>
+  <div class="stat-row"><span>Smith Machine Romanian Deadlift</span><span class="stat-val ok">53.3 kg <span class="pr-badge">PR #1</span></span></div>
+  <div class="stat-row"><span>Leg Press</span><span class="stat-val ok">50.0 kg <span class="pr-badge">NEW PR</span> (+9.4 kg from 40.6)</span></div>
+  <div class="stat-row"><span>Machine Shoulder Press</span><span class="stat-val ok">40.0 kg <span class="pr-badge">NEW PR</span> (+13.3 kg from 26.7)</span></div>
+</div>
+</div>
+
+<!-- ════════════════════ SESSION 16 ════════════════════ -->
+<div class="section" id="s16">
+<div class="day-header">
+  <span class="day-date">May 19</span>
+  <span class="day-name">Monday — Hon's Routine</span>
+  <span class="day-session">6AAA2CBE · 16 min · avg HR 119 · <span class="pill pill-strong">Strong</span></span>
+</div>
+<div class="screen">
+  <div class="screen-title">History View — Session Detail</div>
+  <div class="exercise-block">
+    <div class="ex-name">Lat Pulldown <span style="color:var(--slate);font-size:0.7rem;font-family:monospace">SUPERSET E</span></div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">25 kg × 10 reps</span><span class="e1rm">≈33 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">21.5 kg × 10 reps</span><span class="e1rm">≈29 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">21.5 kg × 9 reps</span><span class="e1rm">≈28 1RM</span></div>
+    <div class="drop-row">↳ Drop: 17.5 kg × 1 reps</div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Seated Cable Row <span style="color:var(--slate);font-size:0.7rem;font-family:monospace">SUPERSET E</span></div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">16.2 kg × 10 reps</span><span class="e1rm">≈22 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">17.5 kg × 4 reps</span><span class="e1rm">≈20 1RM</span></div>
+    <div class="drop-row">↳ Drop: 13.75 kg × 6 reps</div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">17.5 kg × 4 reps</span><span class="e1rm">≈20 1RM</span></div>
+    <div class="drop-row">↳ Drop: 13.75 kg × 6 reps</div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Lat Pullover Machine</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">22.5 kg × 20 reps — toFailure</span><span class="e1rm">≈34 1RM</span></div>
+  </div>
+</div>
+<div class="screen">
+  <div class="screen-title">e1RM Computed This Session</div>
+  <div class="stat-row"><span>Lat Pulldown</span><span class="stat-val ok">33.3 kg <span class="pr-badge">NEW PR</span> (+1.7 kg from 31.7)</span></div>
+  <div class="stat-row"><span>Seated Cable Row</span><span class="stat-val ok">21.6 kg <span class="pr-badge">NEW PR</span> (+3.3 kg from 18.3)</span></div>
+  <div class="stat-row"><span>Lat Pullover Machine</span><span class="stat-val ok">34.0 kg <span class="pr-badge">PR #1</span> (Mayhew 20 reps)</span></div>
+</div>
+<div class="note"><div class="note-label">LAT PULLOVER MACHINE — 20 REPS</div>
+  Exactly 20 reps: uses Mayhew formula. e1RM = (100×22.5)/(52.2+41.9×e^(-1.1)) = 2250/66.15 = 34.0 kg. If the engine applies the >20 exclusion as &gt;20 (strictly greater), 20 reps is included. If it's ≥20, this gets excluded. Verify edge case behavior.
+</div>
+</div>
+
+<!-- ════════════════════ SESSION 17a ════════════════════ -->
+<div class="section" id="s17a">
+<div class="day-header">
+  <span class="day-date">May 20</span>
+  <span class="day-name">Tuesday — Hon's Routine</span>
+  <span class="day-session">F5FD2D50 · 12 min · avg HR 119 · <span class="pill pill-strong">Strong</span></span>
+</div>
+<div class="screen">
+  <div class="screen-title">History View — Session Detail</div>
+  <div class="exercise-block">
+    <div class="ex-name">Incline Dumbbell Press</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">15 kg × 10 reps</span><span class="e1rm">≈37 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">15 kg × 10 reps</span><span class="e1rm">≈37 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 3</span><span class="set-data">15 kg × 10 reps</span><span class="e1rm">≈37 1RM</span></div>
+  </div>
+</div>
+<div class="screen">
+  <div class="screen-title">e1RM Computed This Session</div>
+  <div class="stat-row"><span>Incline Dumbbell Press</span><span class="stat-val">36.8 kg — tied with May 13 PR, no new PR</span></div>
+  <div class="stat-row"><span>Volume</span><span class="stat-val ok">450 per-hand kg·reps (best session — 3 clean sets)</span></div>
+</div>
+<div class="screen">
+  <div class="screen-title">Incline DB Press Chart — All 3 Sessions</div>
+  <div class="chart-mock">
+    <div class="chart-title">e1RM chart (post-migration)</div>
+    <div class="chart-bar"><span class="bar-label">May 7</span><div class="bar-track"><div class="bar-fill" style="width:83%;background:var(--slate)">30.7</div></div><span class="bar-val">30.7 kg</span></div>
+    <div class="chart-bar"><span class="bar-label">May 13</span><div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--amber)">36.8</div></div><span class="bar-val">36.8 kg ★ PR</span></div>
+    <div class="chart-bar"><span class="bar-label">May 20</span><div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--sage)">36.8</div></div><span class="bar-val">36.8 kg</span></div>
+    <div style="margin-top:0.75rem;color:var(--sub);font-size:0.7rem">Volume chart (per-hand kg·reps)</div>
+    <div class="chart-bar"><span class="bar-label">May 7</span><div class="bar-track"><div class="bar-fill" style="width:78%;background:var(--slate)">350</div></div><span class="bar-val">350</span></div>
+    <div class="chart-bar"><span class="bar-label">May 13</span><div class="bar-track"><div class="bar-fill" style="width:87%;background:var(--amber)">390</div></div><span class="bar-val">390</span></div>
+    <div class="chart-bar"><span class="bar-label">May 20</span><div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--sage)">450</div></div><span class="bar-val">450 ★</span></div>
+  </div>
+  <div class="note" style="margin-top:0.5rem"><div class="note-label">THESE ARE THE 450/390/350 VALUES FROM THE ORIGINAL BUG REPORT</div>The volume chart correctly shows 450 → 390 → 350 going backwards, or 350 → 390 → 450 going chronologically. This is the correct volume chart. The "450 kg" the user originally flagged as suspicious is actually right — it's total per-hand tonnage (15 kg × 10 reps × 3 sets).</div>
+</div>
+</div>
+
+<!-- ════════════════════ SESSION 18 ════════════════════ -->
+<div class="section" id="s17b">
+<div class="day-header">
+  <span class="day-date">May 20</span>
+  <span class="day-name">Tuesday — Back Workout (same day, 2nd session)</span>
+  <span class="day-session">A57BD140 · 1.5 min · avg HR 120 · <span class="pill pill-normal">Normal</span></span>
+</div>
+<div class="note"><div class="note-label">SAME-DAY SECOND SESSION</div>A57BD140 starts 15 min after F5FD2D50 ends (801016098 vs 801015953 + ~145s). Duration is ~87 seconds. This is very short — possibly a warm-up or test session.</div>
+<div class="screen">
+  <div class="screen-title">History View — Session Detail</div>
+  <div class="exercise-block">
+    <div class="ex-name">Assisted Pull-Up Machine</div>
+    <div class="set-row"><span class="set-num">Set 1</span><span class="set-data">40 kg × 10 reps</span><span class="e1rm">≈53 1RM</span></div>
+    <div class="set-row"><span class="set-num">Set 2</span><span class="set-data">40 kg × 10 reps</span><span class="e1rm">≈53 1RM</span></div>
+  </div>
+</div>
+
+<div class="anomaly">
+  <div class="anomaly-label">SEMANTIC ISSUE — ASSISTED PULL-UP MACHINE: e1RM IS INVERTED</div>
+  The weight (40 kg) is the <em>assistance/counterbalance</em> weight, not the resistance. Higher assistance = easier. The app tracks e1RM = 53.3 kg as if more weight = stronger, but in reality more weight = more help. A classification of "Advanced" based on 40 kg assisted pull-ups would be meaningless or misleading.
+  <br><br>
+  This is an exercise-type metadata problem, not a data corruption. The app would need to know this exercise type is "assisted" and display inverted metrics or use a different strength standard.
+</div>
+
+<div class="screen">
+  <div class="screen-title">e1RM Computed This Session</div>
+  <div class="stat-row"><span>Assisted Pull-Up Machine</span><span class="stat-val ok">53.3 kg <span class="pr-badge">PR #1</span> (inverted metric)</span></div>
+</div>
+</div>
+
+
+<!-- ════════════════════ CUMULATIVE ANALYSIS ════════════════════ -->
+<div class="section" id="cumulative">
+<h2 style="margin-bottom:1.5rem;color:var(--amber)">Cumulative State — Final (After All 18 Sessions)</h2>
+
+<h3 style="color:var(--sage);margin-bottom:1rem">PR Registry — All Exercises</h3>
+<div style="overflow-x:auto;margin-bottom:2rem">
+<table>
+  <thead><tr>
+    <th>Exercise</th><th>Type</th><th>Sessions</th><th>Final e1RM</th><th>First</th><th>Trend</th>
+  </tr></thead>
+  <tbody>
+    <tr><td>Dumbbell Bench Press</td><td>Dumbbell</td><td>5</td><td class="pass">40.8 kg</td><td>24.9 kg</td><td class="pass">+63% ↑</td></tr>
+    <tr><td>Incline Dumbbell Press</td><td>Dumbbell</td><td>3</td><td class="pass">36.8 kg</td><td>30.7 kg (post-fix)</td><td class="pass">+20% ↑</td></tr>
+    <tr><td>Lat Pulldown</td><td>Cable</td><td>4</td><td class="pass">33.3 kg</td><td>25.8 kg</td><td class="pass">+29% ↑</td></tr>
+    <tr><td>Machine Shoulder Press</td><td>Machine</td><td>3 useful</td><td class="pass">40.0 kg</td><td>13.5 kg</td><td class="warn">+196% (weight jump, not fitness gain)</td></tr>
+    <tr><td>Leg Press</td><td>Machine</td><td>3</td><td class="pass">50.0 kg</td><td>30.5 kg</td><td class="pass">+64% ↑</td></tr>
+    <tr><td>Low Row Machine</td><td>Machine</td><td>2</td><td class="pass">32.5 kg</td><td>13.3 kg</td><td class="warn">+144% (started light, Apr 22)</td></tr>
+    <tr><td>Dumbbell Shoulder Press</td><td>Dumbbell</td><td>3</td><td>18.4 kg</td><td>18.4 kg</td><td class="warn">flat — same weight/reps every session</td></tr>
+    <tr><td>Smith Machine RDL</td><td>Machine</td><td>1</td><td class="pass">53.3 kg</td><td>first</td><td>—</td></tr>
+    <tr><td>Seated Cable Row</td><td>Cable</td><td>2</td><td class="pass">21.6 kg</td><td>18.3 kg</td><td class="pass">+18% ↑</td></tr>
+    <tr><td>Seated Row Machine (Neutral)</td><td>Machine</td><td>1</td><td class="pass">40.0 kg</td><td>first</td><td>—</td></tr>
+    <tr><td>Romanian Deadlift</td><td>Barbell</td><td>1</td><td class="pass">40.0 kg</td><td>first</td><td>—</td></tr>
+    <tr><td>Barbell Squat</td><td>Barbell</td><td>3</td><td>10.0 kg</td><td>0 (BW)</td><td class="warn">very low — early stage</td></tr>
+    <tr><td>Overhead Tricep Extension</td><td>Dumbbell</td><td>1</td><td>24.9 kg</td><td>first</td><td>—</td></tr>
+    <tr><td>Cable Overhead Tricep Ext.</td><td>Cable</td><td>2</td><td class="pass">15.8 kg</td><td>13.5 kg</td><td class="pass">+17% ↑</td></tr>
+    <tr><td>Lat Pullover Machine</td><td>Machine</td><td>1</td><td>34.0 kg</td><td>first</td><td>—</td></tr>
+    <tr><td>Standing Calf Raise</td><td>Machine</td><td>1</td><td>10.2 kg</td><td>first</td><td>—</td></tr>
+    <tr><td>Chest-Supported Row Machine</td><td>Machine</td><td>1</td><td>6.8 kg</td><td>first</td><td>—</td></tr>
+    <tr><td>Smith Machine Squat</td><td>Machine</td><td>1</td><td>26.7 kg</td><td>first</td><td>—</td></tr>
+    <tr><td>Incline Barbell Press</td><td>Barbell</td><td>1</td><td>10.0 kg</td><td>first</td><td>—</td></tr>
+    <tr><td>Overhead Press</td><td>Barbell</td><td>2</td><td class="fail">7.2 kg</td><td>—</td><td class="fail">weight=0 in all sessions — not tracked</td></tr>
+    <tr><td>Assisted Pull-Up Machine</td><td>Machine</td><td>1</td><td class="warn">53.3 kg</td><td>first</td><td class="warn">inverted metric (assistance weight)</td></tr>
+    <tr><td>Chest Press Machine</td><td>Machine</td><td>2</td><td class="fail">0</td><td>—</td><td class="fail">reps=0 or >20 in all sessions — never tracked</td></tr>
+    <tr><td>Incline Chest Press Machine</td><td>Machine</td><td>1</td><td class="fail">0</td><td>—</td><td class="fail">isCompleted=false in all sets</td></tr>
+    <tr><td>Dumbbell Curl</td><td>Dumbbell</td><td>1</td><td class="fail">0</td><td>—</td><td class="fail">all sets skipped</td></tr>
+    <tr><td>Face Pull</td><td>Cable</td><td>1</td><td class="fail">0</td><td>—</td><td class="fail">all sets skipped</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3 style="color:var(--sage);margin-bottom:1rem">Session Calendar — Gaps and Streaks</h3>
+<div class="chart-mock">
+  <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;font-family:monospace;font-size:0.65rem;text-align:center">
+    <div style="color:var(--sub)">Mo</div><div style="color:var(--sub)">Tu</div><div style="color:var(--sub)">We</div><div style="color:var(--sub)">Th</div><div style="color:var(--sub)">Fr</div><div style="color:var(--sub)">Sa</div><div style="color:var(--sub)">Su</div>
+    <div></div><div></div><div></div><div></div><div></div><div style="background:var(--amber);color:#000;border-radius:3px;padding:2px">19</div><div style="background:var(--amber);color:#000;border-radius:3px;padding:2px">20</div>
+    <div></div><div style="background:var(--amber);color:#000;border-radius:3px;padding:2px">22</div><div></div><div></div><div></div><div style="background:var(--amber);color:#000;border-radius:3px;padding:2px">26</div><div style="background:var(--amber);color:#000;border-radius:3px;padding:2px">27</div>
+    <div style="background:var(--amber);color:#000;border-radius:3px;padding:2px">28</div><div></div><div style="background:var(--amber);color:#000;border-radius:3px;padding:2px">30</div><div></div><div></div><div></div><div></div>
+    <div style="background:var(--amber);color:#000;border-radius:3px;padding:2px">5</div><div style="background:var(--amber);color:#000;border-radius:3px;padding:2px">6</div><div></div><div></div><div></div><div style="background:var(--amber);color:#000;border-radius:3px;padding:2px">10</div><div style="background:var(--amber);color:#000;border-radius:3px;padding:2px">11</div>
+    <div style="background:var(--amber);color:#000;border-radius:3px;padding:2px">12</div><div style="background:var(--amber);color:#000;border-radius:3px;padding:2px">13</div><div></div><div></div><div></div><div style="background:var(--amber);color:#000;border-radius:3px;padding:2px">17</div><div style="background:var(--amber);color:#000;border-radius:3px;padding:2px">18</div>
+    <div style="background:var(--amber);color:#000;border-radius:3px;padding:2px">19</div><div style="background:var(--sage);color:#000;border-radius:3px;padding:2px">20×2</div>
+  </div>
+  <div style="margin-top:0.75rem;font-size:0.7rem;color:var(--sub)">Apr 19–May 20 · amber=session · sage=two sessions same day · empty=rest</div>
+</div>
+<div style="margin-top:0.75rem">
+  <div class="stat-row"><span>Longest streak</span><span class="stat-val">3 consecutive days (Apr 26-28, May 10-13, May 17-20)</span></div>
+  <div class="stat-row"><span>Longest gap</span><span class="stat-val">4 days (May 1–4)</span></div>
+  <div class="stat-row"><span>Average frequency</span><span class="stat-val">0.54 sessions/day over 33 days</span></div>
+</div>
+
+<h3 style="color:var(--sage);margin:1.5rem 0 1rem">What the Home Screen Shows on Each Key Date</h3>
+<div class="screen">
+  <div class="screen-title">Home Screen State — Chronological Snapshots</div>
+  <div class="stat-row"><span>Apr 19 (after session 1)</span><span class="stat-val">Streak: 1 · Last session: Weekly Routine · 4 new PRs</span></div>
+  <div class="stat-row"><span>Apr 22 (after 3 sessions)</span><span class="stat-val">Streak: broken (gap Apr 21) · Last: Weekly Routine · 9 exercises tracked</span></div>
+  <div class="stat-row"><span>May 6 (after session 9)</span><span class="stat-val warn">Incline DB Press "ELITE" shown · streak: 2 (May 5-6) · BUG ACTIVE</span></div>
+  <div class="stat-row"><span>May 13 (after session 13)</span><span class="stat-val">3 new PRs · streak: 2 (May 12-13) · Incline DB Press PR trending</span></div>
+  <div class="stat-row"><span>May 20 (after session 17-18)</span><span class="stat-val ok">Streak: 4 (May 17-20) · post-migration: all values correct</span></div>
+</div>
+</div>
+
+<!-- ════════════════════ ANOMALIES SUMMARY ════════════════════ -->
+<div class="section" id="anomalies">
+<h2 style="margin-bottom:1.5rem;color:var(--amber)">All Anomalies — Ranked by Impact</h2>
+
+<div class="anomaly">
+  <div class="anomaly-label">SEVERITY 1 — CRITICAL DATA CORRUPTION (session 9CCD1F77, set 701BCCE5)</div>
+  dropWeight=106 on 12.5 kg Incline DB Press set. Inflates e1RM to 208 kg → "Elite" classification. Root cause: missing decimal in data entry. Fix: SeedStore migration zeros dropWeight when ratio > 5×. ✓ Implemented.
+</div>
+
+<div class="anomaly" style="border-color:var(--amber);background:rgba(212,148,58,0.06)">
+  <div class="anomaly-label" style="color:var(--amber)">SEVERITY 2 — EXERCISES NEVER TRACKED (Overhead Press, Chest Press Machine)</div>
+  Overhead Press logged in 2 sessions with weight=0 in all main sets. e1RM=0 across the board. Chest Press Machine logged in 2 sessions — once with reps=0, once with 20 reps (>20 exclusion). Neither exercise appears in Progress charts despite being trained. No data corruption — just no usable data entered. UX fix: warn user when a "to failure" set is logged with 0 reps.
+</div>
+
+<div class="anomaly" style="border-color:var(--amber);background:rgba(212,148,58,0.06)">
+  <div class="anomaly-label" style="color:var(--amber)">SEVERITY 3 — isCompleted=false + isDropCompleted=true (session 997ADF1D, set 2)</div>
+  Logically inconsistent state: main set not completed but drop set marked completed. Engine behavior: entire set excluded because isCompleted=false. Correct exclusion, but the edit view needs to handle display of this orphaned drop state gracefully.
+</div>
+
+<div class="anomaly" style="border-color:var(--amber);background:rgba(212,148,58,0.06)">
+  <div class="anomaly-label" style="color:var(--amber)">SEVERITY 3 — DROP WEIGHT &gt; MAIN WEIGHT (session 7715606B, sets 2-3)</div>
+  Lat Pulldown "drop" sets have dropW=25 on mainW=21.5. Semantically a drop set is lighter, not heavier. Engine handles correctly via max() but slightly inflates e1RM. Not flagged by migration. User likely confused cable stack order.
+</div>
+
+<div class="anomaly" style="border-color:var(--amber);background:rgba(212,148,58,0.06)">
+  <div class="anomaly-label" style="color:var(--amber)">SEVERITY 4 — ZERO DROP SET (session B195349D, Smith RDL set 1)</div>
+  isDropCompleted=true but dropW=0, dropReps=0. Accidental toggle. Engine result: dropE1RM=0, main wins in max(). Harmless numerically. Visual impact: history view shows "↳ Drop: 0 kg × 0 reps" — confusing.
+</div>
+
+<div class="note">
+  <div class="note-label">SEVERITY 5 — UNUSUAL DROP (session 7CB05CCD, Lat Pulldown set 3)</div>
+  dropWeight=4 on 25 kg main. Likely 24 kg with missing digit. Not > 5× threshold (4 &lt; 125). Engine result: dropE1RM=4.8 vs mainE1RM=28.33. max() picks main. No corruption. But the drop row shows "4 kg × 6 reps" in history, which looks wrong.
+</div>
+
+<div class="note">
+  <div class="note-label">SEVERITY 5 — ASSISTED PULL-UP MACHINE INVERTED METRIC</div>
+  40 kg assistance = easier exercise. App tracks e1RM=53.3 kg as if higher = stronger, but for assisted exercises, the metric is inverted. Requires exercise-level "is assisted" metadata flag and inverted display logic.
+</div>
+
+<div class="note">
+  <div class="note-label">SEVERITY 5 — 3 EXERCISES WITH ZERO COMPLETED SETS (session 1B035D49)</div>
+  Dumbbell Curl, Face Pull, Lat Pullover Machine appear in this session with all isCompleted=false. History shows these exercises in the session with no usable data. Not a bug — user stopped early ("Tired" session). But the exercises clutter the session detail view.
+</div>
+
+<p style="color:var(--sub);font-family:monospace;font-size:0.75rem;margin-top:2rem">Analysis complete. 18 sessions · Apr 19–May 20, 2026 · 25 exercises across routine types.</p>
+</div>
+
+<script>
+document.querySelectorAll('.section').forEach(s => {
+  s.addEventListener('click', function(e) {
+    if(e.target.closest('a,button,input')) return;
+  });
+});
+</script>
+</body></html>

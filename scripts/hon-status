@@ -1,0 +1,49 @@
+#!/bin/bash
+# hon-status — show backlog and UAT inbox summary in terminal
+
+PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+BACKLOG="$PROJECT_ROOT/docs/BACKLOG.md"
+UAT="$PROJECT_ROOT/docs/UAT_INBOX.md"
+
+# Colors
+BOLD='\033[1m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+RED='\033[0;31m'
+RESET='\033[0m'
+
+echo ""
+echo -e "${BOLD}=== H.O.N. STATUS ===${RESET}"
+echo -e "$(date '+%Y-%m-%d %H:%M')"
+echo ""
+
+# Backlog counts
+DONE=$(grep -c "^- \[x\]" "$BACKLOG" 2>/dev/null; true)
+PENDING=$(grep -c "^- \[ \]" "$BACKLOG" 2>/dev/null; true)
+DONE=${DONE:-0}
+PENDING=${PENDING:-0}
+TOTAL=$((DONE + PENDING))
+
+echo -e "${BOLD}BACKLOG${RESET}  ${GREEN}${DONE} done${RESET} / ${YELLOW}${PENDING} pending${RESET} / ${TOTAL} total"
+echo ""
+
+# Open items grouped by priority
+echo -e "${BOLD}P1 — High Value:${RESET}"
+grep "^- \[ \] \*\*S3\|^- \[ \] \*\*S4\|^- \[ \] \*\*V7" "$BACKLOG" | sed 's/^- \[ \] /  · /' | sed 's/\*\*//g'
+echo ""
+
+echo -e "${BOLD}P2 — Polish:${RESET}"
+grep "^- \[ \] \*\*18\|^- \[ \] \*\*19\|^- \[ \] \*\*22\|^- \[ \] \*\*V4\|^- \[ \] \*\*21\.5" "$BACKLOG" | sed 's/^- \[ \] /  · /' | sed 's/\*\*//g'
+echo ""
+
+# UAT Inbox
+UAT_ITEMS=$(grep -c "^- \[ \]" "$UAT" 2>/dev/null; true)
+UAT_ITEMS=${UAT_ITEMS:-0}
+echo -e "${BOLD}UAT INBOX${RESET}  ${YELLOW}${UAT_ITEMS} unreviewed${RESET}"
+if [ "$UAT_ITEMS" -gt 0 ]; then
+    grep "^- \[ \]" "$UAT" | head -5 | sed 's/^- \[ \] /  · /'
+fi
+
+echo ""
+echo -e "Run ${BOLD}hon-dashboard-gen${RESET} to refresh the HTML dashboard."
+echo ""

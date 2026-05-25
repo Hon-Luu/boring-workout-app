@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boring Workout — Progress Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0a12;
+    --card: #141420;
+    --card2: #1c1c2e;
+    --border: #2a2a3e;
+    --blue: #0A84FF;
+    --green: #30D158;
+    --orange: #FF9F0A;
+    --red: #FF453A;
+    --purple: #BF5AF2;
+    --teal: #5AC8FA;
+    --text: #f0f0f5;
+    --sub: #8e8ea0;
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; min-height: 100vh; }
+
+  /* Layout */
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px 60px; }
+  .section { margin-bottom: 20px; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); }
+  .section-header { background: var(--card2); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
+  .section-header h2 { font-size: 14px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sub); }
+  .section-header .toggle-icon { color: var(--sub); font-size: 18px; transition: transform 0.3s; }
+  .section-body { background: var(--card); overflow: hidden; max-height: 2000px; transition: max-height 0.4s ease; }
+  .section-body.collapsed { max-height: 0; }
+  .section-body-inner { padding: 20px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  @media (max-width: 700px) { .grid2, .grid3, .grid4 { grid-template-columns: 1fr; } }
+  .card { background: var(--card2); border-radius: 12px; padding: 16px; border: 1px solid var(--border); }
+  .label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sub); margin-bottom: 6px; }
+  .val { font-size: 28px; font-weight: 700; }
+  .sub-val { font-size: 13px; color: var(--sub); margin-top: 2px; }
+  .tag { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; }
+  .tag-green { background: rgba(48,209,88,0.15); color: var(--green); }
+  .tag-orange { background: rgba(255,159,10,0.15); color: var(--orange); }
+  .tag-red { background: rgba(255,69,58,0.15); color: var(--red); }
+  .tag-blue { background: rgba(10,132,255,0.15); color: var(--blue); }
+  .tag-purple { background: rgba(191,90,242,0.15); color: var(--purple); }
+  .trend-up { color: var(--green); font-size: 13px; font-weight: 600; }
+  .trend-down { color: var(--red); font-size: 13px; font-weight: 600; }
+  .trend-flat { color: var(--orange); font-size: 13px; font-weight: 600; }
+  .chart-wrap { position: relative; }
+  canvas { display: block; }
+  h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+  .divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+  /* App header */
+  .app-header { display: flex; align-items: center; gap: 12px; padding: 20px 0 28px; }
+  .app-icon { width: 44px; height: 44px; background: var(--blue); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+  .app-header h1 { font-size: 22px; font-weight: 700; }
+  .app-header .period { font-size: 13px; color: var(--sub); }
+
+  /* Hero */
+  .hero { display: grid; grid-template-columns: auto 1fr auto; gap: 24px; align-items: center; padding: 24px; background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 20px; }
+  @media (max-width: 700px) { .hero { grid-template-columns: 1fr; } }
+  .hero-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .hero-stat .label { margin-bottom: 4px; }
+  .hero-stat .val { font-size: 22px; }
+
+  /* Radial gauge SVG */
+  .gauge-wrap { position: relative; width: 160px; height: 160px; flex-shrink: 0; }
+  .gauge-wrap .gauge-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .gauge-score { font-size: 36px; font-weight: 800; }
+  .gauge-label { font-size: 11px; color: var(--sub); font-weight: 600; letter-spacing: 0.05em; }
+  .gauge-tier { margin-top: 4px; }
+
+  /* Muscle heat grid */
+  .muscle-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .muscle-cell { border-radius: 8px; padding: 10px 8px; text-align: center; }
+  .muscle-cell .muscle-name { font-size: 10px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+  .muscle-cell .muscle-score { font-size: 18px; font-weight: 700; margin-top: 2px; }
+
+  /* INOL heatmap */
+  .inol-grid { display: grid; grid-template-columns: repeat(13, 1fr); gap: 3px; }
+  .inol-cell { aspect-ratio: 1; border-radius: 3px; }
+  .inol-legend { display: flex; gap: 8px; align-items: center; margin-top: 10px; font-size: 11px; color: var(--sub); }
+  .inol-swatch { width: 12px; height: 12px; border-radius: 2px; }
+
+  /* Day quality heatmap */
+  .day-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .day-cell { aspect-ratio: 1; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600; color: rgba(255,255,255,0.6); }
+
+  /* PR step chart */
+  .pr-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .pr-table th { text-align: left; padding: 6px 10px; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sub); border-bottom: 1px solid var(--border); }
+  .pr-table td { padding: 10px 10px; border-bottom: 1px solid rgba(42,42,62,0.5); }
+  .pr-bar-wrap { position: relative; background: rgba(255,255,255,0.06); border-radius: 4px; height: 8px; width: 100%; }
+  .pr-bar { height: 100%; border-radius: 4px; }
+
+  /* Scatter plot labels */
+  .scatter-legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; font-size: 11px; }
+  .scatter-legend-item { display: flex; align-items: center; gap: 4px; }
+  .scatter-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  /* Plateau mini-gauges */
+  .plateau-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .plateau-item { flex: 1; min-width: 120px; background: var(--card2); border-radius: 10px; padding: 12px; text-align: center; border: 1px solid var(--border); }
+  .plateau-risk { font-size: 28px; font-weight: 800; margin: 4px 0; }
+  .plateau-name { font-size: 11px; color: var(--sub); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* PR forecast card */
+  .forecast-card { background: linear-gradient(135deg, rgba(10,132,255,0.15), rgba(191,90,242,0.1)); border: 1px solid rgba(10,132,255,0.3); border-radius: 12px; padding: 16px; }
+  .forecast-lift { font-size: 11px; color: var(--sub); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+  .forecast-target { font-size: 26px; font-weight: 800; color: var(--blue); }
+  .forecast-eta { font-size: 13px; color: var(--sub); margin-top: 2px; }
+  .forecast-confidence { font-size: 11px; margin-top: 8px; }
+
+  /* TSB warning */
+  .tsb-warning { background: rgba(255,159,10,0.08); border: 1px solid rgba(255,159,10,0.3); border-radius: 10px; padding: 12px 16px; display: flex; align-items: flex-start; gap: 10px; }
+  .tsb-warning-icon { font-size: 20px; }
+  .tsb-warning-text { font-size: 13px; color: var(--sub); line-height: 1.5; }
+  .tsb-warning-text strong { color: var(--orange); }
+
+  /* Velocity table */
+  .vel-table { width: 100%; font-size: 13px; }
+  .vel-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(42,42,62,0.5); }
+  .vel-name { flex: 1; font-weight: 500; }
+  .vel-vel { width: 80px; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .vel-sparkline { flex: 1; }
+
+  /* Recovery ring */
+  .recovery-wrap { display: flex; align-items: center; gap: 20px; }
+  .ring-wrap { position: relative; width: 120px; height: 120px; flex-shrink: 0; }
+  .ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .ring-score { font-size: 28px; font-weight: 800; }
+  .ring-label { font-size: 10px; color: var(--sub); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+  .recovery-metrics { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+  .rec-metric { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+  .rec-bar-track { background: rgba(255,255,255,0.06); border-radius: 4px; height: 6px; margin-top: 4px; }
+  .rec-bar { height: 100%; border-radius: 4px; }
+
+  /* ─── Percentile bars ─────────────────────────── */
+  .pct-row { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid rgba(42,42,62,0.4); }
+  .pct-label { min-width: 110px; font-size: 12px; font-weight: 600; }
+  .pct-track-wrap { flex: 1; }
+  .pct-track { height: 14px; border-radius: 7px; position: relative; overflow: hidden;
+    background: linear-gradient(to right, rgba(255,69,58,0.45) 0%, rgba(255,159,10,0.45) 28%, rgba(10,132,255,0.45) 58%, rgba(48,209,88,0.45) 80%); }
+  .pct-marker { position: absolute; top: 0; bottom: 0; width: 3px; background: #fff; border-radius: 2px;
+    box-shadow: 0 0 8px rgba(255,255,255,0.9); transform: translateX(-50%); }
+  .pct-zone-labels { display: flex; justify-content: space-between; font-size: 9px; color: var(--sub); margin-top: 3px; letter-spacing: 0.04em; padding: 0 1px; }
+  .pct-right { display: flex; align-items: center; gap: 8px; min-width: 110px; justify-content: flex-end; }
+  .pct-val { font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+  /* ─── Coefficient table ───────────────────────── */
+  .coeff-table { width: 100%; font-size: 12px; border-collapse: collapse; }
+  .coeff-table th { padding: 6px 10px; text-align: left; font-size: 10px; font-weight: 700; color: var(--sub); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); }
+  .coeff-table td { padding: 9px 10px; border-bottom: 1px solid rgba(42,42,62,0.4); vertical-align: middle; }
+  .coeff-bar-track { background: rgba(255,255,255,0.07); border-radius: 3px; height: 6px; width: 90px; display: inline-block; vertical-align: middle; margin-left: 6px; }
+  .coeff-bar-fill { height: 100%; border-radius: 3px; }
+  .personal-tag { font-size: 9px; background: rgba(191,90,242,0.2); color: var(--purple); padding: 1px 6px; border-radius: 10px; font-weight: 700; margin-left: 5px; }
+
+  /* ─── Emergent insight cards ──────────────────── */
+  .active-alerts { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+  .alert-pill { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 10px; font-size: 12px; font-weight: 600; flex: 1; min-width: 200px; border: 1px solid; }
+  .alert-pill-icon { font-size: 18px; flex-shrink: 0; }
+  .insight-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 700px) { .insight-grid { grid-template-columns: 1fr; } }
+  .ic { background: var(--card2); border-radius: 14px; padding: 18px; border: 1px solid var(--border); }
+  .ic-title { font-size: 11px; font-weight: 700; color: var(--sub); text-transform: uppercase; letter-spacing: 0.07em; }
+  .ic-inputs { font-size: 10px; color: rgba(142,142,160,0.65); margin-top: 3px; }
+  .ic-state { font-size: 17px; font-weight: 800; margin: 10px 0 2px; }
+  .ic-state-sub { font-size: 12px; color: var(--sub); line-height: 1.5; margin-bottom: 12px; }
+
+  /* 2×2 quadrant grid */
+  .qwrap { display: grid; grid-template-columns: 18px 1fr 1fr; grid-template-rows: 18px 1fr 1fr; gap: 3px; margin: 8px 0 10px; }
+  .q-corner { }
+  .q-xlbl { font-size: 8px; color: var(--sub); text-transform: uppercase; letter-spacing: 0.04em; display: flex; align-items: center; justify-content: center; }
+  .q-ylbl { font-size: 8px; color: var(--sub); text-transform: uppercase; letter-spacing: 0.04em; writing-mode: vertical-lr; transform: rotate(180deg); display: flex; align-items: center; justify-content: center; }
+  .qc { border-radius: 8px; padding: 9px 10px; opacity: 0.28; transition: opacity .2s; }
+  .qc.on { opacity: 1; box-shadow: 0 0 0 1px rgba(255,255,255,0.12); }
+  .qc-name { font-size: 11px; font-weight: 700; line-height: 1.2; }
+  .qc-sub { font-size: 9px; margin-top: 3px; opacity: 0.7; line-height: 1.3; }
+  .ic-rec { background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px 12px; font-size: 12px; color: var(--sub); line-height: 1.55; border-left: 2px solid; }
+  .ic-rec strong { color: var(--text); }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- App Header -->
+  <div class="app-header">
+    <div class="app-icon">🏋️</div>
+    <div>
+      <h1>Boring Workout</h1>
+      <div class="period">Progress Report · Last 90 days · Alex, 28 · 82 kg BW / 68 kg LBM</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ HERO ═══════════════════════════════════════ -->
+  <div class="hero">
+    <!-- Radial Score Gauge -->
+    <div class="gauge-wrap">
+      <svg width="160" height="160" viewBox="0 0 160 160">
+        <defs>
+          <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#0A84FF"/>
+            <stop offset="100%" style="stop-color:#BF5AF2"/>
+          </linearGradient>
+        </defs>
+        <!-- Track -->
+        <circle cx="80" cy="80" r="64" fill="none" stroke="#2a2a3e" stroke-width="14" stroke-dasharray="335 402" stroke-dashoffset="-33" stroke-linecap="round"/>
+        <!-- Fill: 74/100 = 74% of 335 = 248 -->
+        <circle cx="80" cy="80" r="64" fill="none" stroke="url(#gaugeGrad)" stroke-width="14" stroke-dasharray="248 402" stroke-dashoffset="-33" stroke-linecap="round" style="transition: stroke-dasharray 1s ease;"/>
+        <!-- Tick marks -->
+        <g stroke="#2a2a3e" stroke-width="2">
+          <line x1="80" y1="10" x2="80" y2="20" transform="rotate(-150 80 80)"/>
+          <line x1="80" y1="10" x2="80" y2="20" transform="rotate(-112 80 80)"/>
+          <line x1="80" y1="10" x2="80" y2="20" transform="rotate(-75 80 80)"/>
+          <line x1="80" y1="10" x2="80" y2="20" transform="rotate(-37 80 80)"/>
+          <line x1="80" y1="10" x2="80" y2="20" transform="rotate(0 80 80)"/>
+        </g>
+      </svg>
+      <div class="gauge-center">
+        <div class="gauge-score" style="background: linear-gradient(135deg,#0A84FF,#BF5AF2); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">74</div>
+        <div class="gauge-label">STRENGTH SCORE</div>
+        <div class="gauge-tier"><span class="tag tag-blue">ADVANCED</span></div>
+      </div>
+    </div>
+
+    <!-- Trend + label -->
+    <div>
+      <div style="font-size:13px; color:var(--sub); margin-bottom:4px;">vs. 30 days ago</div>
+      <div style="font-size:32px; font-weight:800;" class="trend-up">↑ +8.2%</div>
+      <div style="font-size:13px; color:var(--sub); margin-top:8px; line-height:1.6;">Composite of strength velocity, volume<br>efficiency, consistency & recovery index.</div>
+    </div>
+
+    <!-- Stats -->
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="label">Sessions</div>
+        <div class="val">42</div>
+        <div class="sub-val">last 90d</div>
+      </div>
+      <div class="hero-stat">
+        <div class="label">Streak</div>
+        <div class="val" style="color:var(--orange);">6🔥</div>
+        <div class="sub-val">days</div>
+      </div>
+      <div class="hero-stat">
+        <div class="label">Consistency</div>
+        <div class="val" style="color:var(--green);">87%</div>
+        <div class="sub-val">planned sessions</div>
+      </div>
+      <div class="hero-stat">
+        <div class="label">Vol. Load</div>
+        <div class="val">148k</div>
+        <div class="sub-val">kg lifted</div>
+      </div>
+      <div class="hero-stat">
+        <div class="label">Avg Feel</div>
+        <div class="val">4.1<span style="font-size:16px;">/5</span></div>
+        <div class="sub-val">self-report</div>
+      </div>
+      <div class="hero-stat">
+        <div class="label">PRs Set</div>
+        <div class="val" style="color:var(--purple);">11</div>
+        <div class="sub-val">this period</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ WHERE ═══════════════════════════════════════ -->
+  <div class="section" id="sec-where">
+    <div class="section-header" onclick="toggleSection('where')">
+      <h2>📍 Where am I?</h2>
+      <span class="toggle-icon" id="icon-where">▾</span>
+    </div>
+    <div class="section-body" id="body-where">
+      <div class="section-body-inner">
+        <div class="grid2">
+
+          <!-- Radar chart -->
+          <div class="card">
+            <h3>Movement Pattern Strength</h3>
+            <div class="chart-wrap" style="height:220px;">
+              <canvas id="radarChart"></canvas>
+            </div>
+            <div style="font-size:11px; color:var(--sub); margin-top:8px;">Relative to BW-adjusted population norms. Outer ring = Elite.</div>
+          </div>
+
+          <!-- Muscle heat grid -->
+          <div class="card">
+            <h3>Muscle Group Development</h3>
+            <div class="muscle-grid">
+              <div class="muscle-cell" style="background:rgba(48,209,88,0.18);">
+                <div class="muscle-name">Chest</div>
+                <div class="muscle-score" style="color:var(--green);">A</div>
+                <div class="sub-val" style="font-size:10px;">Elite</div>
+              </div>
+              <div class="muscle-cell" style="background:rgba(48,209,88,0.18);">
+                <div class="muscle-name">Back</div>
+                <div class="muscle-score" style="color:var(--green);">A−</div>
+                <div class="sub-val" style="font-size:10px;">Advanced</div>
+              </div>
+              <div class="muscle-cell" style="background:rgba(10,132,255,0.18);">
+                <div class="muscle-name">Shoulders</div>
+                <div class="muscle-score" style="color:var(--blue);">B+</div>
+                <div class="sub-val" style="font-size:10px;">Intermediate</div>
+              </div>
+              <div class="muscle-cell" style="background:rgba(10,132,255,0.18);">
+                <div class="muscle-name">Quads</div>
+                <div class="muscle-score" style="color:var(--blue);">B</div>
+                <div class="sub-val" style="font-size:10px;">Intermediate</div>
+              </div>
+              <div class="muscle-cell" style="background:rgba(255,159,10,0.18);">
+                <div class="muscle-name">Posterior</div>
+                <div class="muscle-score" style="color:var(--orange);">C+</div>
+                <div class="sub-val" style="font-size:10px;">Novice</div>
+              </div>
+              <div class="muscle-cell" style="background:rgba(255,69,58,0.18);">
+                <div class="muscle-name">Arms</div>
+                <div class="muscle-score" style="color:var(--red);">C</div>
+                <div class="sub-val" style="font-size:10px;">Developing</div>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <div style="font-size:12px; color:var(--orange);">⚠️ Muscle Balance Ratio: 1.47 — Anterior chain dominant. Add posterior work.</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Tier gauges for standard lifts -->
+        <h3>Standard Lift Tiers (×BW)</h3>
+        <div class="grid4" style="margin-top:8px;">
+          <div class="card" style="text-align:center;">
+            <div class="label">Bench Press</div>
+            <div style="font-size:22px; font-weight:800; color:var(--green); margin:6px 0;">1.22×</div>
+            <div class="tag tag-green">ADVANCED</div>
+            <div style="margin-top:8px; font-size:11px; color:var(--sub);">100 kg / 82 kg BW</div>
+            <div class="pr-bar-wrap" style="margin-top:8px;"><div class="pr-bar" style="width:78%; background:var(--green);"></div></div>
+          </div>
+          <div class="card" style="text-align:center;">
+            <div class="label">Deadlift</div>
+            <div style="font-size:22px; font-weight:800; color:var(--green); margin:6px 0;">1.83×</div>
+            <div class="tag tag-green">ADVANCED</div>
+            <div style="margin-top:8px; font-size:11px; color:var(--sub);">150 kg / 82 kg BW</div>
+            <div class="pr-bar-wrap" style="margin-top:8px;"><div class="pr-bar" style="width:82%; background:var(--green);"></div></div>
+          </div>
+          <div class="card" style="text-align:center;">
+            <div class="label">Back Squat</div>
+            <div style="font-size:22px; font-weight:800; color:var(--blue); margin:6px 0;">1.37×</div>
+            <div class="tag tag-blue">INTERMEDIATE</div>
+            <div style="margin-top:8px; font-size:11px; color:var(--sub);">112 kg / 82 kg BW</div>
+            <div class="pr-bar-wrap" style="margin-top:8px;"><div class="pr-bar" style="width:60%; background:var(--blue);"></div></div>
+          </div>
+          <div class="card" style="text-align:center;">
+            <div class="label">OHP</div>
+            <div style="font-size:22px; font-weight:800; color:var(--orange); margin:6px 0;">0.71×</div>
+            <div class="tag tag-orange">NOVICE</div>
+            <div style="margin-top:8px; font-size:11px; color:var(--sub);">58 kg / 82 kg BW</div>
+            <div class="pr-bar-wrap" style="margin-top:8px;"><div class="pr-bar" style="width:38%; background:var(--orange);"></div></div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Population Percentile Bars -->
+        <h3>Population Percentile Rank <span style="font-size:11px;font-weight:400;color:var(--sub);">— Age 25–35 · 80–85 kg BW · Barbell-equivalent 1RM</span></h3>
+        <div style="margin-top:8px;">
+          <!-- Bench -->
+          <div class="pct-row">
+            <div class="pct-label">Bench Press</div>
+            <div class="pct-track-wrap">
+              <div class="pct-track"><div class="pct-marker" style="left:78%;"></div></div>
+              <div class="pct-zone-labels"><span>Novice</span><span>Intermediate</span><span>Advanced</span><span>Elite</span></div>
+            </div>
+            <div class="pct-right"><div class="pct-val" style="color:var(--green);">78th</div><span class="tag tag-green">ADVANCED</span></div>
+          </div>
+          <!-- Deadlift -->
+          <div class="pct-row">
+            <div class="pct-label">Deadlift</div>
+            <div class="pct-track-wrap">
+              <div class="pct-track"><div class="pct-marker" style="left:85%;"></div></div>
+              <div class="pct-zone-labels"><span>Novice</span><span>Intermediate</span><span>Advanced</span><span>Elite</span></div>
+            </div>
+            <div class="pct-right"><div class="pct-val" style="color:var(--green);">85th</div><span class="tag tag-green">ADVANCED</span></div>
+          </div>
+          <!-- Squat -->
+          <div class="pct-row">
+            <div class="pct-label">Back Squat</div>
+            <div class="pct-track-wrap">
+              <div class="pct-track"><div class="pct-marker" style="left:59%;"></div></div>
+              <div class="pct-zone-labels"><span>Novice</span><span>Intermediate</span><span>Advanced</span><span>Elite</span></div>
+            </div>
+            <div class="pct-right"><div class="pct-val" style="color:var(--blue);">59th</div><span class="tag tag-blue">INTERMEDIATE</span></div>
+          </div>
+          <!-- OHP -->
+          <div class="pct-row">
+            <div class="pct-label">OHP</div>
+            <div class="pct-track-wrap">
+              <div class="pct-track"><div class="pct-marker" style="left:34%;"></div></div>
+              <div class="pct-zone-labels"><span>Novice</span><span>Intermediate</span><span>Advanced</span><span>Elite</span></div>
+            </div>
+            <div class="pct-right"><div class="pct-val" style="color:var(--orange);">34th</div><span class="tag tag-orange">NOVICE</span></div>
+          </div>
+          <!-- Pull-Up -->
+          <div class="pct-row" style="border-bottom:none;">
+            <div class="pct-label">Weighted Pull-Up</div>
+            <div class="pct-track-wrap">
+              <div class="pct-track"><div class="pct-marker" style="left:71%;"></div></div>
+              <div class="pct-zone-labels"><span>Novice</span><span>Intermediate</span><span>Advanced</span><span>Elite</span></div>
+            </div>
+            <div class="pct-right"><div class="pct-val" style="color:var(--green);">71st</div><span class="tag tag-green">ADVANCED</span></div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Exercise Coefficient Table -->
+        <div class="grid2">
+          <div>
+            <h3>Exercise Coefficient Table <span style="font-size:11px;font-weight:400;color:var(--sub);">— Horizontal Push</span></h3>
+            <div style="font-size:11px;color:var(--sub);margin-bottom:10px;">All e1RMs converted to Barbell Bench equivalent before aggregating. Coefficient = fraction of free-weight strength expressed.</div>
+            <table class="coeff-table">
+              <thead><tr><th>Exercise</th><th>Pop. Coeff</th><th>Your Coeff</th></tr></thead>
+              <tbody>
+                <tr><td>Barbell Bench Press <span style="font-size:9px;color:var(--sub);">reference</span></td><td><strong>1.00</strong></td><td>—</td></tr>
+                <tr>
+                  <td>Smith Machine Bench</td>
+                  <td>0.93 <div class="coeff-bar-track" style="display:inline-block;"><div class="coeff-bar-fill" style="width:93%; background:var(--blue);"></div></div></td>
+                  <td>0.91 <span class="personal-tag">PERSONAL</span></td>
+                </tr>
+                <tr>
+                  <td>Dumbbell Bench Press</td>
+                  <td>0.87 <div class="coeff-bar-track" style="display:inline-block;"><div class="coeff-bar-fill" style="width:87%; background:var(--blue);"></div></div></td>
+                  <td>0.89 <span class="personal-tag">PERSONAL</span></td>
+                </tr>
+                <tr>
+                  <td>Incline Barbell Press</td>
+                  <td>0.82 <div class="coeff-bar-track" style="display:inline-block;"><div class="coeff-bar-fill" style="width:82%; background:var(--orange);"></div></div></td>
+                  <td>—</td>
+                </tr>
+                <tr>
+                  <td>Chest Press Machine</td>
+                  <td>0.88 <div class="coeff-bar-track" style="display:inline-block;"><div class="coeff-bar-fill" style="width:88%; background:var(--blue);"></div></div></td>
+                  <td>—</td>
+                </tr>
+                <tr style="border-bottom:none;">
+                  <td style="color:var(--sub);">Cable Fly / Pec Deck</td>
+                  <td colspan="2" style="color:var(--sub);font-size:11px;">Isolation — volume only, no 1RM comparison</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <h3>Transfer Efficiency Over Time</h3>
+            <div class="chart-wrap" style="height:180px;"><canvas id="coeffTrendChart"></canvas></div>
+            <div style="font-size:11px;color:var(--sub);margin-top:8px;">Your personal Smith→Bench coefficient has improved from <strong style="color:var(--purple);">0.88 → 0.91</strong> over 6 months — stabilizer systems developing. Machine work is transferring.</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Strength retention rings -->
+        <h3>Strength Retention Score</h3>
+        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:4px;">
+          <div style="text-align:center;">
+            <svg width="80" height="80"><circle cx="40" cy="40" r="32" fill="none" stroke="#2a2a3e" stroke-width="8"/><circle cx="40" cy="40" r="32" fill="none" stroke="#30D158" stroke-width="8" stroke-dasharray="180 201" stroke-linecap="round" transform="rotate(-90 40 40)"/><text x="40" y="44" text-anchor="middle" fill="#30D158" font-size="14" font-weight="700">91%</text></svg>
+            <div style="font-size:11px; color:var(--sub);">Bench</div>
+          </div>
+          <div style="text-align:center;">
+            <svg width="80" height="80"><circle cx="40" cy="40" r="32" fill="none" stroke="#2a2a3e" stroke-width="8"/><circle cx="40" cy="40" r="32" fill="none" stroke="#30D158" stroke-width="8" stroke-dasharray="188 201" stroke-linecap="round" transform="rotate(-90 40 40)"/><text x="40" y="44" text-anchor="middle" fill="#30D158" font-size="14" font-weight="700">94%</text></svg>
+            <div style="font-size:11px; color:var(--sub);">Deadlift</div>
+          </div>
+          <div style="text-align:center;">
+            <svg width="80" height="80"><circle cx="40" cy="40" r="32" fill="none" stroke="#2a2a3e" stroke-width="8"/><circle cx="40" cy="40" r="32" fill="none" stroke="#FF9F0A" stroke-width="8" stroke-dasharray="150 201" stroke-linecap="round" transform="rotate(-90 40 40)"/><text x="40" y="44" text-anchor="middle" fill="#FF9F0A" font-size="14" font-weight="700">75%</text></svg>
+            <div style="font-size:11px; color:var(--sub);">Squat</div>
+          </div>
+          <div style="text-align:center;">
+            <svg width="80" height="80"><circle cx="40" cy="40" r="32" fill="none" stroke="#2a2a3e" stroke-width="8"/><circle cx="40" cy="40" r="32" fill="none" stroke="#FF453A" stroke-width="8" stroke-dasharray="118 201" stroke-linecap="round" transform="rotate(-90 40 40)"/><text x="40" y="44" text-anchor="middle" fill="#FF453A" font-size="14" font-weight="700">59%</text></svg>
+            <div style="font-size:11px; color:var(--sub);">OHP</div>
+          </div>
+          <div style="flex:1; min-width:200px; display:flex; align-items:center;">
+            <div style="font-size:12px; color:var(--sub); line-height:1.6;">Strength retention measures how well you hold strength during deload weeks or missed sessions. OHP retention is critically low — the decline pattern suggests neural fatigue, not just missed reps.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ GETTING STRONGER ═══════════════════════════════════════ -->
+  <div class="section" id="sec-stronger">
+    <div class="section-header" onclick="toggleSection('stronger')">
+      <h2>📈 Am I Getting Stronger?</h2>
+      <span class="toggle-icon" id="icon-stronger">▾</span>
+    </div>
+    <div class="section-body" id="body-stronger">
+      <div class="section-body-inner">
+
+        <div class="grid2">
+          <!-- Strength Velocity Chart -->
+          <div class="card">
+            <h3>Strength Velocity (kg/week)</h3>
+            <div class="chart-wrap" style="height:200px;">
+              <canvas id="velocityChart"></canvas>
+            </div>
+            <div style="margin-top:10px;">
+              <div class="vel-row">
+                <div class="vel-name">Bench Press</div>
+                <div class="vel-vel trend-up">+0.9 kg/wk</div>
+                <span class="tag tag-green" style="font-size:10px;">ON TRACK</span>
+              </div>
+              <div class="vel-row">
+                <div class="vel-name">Deadlift</div>
+                <div class="vel-vel trend-up">+1.4 kg/wk</div>
+                <span class="tag tag-green" style="font-size:10px;">FAST</span>
+              </div>
+              <div class="vel-row">
+                <div class="vel-name">Back Squat</div>
+                <div class="vel-vel trend-flat">+0.1 kg/wk</div>
+                <span class="tag tag-orange" style="font-size:10px;">STALLED</span>
+              </div>
+              <div class="vel-row">
+                <div class="vel-name">OHP</div>
+                <div class="vel-vel trend-down">−0.4 kg/wk</div>
+                <span class="tag tag-red" style="font-size:10px;">DECLINING</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- TSB Chart -->
+          <div class="card">
+            <h3>Training Stress Balance (TSB)</h3>
+            <div class="chart-wrap" style="height:200px;">
+              <canvas id="tsbChart"></canvas>
+            </div>
+            <div style="font-size:11px; color:var(--sub); margin-top:8px; line-height:1.5;">Chronic Load (42d CTL) vs Acute Fatigue (7d ATL). Positive TSB = fresh. Negative = fatigued but adapting.</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Progressive Overload Scoreboard -->
+        <h3>Progressive Overload Scoreboard</h3>
+        <table class="pr-table">
+          <thead>
+            <tr>
+              <th>Exercise</th>
+              <th>Start 1RM</th>
+              <th>Current 1RM</th>
+              <th>Gain</th>
+              <th>Progress</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Bench Press</td>
+              <td>89 kg</td>
+              <td>100 kg</td>
+              <td class="trend-up">+11 kg</td>
+              <td><div class="pr-bar-wrap" style="width:120px;"><div class="pr-bar" style="width:73%; background:var(--green);"></div></div></td>
+              <td><span class="tag tag-green">Progressing</span></td>
+            </tr>
+            <tr>
+              <td>Deadlift</td>
+              <td>124 kg</td>
+              <td>150 kg</td>
+              <td class="trend-up">+26 kg</td>
+              <td><div class="pr-bar-wrap" style="width:120px;"><div class="pr-bar" style="width:90%; background:var(--green);"></div></div></td>
+              <td><span class="tag tag-green">Progressing</span></td>
+            </tr>
+            <tr>
+              <td>Back Squat</td>
+              <td>110 kg</td>
+              <td>112 kg</td>
+              <td class="trend-flat">+2 kg</td>
+              <td><div class="pr-bar-wrap" style="width:120px;"><div class="pr-bar" style="width:22%; background:var(--orange);"></div></div></td>
+              <td><span class="tag tag-orange">Plateau</span></td>
+            </tr>
+            <tr>
+              <td>OHP</td>
+              <td>62 kg</td>
+              <td>58 kg</td>
+              <td class="trend-down">−4 kg</td>
+              <td><div class="pr-bar-wrap" style="width:120px;"><div class="pr-bar" style="width:5%; background:var(--red);"></div></div></td>
+              <td><span class="tag tag-red">Declining</span></td>
+            </tr>
+            <tr>
+              <td>Pull-Up</td>
+              <td>BW</td>
+              <td>BW+12 kg</td>
+              <td class="trend-up">+12 kg</td>
+              <td><div class="pr-bar-wrap" style="width:120px;"><div class="pr-bar" style="width:68%; background:var(--green);"></div></div></td>
+              <td><span class="tag tag-green">Progressing</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="divider"></div>
+
+        <!-- PR Step chart -->
+        <div class="card">
+          <h3>PR Timeline — Bench Press (kg)</h3>
+          <div class="chart-wrap" style="height:180px;">
+            <canvas id="prStepChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ HOW I TRAIN ═══════════════════════════════════════ -->
+  <div class="section" id="sec-how">
+    <div class="section-header" onclick="toggleSection('how')">
+      <h2>🏗️ How Do I Train?</h2>
+      <span class="toggle-icon" id="icon-how">▾</span>
+    </div>
+    <div class="section-body" id="body-how">
+      <div class="section-body-inner">
+        <div class="grid3">
+
+          <!-- Volume donut -->
+          <div class="card">
+            <h3>Volume Balance</h3>
+            <div class="chart-wrap" style="height:200px;">
+              <canvas id="volumeDonut"></canvas>
+            </div>
+            <div style="font-size:11px; color:var(--sub); margin-top:6px; text-align:center;">Hypertrophy Alignment Score: <strong style="color:var(--blue);">72/100</strong></div>
+          </div>
+
+          <!-- Rep range -->
+          <div class="card">
+            <h3>Rep Range Distribution</h3>
+            <div class="chart-wrap" style="height:200px;">
+              <canvas id="repRangeBar"></canvas>
+            </div>
+            <div style="font-size:11px; color:var(--sub); margin-top:6px; text-align:center;">Set Success Rate: <strong style="color:var(--green);">84%</strong> of target reps achieved</div>
+          </div>
+
+          <!-- Session density -->
+          <div class="card">
+            <h3>Session Density Trend</h3>
+            <div class="chart-wrap" style="height:200px;">
+              <canvas id="densityChart"></canvas>
+            </div>
+            <div style="font-size:11px; color:var(--sub); margin-top:6px; text-align:center;">Avg <strong style="color:var(--teal);">2.8 sets/min</strong> · Intra-Session Fatigue: <strong style="color:var(--orange);">−12%</strong> output drop</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- INOL Heatmap -->
+        <h3>INOL Training Load Calendar (Last 13 Weeks)</h3>
+        <div style="font-size:11px; color:var(--sub); margin-bottom:10px;">Intensity × Number of Lifts. Each cell = one training day. Color = load zone.</div>
+        <div class="inol-grid" id="inolGrid"></div>
+        <div class="inol-legend">
+          <div class="inol-swatch" style="background:#1c2a1c;"></div> Rest
+          <div class="inol-swatch" style="background:#1e3a28;"></div> Deload (0–0.4)
+          <div class="inol-swatch" style="background:#1a5c2a;"></div> Easy (0.4–0.8)
+          <div class="inol-swatch" style="background:#0A84FF;"></div> Optimal (0.8–1.4)
+          <div class="inol-swatch" style="background:#d97706;"></div> Heavy (1.4–2.0)
+          <div class="inol-swatch" style="background:#FF453A;"></div> Overreach (&gt;2.0)
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ WHAT INFLUENCES ME ═══════════════════════════════════════ -->
+  <div class="section" id="sec-what">
+    <div class="section-header" onclick="toggleSection('what')">
+      <h2>🧠 What Influences My Performance?</h2>
+      <span class="toggle-icon" id="icon-what">▾</span>
+    </div>
+    <div class="section-body" id="body-what">
+      <div class="section-body-inner">
+        <div class="grid2">
+
+          <!-- Recovery Index -->
+          <div class="card">
+            <h3>Recovery Index</h3>
+            <div class="recovery-wrap">
+              <div class="ring-wrap">
+                <svg width="120" height="120">
+                  <circle cx="60" cy="60" r="50" fill="none" stroke="#2a2a3e" stroke-width="10"/>
+                  <circle cx="60" cy="60" r="50" fill="none" stroke="#30D158" stroke-width="10"
+                    stroke-dasharray="245 314" stroke-linecap="round" transform="rotate(-90 60 60)"/>
+                </svg>
+                <div class="ring-center">
+                  <div class="ring-score" style="color:var(--green);">78</div>
+                  <div class="ring-label">Recovery</div>
+                </div>
+              </div>
+              <div class="recovery-metrics">
+                <div>
+                  <div class="rec-metric"><span>HRV</span><span style="font-weight:700; color:var(--green);">78 ms</span></div>
+                  <div class="rec-bar-track"><div class="rec-bar" style="width:78%; background:var(--green);"></div></div>
+                </div>
+                <div>
+                  <div class="rec-metric"><span>Sleep</span><span style="font-weight:700; color:var(--blue);">7.4 h</span></div>
+                  <div class="rec-bar-track"><div class="rec-bar" style="width:74%; background:var(--blue);"></div></div>
+                </div>
+                <div>
+                  <div class="rec-metric"><span>Active Cal</span><span style="font-weight:700; color:var(--orange);">612 kcal</span></div>
+                  <div class="rec-bar-track"><div class="rec-bar" style="width:61%; background:var(--orange);"></div></div>
+                </div>
+                <div>
+                  <div class="rec-metric"><span>Feel Today</span><span style="font-weight:700; color:var(--green);">💪 Strong</span></div>
+                  <div class="rec-bar-track"><div class="rec-bar" style="width:85%; background:var(--purple);"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Feel × Performance Scatter -->
+          <div class="card">
+            <h3>Feel Rating × Session Performance</h3>
+            <div class="chart-wrap" style="height:200px;">
+              <canvas id="feelScatter"></canvas>
+            </div>
+            <div style="font-size:11px; color:var(--sub); margin-top:6px;">Feel Momentum Score: <strong style="color:var(--blue);">+0.3/session</strong> trending up. RPE Drift: <strong style="color:var(--orange);">+0.4 RPE</strong> across sessions (fatigue accumulation).</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="grid2">
+          <!-- HRV / Sleep / Strength triple line -->
+          <div class="card">
+            <h3>HRV · Sleep · Strength Index (8-week)</h3>
+            <div class="chart-wrap" style="height:200px;">
+              <canvas id="tripleLineChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Power-to-lean ratio -->
+          <div class="card">
+            <h3>Power-to-Lean-Mass Ratio</h3>
+            <div class="chart-wrap" style="height:200px;">
+              <canvas id="plrChart"></canvas>
+            </div>
+            <div style="font-size:11px; color:var(--sub); margin-top:6px;">Current: <strong style="color:var(--blue);">4.41 kg-lifted/kg-LBM</strong>. Target: 5.0 (Elite threshold for 82 kg athlete).</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ PREDICTIONS ═══════════════════════════════════════ -->
+  <div class="section" id="sec-pred">
+    <div class="section-header" onclick="toggleSection('pred')">
+      <h2>🔮 Predictions & Alerts</h2>
+      <span class="toggle-icon" id="icon-pred">▾</span>
+    </div>
+    <div class="section-body" id="body-pred">
+      <div class="section-body-inner">
+
+        <!-- Plateau risk -->
+        <h3>Plateau Risk Score</h3>
+        <div class="plateau-row" style="margin-bottom:16px;">
+          <div class="plateau-item">
+            <div class="plateau-name">Bench Press</div>
+            <div class="plateau-risk" style="color:var(--green);">22</div>
+            <span class="tag tag-green">LOW RISK</span>
+          </div>
+          <div class="plateau-item">
+            <div class="plateau-name">Deadlift</div>
+            <div class="plateau-risk" style="color:var(--green);">17</div>
+            <span class="tag tag-green">LOW RISK</span>
+          </div>
+          <div class="plateau-item">
+            <div class="plateau-name">Back Squat</div>
+            <div class="plateau-risk" style="color:var(--orange);">68</div>
+            <span class="tag tag-orange">MODERATE</span>
+          </div>
+          <div class="plateau-item">
+            <div class="plateau-name">OHP</div>
+            <div class="plateau-risk" style="color:var(--red);">81</div>
+            <span class="tag tag-red">HIGH RISK</span>
+          </div>
+          <div class="plateau-item">
+            <div class="plateau-name">Pull-Up</div>
+            <div class="plateau-risk" style="color:var(--green);">29</div>
+            <span class="tag tag-green">LOW RISK</span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- PR Forecast + TSB Warning -->
+        <div class="grid2">
+          <div>
+            <h3>PR Window Forecast</h3>
+            <div style="display:flex; flex-direction:column; gap:10px; margin-top:8px;">
+              <div class="forecast-card">
+                <div class="forecast-lift">🏋️ Bench Press</div>
+                <div class="forecast-target">120 kg</div>
+                <div class="forecast-eta">Estimated in ~3 weeks · Confidence 76%</div>
+                <div class="forecast-confidence"><span class="tag tag-green">PRIMED</span> TSB +4.2, feel trending up, consistent volume</div>
+              </div>
+              <div class="forecast-card" style="background:linear-gradient(135deg,rgba(10,132,255,0.10),rgba(48,209,88,0.08)); border-color:rgba(48,209,88,0.25);">
+                <div class="forecast-lift">💀 Deadlift</div>
+                <div class="forecast-target" style="color:var(--green);">160 kg</div>
+                <div class="forecast-eta">Estimated in ~5 weeks · Confidence 81%</div>
+                <div class="forecast-confidence"><span class="tag tag-green">STRONG TRAJECTORY</span> fastest velocity of all lifts</div>
+              </div>
+              <div style="background:rgba(255,69,58,0.08); border:1px solid rgba(255,69,58,0.2); border-radius:10px; padding:12px;">
+                <div class="forecast-lift" style="font-size:11px; color:var(--sub); text-transform:uppercase; letter-spacing:.05em;">⚠️ OHP — No PR Window</div>
+                <div style="font-size:13px; color:var(--red); font-weight:700; margin:4px 0;">Lift is declining</div>
+                <div style="font-size:12px; color:var(--sub);">Recommend deload + form audit. Current trajectory → 52 kg in 8 weeks.</div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3>Training Day Quality Heatmap (Last 7 Weeks)</h3>
+            <div style="font-size:11px; color:var(--sub); margin-bottom:10px;">Each column = one week. Each row = a day (Mon–Sun). Color intensity = session quality score.</div>
+            <div class="day-grid" id="dayGrid"></div>
+            <div class="inol-legend" style="margin-top:10px;">
+              <div class="inol-swatch" style="background:#1c1c2e;"></div> Rest / Skip
+              <div class="inol-swatch" style="background:#1a3a5c;"></div> Low Quality
+              <div class="inol-swatch" style="background:#0A84FF;"></div> Good
+              <div class="inol-swatch" style="background:#30D158;"></div> Peak
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="tsb-warning">
+              <div class="tsb-warning-icon">⚠️</div>
+              <div class="tsb-warning-text">
+                <strong>TSB Warning:</strong> Your acute load (ATL) has exceeded chronic load (CTL) for 9 consecutive days. You're in a <strong>functional overreach zone</strong>. Consider a 3–4 day deload before your next PR attempt — performance may be suppressed by 6–11% while fatigued.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// ─── Helpers ─────────────────────────────────────────────────────────────
+Chart.defaults.color = '#8e8ea0';
+Chart.defaults.borderColor = '#2a2a3e';
+Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
+
+function toggleSection(id) {
+  const body = document.getElementById('body-' + id);
+  const icon = document.getElementById('icon-' + id);
+  body.classList.toggle('collapsed');
+  icon.textContent = body.classList.contains('collapsed') ? '▸' : '▾';
+}
+
+// ─── Radar Chart ─────────────────────────────────────────────────────────
+new Chart(document.getElementById('radarChart'), {
+  type: 'radar',
+  data: {
+    labels: ['Push (Horiz)', 'Pull (Vert)', 'Push (Vert)', 'Hip Hinge', 'Squat', 'Carry/Core'],
+    datasets: [
+      {
+        label: 'You',
+        data: [88, 82, 58, 91, 68, 52],
+        backgroundColor: 'rgba(10,132,255,0.18)',
+        borderColor: '#0A84FF',
+        borderWidth: 2,
+        pointBackgroundColor: '#0A84FF',
+        pointRadius: 4,
+      },
+      {
+        label: 'Advanced Avg',
+        data: [72, 72, 72, 72, 72, 72],
+        backgroundColor: 'rgba(255,255,255,0.03)',
+        borderColor: 'rgba(255,255,255,0.2)',
+        borderWidth: 1,
+        borderDash: [4,4],
+        pointRadius: 0,
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } },
+    scales: {
+      r: {
+        min: 0, max: 100,
+        ticks: { stepSize: 25, display: false },
+        grid: { color: '#2a2a3e' },
+        angleLines: { color: '#2a2a3e' },
+        pointLabels: { font: { size: 11 }, color: '#8e8ea0' }
+      }
+    }
+  }
+});
+
+// ─── Strength Velocity Area Chart ────────────────────────────────────────
+const weeks = ['W1','W2','W3','W4','W5','W6','W7','W8','W9','W10','W11','W12','W13'];
+new Chart(document.getElementById('velocityChart'), {
+  type: 'line',
+  data: {
+    labels: weeks,
+    datasets: [
+      {
+        label: 'Bench', data: [89,90,90,91,92,92,93,95,96,97,98,99,100],
+        borderColor: '#30D158', backgroundColor: 'rgba(48,209,88,0.08)',
+        tension: 0.4, fill: false, borderWidth: 2, pointRadius: 2,
+      },
+      {
+        label: 'Deadlift', data: [124,127,128,130,133,135,138,140,143,145,147,149,150],
+        borderColor: '#0A84FF', backgroundColor: 'rgba(10,132,255,0.08)',
+        tension: 0.4, fill: false, borderWidth: 2, pointRadius: 2,
+      },
+      {
+        label: 'Squat', data: [110,110,111,111,112,111,112,111,112,112,112,112,112],
+        borderColor: '#FF9F0A', backgroundColor: 'rgba(255,159,10,0.06)',
+        tension: 0.4, fill: false, borderWidth: 2, pointRadius: 2,
+      },
+      {
+        label: 'OHP', data: [62,62,61,61,60,60,59,59,59,58,58,58,58],
+        borderColor: '#FF453A', backgroundColor: 'rgba(255,69,58,0.06)',
+        tension: 0.4, fill: false, borderWidth: 2, pointRadius: 2,
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } },
+    scales: {
+      y: { title: { display: true, text: 'Est. 1RM (kg)', font: { size: 10 } }, ticks: { font: { size: 10 } } },
+      x: { ticks: { font: { size: 10 } } }
+    }
+  }
+});
+
+// ─── TSB Chart ───────────────────────────────────────────────────────────
+new Chart(document.getElementById('tsbChart'), {
+  type: 'line',
+  data: {
+    labels: weeks,
+    datasets: [
+      {
+        label: 'CTL (Fitness)', data: [42,43,44,45,46,47,48,49,50,51,52,53,54],
+        borderColor: '#0A84FF', fill: false, tension: 0.4, borderWidth: 2, pointRadius: 2,
+      },
+      {
+        label: 'ATL (Fatigue)', data: [38,42,48,44,46,50,55,52,56,58,62,60,58],
+        borderColor: '#FF453A', fill: false, tension: 0.4, borderWidth: 2, pointRadius: 2,
+      },
+      {
+        label: 'TSB (Form)', data: [4,1,-4,1,0,-3,-7,-3,-6,-7,-10,-7,-4],
+        borderColor: '#30D158', fill: {target: 'origin', above:'rgba(48,209,88,0.12)', below:'rgba(255,69,58,0.12)'},
+        tension: 0.4, borderWidth: 2, pointRadius: 2,
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } },
+    scales: {
+      y: { ticks: { font: { size: 10 } } },
+      x: { ticks: { font: { size: 10 } } }
+    }
+  }
+});
+
+// ─── PR Step Chart ───────────────────────────────────────────────────────
+new Chart(document.getElementById('prStepChart'), {
+  type: 'line',
+  data: {
+    labels: ['Mar 1','Mar 12','Mar 28','Apr 8','Apr 19','Apr 30','May 5','May 13'],
+    datasets: [{
+      label: 'Bench 1RM PR',
+      data: [89, 89, 92, 92, 95, 98, 100, 100],
+      borderColor: '#30D158', backgroundColor: 'rgba(48,209,88,0.10)',
+      stepped: 'before', fill: true, borderWidth: 3, pointRadius: 5,
+      pointBackgroundColor: '#30D158',
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { min: 85, max: 115, title: { display: true, text: 'kg', font: { size: 10 } }, ticks: { font: { size: 10 } } },
+      x: { ticks: { font: { size: 9 } } }
+    }
+  }
+});
+
+// ─── Volume Donut ────────────────────────────────────────────────────────
+new Chart(document.getElementById('volumeDonut'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Push', 'Pull', 'Legs', 'Core', 'Cardio'],
+    datasets: [{
+      data: [32, 28, 22, 10, 8],
+      backgroundColor: ['#0A84FF','#30D158','#FF9F0A','#BF5AF2','#5AC8FA'],
+      borderWidth: 0, hoverOffset: 8,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, cutout: '68%',
+    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }
+  }
+});
+
+// ─── Rep Range Bar ───────────────────────────────────────────────────────
+new Chart(document.getElementById('repRangeBar'), {
+  type: 'bar',
+  data: {
+    labels: ['1–3 (Power)', '4–6 (Strength)', '7–9 (Mixed)', '10–12 (Hyper)', '13+ (Endur)'],
+    datasets: [{
+      label: 'Sets (%)',
+      data: [8, 32, 24, 28, 8],
+      backgroundColor: ['#BF5AF2','#0A84FF','#5AC8FA','#30D158','#FF9F0A'],
+      borderRadius: 6, borderWidth: 0,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { max: 40, ticks: { callback: v => v + '%', font: { size: 10 } } },
+      y: { ticks: { font: { size: 10 } } }
+    }
+  }
+});
+
+// ─── Session Density ─────────────────────────────────────────────────────
+new Chart(document.getElementById('densityChart'), {
+  type: 'line',
+  data: {
+    labels: weeks,
+    datasets: [{
+      label: 'Sets/min',
+      data: [2.1,2.3,2.4,2.5,2.6,2.7,2.8,2.6,2.9,2.8,2.9,2.8,2.8],
+      borderColor: '#5AC8FA', backgroundColor: 'rgba(90,200,250,0.10)',
+      fill: true, tension: 0.4, borderWidth: 2, pointRadius: 2,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { title: { display: true, text: 'sets/min', font: { size: 10 } }, ticks: { font: { size: 10 } } },
+      x: { ticks: { font: { size: 10 } } }
+    }
+  }
+});
+
+// ─── INOL Heatmap (91 days = 13 weeks × 7 days) ──────────────────────────
+(function() {
+  const inolData = [
+    0,1,2,1,3,0,0,  // W1
+    1,2,2,0,3,1,0,  // W2
+    0,2,3,1,2,0,0,  // W3
+    1,1,2,2,3,0,0,  // W4
+    0,3,2,1,4,1,0,  // W5
+    0,2,2,1,3,0,0,  // W6
+    1,3,2,0,4,2,0,  // W7
+    0,1,2,3,3,0,0,  // W8
+    0,2,3,1,3,1,0,  // W9
+    1,2,3,2,4,0,0,  // W10
+    0,3,3,1,4,2,0,  // W11
+    0,2,2,2,4,1,0,  // W12
+    1,2,3,2,4,0,0   // W13
+  ];
+  const colors = {
+    0: '#1c2a1c',   // rest
+    1: '#1e3a28',   // deload
+    2: '#1a5c2a',   // easy
+    3: '#0A84FF',   // optimal
+    4: '#d97706',   // heavy
+    5: '#FF453A'    // overreach
+  };
+  const grid = document.getElementById('inolGrid');
+  inolData.forEach(v => {
+    const cell = document.createElement('div');
+    cell.className = 'inol-cell';
+    cell.style.background = colors[v] || colors[0];
+    cell.title = ['Rest','Deload','Easy','Optimal','Heavy','Overreach'][v] || 'Rest';
+    grid.appendChild(cell);
+  });
+})();
+
+// ─── Feel × Performance Scatter ──────────────────────────────────────────
+new Chart(document.getElementById('feelScatter'), {
+  type: 'scatter',
+  data: {
+    datasets: [{
+      label: 'Sessions',
+      data: [
+        {x:2,y:62},{x:2,y:68},{x:3,y:71},{x:3,y:78},{x:3,y:75},
+        {x:4,y:80},{x:4,y:84},{x:4,y:79},{x:4,y:88},{x:5,y:91},
+        {x:5,y:87},{x:5,y:93},{x:1,y:55},{x:2,y:60},{x:3,y:74},
+        {x:4,y:82},{x:5,y:90},{x:3,y:72},{x:4,y:86},{x:2,y:65}
+      ],
+      backgroundColor: [
+        '#FF453A','#FF453A','#0A84FF','#0A84FF','#0A84FF',
+        '#30D158','#30D158','#0A84FF','#30D158','#30D158',
+        '#30D158','#30D158','#FF453A','#FF453A','#0A84FF',
+        '#30D158','#30D158','#0A84FF','#30D158','#FF453A'
+      ],
+      pointRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false },
+      tooltip: { callbacks: { label: ctx => `Feel: ${ctx.raw.x}/5, Perf: ${ctx.raw.y}%` } }
+    },
+    scales: {
+      x: { min: 1, max: 5, title: { display: true, text: 'Feel Rating (1–5)', font: { size: 10 } }, ticks: { stepSize: 1, font: { size: 10 } } },
+      y: { min: 50, max: 100, title: { display: true, text: 'Session Performance %', font: { size: 10 } }, ticks: { font: { size: 10 } } }
+    }
+  }
+});
+
+// ─── Triple Line (HRV / Sleep / Strength) ─────────────────────────────────
+const eightWeeks = ['W6','W7','W8','W9','W10','W11','W12','W13'];
+new Chart(document.getElementById('tripleLineChart'), {
+  type: 'line',
+  data: {
+    labels: eightWeeks,
+    datasets: [
+      {
+        label: 'HRV (ms)', data: [68,72,74,70,75,77,78,78],
+        borderColor: '#30D158', tension: 0.4, borderWidth: 2, pointRadius: 3, yAxisID: 'y',
+      },
+      {
+        label: 'Sleep (h)', data: [6.8,7.0,7.2,6.9,7.1,7.3,7.4,7.4],
+        borderColor: '#5AC8FA', tension: 0.4, borderWidth: 2, pointRadius: 3, yAxisID: 'y1',
+      },
+      {
+        label: 'Strength Idx', data: [66,68,70,69,71,73,74,74],
+        borderColor: '#BF5AF2', tension: 0.4, borderWidth: 2, pointRadius: 3, yAxisID: 'y2',
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } },
+    scales: {
+      y: { type: 'linear', position: 'left', min: 60, max: 90, ticks: { font: { size: 9 } }, title: { display: true, text: 'HRV', font: { size: 9 } } },
+      y1: { type: 'linear', position: 'right', min: 6, max: 9, ticks: { font: { size: 9 } }, grid: { drawOnChartArea: false }, title: { display: true, text: 'Sleep h', font: { size: 9 } } },
+      y2: { display: false, min: 60, max: 85 },
+      x: { ticks: { font: { size: 10 } } }
+    }
+  }
+});
+
+// ─── Power-to-Lean Ratio ──────────────────────────────────────────────────
+new Chart(document.getElementById('plrChart'), {
+  type: 'line',
+  data: {
+    labels: weeks,
+    datasets: [
+      {
+        label: 'PLR', data: [3.8,3.9,4.0,4.0,4.1,4.1,4.2,4.2,4.3,4.3,4.4,4.4,4.41],
+        borderColor: '#0A84FF', backgroundColor: 'rgba(10,132,255,0.10)',
+        fill: true, tension: 0.4, borderWidth: 2, pointRadius: 2,
+      },
+      {
+        label: 'Elite Target',
+        data: Array(13).fill(5.0),
+        borderColor: 'rgba(191,90,242,0.5)', borderDash: [6,4], borderWidth: 1, pointRadius: 0,
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } },
+    scales: {
+      y: { min: 3.5, max: 5.5, title: { display: true, text: 'kg-vol / kg-LBM', font: { size: 10 } }, ticks: { font: { size: 10 } } },
+      x: { ticks: { font: { size: 10 } } }
+    }
+  }
+});
+
+// ─── Day Quality Heatmap (7×7 = 7 weeks × 7 days) ────────────────────────
+(function() {
+  // quality: 0=rest, 1=low, 2=good, 3=peak
+  const quality = [
+    0,2,3,2,3,1,0,
+    1,3,2,2,3,2,0,
+    0,2,2,3,2,0,0,
+    0,3,3,2,3,2,0,
+    1,2,3,2,2,1,0,
+    0,3,3,1,3,2,0,
+    0,2,3,2,3,0,0
+  ];
+  const qColors = {0:'#1c1c2e', 1:'#1a3a5c', 2:'#0A84FF', 3:'#30D158'};
+  const grid = document.getElementById('dayGrid');
+  const days = ['M','T','W','T','F','S','S'];
+  quality.forEach((v, i) => {
+    const cell = document.createElement('div');
+    cell.className = 'day-cell';
+    cell.style.background = qColors[v];
+    cell.textContent = days[i % 7];
+    cell.title = ['Rest','Low','Good','Peak'][v];
+    grid.appendChild(cell);
+  });
+})();
+</script>
+</body>
+</html>

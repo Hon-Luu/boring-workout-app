@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H.O.N — Comprehensive User Manual</title>
+<style>
+  :root {
+    --bg: #080808;
+    --surface: #111;
+    --card: #161616;
+    --card2: #1c1c1c;
+    --border: #252525;
+    --border2: #2e2e2e;
+    --accent: #d4af37;
+    --accent-dim: rgba(212,175,55,0.12);
+    --text: #efefef;
+    --text2: #c0c0c0;
+    --muted: #777;
+    --positive: #4caf88;
+    --warning: #e6a817;
+    --negative: #e05c5c;
+    --blue: #5b9bd5;
+    --purple: #9b6bcc;
+    --radius: 10px;
+    --font: -apple-system, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+    --mono: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); line-height: 1.7; font-size: 15px; }
+
+  /* ── LAYOUT ──────────────────────────────────────────── */
+  .layout { display: flex; min-height: 100vh; }
+
+  nav {
+    width: 260px;
+    min-width: 260px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 32px 0 32px;
+  }
+  nav .nav-logo {
+    padding: 0 24px 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  nav .nav-logo span { font-size: 22px; font-weight: 900; color: var(--accent); letter-spacing: -1px; }
+  nav .nav-logo p { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  nav a {
+    display: block;
+    padding: 7px 24px;
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    transition: all 0.15s;
+  }
+  nav a:hover { color: var(--text); background: var(--card); }
+  nav a.active { color: var(--accent); border-left-color: var(--accent); background: var(--accent-dim); }
+  nav .nav-section {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 20px 24px 6px;
+  }
+
+  main { flex: 1; max-width: 900px; padding: 48px 48px 96px; }
+
+  /* ── HERO ────────────────────────────────────────────── */
+  .hero {
+    background: linear-gradient(160deg, #1a1500 0%, transparent 70%);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 48px 40px;
+    margin-bottom: 64px;
+    text-align: center;
+  }
+  .hero-badge {
+    display: inline-block;
+    background: var(--accent);
+    color: #000;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+  .hero h1 { font-size: 52px; font-weight: 900; letter-spacing: -2px; color: var(--accent); }
+  .hero h2 { font-size: 18px; font-weight: 400; color: var(--muted); margin-top: 8px; }
+
+  /* ── TYPOGRAPHY ──────────────────────────────────────── */
+  h1.page-title { font-size: 38px; font-weight: 900; letter-spacing: -1px; margin-bottom: 6px; }
+  h2.ch-title {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin: 64px 0 6px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    scroll-margin-top: 24px;
+  }
+  h3.sec-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 36px 0 10px;
+    color: var(--text);
+    scroll-margin-top: 24px;
+  }
+  h4.sub-title { font-size: 16px; font-weight: 700; margin: 24px 0 8px; color: var(--accent); }
+  p { margin-bottom: 14px; color: var(--text2); }
+  p:last-child { margin-bottom: 0; }
+  strong { color: var(--text); font-weight: 600; }
+  em { font-style: italic; color: var(--muted); }
+
+  /* ── COMPONENTS ──────────────────────────────────────── */
+  .formula-box {
+    background: var(--card);
+    border: 1px solid var(--border2);
+    border-left: 4px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin: 20px 0;
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--text);
+    overflow-x: auto;
+  }
+  .formula-box .formula-label {
+    font-family: var(--font);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .formula-box .formula-line { margin: 4px 0; }
+  .formula-box .formula-note { font-family: var(--font); font-size: 12px; color: var(--muted); margin-top: 12px; }
+
+  .cite-box {
+    background: rgba(91,155,213,0.07);
+    border: 1px solid rgba(91,155,213,0.2);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 13px;
+    color: var(--blue);
+  }
+  .cite-box strong { color: var(--blue); }
+
+  .info-block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin: 16px 0;
+  }
+  .info-block.gold { border-left: 4px solid var(--accent); }
+  .info-block.green { border-left: 4px solid var(--positive); }
+  .info-block.blue  { border-left: 4px solid var(--blue); }
+  .info-block.orange { border-left: 4px solid var(--warning); }
+  .info-block.red   { border-left: 4px solid var(--negative); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 13px;
+  }
+  th {
+    background: var(--card2);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    text-align: left;
+  }
+  td {
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    color: var(--text2);
+    vertical-align: top;
+  }
+  tr:hover td { background: var(--card2); }
+
+  ul, ol { padding-left: 22px; margin-bottom: 14px; color: var(--text2); }
+  ul li, ol li { margin-bottom: 6px; }
+
+  .pill {
+    display: inline-block;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    margin: 2px;
+  }
+  .pill.gold { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+  .pill.green { border-color: var(--positive); color: var(--positive); }
+  .pill.blue { border-color: var(--blue); color: var(--blue); }
+  .pill.purple { border-color: var(--purple); color: var(--purple); }
+  .pill.gray { color: var(--muted); }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin: 16px 0; }
+  .metric-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+  }
+  .metric-card .label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .metric-card .value { font-size: 22px; font-weight: 800; color: var(--accent); font-family: var(--mono); }
+  .metric-card .sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  .warning-box {
+    background: rgba(230,168,23,0.08);
+    border: 1px solid rgba(230,168,23,0.3);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    font-size: 13px;
+    color: var(--warning);
+    margin: 16px 0;
+  }
+  .warning-box strong { color: var(--warning); }
+
+  code {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+  }
+
+  hr.divider { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+  @media (max-width: 900px) {
+    nav { display: none; }
+    main { padding: 24px 20px 64px; }
+    .two-col, .three-col { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- ══════════════════════════════════════════════════════
+     NAVIGATION
+══════════════════════════════════════════════════════ -->
+<nav>
+  <div class="nav-logo">
+    <span>H.O.N</span>
+    <p>Comprehensive User Manual</p>
+  </div>
+
+  <div class="nav-section">Overview</div>
+  <a href="#overview">What is H.O.N?</a>
+  <a href="#philosophy">Design Philosophy</a>
+  <a href="#setup">Initial Setup</a>
+
+  <div class="nav-section">Strength Training</div>
+  <a href="#logging">Logging a Workout</a>
+  <a href="#sets">Sets, Weight &amp; Equipment</a>
+  <a href="#dropsets">Drop Sets</a>
+  <a href="#rpe">RPE &amp; Feel Ratings</a>
+  <a href="#e1rm">Estimated 1RM Formulas</a>
+  <a href="#tonnage">Tonnage (Volume)</a>
+  <a href="#inol">INOL — Training Load</a>
+  <a href="#repdecay">Rep Decay</a>
+  <a href="#efficiency">Session Efficiency</a>
+  <a href="#fatigue-adj">Fatigue-Adjusted e1RM</a>
+
+  <div class="nav-section">Strength Scores</div>
+  <a href="#psi">PSI — Fiber Load Index</a>
+  <a href="#relative-strength">Relative Strength Tiers</a>
+  <a href="#composite">Composite Strength Score</a>
+  <a href="#css-pillars">CSS Pillars: L / M / P</a>
+  <a href="#category-matrix">Category Efficiency Matrix</a>
+
+  <div class="nav-section">Cardio &amp; Circuits</div>
+  <a href="#circuit-formats">AMRAP vs EMOM</a>
+  <a href="#circuit-logging">Weighted Circuit Logging</a>
+  <a href="#cardio-analytics">Cardio Analytics</a>
+  <a href="#cardio-insights">8 Cross-Domain Insights</a>
+
+  <div class="nav-section">Readiness &amp; Recovery</div>
+  <a href="#readiness">Readiness Engine</a>
+  <a href="#streak">Training Streak</a>
+  <a href="#healthkit">HealthKit Integration</a>
+
+  <div class="nav-section">Planning</div>
+  <a href="#routines">Routines &amp; Templates</a>
+  <a href="#rest-days">Rest Day Planning</a>
+  <a href="#history">Unified History</a>
+  <a href="#home">Home Dashboard</a>
+
+  <div class="nav-section">Reference</div>
+  <a href="#formulas">Formula Reference</a>
+  <a href="#thresholds">Strength Thresholds Table</a>
+  <a href="#exercise-multipliers">Exercise Multipliers</a>
+  <a href="#emg">EMG Activation Profiles</a>
+  <a href="#citations">Scientific Citations</a>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════
+     MAIN CONTENT
+══════════════════════════════════════════════════════ -->
+<main>
+
+<div class="hero">
+  <div class="hero-badge">Comprehensive User Manual</div>
+  <h1>H.O.N</h1>
+  <h2>Health OS — every feature, every formula, every citation</h2>
+</div>
+
+<!-- ──────────────────────────────────────────
+     CH 1: OVERVIEW
+────────────────────────────────────────── -->
+<h2 class="ch-title" id="overview">1. What is H.O.N?</h2>
+<p>H.O.N (Health OS) is a strength and cardio tracking application for iOS that goes beyond simple rep-and-set logging. Every metric the app produces is derived from peer-reviewed exercise science. The goal is to tell you not just <em>what</em> you lifted, but <em>how efficiently</em> you trained, <em>how close</em> you are to your genetic potential, and <em>whether your body is ready</em> to train hard today.</p>
+
+<h3 class="sec-title" id="philosophy">Design Philosophy</h3>
+<p>Most fitness apps record numbers. H.O.N interprets them. The three guiding principles are:</p>
+<ul>
+  <li><strong>Evidence over heuristics.</strong> Every formula cites its source. No "proprietary algorithms."</li>
+  <li><strong>Cross-modal awareness.</strong> Strength training and cardio are treated as correlated dimensions, not separate silos. A hard HIIT week affects your strength readiness score. A deload week in the gym affects your cardio fatigue interpretation.</li>
+  <li><strong>Progressive depth.</strong> The app starts simple — log a set, see a trend. As more data accumulates, it surfaces deeper signals: INOL zones, fatigue-adjusted e1RM, energy system synergy, and training efficiency quartiles.</li>
+</ul>
+
+<h3 class="sec-title" id="setup">Initial Setup</h3>
+<h4 class="sub-title">Body Weight (required for tier classification)</h4>
+<p>Settings → Strength Profile → Body Weight (kg). Body weight is used in three separate calculations:</p>
+<ol>
+  <li>Relative strength ratios (e1RM ÷ body weight)</li>
+  <li>PSI normalization (fiber load ÷ BW⁰·⁶⁷)</li>
+  <li>Bodyweight exercise effective load (pull-ups, push-ups: body weight is the resistance)</li>
+</ol>
+<div class="warning-box"><strong>Important:</strong> Without body weight, relative-strength tiers default to "Intermediate," PSI normalization is disabled, and tier classifications are unavailable.</div>
+
+<h4 class="sub-title">Optional Profile Fields</h4>
+<table>
+  <tr><th>Field</th><th>Where It's Used</th><th>Effect of Omission</th></tr>
+  <tr><td>Body Fat %</td><td>PSI per lean mass, body-comp strength ratio</td><td>Body-comp sub-scores hidden</td></tr>
+  <tr><td>Muscle Mass %</td><td>PSI per muscle mass</td><td>Muscle-mass sub-score hidden</td></tr>
+  <tr><td>Age</td><td>Age-adjusted strength thresholds</td><td>Thresholds use age-factor 1.0 (no adjustment)</td></tr>
+</table>
+
+<h4 class="sub-title">HealthKit</h4>
+<p>Settings → Health OS. Grants read access to HRV (Heart Rate Variability), Resting Heart Rate, VO₂ Max, and Step Count. These appear in the "What Influences Me" panel on the Home screen. HealthKit data does not yet feed the Readiness score numerically, but is displayed alongside it for context. The app also writes completed strength and cardio workouts back to Apple Health.</p>
+
+<!-- ──────────────────────────────────────────
+     CH 2: STRENGTH LOGGING
+────────────────────────────────────────── -->
+<h2 class="ch-title" id="logging">2. Logging a Strength Workout</h2>
+
+<h3 class="sec-title">Starting a session</h3>
+<p>Tap "Start Workout" on the Home screen or from the Workout tab. A session timer begins. You can add exercises in any order. The app pre-fills weights and reps from your most recent session as targets, shown in grey. Log actual values in the white fields.</p>
+
+<h3 class="sec-title" id="sets">Sets, Weight Entry &amp; Equipment</h3>
+<p>The weight you enter depends on equipment type:</p>
+
+<table>
+  <tr><th>Equipment</th><th>Enter</th><th>Effective Weight Used in Calculations</th></tr>
+  <tr><td>Barbell</td><td>Total loaded weight</td><td>Max(entered, 20 kg empty bar)</td></tr>
+  <tr><td>EZ Bar</td><td>Total loaded weight</td><td>Max(entered, 10 kg bar)</td></tr>
+  <tr><td>Straight Bar</td><td>Total loaded weight</td><td>Max(entered, 6 kg bar)</td></tr>
+  <tr><td>Dumbbell</td><td>Per-hand weight</td><td>entered × 2 (bilateral total)</td></tr>
+  <tr><td>Cable / Machine</td><td>Stack weight</td><td>As entered</td></tr>
+  <tr><td>Bodyweight</td><td>—</td><td>Your logged body weight</td></tr>
+  <tr><td>Assisted Pull-Up / Dip</td><td>Counterbalance weight</td><td>Body weight − counterbalance</td></tr>
+</table>
+
+<p>This ensures that "Barbell Bench Press 60 kg" and "Dumbbell Bench Press 30 kg/hand" both report comparable bilateral loads for analytics purposes.</p>
+
+<h3 class="sec-title" id="dropsets">Drop Sets</h3>
+<p>After completing a main set, tap the drop-set icon. Enter the reduced weight and the reps performed. The app keeps both the main set and the drop set in all calculations.</p>
+<div class="info-block gold">
+  <strong>Why drop sets don't distort your e1RM:</strong> A heavy main set (e.g. 100 kg × 3) followed by a drop set (80 kg × 8) can produce different e1RM estimates: Epley gives 110 kg for the main set, and 101 kg for the drop. The app takes the <em>maximum</em> of both, preventing drop-set training from creating false regressions in your trend line. This is called the <strong>drop-adjusted e1RM</strong>.
+</div>
+<div class="warning-box"><strong>Validation:</strong> If the drop weight equals or exceeds the main set weight, the app shows a warning. A "drop set" by definition uses a lighter load.</div>
+
+<h3 class="sec-title" id="rpe">RPE &amp; Feel Ratings</h3>
+
+<h4 class="sub-title">Rate of Perceived Exertion (RPE, 6–10)</h4>
+<p>An optional per-set field on a 6–10 scale where 10 = true 1RM (zero reps left), 9 = 1 rep in reserve, 8 = 2 in reserve, etc. When entered, the app computes an <strong>RPE-adjusted e1RM</strong> that estimates what you could have done fully rested.</p>
+
+<div class="formula-box">
+  <div class="formula-label">RPE-Adjusted e1RM (Zourdos et al., 2016)</div>
+  <div class="formula-line">RIR = 10 − RPE</div>
+  <div class="formula-line">totalReps = actualReps + RIR</div>
+  <div class="formula-line">e1RM_adj = weight / (1 − totalReps / 40.9)</div>
+  <div class="formula-note">Source: Zourdos MC et al. (2016). Novel Resistance Training–Specific RPE Scale Measuring Repetitions in Reserve. J Strength Cond Res. 30(1):267–275.</div>
+</div>
+
+<h4 class="sub-title">Session Feel Rating (Tired / Normal / Strong)</h4>
+<p>Logged once per session at finish. Maps to a cost multiplier that scales the session's fatigue load:</p>
+<table>
+  <tr><th>Rating</th><th>Cost Multiplier</th><th>Interpretation</th></tr>
+  <tr><td>Tired</td><td>0.85×</td><td>High perceived effort for load achieved — possible overreaching or poor sleep</td></tr>
+  <tr><td>Normal</td><td>1.00×</td><td>Neutral baseline</td></tr>
+  <tr><td>Strong</td><td>1.15×</td><td>Low perceived effort — body is fresh, underloaded, or super-compensating</td></tr>
+</table>
+<p>Consecutive feel streaks (2+ sessions of the same rating) trigger coaching notes. Three strong sessions in a row suggests it is time to add load. Three tired sessions in a row suggests deload or prioritise sleep.</p>
+
+<!-- ──────────────────────────────────────────
+     CH 3: e1RM
+────────────────────────────────────────── -->
+<h2 class="ch-title" id="e1rm">3. Estimated One-Rep Max (e1RM)</h2>
+
+<p>The e1RM is the foundation of every strength metric in H.O.N. It estimates the maximum weight you could lift for exactly one repetition, derived from any working set you perform.</p>
+
+<div class="info-block blue">
+  <strong>Why estimate rather than test?</strong> Testing a true 1RM is fatiguing, risky, and impractical weekly. Estimation from submaximal sets (2–10 reps) is validated at ±2–5% accuracy and allows trend tracking across every session without disrupting training.
+</div>
+
+<h3 class="sec-title">Formula Selection by Rep Range</h3>
+<p>H.O.N uses two peer-reviewed formulas, selected by rep range, because no single formula is accurate across all rep ranges:</p>
+
+<div class="formula-box">
+  <div class="formula-label">Epley Formula — ≤ 10 reps (Epley, 1985)</div>
+  <div class="formula-line">e1RM = weight × (1 + reps / 30)</div>
+  <div class="formula-note">Best accuracy at 2–10 reps. Error ≈ 2–5%. Simple linear model validated in multiple free-weight populations. Source: Epley B (1985). Poundage Chart. Boyd Epley Workout.</div>
+</div>
+
+<div class="formula-box">
+  <div class="formula-label">Mayhew Formula — 11–20 reps (Mayhew et al., 1992)</div>
+  <div class="formula-line">e1RM = weight / (0.522 + 0.419 × e<sup>−0.055 × reps</sup>)</div>
+  <div class="formula-note">Exponential decay model. Outperforms Epley at higher rep ranges (11–20). Validated at ±3–6% for 10–20RM sets. Source: Mayhew JL et al. (1992). Muscular endurance repetitions to predict bench press strength in men of different training levels. J Sports Med Phys Fitness. 32(1):37–42.</div>
+</div>
+
+<div class="formula-box">
+  <div class="formula-label">1-Rep Set</div>
+  <div class="formula-line">e1RM = weight (exact — no estimation needed)</div>
+</div>
+
+<div class="formula-box">
+  <div class="formula-label">&gt; 20 reps</div>
+  <div class="formula-line">e1RM = 0 (excluded)</div>
+  <div class="formula-note">Formula error grows to 15–30%+ at very high rep counts. Sets beyond 20 reps are excluded to prevent contaminating trend data with unreliable estimates.</div>
+</div>
+
+<h3 class="sec-title">Bilateral Deficit Correction (Dumbbell Only)</h3>
+<p>When both arms work simultaneously (dumbbell exercises), the bilateral force produced is approximately 8% less than the sum of each arm's independent maximum. This is the <strong>bilateral deficit</strong>.</p>
+
+<div class="formula-box">
+  <div class="formula-label">Bilateral Adjustment (Botton et al., 2016)</div>
+  <div class="formula-line">bilateralE1RM = (perHandWeight × 2) × Epley_or_Mayhew × 0.92</div>
+  <div class="formula-note">Applied only to dumbbell equipment. Source: Botton CE et al. (2016). Neuromuscular Adaptations to Unilateral vs. Bilateral Strength Training in Untrained Young Males. Eur J Sport Sci.</div>
+</div>
+
+<h3 class="sec-title">How e1RM Drives All Other Metrics</h3>
+<p>The e1RM from every session is the input to:</p>
+<ul>
+  <li><strong>Session trend points</strong> — plotted on the e1RM trend chart (raw + rolling average)</li>
+  <li><strong>PR step chart</strong> — a point is added only when a new all-time maximum e1RM is achieved</li>
+  <li><strong>Relative strength ratio</strong> — e1RM ÷ body weight, classified into tiers</li>
+  <li><strong>INOL</strong> — uses e1RM as the reference 1RM to compute intensity %</li>
+  <li><strong>PSI (fiber load)</strong> — intensity relative to rolling best e1RM, raised to the 1.8 power</li>
+  <li><strong>Composite Strength Score</strong> — via relative strength tiers</li>
+</ul>
+
+<!-- ──────────────────────────────────────────
+     CH 4: VOLUME METRICS
+────────────────────────────────────────── -->
+<h2 class="ch-title" id="tonnage">4. Tonnage (Volume)</h2>
+
+<p><strong>Tonnage</strong> (also called "training volume" or "volume load") is the total mechanical work done in a session or exercise block.</p>
+
+<div class="formula-box">
+  <div class="formula-label">Tonnage per Set</div>
+  <div class="formula-line">tonnage = effectiveWeight × reps + dropWeight × dropReps</div>
+  <div class="formula-note">For dumbbells, effectiveWeight = perHandWeight × 2. Includes drop set contribution.</div>
+</div>
+
+<p>Tonnage is displayed in the Exercise Insights view as <strong>"Tonnage per Session (kg·reps)"</strong> and for dumbbell exercises as <strong>"Tonnage per Session (kg·reps, per hand)"</strong>. The per-hand form is used because dumbbell loads are typically logged per hand.</p>
+
+<div class="cite-box">
+  <strong>Scientific basis:</strong> Volume load (sets × reps × weight) is one of the strongest predictors of hypertrophic adaptation and strength gain. Meta-analyses by Krieger (2010) and Schoenfeld et al. (2017) showed dose-response relationships between weekly volume and muscle growth up to ~10–20 sets per muscle group per week. Tracking tonnage trend identifies accumulation phases and deload timing.
+</div>
+
+<h3 class="sec-title">Weekly Volume per Pattern</h3>
+<p>In the Category Analytics section (Progress → swipe to Categories), the app shows average weekly tonnage per movement pattern over the last 6 weeks. This reveals imbalances — e.g. a lifter doing 12 sets of chest per week but only 6 sets of back per week will see horizontal push tonnage far outpacing horizontal pull.</p>
+
+<!-- ──────────────────────────────────────────
+     CH 5: INOL
+────────────────────────────────────────── -->
+<h2 class="ch-title" id="inol">5. INOL — Intensity-Normalized Overload Load</h2>
+
+<p>INOL (sometimes called Intensity-Normalized Overload Load) is a training load metric that accounts for both the intensity (weight relative to 1RM) and volume (total reps) of a session. It is derived from Prilepin's Table, the original Soviet periodization framework for Olympic weightlifters, adapted for general strength training by Hristo Hristov.</p>
+
+<div class="formula-box">
+  <div class="formula-label">INOL per Set</div>
+  <div class="formula-line">intensity% = (effectiveWeight / referenceE1RM) × 100</div>
+  <div class="formula-line">INOLset = reps / (100 − intensity%)</div>
+  <div class="formula-line">INOL_session = Σ INOLset across all sets (including drop sets)</div>
+  <div class="formula-note">referenceE1RM = all-time best e1RM for that exercise. Intensity% is capped at 97.5% to prevent division by zero on true max attempts. Drop set contribution is added separately.</div>
+</div>
+
+<h3 class="sec-title">INOL Zones</h3>
+
+<table>
+  <tr><th>INOL Value</th><th>Zone</th><th>Interpretation</th></tr>
+  <tr><td>&lt; 0.4</td><td>Low</td><td>Insufficient stimulus — too few reps, too light, or both. Unlikely to drive adaptation.</td></tr>
+  <tr><td>0.4 – 0.8</td><td>Moderate</td><td>Light-to-moderate work. Good for deload or technique focus sessions.</td></tr>
+  <tr><td>0.8 – 1.5</td><td>Optimal</td><td>Productive training zone for most lifters. Balances stimulus and recovery.</td></tr>
+  <tr><td>1.5 – 2.0</td><td>Heavy</td><td>Intense training. Appropriate for experienced lifters in accumulation phases.</td></tr>
+  <tr><td>&gt; 2.0</td><td>Overreaching</td><td>Excessive load. Sustainable for 1–2 weeks before planned deload required.</td></tr>
+</table>
+
+<h3 class="sec-title">Experience-Calibrated INOL Targets</h3>
+<p>The optimal INOL centre shifts with training experience, because beginners fatigue faster and recover more quickly from lighter loads while advanced lifters need more total work to drive adaptation:</p>
+
+<table>
+  <tr><th>Tier</th><th>Optimal INOL Centre</th><th>Optimal Zone</th></tr>
+  <tr><td>Beginner</td><td>0.60</td><td>0.40 – 0.80</td></tr>
+  <tr><td>Intermediate</td><td>0.90</td><td>0.60 – 1.20</td></tr>
+  <tr><td>Advanced</td><td>1.15</td><td>0.80 – 1.50</td></tr>
+  <tr><td>Elite</td><td>1.50</td><td>1.00 – 2.00</td></tr>
+</table>
+
+<div class="cite-box">
+  <strong>Scientific basis:</strong> Prilepin AT (1974). Weightlifting for beginners and masters. FiS. Moscow. Adapted by Hristov H (2009). The practical INOL formula. Original Prilepin zones calibrated for 70–80% of elite Olympic lifters; H.O.N scales zones down for lower experience tiers following Haff &amp; Triplett NSCA Essentials (2016).
+</div>
+
+<!-- ──────────────────────────────────────────
+     CH 6: REP DECAY
+────────────────────────────────────────── -->
+<h2 class="ch-title" id="repdecay">6. Rep Decay</h2>
+
+<p>Rep decay measures how quickly your rep output drops across consecutive sets of the same exercise in a single session. It is computed as the <strong>ordinary least-squares slope</strong> of (set index → reps completed) for the most recent session.</p>
+
+<div class="formula-box">
+  <div class="formula-label">Rep Decay (OLS Slope)</div>
+  <div class="formula-line">slope = OLS((0, reps_set1), (1, reps_set2), …, (n-1, reps_setN))</div>
+  <div class="formula-line">units: reps per set (negative = declining, positive = ascending)</div>
+  <div class="formula-note">Requires ≥ 2 completed sets with reps &gt; 0 in the last session.</div>
+</div>
+
+<h3 class="sec-title">Interpreting Rep Decay</h3>
+<table>
+  <tr><th>Slope</th><th>Score</th><th>Interpretation</th></tr>
+  <tr><td>−0.5 to −1.5</td><td>100</td><td>Optimal — controlled fatigue accumulation. Sets are challenging but not collapsing.</td></tr>
+  <tr><td>−1.5 to −2.5</td><td>70</td><td>Moderately steep — fatiguing fast. Consider 30s more rest or 1 fewer set.</td></tr>
+  <tr><td>−0.5 to 0.0</td><td>65</td><td>Too consistent — sets may be too easy, or rest periods too long.</td></tr>
+  <tr><td>0.0 and above</td><td>40</td><td>Ascending reps — warm-up sets not stripped, or load is trivially light.</td></tr>
+  <tr><td>≤ −2.5</td><td>30</td><td>Extreme drop-off — severe fatigue. Reduce total volume or weight immediately.</td></tr>
+</table>
+
+<div class="cite-box">
+  <strong>Scientific basis:</strong> The set-to-set rep decline pattern under constant load was characterised by Willardson (2005, J Strength Cond Res) and Ratamess et al. (2007). A decline of 0.5–2.0 reps/set at 70–80% 1RM with 2-minute rest is consistent with productive hypertrophy training. Steeper declines indicate PCr depletion or insufficient rest (Schoenfeld BJ, 2016, Science and Development of Muscle Hypertrophy).
+</div>
+
+<!-- ──────────────────────────────────────────
+     CH 7: SESSION EFFICIENCY
+────────────────────────────────────────── -->
+<h2 class="ch-title" id="efficiency">7. Session Efficiency Score</h2>
+
+<p>Session efficiency answers the question: <em>how much strength improvement did you get per unit of fatigue invested?</em></p>
+
+<div class="formula-box">
+  <div class="formula-label">Session Cost (fatigue-weighted)</div>
+  <div class="formula-line">cost_per_set = reps × (e1RM_set / refE1RM)^1.8 × min(e^(α × setIndex), 1.35)</div>
+  <div class="formula-line">session_cost = Σ cost_per_set × feelMultiplier</div>
+  <div class="formula-line">where α = fatigueDecay (0.03–0.10 by tier), feelMultiplier ∈ {0.85, 1.0, 1.15}</div>
+  <div class="formula-note">The (e1RM/ref)^1.8 term mirrors the force–velocity relationship: heavier sets cost disproportionately more per rep. The exponential term models intra-session fatigue accumulation across sets. Drop sets add their own cost (without the set-index multiplier). Feel rating scales the total.</div>
+</div>
+
+<div class="formula-box">
+  <div class="formula-label">Efficiency Score (per session)</div>
+  <div class="formula-line">efficiency = Δrolling_avg_e1RM / session_cost</div>
+  <div class="formula-note">Δrolling_avg = this session's 5-session rolling avg − previous session's rolling avg. Positive = net gain relative to cost.</div>
+</div>
+
+<h3 class="sec-title">Efficiency Labels</h3>
+<p>Efficiency is ranked against your own historical distribution for that exercise (requires ≥ 4 sessions):</p>
+<table>
+  <tr><th>Quartile</th><th>Label</th><th>Meaning</th></tr>
+  <tr><td>≥ Q3 (top 25%)</td><td>Great</td><td>High return on fatigue investment this session</td></tr>
+  <tr><td>Q1–Q3</td><td>Average</td><td>Normal return for you on this exercise</td></tr>
+  <tr><td>&lt; Q1 (bottom 25%)</td><td>Below avg</td><td>Low return — volume may be excessive or recovery insufficient</td></tr>
+</table>
+
+<h3 class="sec-title">Experience-Calibrated Fatigue Decay (α)</h3>
+<table>
+  <tr><th>Tier</th><th>α</th><th>Rest Time</th><th>Typical Rep Decline by Set 4</th></tr>
+  <tr><td>Beginner</td><td>0.10</td><td>~1–2 min</td><td>~25%</td></tr>
+  <tr><td>Intermediate</td><td>0.08</td><td>~2 min</td><td>~20%</td></tr>
+  <tr><td>Advanced</td><td>0.05</td><td>~3 min</td><td>~12%</td></tr>
+  <tr><td>Elite</td><td>0.03</td><td>5+ min</td><td>&lt;8%</td></tr>
+</table>
+
+<div class="cite-box">
+  <strong>Scientific basis:</strong> The exponential intra-session fatigue model is derived from phosphocreatine resynthesis kinetics (Greenhaff et al., 1994, Am J Physiol). The (intensity)^1.8 exponent reflects the nonlinear relationship between relative load and neuromuscular fatigue (Schoenfeld, 2016). Feel multipliers based on session RPE research (Foster et al., 2001, J Strength Cond Res).
+</div>
+
+<!-- ──────────────────────────────────────────
+     CH 8: FATIGUE-ADJUSTED e1RM
+────────────────────────────────────────── -->
+<h2 class="ch-title" id="fatigue-adj">8. Fatigue-Adjusted e1RM</h2>
+
+<p>Your raw e1RM from set 3 is lower than what you could have done set 1, because fatigue accumulated. The fatigue-adjusted e1RM <em>recovers</em> the rested capacity implied by performing that output under accumulated intra-session fatigue.</p>
+
+<div class="formula-box">
+  <div class="formula-label">Fatigue-Adjusted e1RM (per set)</div>
+  <div class="formula-line">adj_e1RM_i = rawE1RM_i × min(e^(α × i), 1.35)</div>
+  <div class="formula-line">where i = set index (0-based), α = fatigueDecay by tier</div>
+  <div class="formula-line">session_adj_e1RM = max(adj_e1RM_i) across all sets in the session</div>
+  <div class="formula-note">Cap of 1.35× prevents extreme adjustments on very late sets where noise dominates. The best (highest) fatigue-adjusted e1RM in the session is used as the session point.</div>
+</div>
+
+<p>The fatigue-adjusted trend is shown as a separate line in the e1RM chart and is averaged 50/50 with the raw e1RM trend in the Composite Strength Score's Level pillar and Momentum pillar. This prevents the score from always showing an optimistic picture while still crediting training capacity that is partially hidden by intra-session fatigue.</p>
+
+<!-- ──────────────────────────────────────────
+     CH 9: PSI
+────────────────────────────────────────── -->
+<h2 class="ch-title" id="psi">9. PSI — Physiological Stress Index (Fiber Load)</h2>
+
+<p>PSI is the app's most sophisticated strength measure. Rather than simply totalling tonnage, it estimates the actual mechanical stress placed on muscle fibers, weighted by each muscle group's physiological cross-sectional area (PCSA) and its activation level during the exercise.</p>
+
+<div class="formula-box">
+  <div class="formula-label">Session Fiber Load (Raw PSI)</div>
+  <div class="formula-line">For each set of each exercise:</div>
+  <div class="formula-line">  relIntensity = min(setWeight / refE1RM, 1.0)</div>
+  <div class="formula-line">  activationWeight = Σ (pctMVC_muscle × PCSA_muscle)</div>
+  <div class="formula-line">  setContribution = relIntensity^1.8 × reps × activationWeight</div>
+  <div class="formula-line">rawPSI = Σ setContribution across all exercises in session</div>
+  <div class="formula-note">refE1RM = rolling best e1RM for that exercise (never retroactively recalculated). pctMVC = EMG-derived % of Maximum Voluntary Contraction. PCSA in cm² normalised to 70 kg reference body. The 1.8 exponent reflects the nonlinear fiber recruitment–force relationship.</div>
+</div>
+
+<div class="formula-box">
+  <div class="formula-label">Normalized PSI Variants</div>
+  <div class="formula-line">normalizedPSI = rawPSI / bodyWeight^0.67</div>
+  <div class="formula-line">leanPSI       = rawPSI / leanMass^0.67</div>
+  <div class="formula-line">musclePSI     = rawPSI / muscleMass^0.67</div>
+  <div class="formula-note">The 0.67 (⅔) power is the allometric scaling exponent for body mass and muscle force capacity, established by Nevill et al. (1992, J Sports Sci) and applied in cross-sectional strength research to allow fair comparison across body sizes.</div>
+</div>
+
+<h3 class="sec-title">PSI Trend</h3>
+<p>The app computes OLS slope of raw PSI over the last 6 weeks, expressed as %/week. This answers: <em>Is the total mechanical stress on your muscles growing, stable, or declining?</em> A flat or declining PSI trend despite consistent training often indicates a plateau in load progression.</p>
+
+<h3 class="sec-title">Muscle PCSA Values Used</h3>
+<table>
+  <tr><th>Muscle Group</th><th>PCSA (cm²)</th><th>Source</th></tr>
+  <tr><td>Quadriceps</td><td>148</td><td>Ward et al. (2009), J Anat</td></tr>
+  <tr><td>Erector Spinae</td><td>90</td><td>Ward et al. (2009)</td></tr>
+  <tr><td>Glutes</td><td>80</td><td>Ward et al. (2009)</td></tr>
+  <tr><td>Hamstrings</td><td>75</td><td>Ward et al. (2009)</td></tr>
+  <tr><td>Latissimus Dorsi</td><td>45</td><td>Lieber &amp; Fridén (2000)</td></tr>
+  <tr><td>Trapezius</td><td>35</td><td>Lieber &amp; Fridén (2000)</td></tr>
+  <tr><td>Pectoralis Major</td><td>35</td><td>Gray's Anatomy / Lieber</td></tr>
+  <tr><td>Triceps Brachii</td><td>22</td><td>Lieber &amp; Fridén (2000)</td></tr>
+  <tr><td>Gastrocnemius</td><td>25</td><td>Lieber &amp; Fridén (2000)</td></tr>
+  <tr><td>Biceps Brachii</td><td>15</td><td>Lieber &amp; Fridén (2000)</td></tr>
+  <tr><td>Rectus Abdominis</td><td>15</td><td>Gray's Anatomy</td></tr>
+  <tr><td>Rhomboids</td><td>20</td><td>Gray's Anatomy</td></tr>
+  <tr><td>Anterior Deltoid</td><td>10</td><td>Lieber &amp; Fridén (2000)</td></tr>
+  <tr><td>Lateral Deltoid</td><td>8</td><td>Lieber &amp; Fridén (2000)</td></tr>
+  <tr><td>Posterior Deltoid</td><td>8</td><td>Lieber &amp; Fridén (2000)</td></tr>
+</table>
+
+<!-- ──────────────────────────────────────────
+     CH 10: RELATIVE STRENGTH & TIERS
+────────────────────────────────────────── -->
+<h2 class="ch-title" id="relative-strength">10. Relative Strength &amp; Tiers</h2>
+
+<p>Absolute load (kg lifted) is hard to compare across body weights. A 100 kg bench press is impressive at 70 kg body weight but unremarkable at 120 kg. <strong>Relative strength</strong> normalises performance to body weight:</p>
+
+<div class="formula-box">
+  <div class="formula-label">Relative Strength Ratio</div>
+  <div class="formula-line">relativeStrength = e1RM / bodyWeight</div>
+  <div class="formula-note">For dumbbell exercises: e1RM is the per-hand e1RM (bilateral adjustment stripped). This matches the convention used by Symmetric Strength and most standard tables.</div>
+</div>
+
+<h3 class="sec-title">Tier Thresholds</h3>
+<p>Thresholds are set per movement pattern and body weight bracket (lighter lifters are held to slightly higher BW-relative standards — a well-established population finding from Symmetric Strength and ExRx databases).</p>
+
+<table>
+  <tr><th>Pattern</th><th>Bracket</th><th>Beginner Ceiling</th><th>Intermediate Ceiling</th><th>Advanced Ceiling</th><th>Elite</th></tr>
+  <tr><td rowspan="2">Horizontal Push (Bench)</td><td>&lt;70 kg</td><td>0.85×</td><td>1.25×</td><td>1.70×</td><td>&gt;1.70×</td></tr>
+  <tr><td>70–90 kg</td><td>0.80×</td><td>1.15×</td><td>1.60×</td><td>&gt;1.60×</td></tr>
+  <tr><td rowspan="2">Hip Hinge (Deadlift)</td><td>&lt;70 kg</td><td>1.35×</td><td>1.90×</td><td>2.40×</td><td>&gt;2.40×</td></tr>
+  <tr><td>70–90 kg</td><td>1.25×</td><td>1.75×</td><td>2.25×</td><td>&gt;2.25×</td></tr>
+  <tr><td rowspan="2">Knee Flexion (Squat)</td><td>&lt;70 kg</td><td>1.10×</td><td>1.55×</td><td>2.05×</td><td>&gt;2.05×</td></tr>
+  <tr><td>70–90 kg</td><td>1.00×</td><td>1.40×</td><td>1.90×</td><td>&gt;1.90×</td></tr>
+  <tr><td rowspan="2">Vertical Push (OHP)</td><td>&lt;70 kg</td><td>0.50×</td><td>0.72×</td><td>1.00×</td><td>&gt;1.00×</td></tr>
+  <tr><td>70–90 kg</td><td>0.45×</td><td>0.65×</td><td>0.90×</td><td>&gt;0.90×</td></tr>
+  <tr><td>Vertical Pull (Pull-Up)</td><td>All</td><td>0.60×</td><td>0.90×</td><td>1.25×</td><td>&gt;1.25×</td></tr>
+</table>
+
+<p><em>Full table for all brackets: see the Strength Thresholds reference at the end of this manual.</em></p>
+
+<h3 class="sec-title">Age Adjustment</h3>
+<p>Strength declines with age. The app scales thresholds <em>down</em> (making tiers easier to achieve) for older athletes, reflecting the reduced standards expected as age-related sarcopenia progresses:</p>
+
+<table>
+  <tr><th>Age Range</th><th>Threshold Factor</th><th>Source</th></tr>
+  <tr><td>&lt; 40</td><td>1.00 (no adjustment)</td><td>—</td></tr>
+  <tr><td>40–49</td><td>0.93</td><td>Metter et al. (1997)</td></tr>
+  <tr><td>50–59</td><td>0.85</td><td>Harridge et al. (1995)</td></tr>
+  <tr><td>60+</td><td>0.75</td><td>Metter et al. (1997)</td></tr>
+</table>
+
+<div class="cite-box">
+  <strong>Sources:</strong> Metter EJ et al. (1997). Skeletal muscle strength as a predictor of all-cause mortality in healthy men. J Gerontol A Biol Sci Med Sci. 52(4):M219–225. Harridge SDR et al. (1995). Whole-muscle and single-fibre contractile properties and myosin heavy chain isoforms in humans. Pflugers Arch / Acta Physiol Scand.
+</div>
+
+<!-- ──────────────────────────────────────────
+     CH 11: COMPOSITE STRENGTH SCORE
+────────────────────────────────────────── -->
+<h2 class="ch-title" id="composite">11. Composite Strength Score (CSS)</h2>
+
+<p>The CSS is a single 0–100 score (graded S to F) that synthesises the quality, trajectory, and output of your training across all three pillars: Level, Momentum, and Process.</p>
+
+<div class="formula-box">
+  <div class="formula-label">Composite Strength Score</div>
+  <div class="formula-line">CSS = 0.35 × Level + 0.40 × Momentum + 0.25 × Process</div>
+  <div class="formula-note">All three sub-scores are 0–100. Weights reflect that week-to-week progression direction (Momentum) is the most actionable signal for most athletes, while current strength level provides context and process quality provides diagnostic depth.</div>
+</div>
+
+<h3 class="sec-title" id="css-pillars">Pillar 1: Level (35%)</h3>
+<p>Level measures how close your current strength is to your all-time personal best, weighted by muscle mass contributed:</p>
+
+<div class="formula-box">
+  <div class="formula-label">Level — PCSA-Weighted Retention</div>
+  <div class="formula-line">For each exercise:</div>
+  <div class="formula-line">  stdRetention = latestE1RM / peakE1RM</div>
+  <div class="formula-line">  adjRetention = latestAdjE1RM / peakAdjE1RM (fatigue-adjusted)</div>
+  <div class="formula-line">  blendedRetention = 0.5 × stdRetention + 0.5 × adjRetention</div>
+  <div class="formula-line">  activationWeight = Σ(pctMVC × PCSA) for exercise's muscle profile</div>
+  <div class="formula-line">levelA = Σ(activationWeight × blendedRetention) / Σ(activationWeight) × 100</div>
+  <div class="formula-line"></div>
+  <div class="formula-line">With body weight data:</div>
+  <div class="formula-line">  levelB = latestRawPSI / peakRawPSI × 100</div>
+  <div class="formula-line">  levelC = avg tierScore (0/33/67/100) across compound lifts</div>
+  <div class="formula-line">  Level = 0.50 × levelA + 0.30 × levelB + 0.20 × levelC</div>
+  <div class="formula-line">Without body weight: Level = levelA only</div>
+</div>
+
+<h3 class="sec-title">Pillar 2: Momentum (40%)</h3>
+<p>Momentum measures how fast your strength is progressing right now, experience-calibrated so a beginner gaining 2%/week and an elite lifter gaining 0.3%/week can both score 100:</p>
+
+<div class="formula-box">
+  <div class="formula-label">Momentum</div>
+  <div class="formula-line">ceiling = {Beginner: 3.0, Intermediate: 2.0, Advanced: 1.0, Elite: 0.5} %/wk</div>
+  <div class="formula-line">slope = 50.0 / ceiling</div>
+  <div class="formula-line">For each exercise:</div>
+  <div class="formula-line">  pct = 0.5 × pctChangePerWeek + 0.5 × pctChangePerWeekFatigue</div>
+  <div class="formula-line">  score = clamp(50 + pct × slope, 0, 100)</div>
+  <div class="formula-line">Momentum = weighted avg by session count</div>
+  <div class="formula-note">0%/wk always maps to 50 (flat momentum). Ceiling%/wk = 100. −ceiling%/wk = 0. The blend of standard + fatigue-adjusted trend prevents always-optimistic readings from fatigue recovery masking as genuine progress.</div>
+</div>
+
+<h3 class="sec-title">Pillar 3: Process (25%)</h3>
+<p>Process measures whether training quality — stimulus, fatigue accumulation, and recovery — is dialled in. Three sub-components:</p>
+
+<div class="formula-box">
+  <div class="formula-label">Process Score</div>
+  <div class="formula-line">process = 0.40 × INOL_sub + 0.40 × Efficiency_sub + 0.20 × RepDecay_sub</div>
+  <div class="formula-line"></div>
+  <div class="formula-line">INOL_sub = max(0, 100 − |INOL − optimalCenter| × penaltyRate)</div>
+  <div class="formula-line">Efficiency_sub = {Q3+: 90, Q1–Q3: 60, &lt;Q1: 25}</div>
+  <div class="formula-line">RepDecay_sub = {−0.5 to −1.5: 100, −1.5 to −2.5: 70, −0.5 to 0: 65, ≥0: 40, &lt;−2.5: 30}</div>
+  <div class="formula-note">Sub-scores default to 50 (neutral) when data is insufficient. This prevents punishing new users.</div>
+</div>
+
+<h3 class="sec-title">CSS Grades</h3>
+<table>
+  <tr><th>Score</th><th>Grade</th><th>Interpretation</th></tr>
+  <tr><td>90–100</td><td>Peak</td><td>At or near all-time best, strong upward trend, efficient training</td></tr>
+  <tr><td>80–89</td><td>Strong</td><td>High current strength, good trajectory</td></tr>
+  <tr><td>70–79</td><td>Solid</td><td>On track, minor inefficiencies or plateau areas</td></tr>
+  <tr><td>60–69</td><td>Building</td><td>Progress being made but room to optimise load or consistency</td></tr>
+  <tr><td>50–59</td><td>Recovering</td><td>Likely in a deload, early return, or accumulated fatigue phase</td></tr>
+  <tr><td>&lt;50</td><td>Starting</td><td>Early data, detrained, or significant gaps in training</td></tr>
+</table>
+
+<h3 class="sec-title">PPL Coverage Gate</h3>
+<p>The CSS can only be as high as the weakest category covered. This prevents someone who only benches from claiming Elite status:</p>
+<table>
+  <tr><th>Categories Covered</th><th>Maximum Achievable Tier</th></tr>
+  <tr><td>Push + Pull + Legs (all 3)</td><td>Elite</td></tr>
+  <tr><td>Any 2 of 3</td><td>Advanced</td></tr>
+  <tr><td>Any 1 of 3</td><td>Intermediate</td></tr>
+</table>
+
+<!-- ──────────────────────────────────────────
+     CH 12: CATEGORY EFFICIENCY MATRIX
+────────────────────────────────────────── -->
+<h2 class="ch-title" id="category-matrix">12. Category Efficiency Matrix</h2>
+
+<p>The category breakdown (Progress → Category tab) shows how each movement pattern (Horizontal Push, Hip Hinge, etc.) is performing across two dimensions: volume and improvement rate. These are plotted on a 2×2 matrix using the median as the threshold in each dimension:</p>
+
+<table>
+  <tr><th>Volume</th><th>Improvement Rate</th><th>Quadrant</th><th>Meaning</th></tr>
+  <tr><td>High</td><td>High</td><td class="pill gold">Efficient</td><td>Optimal — keep doing what you're doing</td></tr>
+  <tr><td>High</td><td>Low</td><td class="pill" style="color:var(--negative);border-color:var(--negative)">Inefficient</td><td>Lots of work, poor return — cut sets, raise intensity</td></tr>
+  <tr><td>Low</td><td>High</td><td class="pill green">Opportunity</td><td>Responding well — more volume here could compound fast</td></tr>
+  <tr><td>Low</td><td>Low</td><td class="pill gray">Low Priority</td><td>Under-trained or stagnant — increase frequency or load</td></tr>
+</table>
+
+<p>Volume = average weekly tonnage (kg) over 6 weeks. Improvement rate = session-count-weighted average %/week gain across exercises in that pattern.</p>
+
+<!-- ──────────────────────────────────────────
+     CH 13: CIRCUIT & CARDIO LOGGING
+────────────────────────────────────────── -->
+<h2 class="ch-title" id="circuit-formats">13. Circuit &amp; Cardio: AMRAP vs EMOM</h2>
+
+<h3 class="sec-title">Circuit Formats</h3>
+<table>
+  <tr><th>Format</th><th>Structure</th><th>Best For</th></tr>
+  <tr><td><strong>AMRAP</strong> — As Many Rounds As Possible</td><td>Complete the full exercise list as many times as possible within the time cap. Rest only when needed. Count rounds + extra reps.</td><td>General metabolic conditioning, tracking volume capacity over time.</td></tr>
+  <tr><td><strong>EMOM</strong> — Every Minute On the Minute</td><td>Start a new exercise (or round) exactly at the top of each minute. Complete the target reps, then rest for the remainder of the minute. The next minute starts automatically.</td><td>Interval-based conditioning with built-in rest structure; pacing and power output tracking.</td></tr>
+</table>
+
+<h3 class="sec-title" id="circuit-logging">Weighted Circuit Logging</h3>
+<p>Circuits are not limited to bodyweight exercises. Each exercise in a circuit can be assigned an optional weight (kg). When weight is set:</p>
+<ul>
+  <li>The weight is displayed during the active session below the exercise name</li>
+  <li>Every completed result records the <code>weightUsed</code></li>
+  <li>Post-session summary shows <strong>kg·reps tonnage</strong> alongside rounds and reps</li>
+  <li>The cardio log entry computes <code>totalVolume = Σ (repsCompleted × weightUsed)</code></li>
+</ul>
+
+<div class="formula-box">
+  <div class="formula-label">Circuit Tonnage</div>
+  <div class="formula-line">totalVolume = Σ (repsCompleted_i × weightUsed_i)</div>
+  <div class="formula-note">Summed across all results in the session. Zero for bodyweight-only circuits.</div>
+</div>
+
+<h3 class="sec-title">EMOM Auto-Save</h3>
+<p>In EMOM sessions, reps are auto-saved when the minute expires — you do not need to tap anything between minutes. The timer and voiceover announcements use a wall-clock derivation that survives app backgrounding and phone locking (background audio mode is enabled).</p>
+
+<h3 class="sec-title">Session Resume</h3>
+<p>If the app is killed mid-session, reopening it and navigating to Circuits will automatically restore the session at the correct time position, based on the saved wall-clock start time.</p>
+
+<!-- ──────────────────────────────────────────
+     CH 14: CARDIO ANALYTICS
+────────────────────────────────────────── -->
+<h2 class="ch-title" id="cardio-analytics">14. Cardio Analytics</h2>
+
+<p>The Progress tab's Cardio section shows session-level statistics that appear after your first completed circuit:</p>
+
+<table>
+  <tr><th>Metric</th><th>Formula / Definition</th></tr>
+  <tr><td>This Week Sessions</td><td>Circuit log entries with startedAt ≥ Monday 00:00 of current week</td></tr>
+  <tr><td>vs Last Week</td><td>Delta vs previous ISO week count</td></tr>
+  <tr><td>Total Rounds</td><td>Σ completedRounds across all cardioLog entries</td></tr>
+  <tr><td>Avg Reps/Min</td><td>Σ (totalReps / durationMinutes) / sessionCount, for sessions with durationMinutes &gt; 0</td></tr>
+  <tr><td>Rounds per Session (sparkline)</td><td>completedRounds for last 8 sessions, colour-coded AMRAP vs EMOM</td></tr>
+</table>
+
+<h3 class="sec-title">Per-Exercise Rep Progression</h3>
+<p>For each exercise that appears across ≥ 3 cardio sessions, the app builds a sparkline of average reps per session over time and computes a linear trend slope:</p>
+
+<div class="formula-box">
+  <div class="formula-label">Per-Exercise Rep Trend</div>
+  <div class="formula-line">avgReps_session = Σ repsCompleted for this exercise / count of rounds it appeared</div>
+  <div class="formula-line">trend_slope = OLS(sessionIndex → avgReps_session)</div>
+  <div class="formula-note">Shows "improving" when slope &gt; 0.1. Top 3 exercises by session frequency are shown.</div>
+</div>
+
+<!-- ──────────────────────────────────────────
+     CH 15: 8 CROSS-DOMAIN INSIGHTS
+────────────────────────────────────────── -->
+<h2 class="ch-title" id="cardio-insights">15. The 8 Cross-Domain Cardio Insights</h2>
+
+<p>After sufficient data builds (typically 3–5 cardio sessions plus 4+ strength sessions), the app derives 8 second-order insights that cannot be seen from either modality in isolation.</p>
+
+<h3 class="sec-title">1. HIIT Endurance Trend</h3>
+<p><em>Signal: Completed Rounds × Time. Requires ≥ 3 cardio sessions.</em></p>
+<p>OLS slope of completedRounds over sessions. A positive slope (&gt;0.15/session) indicates climbing endurance capacity. A negative slope (&lt;−0.10) indicates decline. Flat otherwise.</p>
+
+<h3 class="sec-title">2. Fatigue Resistance</h3>
+<p><em>Signal: Round Progression × Rep Count. Requires ≥ 2 sessions with ≥ 3 rounds.</em></p>
+<p>For each session, computes the percentage drop from average reps in the first third of rounds to the last third. Mean across last 5 sessions:</p>
+<div class="formula-box">
+  <div class="formula-label">Fatigue Resistance</div>
+  <div class="formula-line">fadePct = (earlyAvgReps − lateAvgReps) / earlyAvgReps × 100</div>
+  <div class="formula-line">States: Iron Wall (&lt;5%), Normal Fade (5–15%), Early Collapse (&gt;15%)</div>
+</div>
+
+<h3 class="sec-title">3. Work Capacity Density</h3>
+<p><em>Signal: Reps per Minute × Sessions. Requires ≥ 3 sessions.</em></p>
+<div class="formula-box">
+  <div class="formula-label">Density</div>
+  <div class="formula-line">density_session = totalReps / durationMinutes</div>
+  <div class="formula-line">trend_slope = OLS over sessions</div>
+  <div class="formula-line">States: Accelerating (&gt;+0.3/session), Dropping (&lt;−0.3/session), Holding (otherwise)</div>
+</div>
+
+<h3 class="sec-title">4. Circuit Consistency</h3>
+<p><em>Signal: Rep Variance × Round Count. Requires ≥ 2 sessions with ≥ 3 rounds.</em></p>
+<p>Standard deviation of total reps per round across each session, averaged. Low variance = consistent effort output. High variance = pacing problems or exercise selection imbalance.</p>
+<table>
+  <tr><th>Avg Std Dev</th><th>State</th></tr>
+  <tr><td>&lt; 2 reps/round</td><td>Metronomic — consistent power output every round</td></tr>
+  <tr><td>2–5 reps/round</td><td>Variable — normal variation, some pacing oscillation</td></tr>
+  <tr><td>&gt; 5 reps/round</td><td>Erratic — significant early fatigue or pacing failure</td></tr>
+</table>
+
+<h3 class="sec-title">5. Cardio-Strength Interference (48-Hour Window)</h3>
+<p><em>Signal: HIIT Timing × Strength Feel. Requires ≥ 2 HIIT-adjacent strength sessions.</em></p>
+<p>For each strength session with a feel rating, checks whether a cardio session occurred within the prior 48 hours. Compares feel score (Tired=0, Normal=0.5, Strong=1.0) post-HIIT vs baseline (no prior HIIT).</p>
+<div class="formula-box">
+  <div class="formula-label">Interference Effect</div>
+  <div class="formula-line">diff = postHIITMeanFeel − baselineMeanFeel</div>
+  <div class="formula-line">Synergistic: diff &gt; +0.12 (cardio improves strength session feel)</div>
+  <div class="formula-line">Neutral:      |diff| ≤ 0.12</div>
+  <div class="formula-line">Suppressive:  diff &lt; −0.12 (cardio impairs strength session feel)</div>
+</div>
+<div class="cite-box">
+  <strong>Scientific basis:</strong> Concurrent training interference effect (Wilson et al., 2012, J Strength Cond Res meta-analysis): endurance training within 6–24 hours of strength training can impair strength adaptations via AMPK–mTOR pathway competition. The 48-hour window is conservative; most evidence points to 6–24 hours as the highest-interference period.
+</div>
+
+<h3 class="sec-title">6. Modality Sequencing</h3>
+<p><em>Signal: HIIT Frequency × Strength Scheduling. Requires ≥ 2 of each.</em></p>
+<p>Average gap (days) between cardio session end and next strength session start:</p>
+<table>
+  <tr><th>Avg Gap</th><th>State</th><th>Recommendation</th></tr>
+  <tr><td>&lt; 0.5 days</td><td>Stacked</td><td>Same-day training — consider separating by 6+ hours or reordering</td></tr>
+  <tr><td>0.5–2.0 days</td><td>Optimal</td><td>Recovery gap allows adaptation without detraining</td></tr>
+  <tr><td>&gt; 2.0 days</td><td>Extended Gap</td><td>Long separation fine for most goals but may reduce metabolic overlap</td></tr>
+</table>
+
+<h3 class="sec-title">7. Dual-Mode Fitness Index</h3>
+<p><em>Signal: Cardio Rounds Trend × Strength e1RM Momentum.</em></p>
+<p>Cross-classifies the athlete on both dimensions simultaneously:</p>
+<table>
+  <tr><th>Cardio Trend</th><th>Strength Trend</th><th>State</th></tr>
+  <tr><td>↑ Rising</td><td>↑ Rising</td><td>Dual-Mode Athlete — both domains progressing</td></tr>
+  <tr><td>→ Flat/Down</td><td>↑ Rising</td><td>Strength-Led — cardio capacity lagging</td></tr>
+  <tr><td>↑ Rising</td><td>→ Flat/Down</td><td>Cardio-Led — strength progression stalled</td></tr>
+  <tr><td>→ Flat/Down</td><td>→ Flat/Down</td><td>Both Stalled — systemic issue: recovery, volume, or consistency</td></tr>
+</table>
+
+<h3 class="sec-title">8. Energy System Synergy (24-Hour Window)</h3>
+<p>Same as Insight 5 but with a tighter 24-hour lookback window. Captures acute metabolic state effects: does a cardio session in the last 24 hours leave you feeling stronger or more drained going into strength work? Long-term divergence between the 24h and 48h windows can indicate whether the interference is acute fatigue (resolves in a day) or cumulative.</p>
+
+<!-- ──────────────────────────────────────────
+     CH 16: READINESS ENGINE
+────────────────────────────────────────── -->
+<h2 class="ch-title" id="readiness">16. Readiness Engine</h2>
+
+<p>The Readiness score (0–100) appears on the Home screen as a coaching card. It estimates your current physiological preparedness for a productive training session, derived entirely from your workout log without requiring HealthKit.</p>
+
+<div class="formula-box">
+  <div class="formula-label">Readiness Score</div>
+  <div class="formula-line">base = 68 (neutral)</div>
+  <div class="formula-line">daysSinceLast ∈ {strength sessions} ∪ {cardio sessions} (unified activity)</div>
+  <div class="formula-line">daysSinceLast adjustment: 0=+0, 1=+8, 2=+12, 3=+6, 4–6=−4, 7+=−14</div>
+  <div class="formula-line">frequency (last 7 days): ≥4 sessions=+5, ≤1 session=−8</div>
+  <div class="formula-line">volume ratio (last 7d vs prior 7d): &lt;0.7=+6 (deload), &gt;1.5=−6 (spike)</div>
+  <div class="formula-line">score = clamp(base + adjustments, 20, 99)</div>
+  <div class="formula-note">Volume for strength = tonnage. Volume for cardio = totalReps × 2 (normalising factor). Days since last activity counts both modalities: a 45-minute cardio session counts as a training day for readiness purposes.</div>
+</div>
+
+<h3 class="sec-title">Readiness Score Ranges</h3>
+<table>
+  <tr><th>Score</th><th>Headline</th><th>Coaching Stance</th></tr>
+  <tr><td>80+</td><td>Good momentum right now</td><td>Don't hold back — this is the kind of day you make progress on</td></tr>
+  <tr><td>65–79</td><td>Ready to train</td><td>Body feels balanced. Get your work in</td></tr>
+  <tr><td>50–64</td><td>Keep it controlled today</td><td>Some fatigue in the system. Clean execution over big numbers</td></tr>
+  <tr><td>&lt;50</td><td>Rest is training too</td><td>Your body is asking for a break</td></tr>
+</table>
+
+<h3 class="sec-title">Confidence Levels</h3>
+<table>
+  <tr><th>Total Sessions (strength + cardio)</th><th>Confidence</th></tr>
+  <tr><td>≥ 10</td><td>High</td></tr>
+  <tr><td>3–9</td><td>Medium</td></tr>
+  <tr><td>&lt; 3</td><td>Low</td></tr>
+</table>
+
+<h3 class="sec-title">Baseline</h3>
+<p>The baseline is a 30-day personalised average: 65 + min(15, sessions_in_last_30_days). The score is shown relative to this baseline, allowing you to see whether today's readiness is above or below your norm.</p>
+
+<div class="cite-box">
+  <strong>Scientific basis:</strong> The 1–2 day post-workout readiness peak reflects supercompensation timing (Zatsiorsky &amp; Kraemer, Science and Practice of Strength Training, 2006). The 7+ day penalty reflects detraining onset — strength begins measurably declining within 2–3 weeks of inactivity (Mujika &amp; Padilla, 2000, J Appl Physiol). Volume spike penalty reflects acute overload monitoring (Hulin et al., 2016, BJSM — acute:chronic workload ratio research).
+</div>
+
+<!-- ──────────────────────────────────────────
+     CH 17: STREAK
+────────────────────────────────────────── -->
+<h2 class="ch-title" id="streak">17. Training Streak</h2>
+
+<p>The streak counts consecutive calendar days with at least one completed session (strength or cardio). The algorithm uses a set-based approach:</p>
+
+<div class="formula-box">
+  <div class="formula-label">Streak Algorithm</div>
+  <div class="formula-line">activeDays = Set of calendar days (startOfDay) from both workoutLog and cardioLog</div>
+  <div class="formula-line">checkDate = startOfDay(today)</div>
+  <div class="formula-line">if today is not active: checkDate = yesterday</div>
+  <div class="formula-line">streak = 0; while activeDays.contains(checkDate): streak += 1; checkDate -= 1 day</div>
+</div>
+
+<p>This means a circuit session on Monday and a strength session on Tuesday both count. A rest day breaks the streak. The app does not penalise you for not training on the day you're currently in (the streak window extends to "today or yesterday" to handle sessions completed earlier the same day).</p>
+
+<!-- ──────────────────────────────────────────
+     CH 18: HEALTHKIT
+────────────────────────────────────────── -->
+<h2 class="ch-title" id="healthkit">18. HealthKit Integration</h2>
+
+<table>
+  <tr><th>Data Point</th><th>Direction</th><th>Where Used in App</th></tr>
+  <tr><td>HRV (Heart Rate Variability)</td><td>Read</td><td>"What Influences Me" panel on Home</td></tr>
+  <tr><td>Resting Heart Rate</td><td>Read</td><td>"What Influences Me" panel on Home</td></tr>
+  <tr><td>VO₂ Max</td><td>Read</td><td>"What Influences Me" panel on Home</td></tr>
+  <tr><td>Step Count</td><td>Read</td><td>"What Influences Me" panel on Home</td></tr>
+  <tr><td>Strength Session</td><td>Write</td><td>Saved as .traditionalStrengthTraining workout on finish</td></tr>
+  <tr><td>Cardio Session</td><td>Write</td><td>Saved as .traditionalStrengthTraining workout (includes duration)</td></tr>
+</table>
+
+<p>HealthKit data is displayed for context alongside the readiness score but does not yet numerically feed the readiness algorithm. Future versions will integrate HRV trends into readiness calculations (lower HRV correlating with reduced training capacity).</p>
+
+<div class="cite-box">
+  <strong>Why HRV matters:</strong> Heart rate variability is the most validated non-invasive proxy for autonomic nervous system recovery status. Multiple meta-analyses (Plews et al., 2012; Buchheit, 2014) have shown HRV-guided training increases performance gains vs fixed periodization. Low HRV = sympathetic dominance = inadequate recovery. High HRV (relative to your baseline) = parasympathetic dominance = ready to train hard.
+</div>
+
+<!-- ──────────────────────────────────────────
+     CH 19: ROUTINES
+────────────────────────────────────────── -->
+<h2 class="ch-title" id="routines">19. Routines &amp; Templates</h2>
+
+<p>Routines (Workout tab → Templates) are weekly training plans. Each routine has a name, a set of exercises assigned to specific weekdays, and an optional list of linked cardio circuits.</p>
+
+<h3 class="sec-title">Exercise Assignment</h3>
+<p>When you add an exercise to a routine, you assign it to specific weekdays. On those days, the exercise appears on the Home screen's "Today's Workout" section with last-session performance pre-filled.</p>
+
+<h3 class="sec-title" id="rest-days">Rest Day Planning</h3>
+<p>Each routine can have rest days marked (Workout tab → Templates → your routine → Rest Days section). A rest day is a weekday integer (1=Sunday … 7=Saturday). When today matches a marked rest day for an active routine, the home screen shows a rest day reminder instead of a workout prompt.</p>
+
+<h3 class="sec-title">Cardio Circuits in Routines</h3>
+<p>Circuits can be attached to routines via <code>routine.circuitIds</code>. The Home screen shows any circuit scheduled for today either by its own <code>assignedDays</code> setting or by being linked to a routine that includes today. Both paths are merged (deduplicated by circuit ID) in the <code>todayCircuits</code> computed property.</p>
+
+<h3 class="sec-title">QR Code Sharing</h3>
+<p>Routines can be exported as QR codes and imported by scanning. This allows sharing exact exercise selections, sets, and progression targets with training partners.</p>
+
+<!-- ──────────────────────────────────────────
+     CH 20: HISTORY
+────────────────────────────────────────── -->
+<h2 class="ch-title" id="history">20. Unified History</h2>
+
+<p>The History tab shows a single merged timeline of all strength and cardio sessions, grouped by calendar month, sorted newest first. Both row types appear together — a week with 3 strength sessions and 2 circuits shows all 5 entries interleaved.</p>
+
+<h3 class="sec-title">Strength History Row</h3>
+<p>Shows: session date, exercises logged (names), sets and reps summary, total volume, duration.</p>
+
+<h3 class="sec-title">Cardio History Row (CardioHistoryRow)</h3>
+<p>Shows: circuit name, format badge (AMRAP / EMOM), duration, rounds completed, total reps. If weighted, shows total kg·reps tonnage.</p>
+
+<h3 class="sec-title">Search</h3>
+<p>The search bar filters across both log types: exercise name (strength) and circuit name + exercise name (cardio). Both match case-insensitively.</p>
+
+<h3 class="sec-title">Detail Views</h3>
+<p>Tapping a strength row opens a full session detail with set-by-set data. Tapping a cardio row opens a detail sheet with round-by-round breakdown (AMRAP only, ≤10 rounds) and per-exercise totals.</p>
+
+<!-- ──────────────────────────────────────────
+     CH 21: HOME DASHBOARD
+────────────────────────────────────────── -->
+<h2 class="ch-title" id="home">21. Home Dashboard</h2>
+
+<p>The Home screen is a single scrollable dashboard. Components from top to bottom:</p>
+
+<table>
+  <tr><th>Section</th><th>Content</th><th>When Shown</th></tr>
+  <tr><td>Streak badge</td><td>Consecutive training days (strength + cardio)</td><td>Always</td></tr>
+  <tr><td>Today's circuits</td><td>Circuits scheduled for today (from assignedDays or routine link)</td><td>When circuits exist for today</td></tr>
+  <tr><td>Health Snapshots</td><td>HRV, RHR, VO₂ Max, steps from HealthKit</td><td>When HealthKit data is available</td></tr>
+  <tr><td>Coach Card (Readiness)</td><td>Readiness score + coaching note from ReadinessEngine</td><td>After ≥ 1 session logged</td></tr>
+  <tr><td>Today's Workout Recap</td><td>Exercises in today's routines with last-session data and hints</td><td>When routines include today</td></tr>
+  <tr><td>Today's Plan</td><td>Full routine card for today's session</td><td>When routines include today</td></tr>
+  <tr><td>Progress Summary</td><td>Top exercises + e1RM trend arrows</td><td>After 3+ sessions on any exercise</td></tr>
+  <tr><td>What Influences Me</td><td>HealthKit metrics with explanations</td><td>When HealthKit data available</td></tr>
+</table>
+
+<!-- ──────────────────────────────────────────
+     CH 22: FORMULA REFERENCE
+────────────────────────────────────────── -->
+<h2 class="ch-title" id="formulas">22. Complete Formula Reference</h2>
+
+<table>
+  <tr><th>Formula</th><th>Expression</th><th>Input Range</th><th>Accuracy</th></tr>
+  <tr><td>Epley e1RM</td><td>w × (1 + r/30)</td><td>2–10 reps</td><td>±2–5%</td></tr>
+  <tr><td>Mayhew e1RM</td><td>w / (0.522 + 0.419 × e<sup>−0.055r</sup>)</td><td>11–20 reps</td><td>±3–6%</td></tr>
+  <tr><td>Bilateral dumbbell adj.</td><td>bilateral × 0.92</td><td>Dumbbell only</td><td>—</td></tr>
+  <tr><td>Barbell effective weight</td><td>max(entered, 20 kg)</td><td>Barbell</td><td>—</td></tr>
+  <tr><td>RPE-Adjusted e1RM</td><td>w / (1 − (reps + RIR) / 40.9)</td><td>RPE 6–10</td><td>±4–7%</td></tr>
+  <tr><td>INOL per set</td><td>reps / (100 − intensity%)</td><td>Any intensity</td><td>—</td></tr>
+  <tr><td>PSI (raw fiber load)</td><td>Σ (rel^1.8 × reps × activationWeight)</td><td>All sessions</td><td>—</td></tr>
+  <tr><td>Normalized PSI</td><td>rawPSI / BW^0.67</td><td>With BW data</td><td>—</td></tr>
+  <tr><td>Session cost</td><td>Σ reps × (e1RM/ref)^1.8 × e^(α×i) × feelMul</td><td>—</td><td>—</td></tr>
+  <tr><td>Fatigue-adj. e1RM</td><td>rawE1RM × min(e^(α×i), 1.35)</td><td>—</td><td>—</td></tr>
+  <tr><td>CSS</td><td>0.35×Level + 0.40×Momentum + 0.25×Process</td><td>0–100</td><td>—</td></tr>
+  <tr><td>Momentum score</td><td>clamp(50 + pct×(50/ceiling), 0, 100)</td><td>—</td><td>—</td></tr>
+  <tr><td>Relative strength</td><td>e1RM / bodyWeight</td><td>With BW data</td><td>—</td></tr>
+  <tr><td>Cardio tonnage</td><td>Σ (repsCompleted × weightUsed)</td><td>Weighted circuits</td><td>—</td></tr>
+  <tr><td>Readiness score</td><td>base(68) + daysSinceLast_adj + freq_adj + vol_adj</td><td>0–100</td><td>—</td></tr>
+  <tr><td>Readiness baseline</td><td>65 + min(15, sessions_last_30d)</td><td>65–80</td><td>—</td></tr>
+  <tr><td>Circuit fatigue resistance</td><td>(earlyAvg − lateAvg) / earlyAvg × 100</td><td>%</td><td>—</td></tr>
+  <tr><td>Work capacity density</td><td>totalReps / durationMinutes</td><td>reps/min</td><td>—</td></tr>
+  <tr><td>OLS slope (trend)</td><td>Standard ordinary least-squares</td><td>Any time series</td><td>—</td></tr>
+</table>
+
+<!-- ──────────────────────────────────────────
+     CH 23: EXERCISE MULTIPLIERS
+────────────────────────────────────────── -->
+<h2 class="ch-title" id="exercise-multipliers">23. Exercise-Specific Strength Multipliers</h2>
+
+<p>Relative strength thresholds are set for barbell reference exercises (bench, deadlift, squat, OHP, row, pull-up). For all other exercises, a multiplier scales these thresholds to reflect how much more or less load that exercise typically produces at the same relative intensity.</p>
+
+<table>
+  <tr><th>Exercise</th><th>Multiplier</th><th>Rationale</th></tr>
+  <tr><td>Leg Press</td><td>1.80×</td><td>Bilateral machine; ~1.8× squat e1RM/BW at matched intensities</td></tr>
+  <tr><td>Hip Thrust Machine</td><td>1.55×</td><td>Machine + glute leverage; highest hip-hinge loads</td></tr>
+  <tr><td>Hip Thrust / Smith Hip Thrust</td><td>1.40×</td><td>Supine position; far heavier than deadlift at same effort</td></tr>
+  <tr><td>Hack Squat Machine</td><td>1.20×</td><td>Guided path; no lateral balance penalty</td></tr>
+  <tr><td>Smith Machine Squat</td><td>1.05×</td><td>Fixed bar path removes lateral balance requirement</td></tr>
+  <tr><td>Incline Barbell Press</td><td>0.88×</td><td>Steeper angle recruits weaker anterior delt more heavily</td></tr>
+  <tr><td>Romanian Deadlift</td><td>0.88×</td><td>Partial ROM; hamstring stretch limits peak load</td></tr>
+  <tr><td>Dumbbell Bench Press</td><td>0.36×</td><td>Per-hand; per-dumbbell e1RM/BW ≈ 0.36× barbell reference</td></tr>
+  <tr><td>Dumbbell Shoulder Press</td><td>0.39×</td><td>Per-hand; calibrated from Symmetric Strength population data</td></tr>
+  <tr><td>Bulgarian Split Squat</td><td>0.31×</td><td>Per-dumbbell; rear-foot elevated single-leg balance penalty</td></tr>
+  <tr><td>Leg Extension</td><td>0.35×</td><td>Quad isolation; ~35% of squat e1RM/BW at same tier</td></tr>
+  <tr><td>Lateral Raise</td><td>0.20×</td><td>Side delt isolation; smallest load of any vertical push variant</td></tr>
+  <tr><td>Rear Delt Fly</td><td>0.18×</td><td>Posterior delt isolation; lightest pressing-pattern movement</td></tr>
+</table>
+
+<p><em>Full table with all exercises: the engine covers 60+ named exercises with specific multipliers. Unlisted exercises default to 1.0× (barbell reference equivalent).</em></p>
+
+<!-- ──────────────────────────────────────────
+     CH 24: EMG PROFILES
+────────────────────────────────────────── -->
+<h2 class="ch-title" id="emg">24. EMG Muscle Activation Profiles</h2>
+
+<p>Every exercise in the database has a muscle activation profile derived from EMG research. Each entry specifies which muscles are activated and at what fraction of their Maximum Voluntary Contraction (pctMVC). These profiles drive PSI calculation and the pattern breakdown charts in the Strength Lab.</p>
+
+<p>Selected profiles (Contreras EMG studies, ACE, NSCA references):</p>
+
+<table>
+  <tr><th>Exercise</th><th>Primary Muscles (pctMVC)</th></tr>
+  <tr><td>Barbell Bench Press</td><td>Pecs 0.85, Ant. Delt 0.70, Triceps 0.75</td></tr>
+  <tr><td>Deadlift</td><td>Erectors 0.85, Glutes 0.80, Hamstrings 0.75, Quads 0.50, Traps 0.60, Lats 0.55</td></tr>
+  <tr><td>Hip Thrust</td><td>Glutes 0.95, Hamstrings 0.55, Quads 0.30</td></tr>
+  <tr><td>Barbell Squat</td><td>Quads 0.88, Glutes 0.72, Hamstrings 0.42, Erectors 0.55</td></tr>
+  <tr><td>Pull-Up</td><td>Lats 0.88, Biceps 0.72, Traps 0.50, Post. Delt 0.40</td></tr>
+  <tr><td>Overhead Press</td><td>Ant. Delt 0.90, Lat. Delt 0.65, Triceps 0.65, Traps 0.45</td></tr>
+  <tr><td>Leg Extension</td><td>Quads 0.92</td></tr>
+  <tr><td>Romanian Deadlift</td><td>Hamstrings 0.85, Glutes 0.70, Erectors 0.65</td></tr>
+</table>
+
+<div class="cite-box">
+  <strong>Primary sources:</strong> Contreras B, Schoenfeld BJ et al. (multiple studies, 2011–2016). EMG amplitude of exercises studied using surface and fine-wire electrodes. Journal of Strength and Conditioning Research; NSCA Exercise Technique Manual; ACE muscle activation comparison studies (2010–2014).
+</div>
+
+<!-- ──────────────────────────────────────────
+     CH 25: CITATIONS
+────────────────────────────────────────── -->
+<h2 class="ch-title" id="citations">25. Scientific Citations</h2>
+
+<ol>
+  <li><strong>Epley B (1985).</strong> Poundage Chart. Boyd Epley Workout. University of Nebraska Lincoln. <em>Origin of the Epley 1RM formula.</em></li>
+  <li><strong>Mayhew JL, Ball TE, Arnold MD, Bowen JC (1992).</strong> Muscular endurance repetitions to predict bench press strength in men of different training levels. J Sports Med Phys Fitness. 32(1):37–42. <em>Validation of Mayhew formula at 10–20 reps.</em></li>
+  <li><strong>Zourdos MC et al. (2016).</strong> Novel Resistance Training–Specific RPE Scale Measuring Repetitions in Reserve. J Strength Cond Res. 30(1):267–275. <em>RPE-to-1RM conversion formula.</em></li>
+  <li><strong>Botton CE et al. (2016).</strong> Neuromuscular Adaptations to Unilateral vs. Bilateral Strength Training. Eur J Sport Sci. <em>Bilateral deficit: 92% of summed unilateral maxima.</em></li>
+  <li><strong>Willardson JM (2005).</strong> A Brief Review: Factors Affecting the Length of the Rest Interval Between Resistance Exercise Sets. J Strength Cond Res. 20(4):978–984. <em>Set-to-set rep decline under standard rest periods.</em></li>
+  <li><strong>Ratamess NA et al. (2007).</strong> The Effect of Rest Interval Length on Metabolic Responses to the Bench Press Exercise. Eur J Appl Physiol. 100(1):1–17. <em>Fatigue accumulation kinetics across sets.</em></li>
+  <li><strong>Schoenfeld BJ (2016).</strong> Science and Development of Muscle Hypertrophy. Human Kinetics. <em>Nonlinear fatigue–force relationship; volume and intensity for hypertrophy.</em></li>
+  <li><strong>Greenhaff PL et al. (1994).</strong> Influence of Oral Creatine Supplementation of Muscle Torque During Repeated Bouts of Maximal Voluntary Exercise in Man. Am J Physiol. <em>PCr resynthesis kinetics; basis of exponential fatigue decay model.</em></li>
+  <li><strong>Prilepin AT (1974).</strong> Weightlifting for Beginners and Masters. FiS, Moscow. <em>Original volume–intensity table for Olympic weightlifters; basis of INOL zones.</em></li>
+  <li><strong>Ward SR et al. (2009).</strong> Are Current Measurements of Lower Extremity Muscle Architecture Accurate? Clin Orthop Relat Res. 467(4):1074–1082. <em>PCSA values for lower extremity muscles.</em></li>
+  <li><strong>Lieber RL, Fridén J (2000).</strong> Functional and Clinical Significance of Skeletal Muscle Architecture. Muscle Nerve. 23(11):1647–1666. <em>PCSA values for upper body and core muscles.</em></li>
+  <li><strong>Nevill AM, Ramsbottom R, Williams C (1992).</strong> Scaling Physiological Measurements for Individuals of Different Body Size. Eur J Appl Physiol. 65(2):110–117. <em>Allometric scaling exponent 0.67 for body mass and muscle force.</em></li>
+  <li><strong>Metter EJ et al. (1997).</strong> Skeletal muscle strength as a predictor of all-cause mortality in healthy men. J Gerontol A Biol Sci Med Sci. 52(4):M219–225. <em>Age-related strength decline rates.</em></li>
+  <li><strong>Harridge SDR et al. (1995).</strong> Whole-muscle and single-fibre contractile properties and myosin heavy chain isoforms in humans. Pflugers Arch / Acta Physiol Scand. <em>Age-related muscle fibre composition changes.</em></li>
+  <li><strong>Foster C et al. (2001).</strong> A New Approach to Monitoring Exercise Training. J Strength Cond Res. 15(1):109–115. <em>Session RPE and training load quantification.</em></li>
+  <li><strong>Krieger JW (2010).</strong> Single vs. Multiple Sets of Resistance Exercise for Muscle Hypertrophy: A Meta-Analysis. J Strength Cond Res. 24(4):1150–1159. <em>Volume-response relationship for hypertrophy.</em></li>
+  <li><strong>Schoenfeld BJ, Ogborn D, Krieger JW (2017).</strong> Dose-response relationship between weekly resistance training volume and increases in muscle mass. J Strength Cond Res. 31(12):3508–3523. <em>Weekly volume thresholds for muscle growth.</em></li>
+  <li><strong>Wilson JM et al. (2012).</strong> Concurrent Training: A Meta-Analysis Examining Interference of Aerobic and Strength Exercises. J Strength Cond Res. 26(8):2293–2307. <em>Cardio-strength interference effect; AMPK–mTOR pathway competition.</em></li>
+  <li><strong>Plews DJ et al. (2012).</strong> Training Adaptation and Heart Rate Variability in Elite Endurance Athletes. Sports Med. 43(9):773–791. <em>HRV-guided training and performance outcomes.</em></li>
+  <li><strong>Buchheit M (2014).</strong> Monitoring Training Status with HR Measures: Do All Roads Lead to Rome? Front Physiol. 5:73. <em>HRV as readiness proxy; autonomic nervous system markers.</em></li>
+  <li><strong>Mujika I, Padilla S (2000).</strong> Detraining: Loss of Training-Induced Physiological and Performance Adaptations. Part I. Sports Med. 30(2):79–87. <em>Detraining onset and timeline for strength losses.</em></li>
+  <li><strong>Hulin BT et al. (2016).</strong> The Acute:Chronic Workload Ratio Predicts Injury: High Chronic Workload May Decrease Injury Risk in Elite Rugby League Players. Br J Sports Med. 50(4):231–236. <em>Volume spike monitoring framework for injury/overtraining risk.</em></li>
+  <li><strong>Zatsiorsky VM, Kraemer WJ (2006).</strong> Science and Practice of Strength Training. 2nd ed. Human Kinetics. <em>Supercompensation timing; periodization principles.</em></li>
+  <li><strong>Haff GG, Triplett NT (eds.) (2016).</strong> Essentials of Strength Training and Conditioning. 4th ed. NSCA / Human Kinetics. <em>INOL zone adaptation for non-elite athletes; fatigue constants by experience level.</em></tr>
+  <li><strong>Grgic J et al. (2020).</strong> Test–Retest Reliability of the One-Repetition Maximum (1RM) Strength Assessment. Sports Med. <em>Minimum Detectable Change values by movement pattern; measurement noise thresholds.</em></li>
+  <li><strong>Rippetoe M, Kilgore L (2007).</strong> Practical Programming for Strength Training. 2nd ed. Aasgaard. <em>Novice/intermediate/advanced progression rates used in Momentum ceiling.</em></li>
+  <li><strong>Tuchscherer M (2009).</strong> Reactive Training Manual. Reactive Training Systems. <em>RPE-based load selection and repetitions-in-reserve framework.</em></li>
+  <li><strong>Symmetric Strength (online tool).</strong> Population percentile strength standards by body weight and lift. <em>Basis for exercise-specific multipliers and per-pattern tier thresholds.</em></li>
+</ol>
+
+<hr class="divider">
+<p style="font-size:13px; color:var(--muted); text-align:center;">H.O.N — Health OS &nbsp;·&nbsp; Comprehensive User Manual &nbsp;·&nbsp; All formulas implemented exactly as described. All thresholds derived from cited sources.</p>
+
+<section id="v2-updates" class="section">
+  <h2>Version 2 — New Features</h2>
+
+  <h3>General Activity Logging</h3>
+  <p>Log any non-strength activity (yoga, cycling, swimming, hiking) from the quick-action button on the Home screen or via History → toolbar. Choose activity type, duration (10 min minimum to contribute to Readiness), and intensity level.</p>
+
+  <h3>PR Detection</h3>
+  <p>After every completed set, H.O.N compares your estimated 1RM to your all-time best for that exercise. A gold banner appears when you set a new personal record.</p>
+
+  <h3>Readiness Improvements</h3>
+  <p>The Readiness engine now incorporates: consecutive-day fatigue penalties (4+ consecutive training days are penalized), session volume and RPE from your last session, daily step count from HealthKit, sleep hours (HealthKit), and resting heart rate. A new empty state shows when you have no session history.</p>
+
+  <h3>Beginner Onboarding</h3>
+  <p>First-session celebration screen with milestone unlocks. Beginner Progress Card on Home tracks sessions 1–10 and explains what each milestone unlocks (Session 3: strength tier, Session 5: readiness, Session 10: full analytics).</p>
+
+  <h3>Training Metrics as Trend Charts</h3>
+  <p>The Insights tab now shows each training metric (INOL, Efficiency, Rep Decay, Avg RPE, Session Cost) as an individual trend chart with an explanation of the current value in context of your personal history.</p>
+
+  <h3>Body Weight History</h3>
+  <p>Settings → Profile now logs each body weight entry with a date, building a history chart. Allometric PSI comparisons are now meaningful across long time periods.</p>
+
+  <h3>Data Export</h3>
+  <p>Export as JSON (full backup) or CSV (spreadsheet-compatible). Import validates that no future-dated entries are present. Confirmation required before overwriting data.</p>
+
+  <h3>Tools: Plate Calculator &amp; 1RM Calculator</h3>
+  <p>Plate Calculator (History → Tools): enter any target weight and bar type, get exact plate breakdown per side with color-coded plates and a visual bar diagram.</p>
+  <p>1RM Calculator (History → Tools): enter any weight + reps, get estimated 1RM averaged across Epley, Brzycki, and Lombardi formulas, plus a full rep max table.</p>
+
+  <h3>Activity Heat Map</h3>
+  <p>10-week GitHub-style calendar on the Home screen shows every active day across all modalities. Appears after 3+ sessions.</p>
+
+  <h3>Insight Levels</h3>
+  <p>Settings → Workout → Insight Level: Essential (key trends), Standard (adds INOL + efficiency), Expert (adds CSS pillars, fiber load, PSI, fatigue α slider).</p>
+
+  <h3>Social Sharing</h3>
+  <p>ShareLink in workout and circuit detail views generates a formatted summary with exercise names, best sets, and estimated 1RMs.</p>
+</section>
+
+</main>
+</div>
+</body>
+</html>

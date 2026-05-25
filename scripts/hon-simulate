@@ -1,0 +1,28 @@
+#!/bin/bash
+# hon-simulate — take a named screenshot of the running simulator
+# Usage: hon-simulate <scenario-name>
+# Example: hon-simulate return-45d
+
+SCENARIO=${1:-"screenshot"}
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+OUTPUT_DIR="$PROJECT_ROOT/docs/screenshots"
+
+mkdir -p "$OUTPUT_DIR"
+
+OUTPUT_FILE="$OUTPUT_DIR/${SCENARIO}_${TIMESTAMP}.png"
+
+if ! xcrun simctl list devices | grep -q "Booted"; then
+    echo "Error: No simulator is running. Launch one in Xcode first."
+    exit 1
+fi
+
+xcrun simctl io booted screenshot "$OUTPUT_FILE"
+
+if [ $? -eq 0 ]; then
+    echo "Screenshot saved: $OUTPUT_FILE"
+    open "$OUTPUT_FILE"
+else
+    echo "Error: Screenshot failed. Is the simulator running?"
+    exit 1
+fi

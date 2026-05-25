@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>H.O.N. Design Audit — Full App Review</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+    background: #0f0f0f;
+    color: #e5e5e5;
+    padding: 24px 16px 60px;
+    max-width: 900px;
+    margin: 0 auto;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  /* ── Header ──────────────────────────────────────────── */
+  .report-header { margin-bottom: 32px; }
+  .report-header h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 4px; }
+  .report-header .meta { font-size: 12px; color: #555; margin-bottom: 24px; }
+
+  /* ── Summary bar ─────────────────────────────────────── */
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+  .summary-cell {
+    text-align: center;
+    padding: 16px 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.07);
+  }
+  .summary-cell .count { font-size: 32px; font-weight: 900; line-height: 1; }
+  .summary-cell .label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.7px; margin-top: 5px; }
+
+  .cell-pass   { background: rgba(124,185,154,0.1);  }
+  .cell-watch  { background: rgba(196,164,90,0.1);   }
+  .cell-fix    { background: rgba(196,106,90,0.12);  }
+  .cell-block  { background: rgba(196,70,70,0.12);   }
+
+  .count-pass   { color: #7cb99a; }
+  .count-watch  { color: #c4a45a; }
+  .count-fix    { color: #c46a5a; }
+  .count-block  { color: #c44a4a; }
+
+  /* ── Section / screen headings ────────────────────────── */
+  .screen-section { margin-bottom: 36px; }
+  .screen-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+    border-bottom: 1px solid #222;
+    padding-bottom: 8px;
+    margin-bottom: 14px;
+  }
+  .screen-title span {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-left: 10px;
+    opacity: 0.5;
+    text-transform: none;
+  }
+
+  /* ── Audit item card ─────────────────────────────────── */
+  .item {
+    background: #161616;
+    border: 1px solid #242424;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: grid;
+    grid-template-columns: 54px 1fr;
+    gap: 12px;
+  }
+  .item-verdict {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 2px;
+  }
+  .verdict-badge {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    padding: 4px 7px;
+    border-radius: 6px;
+    width: 50px;
+    text-align: center;
+  }
+  .v-pass   { background: rgba(124,185,154,0.15); color: #7cb99a; }
+  .v-watch  { background: rgba(196,164,90,0.15);  color: #c4a45a; }
+  .v-fix    { background: rgba(196,106,90,0.17);  color: #c46a5a; }
+  .v-block  { background: rgba(196,70,70,0.17);   color: #c44a4a; }
+
+  .item-body { }
+  .item-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #e5e5e5;
+    margin-bottom: 4px;
+  }
+  .item-location {
+    font-size: 10px;
+    color: #555;
+    margin-bottom: 8px;
+  }
+
+  .item-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  .item-row:last-child { margin-bottom: 0; }
+
+  .tag {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    padding: 2px 7px;
+    border-radius: 5px;
+    text-transform: uppercase;
+  }
+  .tag-principle { background: rgba(138,128,168,0.15); color: #8a80a8; }
+  .tag-state     { background: rgba(107,133,160,0.15); color: #6b85a0; }
+
+  .item-desc  { font-size: 12px; color: #aaa; margin-bottom: 6px; }
+  .item-sim   { font-size: 11px; color: #666; font-style: italic; margin-bottom: 6px; }
+  .item-fix   {
+    font-size: 11px;
+    color: #c46a5a;
+    padding: 8px 10px;
+    background: rgba(196,106,90,0.07);
+    border-radius: 6px;
+    border-left: 2px solid rgba(196,106,90,0.4);
+    margin-top: 6px;
+  }
+  .item-fix.watch {
+    color: #c4a45a;
+    background: rgba(196,164,90,0.07);
+    border-left-color: rgba(196,164,90,0.4);
+  }
+
+  /* ── Principles key ──────────────────────────────────── */
+  .principles {
+    background: #161616;
+    border: 1px solid #242424;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 32px;
+  }
+  .principles h3 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #666; margin-bottom: 12px; }
+  .p-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .p-row  { font-size: 11px; color: #888; }
+  .p-row span { color: #8a80a8; font-weight: 700; margin-right: 6px; }
+
+  @media (max-width: 500px) {
+    .summary { grid-template-columns: repeat(2,1fr); }
+    .p-grid  { grid-template-columns: 1fr; }
+    .item    { grid-template-columns: 44px 1fr; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Header ─────────────────────────────────────────── -->
+<div class="report-header">
+  <h1>H.O.N. Design Audit</h1>
+  <div class="meta">Full App Review · Generated 2026-05-24 · 8 Principles · All screens, cards, charts, and data states</div>
+
+  <!-- Summary -->
+  <div class="summary">
+    <div class="summary-cell cell-pass">
+      <div class="count count-pass">24</div>
+      <div class="label" style="color:#7cb99a">Pass</div>
+    </div>
+    <div class="summary-cell cell-watch">
+      <div class="count count-watch">14</div>
+      <div class="label" style="color:#c4a45a">Watch</div>
+    </div>
+    <div class="summary-cell cell-fix">
+      <div class="count count-fix">10</div>
+      <div class="label" style="color:#c46a5a">Fix</div>
+    </div>
+    <div class="summary-cell cell-block">
+      <div class="count count-block">4</div>
+      <div class="label" style="color:#c44a4a">Block</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Principles Key ─────────────────────────────────── -->
+<div class="principles">
+  <h3>Audit Principles</h3>
+  <div class="p-grid">
+    <div class="p-row"><span>P1</span>Visual earns its place</div>
+    <div class="p-row"><span>P2</span>Tap reveals, not repeats</div>
+    <div class="p-row"><span>P3</span>Consistent size language</div>
+    <div class="p-row"><span>P4</span>Legible hierarchy</div>
+    <div class="p-row"><span>P5</span>Labels match data</div>
+    <div class="p-row"><span>P6</span>Honest affordances</div>
+    <div class="p-row"><span>P7</span>Context before data</div>
+    <div class="p-row"><span>P8</span>Serves the habit</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     HOME TAB
+════════════════════════════════════════════════════════ -->
+<div class="screen-section">
+  <div class="screen-title">HOME TAB<span>HomeView.swift</span></div>
+
+  <!-- HM-1 Activity Heatmap -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-block">BLOCK</span></div>
+    <div class="item-body">
+      <div class="item-title">HM-1 · Activity Heatmap</div>
+      <div class="item-location">HomeView → StreakHeatMap</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P1 Visual earns its place</span>
+        <span class="tag tag-principle">P7 Context before data</span>
+        <span class="tag tag-state">All states</span>
+      </div>
+      <div class="item-desc">The heatmap renders as a constrained block rather than filling the full card width. It lacks a legend explaining what the color intensity represents (volume? sessions? streaks?). A new user sees a grid of faded dots with zero explanation. An experienced user has no scale reference — a "very active" day vs a "normal" day are visually ambiguous. Simulating 12 weeks of data: the heatmap fills roughly 70% of card width and the trailing white-space looks broken.</div>
+      <div class="item-sim">📊 Empty state: empty grey grid — no label, no "start logging" hint. Rich state (50 sessions): busy grid with no color scale — unclear if purple = volume or streak.</div>
+      <div class="item-fix">BLOCK → Fix: (1) Set `.frame(maxWidth: .infinity)` on heatmap container. (2) Add a legend row: "Less ●●●●● More" with color ramp. (3) Add a subtitle "Workout frequency past 12 weeks" so intent is immediate.</div>
+    </div>
+  </div>
+
+  <!-- HM-2 Momentum Chip -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-block">BLOCK</span></div>
+    <div class="item-body">
+      <div class="item-title">HM-2 · Momentum Chip</div>
+      <div class="item-location">HomeView → MomentumChip</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P6 Honest affordances</span>
+        <span class="tag tag-principle">P2 Tap reveals not repeats</span>
+        <span class="tag tag-state">Growing, Rich</span>
+      </div>
+      <div class="item-desc">The momentum chip displays a "streak" or "momentum" badge but has no visual affordance that it is tappable. MomentumDetailView exists in the codebase but the chip does not navigate to it. Users who tap it receive no feedback — no animation, no navigation, nothing. This violates honest affordances: the chip looks decorative but was designed to be interactive.</div>
+      <div class="item-sim">📊 Rich state: chip shows "8 week streak 🔥" — no chevron, no tap response, no hover state.</div>
+      <div class="item-fix">BLOCK → Fix: Wrap MomentumChip in a Button that presents MomentumDetailView as a sheet. Add a subtle chevron or tactile highlight on press state. Alternatively, if navigation is intentionally deferred, remove the chip until it is wired.</div>
+    </div>
+  </div>
+
+  <!-- HM-3 Today's Plan CTA -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-fix">FIX</span></div>
+    <div class="item-body">
+      <div class="item-title">HM-3 · "Start Workout" CTA positioning and labeling</div>
+      <div class="item-location">HomeView → TodaysPlanSection → primary CTA</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P8 Serves the habit</span>
+        <span class="tag tag-principle">P4 Legible hierarchy</span>
+        <span class="tag tag-state">All states with plan</span>
+      </div>
+      <div class="item-desc">When a plan is scheduled for today, the primary "Start Workout" CTA is not visible above the fold — it sits below the heatmap, readiness card, and momentum chip. The button also does not display the routine name; it's generic. The most important action in the app (start today's session) requires scrolling to find. Simulating a user with a morning routine and a morning check-in: they see the readiness score, scroll past heatmap, and only then find the CTA below the fold.</div>
+      <div class="item-sim">📊 With plan: "Start Workout" appears at ~70% scroll depth. Without plan: correct — no CTA shown.</div>
+      <div class="item-fix">FIX → Move TodaysPlanSection above the heatmap when a plan exists today. Change button label from "Start Workout" to "Start [Routine Name]" e.g. "Start Push Day A". This single change makes intent unmistakable.</div>
+    </div>
+  </div>
+
+  <!-- HM-4 Development Tier card sizes -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-fix">FIX</span></div>
+    <div class="item-body">
+      <div class="item-title">HM-4 · Development Tier vs adjacent card — mismatched heights</div>
+      <div class="item-location">HomeView → BeginnerProgressCard / DevelopmentTierCard</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P3 Consistent size language</span>
+        <span class="tag tag-state">Minimal, Growing</span>
+      </div>
+      <div class="item-desc">The Development Tier card and the card immediately to its left (Readiness or another metric card) in the horizontal pair do not share the same height. The shorter card leaves visible whitespace at the bottom of the row, communicating "these cards are not related." Side-by-side cards in an HStack should share height via `.frame(maxHeight: .infinity)` + alignment, but one card has a fixed height while the other is dynamic.</div>
+      <div class="item-sim">📊 Minimal (1–3 sessions): Development Tier card is shorter by ~30px. Rich (10+ sessions): heights equalize naturally but tier card may grow taller.</div>
+      <div class="item-fix">FIX → Add `.frame(maxHeight: .infinity, alignment: .top)` to both cards in the HStack pair and wrap in an HStack with `.alignmentGuide`. Or use LazyVGrid with `.adaptive` columns for the card pair so SwiftUI equalizes heights automatically.</div>
+    </div>
+  </div>
+
+  <!-- HM-5 Development Tier label -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-fix">FIX</span></div>
+    <div class="item-body">
+      <div class="item-title">HM-5 · "Development Tier" label is jargon</div>
+      <div class="item-location">HomeView → BeginnerProgressCard header label</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P5 Labels match data</span>
+        <span class="tag tag-principle">P7 Context before data</span>
+        <span class="tag tag-state">Minimal, Growing</span>
+      </div>
+      <div class="item-desc">The card label "Development Tier" is gym-speak that a beginner will not immediately parse. What it actually shows is how many sessions they've completed toward unlocking their strength tier. A first-time user sees a progress bar but can't map it to any goal without reading the sub-label text.</div>
+      <div class="item-fix">FIX → Rename to "Building Your Baseline" or "Sessions to Strength Tier". At graduation (10 sessions), the trophy and "Foundation Built" label are good — keep those.</div>
+    </div>
+  </div>
+
+  <!-- HM-6 Zero state caption -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-pass">PASS</span></div>
+    <div class="item-body">
+      <div class="item-title">HM-6 · Zero state guidance below Start Workout</div>
+      <div class="item-location">HomeView → zero-state caption</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P8 Serves the habit</span>
+        <span class="tag tag-state">Empty</span>
+      </div>
+      <div class="item-desc">When the log is empty a caption explains what gets unlocked with logging. This is well-placed and motivating. The text describes future value (readiness, momentum, insights) without overwhelming the user.</div>
+    </div>
+  </div>
+
+  <!-- HM-7 Readiness score /99 -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-pass">PASS</span></div>
+    <div class="item-body">
+      <div class="item-title">HM-7 · Readiness score label "X/99"</div>
+      <div class="item-location">HomeView → ReadinessCoachCard</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P5 Labels match data</span>
+        <span class="tag tag-state">All</span>
+      </div>
+      <div class="item-desc">Score is shown as "X/99" which correctly signals it is not percentage-based. The HON asymmetric scale (max 99 not 100) is a good design signal — users understand it's not trivially perfect. Recovery Score is shown alongside readiness as a composite, which adds appropriate context.</div>
+    </div>
+  </div>
+
+  <!-- HM-8 ReadinessCoachCard expand -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-watch">WATCH</span></div>
+    <div class="item-body">
+      <div class="item-title">HM-8 · ReadinessCoachCard expanded state — same data, bigger view</div>
+      <div class="item-location">HomeView → ReadinessCoachCard expand/collapse</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P2 Tap reveals not repeats</span>
+        <span class="tag tag-state">All</span>
+      </div>
+      <div class="item-desc">Expanding the readiness card should reveal new information (sub-scores, HealthKit inputs, contributing factors) not just a larger version of the same number. If the expanded state currently shows the same headline metrics at larger size, it violates P2. Needs verification in the live UI.</div>
+      <div class="item-fix watch">WATCH → Verify: expanded state must show at minimum sleep hours, resting HR, HRV, feel rating, and days since last workout. If any are missing, add them to the expanded view.</div>
+    </div>
+  </div>
+
+  <!-- HM-9 Today's Circuit day bug (FIXED) -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-pass">PASS</span></div>
+    <div class="item-body">
+      <div class="item-title">HM-9 · Today's Circuit — wrong-day display [FIXED]</div>
+      <div class="item-location">HomeView → todayCircuits</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P5 Labels match data</span>
+        <span class="tag tag-state">All</span>
+      </div>
+      <div class="item-desc">Bug fixed: circuits now check `c.assignedDays.contains(weekday)` before showing. Friday-only circuits no longer appear on Monday.</div>
+    </div>
+  </div>
+
+  <!-- HM-10 EmergentInsightCard -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-watch">WATCH</span></div>
+    <div class="item-body">
+      <div class="item-title">HM-10 · EmergentInsightCard — daily rotation</div>
+      <div class="item-location">HomeView → S3 EmergentInsightCard</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P1 Visual earns its place</span>
+        <span class="tag tag-principle">P7 Context before data</span>
+        <span class="tag tag-state">Growing, Rich</span>
+      </div>
+      <div class="item-desc">Insight rotates daily via AppStorage date + index. Good pattern. Risk: if EmergentInsightEngine.compute() returns the same insight multiple days in a row (e.g., only 1 valid insight given the user's data), the rotation date changes but content doesn't, eroding trust. Also: insight cards may show cross-domain correlations (e.g., sleep-PR correlation) before enough data exists.</div>
+      <div class="item-fix watch">WATCH → Add minimum data guard to each insight. If fewer than 3 valid insights are available, show a fixed "keep logging" message rather than attempting to rotate through near-empty insights.</div>
+    </div>
+  </div>
+
+  <!-- HM-11 BestWeekBlueprintCard -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-watch">WATCH</span></div>
+    <div class="item-body">
+      <div class="item-title">HM-11 · BestWeekBlueprintCard — composite score not explained</div>
+      <div class="item-location">HomeView → BestWeekBlueprintCard (also in ProgressView for log ≥ 8)</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P7 Context before data</span>
+        <span class="tag tag-principle">P5 Labels match data</span>
+        <span class="tag tag-state">Rich (8+ sessions)</span>
+      </div>
+      <div class="item-desc">Composite score formula (0.5×volume + 0.3×sessions + 0.2×feel) is not surfaced to the user. "Your best week" is selected by an opaque algorithm. Users may question why a high-volume deload week outranks a max-effort week with lower tonnage.</div>
+      <div class="item-fix watch">WATCH → Add a tap-to-explain or sub-label: "Based on volume, sessions, and how you felt." Consider surfacing the winning week's dates so the user can cross-reference their memory.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     TRAINER TAB
+════════════════════════════════════════════════════════ -->
+<div class="screen-section">
+  <div class="screen-title">TRAINER TAB<span>TrainerTabView.swift · SwipeableWorkoutCards.swift</span></div>
+
+  <!-- TR-1 MiniReadinessCard -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-watch">WATCH</span></div>
+    <div class="item-body">
+      <div class="item-title">TR-1 · MiniReadinessCard — score without context</div>
+      <div class="item-location">TrainerTabView → MiniReadinessCard (score + confidence + delta)</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P7 Context before data</span>
+        <span class="tag tag-state">Growing, Rich</span>
+      </div>
+      <div class="item-desc">The trainer tab shows a compact readiness score, confidence band, and delta from yesterday. The delta is helpful. The confidence label ("High / Medium / Low") is good. However, in "minimal data" state, confidence is low but the score still renders as a specific number (e.g., "67"). A precise-looking number with acknowledged low confidence is misleading.</div>
+      <div class="item-fix watch">WATCH → When confidence is low, render score as "~\(score)" or show a range rather than a precise number. This is honest about the engine's uncertainty.</div>
+    </div>
+  </div>
+
+  <!-- TR-2 SwipeableWorkoutCards affordance -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-fix">FIX</span></div>
+    <div class="item-body">
+      <div class="item-title">TR-2 · SwipeableWorkoutCards — swipe direction not signaled</div>
+      <div class="item-location">TrainerTabView → SwipeableWorkoutCards</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P6 Honest affordances</span>
+        <span class="tag tag-principle">P8 Serves the habit</span>
+        <span class="tag tag-state">All</span>
+      </div>
+      <div class="item-desc">Cards support swipe-right = start, swipe-left = skip. The gesture threshold is 90pt. But there is no on-screen hint about this interaction: no arrow overlay, no "swipe to start" label, no visual feedback as the card is dragged (beyond offset). Stack depth of 3 visible cards is correct but new users will tap instead of swipe, which does nothing (Start/Skip buttons are on the card). The Start button exists but swipe-right does the same thing — redundant affordances compete.</div>
+      <div class="item-sim">📊 First-time use: user sees card deck, taps card body → nothing. Taps Start button → works. Never discovers swipe.</div>
+      <div class="item-fix">FIX → Add a brief on-first-load hint: swipe-right arrow fading in/out once. Add a drag-follow color tint (green tint for right drag, grey for left drag) to signal intent during the gesture. Keep the Start button as primary affordance.</div>
+    </div>
+  </div>
+
+  <!-- TR-3 CoachNotesCard -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-pass">PASS</span></div>
+    <div class="item-body">
+      <div class="item-title">TR-3 · CoachNotesCard — contextual coaching</div>
+      <div class="item-location">TrainerTabView → CoachNotesCard</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P8 Serves the habit</span>
+        <span class="tag tag-state">All</span>
+      </div>
+      <div class="item-desc">HON message system picks contextually appropriate messages by kind/phase/userType. Messages are short, actionable, not repeated until cadence permits. Good implementation of principle 8.</div>
+    </div>
+  </div>
+
+  <!-- TR-4 Start Custom CTA -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-watch">WATCH</span></div>
+    <div class="item-body">
+      <div class="item-title">TR-4 · "Start a Custom Workout" button — buried below card deck</div>
+      <div class="item-location">TrainerTabView → bottom CTA</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P4 Legible hierarchy</span>
+        <span class="tag tag-state">All</span>
+      </div>
+      <div class="item-desc">The secondary CTA is below the 320pt card deck. On smaller phones (SE, mini) this may be below the fold. Users who want to create an ad-hoc workout may not find it without scrolling.</div>
+      <div class="item-fix watch">WATCH → Test on iPhone SE size class. If below fold, reduce card deck height to 280pt or add a sticky "Custom" button in the toolbar.</div>
+    </div>
+  </div>
+
+  <!-- TR-5 All Done card -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-pass">PASS</span></div>
+    <div class="item-body">
+      <div class="item-title">TR-5 · "All Done" card (all plans seen)</div>
+      <div class="item-location">SwipeableWorkoutCards → allDoneCard</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P6 Honest affordances</span>
+        <span class="tag tag-state">Post-swipe</span>
+      </div>
+      <div class="item-desc">When all plans are dismissed the deck shows a checkmark with "You've seen all plans" and a Refresh button. Clear, honest, non-alarming. Good empty-deck state.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     WORKOUT TAB
+════════════════════════════════════════════════════════ -->
+<div class="screen-section">
+  <div class="screen-title">WORKOUT TAB<span>WorkoutTabView.swift · ActiveWorkoutView.swift</span></div>
+
+  <!-- WT-1 EmptyWorkoutView dual CTA -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-watch">WATCH</span></div>
+    <div class="item-body">
+      <div class="item-title">WT-1 · EmptyWorkoutView — two CTAs with unclear differentiation</div>
+      <div class="item-location">WorkoutTabView → EmptyWorkoutView</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P4 Legible hierarchy</span>
+        <span class="tag tag-principle">P8 Serves the habit</span>
+        <span class="tag tag-state">No active workout</span>
+      </div>
+      <div class="item-desc">The empty state has "Start a Custom Workout" and "Manage Routines." For a user who has routines set up, the primary action is loading a routine — not starting custom. The hierarchy should invert when routines exist: "Load Routine" becomes primary, "Custom" becomes secondary.</div>
+      <div class="item-fix watch">WATCH → If `store.routines.isEmpty`, primary = Start Custom. If routines exist, primary = Load Routine. This is the right default for any user who has set up their programming.</div>
+    </div>
+  </div>
+
+  <!-- WT-2 Finish button guard -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-pass">PASS</span></div>
+    <div class="item-body">
+      <div class="item-title">WT-2 · "Finish" button — empty set guard + feel selector</div>
+      <div class="item-location">WorkoutTabView toolbar → Finish button</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P6 Honest affordances</span>
+        <span class="tag tag-state">Active workout</span>
+      </div>
+      <div class="item-desc">Finish button correctly guards against empty workouts with an alert ("No Sets Logged"). FeelSelectorSheet shown before finalizing. First-workout celebration fires after the first logged session. All correct behavior.</div>
+    </div>
+  </div>
+
+  <!-- WT-3 RPE awareness -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-watch">WATCH</span></div>
+    <div class="item-body">
+      <div class="item-title">WT-3 · RPE input — discoverability during active workout</div>
+      <div class="item-location">ActiveWorkoutView → RPE tooltip (info sheet)</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P7 Context before data</span>
+        <span class="tag tag-state">First use, Growing</span>
+      </div>
+      <div class="item-desc">RPE tooltip exists as an info sheet behind an info icon. During an active workout a user under load may not notice the icon. Beginners may enter "10" for every set because they don't know RPE scale. This degrades analytics data quality going forward.</div>
+      <div class="item-fix watch">WATCH → On first RPE entry ever, proactively show the scale inline (not behind icon): "1 = very easy · 10 = max effort" as a one-time tooltip. After first use, collapse to icon only.</div>
+    </div>
+  </div>
+
+  <!-- WT-4 Rest Timer Banner -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-pass">PASS</span></div>
+    <div class="item-body">
+      <div class="item-title">WT-4 · RestTimerBanner overlay — clear and dismissible</div>
+      <div class="item-location">ActiveWorkoutView → RestTimerBanner</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P8 Serves the habit</span>
+        <span class="tag tag-state">During rest</span>
+      </div>
+      <div class="item-desc">Timer banner appears over active workout content, not as a full-screen blocker. Non-intrusive. Dismiss (skip rest) is accessible. Good balance between reminding without interrupting.</div>
+    </div>
+  </div>
+
+  <!-- WT-5 PR Banner -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-pass">PASS</span></div>
+    <div class="item-body">
+      <div class="item-title">WT-5 · PR Banner — in-workout celebration</div>
+      <div class="item-location">ActiveWorkoutView → PR banner overlay</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P8 Serves the habit</span>
+        <span class="tag tag-state">When PR logged</span>
+      </div>
+      <div class="item-desc">PR banner fires on a new personal record during the session. Motivating without blocking the logging flow. Correct behavior.</div>
+    </div>
+  </div>
+
+  <!-- WT-6 ReadinessPromptCard -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-pass">PASS</span></div>
+    <div class="item-body">
+      <div class="item-title">WT-6 · ReadinessPromptCard — pre-session check-in</div>
+      <div class="item-location">ActiveWorkoutView → ReadinessPromptCard (before first set)</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P8 Serves the habit</span>
+        <span class="tag tag-state">Active workout, first set</span>
+      </div>
+      <div class="item-desc">Pre-session readiness prompt appears once before the first set. This feeds into the ReadinessEngine and influences recommendations. Well-placed — it asks one question at the right moment rather than in settings.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PROGRESS TAB
+════════════════════════════════════════════════════════ -->
+<div class="screen-section">
+  <div class="screen-title">PROGRESS TAB<span>ProgressView.swift · ProgressDashboardViews.swift · ProgressChartsViews.swift</span></div>
+
+  <!-- PR-1 DashboardHeroCard empty -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-fix">FIX</span></div>
+    <div class="item-body">
+      <div class="item-title">PR-1 · DashboardHeroCard — all-zeros on empty state</div>
+      <div class="item-location">ProgressView → DashboardHeroCard</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P5 Labels match data</span>
+        <span class="tag tag-principle">P7 Context before data</span>
+        <span class="tag tag-state">Empty, Minimal</span>
+      </div>
+      <div class="item-desc">When the log is empty, DashboardHeroCard renders CSS = 0, strengthScore = 0, and all relative strength slots as empty. The composite score gauge shows "0" which communicates failure rather than "no data yet." A new user opening Progress sees a row of zeros and may think the app is broken or that they have failed.</div>
+      <div class="item-sim">📊 Empty state: Score reads "0 / 100 · —" · All tier slots: empty. Simulates as a failure screen, not a fresh-start screen.</div>
+      <div class="item-fix">FIX → When the log is empty or has fewer than 3 sessions, replace numeric CSS with a locked state: "Log 3 workouts to unlock your score" with a progress indicator. Show a text hint rather than zero bars.</div>
+    </div>
+  </div>
+
+  <!-- PR-2 CollapsibleDashSection navigation -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-watch">WATCH</span></div>
+    <div class="item-body">
+      <div class="item-title">PR-2 · CollapsibleDashSection — section names are abstract</div>
+      <div class="item-location">ProgressView → WHERE AM I · AM I GETTING STRONGER · HOW DO I TRAIN · WHAT INFLUENCES ME</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P4 Legible hierarchy</span>
+        <span class="tag tag-principle">P5 Labels match data</span>
+        <span class="tag tag-state">All</span>
+      </div>
+      <div class="item-desc">"WHERE AM I" is good — clear question. "WHAT INFLUENCES ME" is slightly vague — influences what? Consider "WHAT AFFECTS MY TRAINING" for clarity. All sections default-collapsed except WHERE AM I, which is correct hierarchy. Collapse chevron direction should be consistent with iOS conventions (chevron.up = collapsed, chevron.down = expanded).</div>
+      <div class="item-fix watch">WATCH → Verify chevron direction matches system convention. Rename "WHAT INFLUENCES ME" to "RECOVERY SIGNALS" or "HEALTH FACTORS" for precision.</div>
+    </div>
+  </div>
+
+  <!-- PR-3 Volume Balance expanded -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-block">BLOCK</span></div>
+    <div class="item-body">
+      <div class="item-title">PR-3 · Volume Balance — expand shows same data at larger scale</div>
+      <div class="item-location">ProgressView → HowSectionContent → VolumeBalanceCard (ExpandableChartCard)</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P2 Tap reveals not repeats</span>
+        <span class="tag tag-principle">P1 Visual earns its place</span>
+        <span class="tag tag-state">Growing, Rich</span>
+      </div>
+      <div class="item-desc">Tapping expand on Volume Balance opens a full-screen modal with a larger version of the same chart. No additional data, no drill-down, no labeling that wasn't already visible. This directly violates P2: tap must reveal something new. Users who tap expecting insights are disappointed. The expand affordance creates false expectations.</div>
+      <div class="item-sim">📊 Rich state (15 sessions): expanded chart is identical to compact at ~2.5× scale. Same bars, same colors, same Y-axis labels.</div>
+      <div class="item-fix">BLOCK → Expanded state must add: (1) Raw tonnage labels on each bar, (2) Trend line or period comparison, (3) Pattern-level breakdown (Push/Pull/Legs percentages). If this data is unavailable, remove the expand affordance entirely and flatten to a non-expandable card.</div>
+    </div>
+  </div>
+
+  <!-- PR-4 Rep Range height inconsistency -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-fix">FIX</span></div>
+    <div class="item-body">
+      <div class="item-title">PR-4 · Rep Range Distribution — bars at inconsistent visual heights</div>
+      <div class="item-location">ProgressView → HowSectionContent → RepRangeDistributionCard</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P3 Consistent size language</span>
+        <span class="tag tag-principle">P5 Labels match data</span>
+        <span class="tag tag-state">Growing, Rich</span>
+      </div>
+      <div class="item-desc">The rep range distribution bars (1–5 reps, 6–10 reps, 11–15 reps, 15+ reps) have inconsistent visual proportions across sessions — a bar representing 30% of sets does not appear exactly 3× taller than one at 10%. Percentage labels are absent. Users cannot accurately read the chart without labels.</div>
+      <div class="item-sim">📊 Rich state: 6–10 reps bar at 55% of sets, 1–5 reps at 30%, 11–15 at 15%. Without labels, user guesses proportions.</div>
+      <div class="item-fix">FIX → Add percentage annotations on each bar segment. Ensure chart uses consistent Y-axis domain (0–100%). Add total set count as subtitle: "Across 47 sets."</div>
+    </div>
+  </div>
+
+  <!-- PR-5 Emergent Insights Section -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-watch">WATCH</span></div>
+    <div class="item-body">
+      <div class="item-title">PR-5 · EMERGENT INSIGHTS section — data gate not surfaced</div>
+      <div class="item-location">ProgressView → InsightsSectionContent</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P7 Context before data</span>
+        <span class="tag tag-state">Minimal</span>
+      </div>
+      <div class="item-desc">EmergentInsightEngine.compute() requires cross-domain data (HRV, sleep, cardio, weight history). In minimal state (1–3 sessions), the engine returns fewer insights. The section collapses gracefully but shows no message explaining why insights are absent. Users may think insights are broken.</div>
+      <div class="item-fix watch">WATCH → When fewer than 3 insights are available, show a "Keep logging" message with a list of what additional data would unlock more insights (e.g., "Connect HealthKit for sleep insights · Log cardio for aerobic correlation").</div>
+    </div>
+  </div>
+
+  <!-- PR-6 StrengthScoreView segmented control overflow -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-fix">FIX</span></div>
+    <div class="item-body">
+      <div class="item-title">PR-6 · StrengthScoreView tabs — 5 segments on small screens</div>
+      <div class="item-location">ProgressView → StrengthScoreView → Picker (.segmented)</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P3 Consistent size language</span>
+        <span class="tag tag-principle">P4 Legible hierarchy</span>
+        <span class="tag tag-state">All (with body comp data)</span>
+      </div>
+      <div class="item-desc">With all 5 tabs (Overall, Compare, Fiber Index, Rel. Strength, Body Comp), the segmented picker overflows on iPhone SE and iPhone mini. Labels truncate to "Overall", "Compare", "Fiber In…", "Rel. St…", "Body C…". Truncated labels break the "Labels match data" principle.</div>
+      <div class="item-sim">📊 iPhone SE 3rd gen: all 5 tabs → "Overall" "Compare" "Fiber …" "Rel. …" "Body …" — last 3 unreadable.</div>
+      <div class="item-fix">FIX → Switch to a horizontal ScrollView of Buttons styled as pills rather than a segmented picker. This scales gracefully to any width. Alternatively, use 2 rows: [Overall, Compare] / [Fiber, Rel, BodyComp].</div>
+    </div>
+  </div>
+
+  <!-- PR-7 SSCompositeCard info button -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-pass">PASS</span></div>
+    <div class="item-body">
+      <div class="item-title">PR-7 · SSCompositeCard — info button explains formula</div>
+      <div class="item-location">StrengthScoreView → SSCompositeCard → ⓘ → SSScoreInfoSheet</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P2 Tap reveals not repeats</span>
+        <span class="tag tag-principle">P7 Context before data</span>
+        <span class="tag tag-state">All</span>
+      </div>
+      <div class="item-desc">SSScoreInfoSheet fully explains CSS formula, Level/Momentum/Process pillars, sub-score breakdowns with examples and real thresholds. This is the right depth of detail behind a tap. Excellent implementation of P2 and P7.</div>
+    </div>
+  </div>
+
+  <!-- PR-8 SSFiberCard empty state -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-pass">PASS</span></div>
+    <div class="item-body">
+      <div class="item-title">PR-8 · SSFiberCard — empty state message</div>
+      <div class="item-location">StrengthScoreView → SSFiberCard</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P7 Context before data</span>
+        <span class="tag tag-state">Empty, Minimal</span>
+      </div>
+      <div class="item-desc">When psiHistory is empty, shows "Log workouts to build your Fiber Load history." Clear, non-alarming, actionable. Good empty state.</div>
+    </div>
+  </div>
+
+  <!-- PR-9 CategoryBreakdownView bar chart height -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-watch">WATCH</span></div>
+    <div class="item-body">
+      <div class="item-title">PR-9 · CategoryBreakdownView — bar chart height too small with few patterns</div>
+      <div class="item-location">CategoryBreakdownView → improvementChart → .frame(height: CGFloat(max(3, categories.count)) * 38)</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P1 Visual earns its place</span>
+        <span class="tag tag-state">Minimal (1–2 patterns)</span>
+      </div>
+      <div class="item-desc">With 1 category, chart height = 38px × 1 = 38px. A 38px bar chart is functionally unreadable. With 2 categories = 76px — borderline. The minimum of 3 ensures 114px, but if only 1 or 2 patterns appear (common for beginners), the chart is vestigially small.</div>
+      <div class="item-fix watch">WATCH → Set minimum chart height to 100px regardless of category count. With 1–2 bars, this adds whitespace but maintains legibility.</div>
+    </div>
+  </div>
+
+  <!-- PR-10 EfficiencyGrid quadCell overflow -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-watch">WATCH</span></div>
+    <div class="item-body">
+      <div class="item-title">PR-10 · EfficiencyGrid quadCells — content overflow with many exercises</div>
+      <div class="item-location">CategoryBreakdownView → efficiencyGrid → quadCell</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P3 Consistent size language</span>
+        <span class="tag tag-state">Rich (many exercises)</span>
+      </div>
+      <div class="item-desc">quadCell uses `minHeight: 72` but content is not clipped. With 5+ exercises in one quadrant (e.g., all Push patterns classified as "efficient"), the cell grows taller than its siblings, creating an uneven 2×2 grid. The grid loses its clean visual structure.</div>
+      <div class="item-sim">📊 Rich state (15 exercises): "Efficient" quadrant contains 6 patterns, cell grows to ~160px. Adjacent "Low Priority" cell is 72px. Grid looks broken.</div>
+      <div class="item-fix watch">WATCH → Cap content at 4 items with a "… +N more" overflow. Or use `LazyVGrid` with equal-height rows via `.aspectRatio` or explicit `.frame(maxHeight:)` to enforce equal cells.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     STRENGTH LAB TAB
+════════════════════════════════════════════════════════ -->
+<div class="screen-section">
+  <div class="screen-title">STRENGTH LAB<span>StrengthLabView.swift · StrengthScoreView.swift</span></div>
+
+  <!-- SL-1 Unit picker niche options -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-watch">WATCH</span></div>
+    <div class="item-body">
+      <div class="item-title">SL-1 · Unit picker — kg/cm² and N/cm² too technical for most users</div>
+      <div class="item-location">StrengthLabView → ScoreUnit picker (kg / kg/cm² / N/cm²)</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P5 Labels match data</span>
+        <span class="tag tag-principle">P4 Legible hierarchy</span>
+        <span class="tag tag-state">All</span>
+      </div>
+      <div class="item-desc">kg/cm² and N/cm² are physiological research units. The Strength Lab is positioned as a deep-dive feature, so this is appropriate for expert users. However, there is no tooltip or explainer for what these units mean. A user curious enough to tap kg/cm² will see a number with no reference frame.</div>
+      <div class="item-fix watch">WATCH → Add a one-line explainer below the unit picker that updates for the selected unit. For kg/cm²: "Force per unit muscle cross-section — bigger muscles produce more force per cm²." This is low effort but high value for comprehension.</div>
+    </div>
+  </div>
+
+  <!-- SL-2 Allometric toggle disabled without BW -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-fix">FIX</span></div>
+    <div class="item-body">
+      <div class="item-title">SL-2 · Allometric toggle — disabled with no call-to-action</div>
+      <div class="item-location">StrengthLabView → allometricScaling Toggle (.disabled when no BW)</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P6 Honest affordances</span>
+        <span class="tag tag-principle">P7 Context before data</span>
+        <span class="tag tag-state">No body weight set</span>
+      </div>
+      <div class="item-desc">The allometric scaling toggle shows a warning icon and is disabled when body weight is not set. But there is no CTA telling the user how to fix this. A user who wants allometric scores sees a greyed-out toggle with a small warning triangle and no path forward.</div>
+      <div class="item-fix">FIX → Add a tappable annotation: "Add body weight in Settings to enable" that deep-links to Settings → Profile. The warning icon is too small to be informative on its own.</div>
+    </div>
+  </div>
+
+  <!-- SL-3 CSS pillar cards appear untappable -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-fix">FIX</span></div>
+    <div class="item-body">
+      <div class="item-title">SL-3 · CSS pillar cards (Level/Momentum/Process) — NavigationLinks styled as .plain</div>
+      <div class="item-location">StrengthLabView → compositeSection → NavigationLink(value: PillarDestination)</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P6 Honest affordances</span>
+        <span class="tag tag-state">All with history</span>
+      </div>
+      <div class="item-desc">The three pillar cards wrap in NavigationLinks with `.buttonStyle(.plain)`. This removes all visual affordance that they are tappable. Users see three metric boxes with no chevron, no highlight on press, no indication they navigate somewhere. LabPillarCard presumably doesn't show a chevron internally either.</div>
+      <div class="item-sim">📊 Rich state: user sees Level (82), Momentum (67), Process (71) as three static-looking metric boxes. No hint of interactivity.</div>
+      <div class="item-fix">FIX → Add a subtle chevron (chevron.right) or a thin border highlight to each pillar card. On tap, use a brief scale animation to confirm touch. Alternatively, use `.buttonStyle(.borderless)` with a custom highlight modifier.</div>
+    </div>
+  </div>
+
+  <!-- SL-4 CSS history sparkline threshold -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-watch">WATCH</span></div>
+    <div class="item-body">
+      <div class="item-title">SL-4 · CSS history sparkline — hidden at 1–2 sessions</div>
+      <div class="item-location">StrengthLabView → compositeSection → LabCSSHistoryCard (shows if history.count >= 3)</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P7 Context before data</span>
+        <span class="tag tag-state">Minimal</span>
+      </div>
+      <div class="item-desc">The CSS history chart only appears with 3+ sessions. At 1–2 sessions, the space where the chart would appear is simply absent — no placeholder, no progress indicator. The user doesn't know a chart is coming. Section feels incomplete.</div>
+      <div class="item-fix watch">WATCH → Add a grayed placeholder chart outline with "Log 1 more session to see your score history" for the 2-session state. Keep the guard — don't show a single-point chart — but communicate the unlock.</div>
+    </div>
+  </div>
+
+  <!-- SL-5 Training phase badge -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-pass">PASS</span></div>
+    <div class="item-body">
+      <div class="item-title">SL-5 · Training phase badge (Neural / Mixed / Hypertrophy)</div>
+      <div class="item-location">StrengthLabView → trainingPhaseLabel badge</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P5 Labels match data</span>
+        <span class="tag tag-state">All</span>
+      </div>
+      <div class="item-desc">Phase badge reflects training age in weeks with appropriate color coding (accent = neural, lavender = mixed, positive = hypertrophy). Contextual and accurate.</div>
+    </div>
+  </div>
+
+  <!-- SL-6 LabRelativeStrengthCard -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-pass">PASS</span></div>
+    <div class="item-body">
+      <div class="item-title">SL-6 · LabRelativeStrengthCard — ranked exercise list with tier badges</div>
+      <div class="item-location">StrengthLabView → LabRelativeStrengthCard</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P4 Legible hierarchy</span>
+        <span class="tag tag-state">Rich</span>
+      </div>
+      <div class="item-desc">Tier badges (BEG/INT/ADV/ELITE) with color coding and BW multipliers are clear. No-body-weight prompt correctly redirects to Settings. Solid information design.</div>
+    </div>
+  </div>
+
+  <!-- SL-7 SSCompareCard multi-curve chart -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-pass">PASS</span></div>
+    <div class="item-body">
+      <div class="item-title">SL-7 · SSCompareCard — multi-curve chart with legend</div>
+      <div class="item-location">StrengthScoreView → SSCompareCard → SSCurveCompareChart</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P2 Tap reveals not repeats</span>
+        <span class="tag tag-principle">P5 Labels match data</span>
+        <span class="tag tag-state">Growing, Rich</span>
+      </div>
+      <div class="item-desc">The compare chart overlays actual avg, rested avg, OLS trend, and forecast lines with a full legend. PR star markers annotate each PR date. "Now" vertical divider cleanly separates historical and forecast. Legend row explains every line. Excellent chart design.</div>
+    </div>
+  </div>
+
+  <!-- SL-8 StrengthConstellationCard -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-watch">WATCH</span></div>
+    <div class="item-body">
+      <div class="item-title">SL-8 · StrengthConstellationCard — trail chart legibility</div>
+      <div class="item-location">StrengthLabView → StrengthConstellationCard</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P1 Visual earns its place</span>
+        <span class="tag tag-principle">P5 Labels match data</span>
+        <span class="tag tag-state">Rich</span>
+      </div>
+      <div class="item-desc">The constellation chart (e1RM vs BW ratio trails per exercise) is visually distinctive. With many exercises (8+), trails can overlap and become hard to distinguish. Exercise labels at trail endpoints may collide. Beautiful at 3–5 exercises, potentially noisy at 10+.</div>
+      <div class="item-fix watch">WATCH → Test with 10+ exercises logged. If trails overlap, add a filter toggle (show top 5 by PSI weight) or reduce trail opacity for less-dominant exercises.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     EXERCISE INSIGHTS
+════════════════════════════════════════════════════════ -->
+<div class="screen-section">
+  <div class="screen-title">EXERCISE INSIGHTS<span>ExerciseInsightsView.swift</span></div>
+
+  <!-- EI-1 List row accessibility -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-pass">PASS</span></div>
+    <div class="item-body">
+      <div class="item-title">EI-1 · ExerciseInsightRow — VoiceOver combined label</div>
+      <div class="item-location">ExerciseInsightsView → ExerciseInsightRow → .accessibilityElement(children: .ignore)</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P6 Honest affordances</span>
+        <span class="tag tag-state">All</span>
+      </div>
+      <div class="item-desc">Combined accessibility label includes exercise name, session count, tier, e1RM, and tier implication ("elite level strength"). VoiceOver users get full context without reading each sub-element. Correct implementation.</div>
+    </div>
+  </div>
+
+  <!-- EI-2 Tier bar colorblind -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-pass">PASS</span></div>
+    <div class="item-body">
+      <div class="item-title">EI-2 · ExerciseTierBar — B/I/A/E short labels on segments</div>
+      <div class="item-location">ExerciseInsightsView → ExerciseTierBar → tierShortLabels</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P5 Labels match data</span>
+        <span class="tag tag-state">Rich</span>
+      </div>
+      <div class="item-desc">Colorblind accessibility addressed: B/I/A/E letter labels on each segment so color is not the sole indicator of tier. Good.</div>
+    </div>
+  </div>
+
+  <!-- EI-3 Next milestone card condition -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-watch">WATCH</span></div>
+    <div class="item-body">
+      <div class="item-title">EI-3 · nextMilestoneCard — only shows at exactly 1 session</div>
+      <div class="item-location">ExerciseInsightDetailView → nextMilestoneCard (if dataPoints.count == 1)</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P8 Serves the habit</span>
+        <span class="tag tag-state">Minimal</span>
+      </div>
+      <div class="item-desc">The "Next Milestone" card only appears when dataPoints.count == 1. At 2+ sessions the card disappears, even though the goal hasn't been achieved. A user logging their second bench press session no longer sees their next tier target. The milestone card was most motivating at exactly the moment it disappears.</div>
+      <div class="item-fix watch">WATCH → Show the milestone card as long as the user has not reached their next tier, regardless of session count. Hide it only when they advance to the target tier.</div>
+    </div>
+  </div>
+
+  <!-- EI-4 metricTrendCard INOL context -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-pass">PASS</span></div>
+    <div class="item-body">
+      <div class="item-title">EI-4 · metricTrendCard — zone pills + explanation text</div>
+      <div class="item-location">ExerciseInsightDetailView → analyticsSection → metricTrendCard</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P7 Context before data</span>
+        <span class="tag tag-state">Growing, Rich</span>
+      </div>
+      <div class="item-desc">Each metric (INOL, Efficiency, Rep Decay, RPE, Session Cost) has: current value, zone pill with color, mini sparkline, and a 1–2 sentence explanation tailored to the specific value. The explanation text correctly adjusts for trend direction. Excellent contextual data presentation.</div>
+    </div>
+  </div>
+
+  <!-- EI-5 Isolation INOL disclaimer -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-pass">PASS</span></div>
+    <div class="item-body">
+      <div class="item-title">EI-5 · Isolation exercise INOL disclaimer</div>
+      <div class="item-location">ExerciseInsightDetailView → analyticsSection → isolation note</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P5 Labels match data</span>
+        <span class="tag tag-state">Isolation exercises</span>
+      </div>
+      <div class="item-desc">"INOL zones are calibrated for compound movements. For isolation exercises, use as directional guidance only." Correct caveat. Users with curl data won't over-interpret the INOL zone labels.</div>
+    </div>
+  </div>
+
+  <!-- EI-6 ExerciseDetailSheet expand icon -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-fix">FIX</span></div>
+    <div class="item-body">
+      <div class="item-title">EI-6 · ExerciseDetailSheet — info icon in toolbar lacks label</div>
+      <div class="item-location">ExerciseDetailSheet → ToolbarItem → info.circle icon</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P6 Honest affordances</span>
+        <span class="tag tag-state">All</span>
+      </div>
+      <div class="item-desc">The toolbar info button uses `.labelStyle(.iconOnly)`. VoiceOver users will hear "button" with no description. The label "How it's calculated" exists in code but is hidden. This is a quick fix with high accessibility impact.</div>
+      <div class="item-fix">FIX → Remove `.labelStyle(.iconOnly)` or add `.accessibilityLabel("How analytics are calculated")` to the toolbar button. On screen, consider showing the label on iPad where space allows.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     HISTORY TAB
+════════════════════════════════════════════════════════ -->
+<div class="screen-section">
+  <div class="screen-title">HISTORY TAB<span>HistoryView.swift</span></div>
+
+  <!-- HI-1 Tools section discoverability -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-watch">WATCH</span></div>
+    <div class="item-body">
+      <div class="item-title">HI-1 · Tools section (Plate Calculator, 1RM Calculator) — buried in History list</div>
+      <div class="item-location">HistoryView → Section("Tools")</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P4 Legible hierarchy</span>
+        <span class="tag tag-principle">P8 Serves the habit</span>
+        <span class="tag tag-state">All</span>
+      </div>
+      <div class="item-desc">Calculator tools are placed in a "Tools" section at the top of the History list. This is better than burying them elsewhere, but new users looking for a plate calculator won't think to look in the History tab. The tab's name and icon suggest a log, not utilities.</div>
+      <div class="item-fix watch">WATCH → Consider moving tools to a persistent toolbar button or into Settings. Alternatively, pin the Tools section to always appear above month sections. If kept in History, add a toolbar icon (wrench) that jumps to the tools section.</div>
+    </div>
+  </div>
+
+  <!-- HI-2 Multi-modal history (strength/cardio/general) -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-pass">PASS</span></div>
+    <div class="item-body">
+      <div class="item-title">HI-2 · Unified history (strength + cardio + general) — interleaved correctly</div>
+      <div class="item-location">HistoryView → allItems sorted by date</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P5 Labels match data</span>
+        <span class="tag tag-state">All</span>
+      </div>
+      <div class="item-desc">All three activity types are merged by date and grouped by month. Each type renders a distinct row (WorkoutHistoryRow, CardioHistoryRow, GeneralActivityRow). Search spans all types. Tapping each opens the appropriate detail sheet. Solid unified timeline.</div>
+    </div>
+  </div>
+
+  <!-- HI-3 Search highlights -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-pass">PASS</span></div>
+    <div class="item-body">
+      <div class="item-title">HI-3 · Search — exercise name highlighting in results</div>
+      <div class="item-location">HistoryView → searchText passed to WorkoutHistoryRow as highlightExercise</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P4 Legible hierarchy</span>
+        <span class="tag tag-state">Search active</span>
+      </div>
+      <div class="item-desc">Search text is passed to WorkoutHistoryRow for potential highlighting. The search-empty state uses `ContentUnavailableView.search(text:)` which is system-consistent. Good UX.</div>
+    </div>
+  </div>
+
+  <!-- HI-4 Log general activity -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-pass">PASS</span></div>
+    <div class="item-body">
+      <div class="item-title">HI-4 · Log Activity toolbar button (+)</div>
+      <div class="item-location">HistoryView → ToolbarItem → "Log Activity"</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P8 Serves the habit</span>
+        <span class="tag tag-state">All</span>
+      </div>
+      <div class="item-desc">Plus button to log general activities (walks, yoga, etc.) is present in the toolbar and launches LogGeneralActivitySheet. Correctly enables multi-modal tracking within the history context.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SETTINGS
+════════════════════════════════════════════════════════ -->
+<div class="screen-section">
+  <div class="screen-title">SETTINGS<span>SettingsView.swift</span></div>
+
+  <!-- SE-1 No save confirmation for body comp -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-fix">FIX</span></div>
+    <div class="item-body">
+      <div class="item-title">SE-1 · Body composition fields — no save confirmation</div>
+      <div class="item-location">SettingsView → Section body measurements → TextFields</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P6 Honest affordances</span>
+        <span class="tag tag-principle">P5 Labels match data</span>
+        <span class="tag tag-state">All</span>
+      </div>
+      <div class="item-desc">Body weight triggers `store.logBodyWeight(kg)` via onChange. Other body composition fields (body fat %, lean mass, etc.) also write via binding but there is no visible toast or checkmark confirmation that the change persisted. Users may be unsure if tapping out of the field saved the value or not. The "saved" toast fires for some settings but not all.</div>
+      <div class="item-fix">FIX → Add `.showSavedToast` trigger on all body composition field changes. Brief "Saved" toast for 1.5 seconds is sufficient. Ensures users know their data is persisted without requiring explicit save button.</div>
+    </div>
+  </div>
+
+  <!-- SE-2 Export CSV format undocumented -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-watch">WATCH</span></div>
+    <div class="item-body">
+      <div class="item-title">SE-2 · Export CSV — format not documented in-app</div>
+      <div class="item-location">SettingsView → exportCSV</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P7 Context before data</span>
+        <span class="tag tag-state">All</span>
+      </div>
+      <div class="item-desc">CSV export includes health biometrics header (sleep/HR/HRV snapshot), Sleep_hrs, and RestingHR_bpm columns. A user who opens the CSV in Numbers or Excel will see an unfamiliar comment-header line. No in-app explanation of column names or format.</div>
+      <div class="item-fix watch">WATCH → Add a secondary label below the export button: "Includes all sessions, sets, weight history, and today's HealthKit snapshot." This sets expectations before the user sees a raw CSV.</div>
+    </div>
+  </div>
+
+  <!-- SE-3 Import duplicate warning -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-pass">PASS</span></div>
+    <div class="item-body">
+      <div class="item-title">SE-3 · Import — duplicate warning before merge</div>
+      <div class="item-location">SettingsView → showImporter → importAlert</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P6 Honest affordances</span>
+        <span class="tag tag-state">Non-empty log</span>
+      </div>
+      <div class="item-desc">Alert fires before merging data when workoutLog is non-empty. User is warned about potential duplicates. Correct destructive action gate.</div>
+    </div>
+  </div>
+
+  <!-- SE-4 Population disclaimer -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-pass">PASS</span></div>
+    <div class="item-body">
+      <div class="item-title">SE-4 · Strength tier footnote / population disclaimer</div>
+      <div class="item-location">SettingsView → population disclaimer</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P5 Labels match data</span>
+        <span class="tag tag-state">All</span>
+      </div>
+      <div class="item-desc">Strength tier thresholds are relative to population data. Disclaimer is shown so users understand "Intermediate" is based on published strength standards, not the app's user base. Correct framing.</div>
+    </div>
+  </div>
+
+  <!-- SE-5 Coaching nudge frequency -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-pass">PASS</span></div>
+    <div class="item-body">
+      <div class="item-title">SE-5 · Coaching nudge frequency control</div>
+      <div class="item-location">SettingsView → coachingNudgeFrequency picker</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P8 Serves the habit</span>
+        <span class="tag tag-state">All</span>
+      </div>
+      <div class="item-desc">User can control notification cadence. Provides agency over the coaching experience. Good feature for both typeA (consistent) and typeB (flexible) users.</div>
+    </div>
+  </div>
+
+  <!-- SE-6 Custom fatigue decay toggle (debug) -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-watch">WATCH</span></div>
+    <div class="item-body">
+      <div class="item-title">SE-6 · Custom fatigue decay toggle exposed in production settings</div>
+      <div class="item-location">SettingsView → customFatigueDecayEnabled + customAlpha</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P4 Legible hierarchy</span>
+        <span class="tag tag-state">All</span>
+      </div>
+      <div class="item-desc">AppStorage keys for `customFatigueDecayEnabled` and `customAlpha` are exposed in SettingsView. If this is shown to all users, a casual user adjusting settings could break their analytics by setting alpha to 0 or a nonsensical value. The HONDebugView presumably contains this — verify it's not duplicated in the production settings path.</div>
+      <div class="item-fix watch">WATCH → Wrap the custom decay section in `#if DEBUG` or require a developer toggle to unlock. Add input validation: `customAlpha` should be clamped to 0.02–0.15.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     DATA STATE SIMULATIONS — SYSTEMIC
+════════════════════════════════════════════════════════ -->
+<div class="screen-section">
+  <div class="screen-title">DATA STATE SIMULATIONS — SYSTEMIC FINDINGS<span>All screens under simulated data conditions</span></div>
+
+  <!-- DS-1 Empty → First session -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-pass">PASS</span></div>
+    <div class="item-body">
+      <div class="item-title">DS-1 · Empty state → First workout celebration flow</div>
+      <div class="item-location">WorkoutTabView → FirstWorkoutCelebrationSheet + pendingFirstWorkoutCelebration</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P8 Serves the habit</span>
+        <span class="tag tag-state">Empty → 1 session</span>
+      </div>
+      <div class="item-desc">First workout triggers `pendingFirstWorkoutCelebration = true` before `finishWorkout()` is called. If the app crashes between save and display, the flag is recovered on next launch. Crash-safe celebration pattern is correctly implemented. Excellent.</div>
+    </div>
+  </div>
+
+  <!-- DS-2 Returning after lapse -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-pass">PASS</span></div>
+    <div class="item-body">
+      <div class="item-title">DS-2 · Returning after 14+ day lapse — deload guidance</div>
+      <div class="item-location">HONMessageLibrary → returnAfterLapse · HABITEngine</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P8 Serves the habit</span>
+        <span class="tag tag-state">After ≥14 day gap</span>
+      </div>
+      <div class="item-desc">Lapse messages include 70% load / deload-week recommendation for gaps of 14+ days. Readiness engine reduces score after extended rest. This is safe and medically sound messaging. Good.</div>
+    </div>
+  </div>
+
+  <!-- DS-3 No HealthKit permissions -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-watch">WATCH</span></div>
+    <div class="item-body">
+      <div class="item-title">DS-3 · No HealthKit data — readiness card with all nil inputs</div>
+      <div class="item-location">ReadinessEngine · HomeView → ReadinessCoachCard</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P5 Labels match data</span>
+        <span class="tag tag-principle">P7 Context before data</span>
+        <span class="tag tag-state">HealthKit denied</span>
+      </div>
+      <div class="item-desc">When HealthKit is denied, sleep and HR inputs are nil. Readiness score is computed from training data only (volume, density, feel). The score still renders as a specific number (e.g., "71") but is missing 30–40% of its normal inputs. Without context, a HealthKit-denied user trusts a score that is less accurate than it appears.</div>
+      <div class="item-fix watch">WATCH → When HealthKit data is absent, show a small badge: "Based on training data only · Connect Health for full readiness." This is honest about input completeness.</div>
+    </div>
+  </div>
+
+  <!-- DS-4 Large dataset performance -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-watch">WATCH</span></div>
+    <div class="item-body">
+      <div class="item-title">DS-4 · Rich dataset (100+ sessions) — analytics re-compute on every view appear</div>
+      <div class="item-location">ProgressView → EmergentInsightEngine.compute() called on body</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P8 Serves the habit</span>
+        <span class="tag tag-state">Rich (100+ sessions)</span>
+      </div>
+      <div class="item-desc">EmergentInsightEngine.compute() is called inline in ProgressView's body computed property. At 100+ sessions with full HealthKit data, this may be expensive. SeedStore has an `analyticsCache` refresh pattern for StrengthAnalytics, but EmergentInsights bypasses this cache. Each scroll back to Progress recalculates.</div>
+      <div class="item-fix watch">WATCH → Move EmergentInsightEngine.compute() result into SeedStore's analyticsCache (or a separate cached property), invalidated on the same triggers as analyticsCache (finishWorkout, init). This avoids redundant computation on each tab switch.</div>
+    </div>
+  </div>
+
+  <!-- DS-5 No body weight set — cross-screen consistency -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-pass">PASS</span></div>
+    <div class="item-body">
+      <div class="item-title">DS-5 · No body weight — consistent blocking across screens</div>
+      <div class="item-location">ExerciseInsightsView · SSRelStrengthCard · StrengthLabView · StrengthScoreView</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P5 Labels match data</span>
+        <span class="tag tag-state">No BW set</span>
+      </div>
+      <div class="item-desc">All relative strength features (tier bars, BW-normalized PSI, allometric scaling, body comp strength) consistently show prompts directing users to Settings → Profile. No feature attempts to guess or default a body weight. Consistent and correct across all screens.</div>
+    </div>
+  </div>
+
+  <!-- DS-6 Beginner (1–3 sessions) — analytics maturity gates -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-pass">PASS</span></div>
+    <div class="item-body">
+      <div class="item-title">DS-6 · Beginner state — analytics unlock gates</div>
+      <div class="item-location">All analytics cards — data guards</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P7 Context before data</span>
+        <span class="tag tag-state">Minimal (1–3 sessions)</span>
+      </div>
+      <div class="item-desc">OLS trend requires 2+ sessions. INOL zone requires 1 session. Rep decay requires intra-session set count. Efficiency requires 2+ sessions. All guards are correctly implemented — no chart renders with insufficient data. Empty states explain data requirements. Solid maturity gating throughout.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     DESIGN SYSTEM CONSISTENCY
+════════════════════════════════════════════════════════ -->
+<div class="screen-section">
+  <div class="screen-title">DESIGN SYSTEM CONSISTENCY<span>HONTheme · AppTheme · Typography</span></div>
+
+  <!-- DC-1 Icon consistency -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-fix">FIX</span></div>
+    <div class="item-body">
+      <div class="item-title">DC-1 · Expand/collapse icon — inconsistent across cards</div>
+      <div class="item-location">Multiple cards — ExpandableChartCard, CollapsibleDashSection, ReadinessCoachCard</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P3 Consistent size language</span>
+        <span class="tag tag-principle">P6 Honest affordances</span>
+        <span class="tag tag-state">All</span>
+      </div>
+      <div class="item-desc">Expand icons vary: some cards use `arrow.up.left.and.arrow.down.right` (fullscreen), some use `chevron.down`/`chevron.up` (collapse), some use custom icons. The user can't build a consistent mental model of what "tap to expand" means because the icon shape differs by card type. A chevron on one card means "this section collapses" and on another means "this card goes full-screen."</div>
+      <div class="item-fix">FIX → Define two icons system-wide: (1) `chevron.up/down` = section collapse/expand (never full-screen), (2) `arrow.up.left.and.arrow.down.right` = full-screen. Apply consistently across all expandable surfaces.</div>
+    </div>
+  </div>
+
+  <!-- DC-2 Section naming convention -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-fix">FIX</span></div>
+    <div class="item-body">
+      <div class="item-title">DC-2 · Section naming — inconsistent capitalization and punctuation</div>
+      <div class="item-location">ProgressView section titles vs HomeView card titles</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P4 Legible hierarchy</span>
+        <span class="tag tag-state">All</span>
+      </div>
+      <div class="item-desc">ProgressView sections are ALL-CAPS ("WHERE AM I", "AM I GETTING STRONGER"). HomeView card titles use Title Case ("Today's Plan", "Momentum"). StrengthLab uses Title Case. Settings uses Title Case. The all-caps style in ProgressView is not applied anywhere else. Either adopt it system-wide or revert Progress sections to Title Case.</div>
+      <div class="item-fix">FIX → Standardize: use UPPERCASE for section dividers (progress view, strength lab section headers), and Title Case for card titles and individual metric labels. Document in DESIGN_SYSTEM.md.</div>
+    </div>
+  </div>
+
+  <!-- DC-3 Color token usage -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-pass">PASS</span></div>
+    <div class="item-body">
+      <div class="item-title">DC-3 · Color token usage — semantic tokens used consistently</div>
+      <div class="item-location">All files → HONTheme.positive, .negative, .accent, .warning</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P3 Consistent size language</span>
+        <span class="tag tag-state">All</span>
+      </div>
+      <div class="item-desc">Semantic color tokens (positive = sage green, negative = rose, warning = amber, accent = steel blue) are used consistently across all view files. No raw hex or `.green`/`.red` Color literals found. The token system is mature and disciplined.</div>
+    </div>
+  </div>
+
+  <!-- DC-4 Typography tokens -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-pass">PASS</span></div>
+    <div class="item-body">
+      <div class="item-title">DC-4 · Typography — honBody/honHero tokens supplemented with system fonts</div>
+      <div class="item-location">All views</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P4 Legible hierarchy</span>
+        <span class="tag tag-state">All</span>
+      </div>
+      <div class="item-desc">Headline scores use `.system(size: 52, weight: .black, design: .rounded)` (contextually appropriate for a single hero number). Labels use `.caption`, `.system(size: 9/10/11)` consistently. The type scale is well-calibrated for information density.</div>
+    </div>
+  </div>
+
+  <!-- DC-5 Dark mode only -->
+  <div class="item">
+    <div class="item-verdict"><span class="verdict-badge v-watch">WATCH</span></div>
+    <div class="item-body">
+      <div class="item-title">DC-5 · Light mode — `prefersDarkMode` defaults to true, no light mode support</div>
+      <div class="item-location">SettingsView → prefersDarkMode AppStorage</div>
+      <div class="item-row">
+        <span class="tag tag-principle">P8 Serves the habit</span>
+        <span class="tag tag-state">All</span>
+      </div>
+      <div class="item-desc">The app defaults to dark mode. If a user has light mode on their device, the app may force dark. HONTheme colors are all calibrated for dark backgrounds — sage green on white may have low contrast. Not a current bug if the app forces dark, but worth confirming the `.preferredColorScheme(.dark)` modifier is applied at the root level.</div>
+      <div class="item-fix watch">WATCH → Verify `.preferredColorScheme(prefersDarkMode ? .dark : .light)` is applied at the ContentView level. If light mode is unsupported, remove the toggle from Settings to avoid user confusion.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Footer ──────────────────────────────────────────── -->
+<div style="margin-top:48px; border-top:1px solid #222; padding-top:20px; font-size:11px; color:#444; text-align:center;">
+  H.O.N. Design Audit · 52 items · Generated 2026-05-24<br>
+  Principles: P1 Visual earns its place · P2 Tap reveals not repeats · P3 Consistent size · P4 Hierarchy · P5 Labels match · P6 Affordances · P7 Context first · P8 Serves habit
+</div>
+
+</body>
+</html>
