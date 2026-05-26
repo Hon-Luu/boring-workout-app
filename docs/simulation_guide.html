@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H.O.N. UX Simulation Guide — 2026-05-26</title>
+<style>
+:root {
+  --bg:#0f0f11;--s1:#1a1a1e;--s2:#222228;--s3:#2a2a32;
+  --border:#2e2e36;--border2:#383842;
+  --text:#e8e8ee;--muted:#888896;--dim:#444450;
+  --amber:#D4943A;--sage:#7BAF85;--rose:#C26B6B;
+  --slate:#6B85A0;--lav:#9B8EC4;
+  --red:#c25050;--orange:#c27830;--yellow:#b8882a;
+  --blue:#5080c0;--green:#4a9a5a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,'SF Pro Text','Helvetica Neue',sans-serif;font-size:14px;line-height:1.7}
+.page{max-width:1200px;margin:0 auto;padding:48px 28px}
+
+h1{font-size:28px;font-weight:700;letter-spacing:-.4px;color:var(--amber)}
+h2{font-size:17px;font-weight:700;color:var(--text);margin:52px 0 18px;padding-bottom:10px;border-bottom:1px solid var(--border);letter-spacing:-.2px}
+h3{font-size:14px;font-weight:700;color:var(--amber);margin:28px 0 10px;text-transform:uppercase;letter-spacing:.8px}
+h4{font-size:13px;font-weight:600;color:var(--text);margin:18px 0 8px}
+p{color:var(--muted);margin-bottom:10px;line-height:1.8}
+strong{color:var(--text)}
+em{color:var(--muted);font-style:italic}
+code{background:var(--s2);color:var(--sage);padding:1px 5px;border-radius:4px;font-size:12px;font-family:'SF Mono','Fira Code',monospace}
+ul{list-style:none;padding:0}
+li{padding:5px 0;border-bottom:1px solid var(--border);color:var(--muted)}
+li:last-child{border-bottom:none}
+li strong{color:var(--text)}
+
+.subtitle{color:var(--muted);font-size:13px;margin:6px 0 40px}
+.note{background:rgba(212,148,58,.07);border:1px solid rgba(212,148,58,.2);border-radius:8px;padding:13px 16px;font-size:13px;color:var(--text);margin:16px 0}
+.note strong{color:var(--amber)}
+.note-sage{background:rgba(123,175,133,.06);border:1px solid rgba(123,175,133,.2);border-radius:8px;padding:13px 16px;font-size:13px;color:var(--text);margin:16px 0}
+.note-sage strong{color:var(--sage)}
+.note-rose{background:rgba(194,107,107,.06);border:1px solid rgba(194,107,107,.2);border-radius:8px;padding:13px 16px;font-size:13px;color:var(--text);margin:16px 0}
+.note-rose strong{color:var(--rose)}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px}
+@media(max-width:900px){.g2,.g3,.g4{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.g2,.g3,.g4{grid-template-columns:1fr}}
+
+.card{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:14px}
+.card-rose{background:rgba(194,107,107,.05);border:1px solid rgba(194,107,107,.2);border-radius:12px;padding:20px 22px;margin-bottom:14px}
+.card-sage{background:rgba(123,175,133,.05);border:1px solid rgba(123,175,133,.2);border-radius:12px;padding:20px 22px;margin-bottom:14px}
+.card-amber{background:rgba(212,148,58,.05);border:1px solid rgba(212,148,58,.2);border-radius:12px;padding:20px 22px;margin-bottom:14px}
+.card-slate{background:rgba(107,133,160,.05);border:1px solid rgba(107,133,160,.2);border-radius:12px;padding:20px 22px;margin-bottom:14px}
+
+.proto-card{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:20px}
+.proto-header{padding:16px 22px;background:var(--s2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px}
+.proto-num{font-size:22px;font-weight:800;color:var(--amber);width:30px;line-height:1}
+.proto-name{font-size:15px;font-weight:700}
+.proto-sub{font-size:12px;color:var(--muted);margin-top:1px}
+.proto-body{padding:20px 22px}
+
+.persona-card{border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.persona-header{padding:14px 18px;background:var(--s2);border-bottom:1px solid var(--border)}
+.persona-name{font-size:14px;font-weight:700}
+.persona-tag{font-size:11px;color:var(--muted)}
+.persona-body{padding:16px 18px;font-size:13px}
+.persona-body p{font-size:13px;margin-bottom:8px}
+.persona-row{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px}
+.persona-row:last-child{border-bottom:none}
+.persona-label{color:var(--muted);flex:0 0 90px}
+.persona-val{color:var(--text)}
+
+.scenario-card{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px}
+.scenario-header{padding:12px 18px;background:var(--s2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.scenario-id{font-family:'SF Mono',monospace;font-size:11px;color:var(--amber);font-weight:700;flex:0 0 40px}
+.scenario-title{font-size:13px;font-weight:700;flex:1}
+.scenario-personas{font-size:11px;color:var(--muted)}
+.scenario-body{padding:16px 18px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+@media(max-width:800px){.scenario-body{grid-template-columns:1fr}}
+.scenario-col h4{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:0 0 8px}
+.scenario-col p,.scenario-col li{font-size:12px;margin-bottom:5px;color:var(--muted)}
+.scenario-col li strong{color:var(--text);font-size:12px}
+
+.table-wrap{overflow-x:auto;margin:14px 0}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{background:var(--s2);color:var(--muted);font-weight:600;text-align:left;padding:9px 12px;border-bottom:2px solid var(--border);white-space:nowrap;font-size:11px;letter-spacing:.5px;text-transform:uppercase}
+td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--muted)}
+tr:last-child td{border-bottom:none}
+tr:nth-child(even) td{background:rgba(255,255,255,.015)}
+td:first-child{color:var(--amber);font-family:'SF Mono',monospace;font-size:11px;white-space:nowrap}
+td strong{color:var(--text)}
+
+.tag{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;white-space:nowrap;margin:2px 2px 0 0}
+.tag-p1{background:rgba(123,175,133,.15);color:var(--sage)}
+.tag-p2{background:rgba(107,133,160,.15);color:var(--slate)}
+.tag-p3{background:rgba(155,142,196,.15);color:var(--lav)}
+.tag-p4{background:rgba(212,148,58,.12);color:var(--amber)}
+.tag-hard{background:rgba(194,80,80,.12);color:var(--red)}
+.tag-med{background:rgba(184,136,42,.12);color:var(--yellow)}
+.tag-easy{background:rgba(74,154,90,.12);color:var(--green)}
+
+.step{display:flex;gap:14px;padding:10px 0;border-bottom:1px solid var(--border);align-items:flex-start}
+.step:last-child{border-bottom:none}
+.step-num{flex:0 0 24px;height:24px;border-radius:50%;background:var(--s3);color:var(--amber);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:2px}
+.step-content{flex:1;font-size:13px;color:var(--muted)}
+.step-content strong{color:var(--text)}
+
+.bias-card{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:12px}
+.bias-name{font-size:13px;font-weight:700;color:var(--rose);margin-bottom:4px}
+.bias-desc{font-size:12px;color:var(--muted);margin-bottom:8px}
+.bias-fix{font-size:12px;color:var(--text);background:var(--s2);border-radius:6px;padding:8px 12px}
+.bias-fix::before{content:"Fix: ";color:var(--sage);font-weight:700}
+
+.obs-row{display:grid;grid-template-columns:140px 1fr 100px;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);align-items:start;font-size:12px}
+.obs-row:last-child{border-bottom:none}
+.obs-label{color:var(--amber);font-family:'SF Mono',monospace;font-size:11px}
+.obs-prompt{color:var(--muted)}
+.obs-format{color:var(--dim);font-style:italic}
+
+.seq-row{display:grid;grid-template-columns:60px 120px 1fr 100px 80px;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);align-items:start;font-size:12px}
+.seq-row:last-child{border-bottom:none}
+
+.callout{border-radius:0 8px 8px 0;padding:12px 16px;margin:12px 0;font-size:13px}
+.c-slate{background:rgba(107,133,160,.07);border-left:3px solid var(--slate)}
+.c-slate p{margin:0;color:var(--text)}
+.c-amber{background:rgba(212,148,58,.07);border-left:3px solid var(--amber)}
+.c-amber p{margin:0;color:var(--text)}
+.c-rose{background:rgba(194,107,107,.07);border-left:3px solid var(--rose)}
+.c-rose p{margin:0;color:var(--text)}
+.c-sage{background:rgba(123,175,133,.07);border-left:3px solid var(--sage)}
+.c-sage p{margin:0;color:var(--text)}
+
+.verdict-pass{color:var(--green);font-weight:700}
+.verdict-watch{color:var(--yellow);font-weight:700}
+.verdict-fail{color:var(--red);font-weight:700}
+
+hr{border:none;border-top:1px solid var(--border);margin:44px 0}
+footer{color:var(--dim);font-size:12px;text-align:center;margin-top:60px}
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>H.O.N. UX Simulation Guide</h1>
+<p class="subtitle">How to set up, run, and interpret real-experience simulations — before the audit executes</p>
+
+<!-- ============================================================ -->
+<h2>What This Is — And Why It's Different From the Audit</h2>
+
+<p>The audit asks: <em>does the app do what it's designed to do?</em> It runs questions against the codebase and the data model. Simulation asks a different question: <em>what does it actually feel like to be a user of this?</em> These are not the same question. An app can pass every audit criterion and still feel cold, confusing, or untrustworthy to use. Simulation is how you find what the audit can't.</p>
+
+<div class="g2">
+<div class="callout c-amber">
+<p><strong>The audit finds what's broken.</strong> Simulation finds what's missing, what's off-putting, what's surprising in the wrong direction, and what's surprising in the right one. It finds the gaps between intent and experience. A feature can be technically correct and emotionally wrong.</p>
+</div>
+<div class="callout c-slate">
+<p><strong>The fundamental problem:</strong> You built this app. You know exactly what every screen does, where every feature lives, and what every number means. You cannot unknow this. Simulation is not about pretending to forget — it's about creating conditions where your knowledge advantage is neutralized by real friction.</p>
+</div>
+</div>
+
+<div class="note-rose"><strong>The curse of knowledge:</strong> Research consistently shows that product creators overestimate how intuitive their interfaces are by 40–60%. You will hesitate on a screen and immediately rationalize the hesitation ("users will learn"). In this simulation, a hesitation is a finding regardless of the rationalization. Write it down. Explain it later.</div>
+
+<!-- ============================================================ -->
+<h2>The Four Simulation Personas</h2>
+
+<p>You cannot simulate everyone. Four personas cover the behavioral range that matters for this app. Each has a distinct emotional posture, data vocabulary, and relationship with consistency. Run every scenario through at least two of them.</p>
+
+<div class="g2">
+
+<div class="persona-card">
+<div class="persona-header">
+<div class="persona-name">P1 — The Returner</div>
+<div class="persona-tag">Trains 2–3×/week · Disappears for 1–3 weeks · Mild guilt on return</div>
+</div>
+<div class="persona-body">
+<p>Consistency is aspirational, not reliable. This person has good intentions and real results — they just have gaps. They return with a mix of hope and low-grade guilt. They want the app to welcome them back, not remind them how long they've been away.</p>
+<div class="persona-row"><span class="persona-label">Vocabulary</span><span class="persona-val">Knows reps, sets, weight. Doesn't know e1RM, RPE, INOL.</span></div>
+<div class="persona-row"><span class="persona-label">Inputs they give</span><span class="persona-val">Weight they lifted, reps they completed. Nothing else unless prompted clearly.</span></div>
+<div class="persona-row"><span class="persona-label">What they notice</span><span class="persona-val">First screen they see on return. Whether the app acknowledges the gap. Whether it makes them feel behind.</span></div>
+<div class="persona-row"><span class="persona-label">Will they skip?</span><span class="persona-val">Yes — feel rating, readinessBefore, RPE — anything that adds steps.</span></div>
+<div class="persona-row"><span class="persona-label">Key simulation</span><span class="persona-val">Log 4 sessions, simulate 6 days away, return. Observe the first 15 seconds.</span></div>
+</div>
+</div>
+
+<div class="persona-card">
+<div class="persona-header">
+<div class="persona-name">P2 — The Skeptic</div>
+<div class="persona-tag">Data-oriented · Will verify numbers · Won't trust opacity</div>
+</div>
+<div class="persona-body">
+<p>This person works in a field that uses data. They're attracted to the analytics promise but won't buy a number they can't verify. They will calculate e1RM by hand if they think the app might be wrong. One unexplained discrepancy breaks the relationship permanently.</p>
+<div class="persona-row"><span class="persona-label">Vocabulary</span><span class="persona-val">Knows all fitness terms. Understands progressive overload, periodization, 1RM concepts.</span></div>
+<div class="persona-row"><span class="persona-label">Inputs they give</span><span class="persona-val">Precise. Will re-enter if they mistyped. Will use RPE if it's explained clearly.</span></div>
+<div class="persona-row"><span class="persona-label">What they notice</span><span class="persona-val">Numbers that don't add up. Labels that are wrong. Recommendations without visible reasoning.</span></div>
+<div class="persona-row"><span class="persona-label">Will they skip?</span><span class="persona-val">No. They want data density. They will explore every tab.</span></div>
+<div class="persona-row"><span class="persona-label">Key simulation</span><span class="persona-val">After 5 sessions: manually calculate a metric, compare to what the app shows. Navigate all tabs looking for the same number.</span></div>
+</div>
+</div>
+
+<div class="persona-card">
+<div class="persona-header">
+<div class="persona-name">P3 — The Beginner</div>
+<div class="persona-tag">First fitness app · No vocabulary · Easily overwhelmed · Easily delighted</div>
+</div>
+<div class="persona-body">
+<p>This person is starting. They don't know what e1RM means. They don't know if 20 kg on a dumbbell means per hand or total. They'll interpret every piece of coaching as authoritative because they have no baseline to push back against. Jargon makes them feel stupid rather than informed.</p>
+<div class="persona-row"><span class="persona-label">Vocabulary</span><span class="persona-val">Reps, sets, weight. "Bigger number = stronger" is their mental model.</span></div>
+<div class="persona-row"><span class="persona-label">Inputs they give</span><span class="persona-val">Whatever the placeholder says. Will enter whatever number looks reasonable.</span></div>
+<div class="persona-row"><span class="persona-label">What they notice</span><span class="persona-val">Whether they feel stupid. Whether the app assumes knowledge they don't have. Whether they understand the "so what."</span></div>
+<div class="persona-row"><span class="persona-label">Will they skip?</span><span class="persona-val">Onboarding steps — yes if "Skip" is visible. Any screen that feels like a quiz — yes.</span></div>
+<div class="persona-row"><span class="persona-label">Key simulation</span><span class="persona-val">Complete full onboarding without reading instructions. Log the first session using only what the UI tells you. Count every word you don't understand.</span></div>
+</div>
+</div>
+
+<div class="persona-card">
+<div class="persona-header">
+<div class="persona-name">P4 — The Optimizer</div>
+<div class="persona-tag">4–5×/week · Wants specificity · Drills into analytics · High bar for coaching quality</div>
+</div>
+<div class="persona-body">
+<p>This person is already fit and already disciplined. They're not using the app to build a habit — they want it to tell them something they don't already know. Generic coaching actively annoys them. They expect features to earn the screen real estate they occupy.</p>
+<div class="persona-row"><span class="persona-label">Vocabulary</span><span class="persona-val">All fitness terms. Researches training science. Will notice if advice contradicts literature.</span></div>
+<div class="persona-row"><span class="persona-label">Inputs they give</span><span class="persona-val">Everything. RPE, drop sets, toFailure. They'll use every enrichment field if it's explained.</span></div>
+<div class="persona-row"><span class="persona-label">What they notice</span><span class="persona-val">Whether the coaching is generic. Whether insights surprise them. Whether drill-downs reward curiosity.</span></div>
+<div class="persona-row"><span class="persona-label">Will they skip?</span><span class="persona-val">No. But they'll dismiss features that feel shallow within one use.</span></div>
+<div class="persona-row"><span class="persona-label">Key simulation</span><span class="persona-val">After 10 sessions: is the experience qualitatively different from session 3? Does the app know more, or just display more?</span></div>
+</div>
+</div>
+
+</div>
+
+<!-- ============================================================ -->
+<h2>Data State Setup — How to Create Each Starting Condition</h2>
+
+<p>Every simulation requires a specific app state. You cannot simulate "session 1 experience" with 18 sessions of data loaded. This section defines how to create each required starting condition and how to return the app to its current state afterward.</p>
+
+<div class="note"><strong>Before anything:</strong> Export the current backup — <code>hon_backup_2026-05-26_07-25.json</code> — and store it somewhere safe. Every simulation that modifies data must be restorable. Never simulate against your only copy of real session data.</div>
+
+<h3>State Profiles</h3>
+<div class="table-wrap"><table>
+<tr><th>State ID</th><th>Description</th><th>How to create it</th><th>Simulations that use it</th></tr>
+<tr><td>STATE-0</td><td><strong>Virgin install</strong> — No data, no profile, no onboarding completed</td><td>Simulator: Device → Erase All Content and Settings. Physical: Delete app → reinstall from TestFlight. Clear all UserDefaults manually if needed.</td><td>SC-01, SC-02</td></tr>
+<tr><td>STATE-3</td><td><strong>3 sessions logged</strong> — Confidence = Medium, first comparison data exists</td><td>From STATE-0: log 3 real sessions over 3 days. Or: craft a minimal JSON with 3 log entries and import via backup restore.</td><td>SC-03, SC-04</td></tr>
+<tr><td>STATE-5</td><td><strong>5 sessions, no gap</strong> — 5 consecutive days. Tests fatigue accumulation and coaching depth.</td><td>Log 5 sessions on 5 consecutive calendar days. Do not skip feel rating on any session.</td><td>SC-05, SC-07</td></tr>
+<tr><td>STATE-GAP</td><td><strong>Post-gap return</strong> — 5 sessions completed, then 5–7 calendar days of no logging</td><td>Build STATE-3 or STATE-5, then do nothing for the gap duration. Or: craft log entries with last session timestamp = now minus gap days.</td><td>SC-06, SC-09, SC-12</td></tr>
+<tr><td>STATE-10</td><td><strong>10 sessions</strong> — Confidence = High. Multiple exercises have ≥3 sessions. Plateau detection becomes possible.</td><td>Log 10 real sessions, or restore backup with 10 entries. Ensure at least 2 exercises repeat across at least 3 sessions each.</td><td>SC-08, SC-10, SC-11</td></tr>
+<tr><td>STATE-LIVE</td><td><strong>Current live state</strong> — 18 sessions, all real data from <code>hon_backup_2026-05-26_07-25.json</code></td><td>Restore from the backup file. This is the default state for scenarios that need mature data.</td><td>SC-10 (cross-tab), SC-13, SC-14</td></tr>
+<tr><td>STATE-ANOMALY</td><td><strong>Anomalous session injected</strong> — Identical to STATE-5 but one session contains: 0-rep completed set, 0-weight barbell entry</td><td>Build STATE-5. In the next session, deliberately enter weight=0 on a barbell exercise and complete a set with reps=0. Note what the app accepts.</td><td>SC-07</td></tr>
+</table></div>
+
+<div class="note-sage"><strong>Tip for crafting minimal JSON states:</strong> The fastest way to create STATE-3 or STATE-5 without logging real sessions is to edit the backup JSON directly — duplicate or trim existing log entries, update the timestamps to the desired dates, and reimport. This lets you create exactly the conditions you want (specific gaps, specific exercises, specific rep counts) rather than waiting for real sessions to accumulate.</div>
+
+<!-- ============================================================ -->
+<h2>Six Simulation Protocols</h2>
+
+<p>Six distinct methods for generating real-experience signal. They are not interchangeable — each exposes a different class of problem. Run at least three of them. The cold-start and screen recording protocols are mandatory.</p>
+
+<!-- Protocol 1 -->
+<div class="proto-card">
+<div class="proto-header">
+<div class="proto-num">1</div>
+<div>
+<div class="proto-name">Cold-Start Protocol</div>
+<div class="proto-sub">State: STATE-0 · Duration: 2 weeks of real use · Personas: P1 or P3 · Effort: High</div>
+</div>
+<div style="margin-left:auto"><span class="tag tag-hard">Highest value</span></div>
+</div>
+<div class="proto-body">
+<p>Reset the app completely and use it for real — logging real sessions, real weights, real feelings — for two weeks. Do not test features. Do not explore tabs you haven't organically reached. Use the app the way a new user would: to log a workout and see what happens.</p>
+
+<h4>Setup</h4>
+<div class="step"><div class="step-num">1</div><div class="step-content"><strong>Back up all existing data.</strong> Store <code>hon_backup_2026-05-26_07-25.json</code> in a safe location. You will restore it when the simulation ends.</div></div>
+<div class="step"><div class="step-num">2</div><div class="step-content"><strong>Erase all app data.</strong> Simulator: Device → Erase All Content and Settings. Do not clear anything manually — you want the virgin install experience including onboarding.</div></div>
+<div class="step"><div class="step-num">3</div><div class="step-content"><strong>Choose your persona before opening the app.</strong> Write down 3 sentences about who you are in that persona. Example for P3: "I just joined a gym. I have never used a fitness app before. I want to know if I'm getting stronger." Keep this visible during the session.</div></div>
+<div class="step"><div class="step-num">4</div><div class="step-content"><strong>Set a timer before each feature interaction.</strong> If you hesitate for more than 3 seconds at any point, write it down before you proceed. Do not explain the hesitation yet — just timestamp and describe it.</div></div>
+
+<h4>What to log during each session</h4>
+<ul>
+<li><strong>Moment of first confusion</strong> — screen, element, what you expected vs what you found</li>
+<li><strong>Any field you skipped</strong> — which field and why (didn't understand / too much friction / didn't seem worth it)</li>
+<li><strong>Any coaching text that felt generic</strong> — quote it verbatim</li>
+<li><strong>Any number you wanted to understand better</strong> — what was it, what did you try to verify it against</li>
+<li><strong>The last thing you saw before closing the app</strong> — verbatim, and whether it made you want to come back</li>
+</ul>
+
+<h4>Success criteria</h4>
+<p>By session 5: can you navigate to any tab without thinking? By session 10: does the coaching feel like it knows you? By session 14: is the experience qualitatively richer than session 3, and can you point to specific features that are richer?</p>
+</div>
+</div>
+
+<!-- Protocol 2 -->
+<div class="proto-card">
+<div class="proto-header">
+<div class="proto-num">2</div>
+<div>
+<div class="proto-name">Screen Recording + Think-Aloud</div>
+<div class="proto-sub">State: STATE-0 or STATE-GAP · Duration: 1 full session (45–60 min) · Personas: All · Effort: Medium</div>
+</div>
+<div style="margin-left:auto"><span class="tag tag-hard">Mandatory</span></div>
+</div>
+<div class="proto-body">
+<p>Record your screen and your voice while logging one complete session from start to finish. Before every tap, narrate what you expect will happen. After every tap, narrate whether it matched. Review the recording — every gap between expectation and reality is a finding.</p>
+
+<h4>Setup</h4>
+<div class="step"><div class="step-num">1</div><div class="step-content"><strong>Enable iOS screen recording with microphone.</strong> Control Center → Screen Recording (long press) → enable microphone. Confirm audio is recording before starting.</div></div>
+<div class="step"><div class="step-num">2</div><div class="step-content"><strong>Choose your persona and starting state.</strong> For the most signal: use STATE-0 with P3 (beginner, no experience). Alternatively: STATE-GAP with P1 (returner, first session back).</div></div>
+<div class="step"><div class="step-num">3</div><div class="step-content"><strong>The rule: narrate every expectation before you tap.</strong> "I expect this button to open the workout logger." Then tap. Then: "It did / it didn't because..." Do not skip steps. Silence is also signal.</div></div>
+<div class="step"><div class="step-num">4</div><div class="step-content"><strong>Do not stop to fix anything.</strong> If you notice a bug or friction point, say so aloud and continue. You are simulating, not debugging.</div></div>
+<div class="step"><div class="step-num">5</div><div class="step-content"><strong>After the session: review the recording.</strong> Mark timestamps where: (a) what you expected didn't match, (b) you hesitated, (c) you said something negative, (d) you said something positive. Each timestamp is a candidate finding.</div></div>
+
+<h4>What the recording captures that you can't observe in real-time</h4>
+<ul>
+<li><strong>Scroll depth</strong> — did you reach the bottom of long cards, or did you stop scrolling early?</li>
+<li><strong>Re-taps</strong> — tapping the same element twice because the first tap felt unreliable</li>
+<li><strong>Silence at decision points</strong> — you didn't speak, meaning you were processing something unexpected</li>
+<li><strong>Voice tone on coaching text</strong> — flat reads indicate generic coaching; engaged reads indicate specific coaching</li>
+</ul>
+</div>
+</div>
+
+<!-- Protocol 3 -->
+<div class="proto-card">
+<div class="proto-header">
+<div class="proto-num">3</div>
+<div>
+<div class="proto-name">Forced Condition Injection</div>
+<div class="proto-sub">State: Any · Duration: 30 min per condition · Personas: P2 or P4 · Effort: Low</div>
+</div>
+<div style="margin-left:auto"><span class="tag tag-med">High signal density</span></div>
+</div>
+<div class="proto-body">
+<p>Deliberately produce conditions the audit has flagged as risk vectors. This is not about finding bugs — it's about experiencing what the app does when real users make real inputs that aren't in the happy path. Every condition below has been used by real users in the existing 18 sessions.</p>
+
+<div class="table-wrap"><table>
+<tr><th>Condition</th><th>How to produce it</th><th>What to observe</th></tr>
+<tr><td>FC-01</td><td><strong>Complete a set with 0 reps.</strong> Enter any weight, enter 0 for reps, mark complete.</td><td>Does the app accept it? Show a warning? What does the post-set narrative say? Does this session's coaching praise or ignore the zero-rep set?</td></tr>
+<tr><td>FC-02</td><td><strong>Enter 0 kg on a barbell exercise.</strong> Start a bench press or squat set. Enter weight=0. Complete the set.</td><td>What is displayed — 0 kg or 20 kg (floor)? Does the analytics chart show 0 or 20? Do both agree?</td></tr>
+<tr><td>FC-03</td><td><strong>Log a session immediately after another same-day session.</strong> Complete a session. Without leaving the app for more than a minute, start a second session.</td><td>Streak count: 1 day or 2? Readiness for session 2: fresh start or intra-day fatigue aware? Both sessions visible separately in Progress history?</td></tr>
+<tr><td>FC-04</td><td><strong>Skip the feel rating at session end.</strong> Complete a session. When the feel rating appears, dismiss or bypass it without selecting a rating.</td><td>Is dismissal possible? What happens to EmergentInsights for this session? Does the coaching in the next session behave differently without the feel data?</td></tr>
+<tr><td>FC-05</td><td><strong>Log an assisted exercise with no bodyweight in profile.</strong> Clear bodyWeightKg from Settings. Log an Assisted Pull-Up set.</td><td>Does the effective load formula (BW − assist) work with no BW? Does the app warn you? What e1RM does it compute?</td></tr>
+<tr><td>FC-06</td><td><strong>Enter a weight higher than the previous target on the first set.</strong> Log an exercise where you enter significantly more weight than the pre-filled target (e.g., pre-fill = 20 kg, you enter 40 kg).</td><td>Does the narrative acknowledge the jump? Does it celebrate progressive overload or flag the deviation from target?</td></tr>
+<tr><td>FC-07</td><td><strong>Log a dumbbell exercise and enter total load (not per-hand).</strong> If your actual dumbbell weight per hand is 20 kg, enter 40 (total). See what the app does with this.</td><td>Does the app double 40 to 80 for analytics? Does it communicate the per-hand convention anywhere at point of entry? This tests whether the convention is visible or invisible.</td></tr>
+<tr><td>FC-08</td><td><strong>Log a session 8+ days after the last one.</strong> Create a genuine or simulated gap of more than 7 days. Return to the app. Open Home.</td><td>Readiness modifier: −14 should apply. Does the displayed score reflect this? Is the language shame-free or does it reference the absence?</td></tr>
+</table></div>
+</div>
+</div>
+
+<!-- Protocol 4 -->
+<div class="proto-card">
+<div class="proto-header">
+<div class="proto-num">4</div>
+<div>
+<div class="proto-name">Persona Walkthrough</div>
+<div class="proto-sub">State: Varies · Duration: 90 min per persona · All personas · Effort: Medium</div>
+</div>
+<div style="margin-left:auto"><span class="tag tag-med">Structural</span></div>
+</div>
+<div class="proto-body">
+<p>Each persona walks a scripted path through the app — not to test specific features, but to experience the app as a coherent product from their perspective. The script defines only starting state and goal. The path taken is the persona's, not yours.</p>
+
+<div class="table-wrap"><table>
+<tr><th>Persona</th><th>Starting state</th><th>Their goal</th><th>The question being answered</th></tr>
+<tr><td><span class="tag tag-p1">P1 Returner</span></td><td>STATE-GAP (5 sessions, 6-day gap)</td><td>"I want to get back on track. What should I do today?"</td><td>Does the app make returning feel easy, or does it highlight the failure?</td></tr>
+<tr><td><span class="tag tag-p2">P2 Skeptic</span></td><td>STATE-10 (10 sessions)</td><td>"I want to know if the strength numbers are accurate. Show me your work."</td><td>Can the app's analytics withstand scrutiny from someone who will verify the math?</td></tr>
+<tr><td><span class="tag tag-p3">P3 Beginner</span></td><td>STATE-0 (virgin install)</td><td>"I just want to log my workout and see if I'm getting stronger."</td><td>Does the app's language and feature surface make sense to someone with no fitness-app vocabulary?</td></tr>
+<tr><td><span class="tag tag-p4">P4 Optimizer</span></td><td>STATE-LIVE (18 sessions)</td><td>"I want to find something in this data that surprises me — something I didn't already know."</td><td>At 18 sessions, does the app offer genuine analytical depth, or just well-formatted summaries?</td></tr>
+</table></div>
+
+<h4>Rules for running a persona walkthrough</h4>
+<ul>
+<li><strong>Write the persona's 3 sentences before you start.</strong> Post them visible. Refer to them whenever you're about to make a decision.</li>
+<li><strong>The persona has never seen this before.</strong> Even if you've been on this screen 100 times, they haven't. Navigate as if discovery is required.</li>
+<li><strong>Stop when the persona would stop.</strong> P1 wouldn't spend 20 minutes in StrengthLab. P3 wouldn't keep scrolling once they feel lost. When the persona would quit, you quit — and log why.</li>
+<li><strong>The persona's feelings are valid data.</strong> If you feel, as P1, that the app made you feel behind — that's a finding, even if no specific feature caused it. Aggregate emotional responses count.</li>
+</ul>
+</div>
+</div>
+
+<!-- Protocol 5 -->
+<div class="proto-card">
+<div class="proto-header">
+<div class="proto-num">5</div>
+<div>
+<div class="proto-name">Competitive Friction Test</div>
+<div class="proto-sub">State: External app + STATE-LIVE · Duration: 2 real sessions + 1 comparison session · Personas: P2, P4 · Effort: Low</div>
+</div>
+<div style="margin-left:auto"><span class="tag tag-easy">Calibration</span></div>
+</div>
+<div class="proto-body">
+<p>Use a competitor app (Strong or Hevy — both are free) to log two real sessions. Then return to H.O.N. and log the same session type again. Every moment of friction that you've normalized in H.O.N. will surface as contrast. Every feature H.O.N. has that the competitor doesn't will feel earned.</p>
+
+<h4>What to look for during the competitor sessions</h4>
+<ul>
+<li><strong>Logging speed.</strong> How long does it take from "open app" to "first set logged"? Compare to H.O.N.</li>
+<li><strong>Weight entry convention.</strong> Does the competitor communicate dumbbell convention? How?</li>
+<li><strong>Post-set feedback.</strong> What does the competitor show after each set? More or less than H.O.N.?</li>
+<li><strong>Session summary.</strong> What does the competitor show when you complete a session?</li>
+<li><strong>Analytics depth.</strong> Can you see your e1RM trend? Your volume history? Is it labeled?</li>
+</ul>
+
+<h4>What to look for when returning to H.O.N.</h4>
+<ul>
+<li><strong>What felt missing in the competitor that you immediately used in H.O.N.</strong> That feature is a differentiator — communicate it more visibly.</li>
+<li><strong>What you wanted to do in H.O.N. that the competitor handled more smoothly.</strong> That's friction you've rationalized.</li>
+<li><strong>Whether the coaching felt different in quality, not just quantity.</strong> Generic encouragement in one app vs specific data in another is the core differentiation test.</li>
+</ul>
+</div>
+</div>
+
+<!-- Protocol 6 -->
+<div class="proto-card">
+<div class="proto-header">
+<div class="proto-num">6</div>
+<div>
+<div class="proto-name">Cold User Test</div>
+<div class="proto-sub">State: STATE-0 on a separate device or TestFlight build · Duration: 15–20 min observed · Personas: Real person · Effort: High to set up, highest signal</div>
+</div>
+<div style="margin-left:auto"><span class="tag tag-hard">Highest fidelity</span></div>
+</div>
+<div class="proto-body">
+<p>Give the app to one person who fits your target user profile and has never seen it. Give them no instructions. Watch without helping. This is not a friendly demo — it is a calibration instrument.</p>
+
+<h4>Who to recruit</h4>
+<p>The right person: trains inconsistently (1–3×/week), has an iPhone, cares about making progress but isn't obsessed with it. The wrong person: someone who will be kind because they know you built it; a professional athlete; someone who has never exercised; another software engineer who will focus on the UI rather than the experience.</p>
+
+<h4>The handoff script (read exactly this)</h4>
+<div class="card-amber">
+<p style="font-style:italic;margin:0">"This is a fitness tracking app. Imagine you're starting a workout today. Use it however makes sense to you. I'm going to watch quietly — please don't ask me questions. Just talk through what you're thinking as you go."</p>
+</div>
+<p>Nothing else. Do not explain what any feature does. Do not tell them where anything is. Do not react to their choices. Take notes.</p>
+
+<h4>What to observe</h4>
+<div class="table-wrap"><table>
+<tr><th>Behavior</th><th>What it means</th></tr>
+<tr><td>Pause longer than 3 seconds on any screen</td><td>The affordance is unclear. The expected next action is not obvious from the UI.</td></tr>
+<tr><td>Tapping the same element twice</td><td>The tap target feedback is insufficient, or the result of the tap wasn't what they expected.</td></tr>
+<tr><td>Saying "what is this?" or "what does this mean?"</td><td>Terminology or feature purpose is not self-evident. If they say it aloud, 10 silent users are thinking it.</td></tr>
+<tr><td>Scrolling past a section quickly</td><td>The section header or preview didn't earn continued attention.</td></tr>
+<tr><td>Reaching a feature that surprises them positively</td><td>A feature worth promoting earlier in the experience or onboarding.</td></tr>
+<tr><td>Stopping without completing a session</td><td>Abandonment at a specific screen. The cost to continue felt higher than the value visible ahead.</td></tr>
+</table></div>
+
+<h4>The debrief (5 minutes after the session)</h4>
+<ul>
+<li>"What was the first thing you tried to do, and was it easy?"</li>
+<li>"Was there anything that confused you or that you weren't sure about?"</li>
+<li>"Was there anything that surprised you — in a good or bad way?"</li>
+<li>"If you were actually going to use this after a real workout, what would you do differently?"</li>
+</ul>
+<p>Do not ask "did you like it?" That produces politeness, not signal.</p>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<h2>Scenario Library — 14 Specific Experiments</h2>
+
+<p>Each scenario has a precise starting state, a defined sequence of actions, and a set of observation questions. Scenarios are designed to be repeatable — if you run the same scenario twice and get different results, that itself is a finding.</p>
+
+<!-- SC-01 -->
+<div class="scenario-card">
+<div class="scenario-header">
+<div class="scenario-id">SC-01</div>
+<div class="scenario-title">First Open — What Does the App Teach You in the First 90 Seconds?</div>
+<div class="scenario-personas"><span class="tag tag-p3">P3 Beginner</span> <span class="tag tag-p1">P1 Returner</span> · State: STATE-0</div>
+</div>
+<div class="scenario-body">
+<div class="scenario-col">
+<h4>Setup</h4>
+<p>STATE-0. Open the app for the first time. Do not tap faster than you understand. Treat every screen as a decision.</p>
+</div>
+<div class="scenario-col">
+<h4>Run</h4>
+<ul>
+<li>Complete the full onboarding. Note every question: do you understand why it's being asked?</li>
+<li>After onboarding, note the first screen you land on. What does it tell you?</li>
+<li>Without exploring, find where to log a workout. Time yourself: how long does it take?</li>
+</ul>
+</div>
+<div class="scenario-col">
+<h4>Observe</h4>
+<ul>
+<li><strong>Is readinessBefore asked during onboarding?</strong> Is RPE explained?</li>
+<li><strong>Does the app explain the dumbbell per-hand convention?</strong></li>
+<li><strong>What does the Home tab show with no data?</strong> Empty state quality.</li>
+<li><strong>Can you find the workout logger without help?</strong></li>
+</ul>
+</div>
+</div>
+</div>
+
+<!-- SC-02 -->
+<div class="scenario-card">
+<div class="scenario-header">
+<div class="scenario-id">SC-02</div>
+<div class="scenario-title">The First Workout — Does the App Guide or Require Prior Knowledge?</div>
+<div class="scenario-personas"><span class="tag tag-p3">P3 Beginner</span> · State: STATE-0 (post-onboarding)</div>
+</div>
+<div class="scenario-body">
+<div class="scenario-col">
+<h4>Setup</h4>
+<p>STATE-0, onboarding complete. Open a new workout session. Your exercise: Dumbbell Bench Press, 3 sets. You have 20 kg dumbbells (per hand).</p>
+</div>
+<div class="scenario-col">
+<h4>Run</h4>
+<ul>
+<li>Add Dumbbell Bench Press to the workout.</li>
+<li>Enter the weight. Does the app tell you to enter per hand or total?</li>
+<li>Log 3 sets: set 1 = 8 reps, set 2 = 7 reps, set 3 = 6 reps.</li>
+<li>End the session. Complete the feel rating if prompted.</li>
+</ul>
+</div>
+<div class="scenario-col">
+<h4>Observe</h4>
+<ul>
+<li><strong>Did you enter 20 or 40?</strong> What did you base that on?</li>
+<li><strong>What was the post-set coaching?</strong> Did it reference the actual weight and reps?</li>
+<li><strong>Was feel rating mandatory or skippable?</strong></li>
+<li><strong>What was the last screen before you closed the app?</strong></li>
+</ul>
+</div>
+</div>
+</div>
+
+<!-- SC-03 -->
+<div class="scenario-card">
+<div class="scenario-header">
+<div class="scenario-id">SC-03</div>
+<div class="scenario-title">Confidence Threshold — Does Anything Change at Session 3 and 10?</div>
+<div class="scenario-personas"><span class="tag tag-p4">P4 Optimizer</span> <span class="tag tag-p2">P2 Skeptic</span> · State: STATE-3 → STATE-10</div>
+</div>
+<div class="scenario-body">
+<div class="scenario-col">
+<h4>Setup</h4>
+<p>Build STATE-3 and STATE-10 with the same exercises in each. Screenshot every analytics view at each state so you can compare directly.</p>
+</div>
+<div class="scenario-col">
+<h4>Run</h4>
+<ul>
+<li>At session 3: note the readiness confidence level (Low→Medium transition). Screenshot Home, Progress, Insights.</li>
+<li>At session 10: note the confidence level (Medium→High). Screenshot same views.</li>
+<li>Compare screenshots side by side.</li>
+</ul>
+</div>
+<div class="scenario-col">
+<h4>Observe</h4>
+<ul>
+<li><strong>Is the confidence transition acknowledged?</strong> Any notification, message, or visual change?</li>
+<li><strong>Are more features available at session 10?</strong> Can you feel the difference?</li>
+<li><strong>Does the coaching text change in depth or specificity?</strong></li>
+<li><strong>Does the tilde (~) prefix disappear at the right session?</strong></li>
+</ul>
+</div>
+</div>
+</div>
+
+<!-- SC-04 -->
+<div class="scenario-card">
+<div class="scenario-header">
+<div class="scenario-id">SC-04</div>
+<div class="scenario-title">The Gap Return — Is the Language Shame-Free?</div>
+<div class="scenario-personas"><span class="tag tag-p1">P1 Returner</span> · State: STATE-GAP</div>
+</div>
+<div class="scenario-body">
+<div class="scenario-col">
+<h4>Setup</h4>
+<p>STATE-GAP: 5 sessions completed, exactly 6 calendar days have passed. Do not open the app during the gap. Open on day 7 as if returning from real life.</p>
+</div>
+<div class="scenario-col">
+<h4>Run</h4>
+<ul>
+<li>Open the app. Note the first element you see on Home — its exact wording.</li>
+<li>Note the readiness score and coaching note verbatim.</li>
+<li>Navigate to Progress. Does anything reference the gap?</li>
+<li>Open Trainer. What plan is suggested?</li>
+</ul>
+</div>
+<div class="scenario-col">
+<h4>Observe</h4>
+<ul>
+<li><strong>What is the emotional tone of the first message?</strong> Forward-looking or backward-looking?</li>
+<li><strong>Does any text mention the absence, the gap, or missed sessions?</strong></li>
+<li><strong>Is readiness presented as opportunity (you've recovered) or deficit (you've slipped)?</strong></li>
+<li><strong>Does the HONHabitEngine message acknowledge the return without punishing it?</strong></li>
+</ul>
+</div>
+</div>
+</div>
+
+<!-- SC-05 -->
+<div class="scenario-card">
+<div class="scenario-header">
+<div class="scenario-id">SC-05</div>
+<div class="scenario-title">Five Consecutive Days — Does Cumulative Fatigue Appear in the Experience?</div>
+<div class="scenario-personas"><span class="tag tag-p4">P4 Optimizer</span> · State: STATE-5</div>
+</div>
+<div class="scenario-body">
+<div class="scenario-col">
+<h4>Setup</h4>
+<p>Log 5 real or simulated sessions on 5 consecutive calendar days. Use the same exercises across sessions so coaching can compare. Note readiness score before each session.</p>
+</div>
+<div class="scenario-col">
+<h4>Run</h4>
+<ul>
+<li>After each session: screenshot the readiness score and coaching note.</li>
+<li>On day 5: observe whether the consecutive penalty (−14) has fired. Expected readiness: 68 + daysSince(1d=+8) − consecutive(5d=−14) ≈ 62.</li>
+<li>Does coaching on day 5 reference cumulative fatigue?</li>
+</ul>
+</div>
+<div class="scenario-col">
+<h4>Observe</h4>
+<ul>
+<li><strong>Does readiness decline across consecutive days?</strong> Plot the 5 scores.</li>
+<li><strong>Does the coaching acknowledge that 5 consecutive days is significant?</strong></li>
+<li><strong>Does the Trainer plan on day 5 adjust intensity to Light (3×12)?</strong></li>
+<li><strong>Is the coaching on day 5 inconsistent with readiness?</strong> (Coaching to push hard while readiness is low = contradiction.)</li>
+</ul>
+</div>
+</div>
+</div>
+
+<!-- SC-06 -->
+<div class="scenario-card">
+<div class="scenario-header">
+<div class="scenario-id">SC-06</div>
+<div class="scenario-title">The Zero-Rep Session — What Does the App Do With Impossible Data?</div>
+<div class="scenario-personas"><span class="tag tag-p2">P2 Skeptic</span> · State: STATE-3 or STATE-ANOMALY</div>
+</div>
+<div class="scenario-body">
+<div class="scenario-col">
+<h4>Setup</h4>
+<p>Start a fresh workout session. Add any strength exercise. Log 3 sets: set 1 = normal (weight=20, reps=8), set 2 = zero reps (weight=20, reps=0, isCompleted=true), set 3 = normal.</p>
+</div>
+<div class="scenario-col">
+<h4>Run</h4>
+<ul>
+<li>Attempt to complete set 2 with 0 reps. Note whether the app accepts it.</li>
+<li>Observe the post-set narrative for set 2. Quote it verbatim.</li>
+<li>Complete the session. Note what the session summary says about completeness.</li>
+<li>Next session: what is the pre-filled target weight for this exercise?</li>
+</ul>
+</div>
+<div class="scenario-col">
+<h4>Observe</h4>
+<ul>
+<li><strong>Does the app accept 0-rep completed sets?</strong></li>
+<li><strong>Does the narrative for the 0-rep set make sense?</strong> Does it acknowledge failure or celebrate success?</li>
+<li><strong>Does the 0-rep session affect the e1RM chart?</strong> (Opens ExerciseInsightDetailView — is there a data point at 0?)</li>
+<li><strong>What target does the next session pre-fill?</strong> Is it from the anomalous session?</li>
+</ul>
+</div>
+</div>
+</div>
+
+<!-- SC-07 -->
+<div class="scenario-card">
+<div class="scenario-header">
+<div class="scenario-id">SC-07</div>
+<div class="scenario-title">The Skeptic Cross-Tab Walk — Does the Same Number Appear Everywhere?</div>
+<div class="scenario-personas"><span class="tag tag-p2">P2 Skeptic</span> · State: STATE-10</div>
+</div>
+<div class="scenario-body">
+<div class="scenario-col">
+<h4>Setup</h4>
+<p>STATE-10. Pick any exercise with ≥5 sessions. Manually compute its current e1RM: take the most recent completed set with reps 2–10, apply Epley. Write down the expected value.</p>
+</div>
+<div class="scenario-col">
+<h4>Run</h4>
+<ul>
+<li>Note the e1RM for this exercise in: Insights list row · Insights detail chart last point · Progress overload scoreboard · Progress standard lifts card · Progress strength retention rings.</li>
+<li>Note the session volume for any single known session in: Progress weekly volume bar · Workout recap card.</li>
+</ul>
+</div>
+<div class="scenario-col">
+<h4>Observe</h4>
+<ul>
+<li><strong>Do all e1RM values match the manual calculation? Do they match each other?</strong></li>
+<li><strong>Does the volume shown in the bar chart match the recap card?</strong></li>
+<li><strong>If values differ: which one do you trust, and why?</strong> (The one you can't verify is the trust problem.)</li>
+</ul>
+</div>
+</div>
+</div>
+
+<!-- SC-08 -->
+<div class="scenario-card">
+<div class="scenario-header">
+<div class="scenario-id">SC-08</div>
+<div class="scenario-title">The Drop Set Experience — Does the Coaching Know What Happened?</div>
+<div class="scenario-personas"><span class="tag tag-p4">P4 Optimizer</span> · State: STATE-5</div>
+</div>
+<div class="scenario-body">
+<div class="scenario-col">
+<h4>Setup</h4>
+<p>Start a workout. Pick any dumbbell exercise. Log set 1 with a drop set: main weight = 20 kg × 8 reps, drop weight = 14 kg × 6 reps (complete the drop).</p>
+</div>
+<div class="scenario-col">
+<h4>Run</h4>
+<ul>
+<li>Enter the main set. Then enter the drop set using whatever the UI provides.</li>
+<li>Mark the drop as completed. Observe the post-set narrative verbatim.</li>
+<li>Log a second set the same way. Compare the two narratives.</li>
+</ul>
+</div>
+<div class="scenario-col">
+<h4>Observe</h4>
+<ul>
+<li><strong>Does the narrative reference the drop specifically</strong> (not just the main set)?</li>
+<li><strong>Is the coaching path for "droppedCompleted" distinct from a normal set?</strong></li>
+<li><strong>Does the coaching for the second drop set differ from the first?</strong> (It shouldn't use the same phrase.)</li>
+<li><strong>Is the e1RM computed from the main set or the drop set weight?</strong></li>
+</ul>
+</div>
+</div>
+</div>
+
+<!-- SC-09 -->
+<div class="scenario-card">
+<div class="scenario-header">
+<div class="scenario-id">SC-09</div>
+<div class="scenario-title">The Double Session — How Does the App Handle Two Workouts in One Day?</div>
+<div class="scenario-personas"><span class="tag tag-p4">P4 Optimizer</span> <span class="tag tag-p2">P2 Skeptic</span> · State: STATE-5</div>
+</div>
+<div class="scenario-body">
+<div class="scenario-col">
+<h4>Setup</h4>
+<p>Log a complete morning session. Do not close the app for more than 5 minutes. Start a second session in the same calendar day — different exercises.</p>
+</div>
+<div class="scenario-col">
+<h4>Run</h4>
+<ul>
+<li>Note the readiness score before session 1 and before session 2.</li>
+<li>After both sessions, check Progress history — how many entries appear for today?</li>
+<li>Check streak — does it count 1 or 2 for today?</li>
+<li>Check weekly volume — does it include both sessions?</li>
+</ul>
+</div>
+<div class="scenario-col">
+<h4>Observe</h4>
+<ul>
+<li><strong>Does readiness for session 2 reflect intra-day fatigue?</strong></li>
+<li><strong>Are both sessions separately visible in history?</strong></li>
+<li><strong>Does the streak count 1 day regardless of session count?</strong></li>
+<li><strong>Is the volume correct — sum of both sessions?</strong></li>
+</ul>
+</div>
+</div>
+</div>
+
+<!-- SC-10 -->
+<div class="scenario-card">
+<div class="scenario-header">
+<div class="scenario-id">SC-10</div>
+<div class="scenario-title">Session 1 vs Session 18 — Is the Experience Qualitatively Richer?</div>
+<div class="scenario-personas"><span class="tag tag-p4">P4 Optimizer</span> · State: STATE-0 then STATE-LIVE</div>
+</div>
+<div class="scenario-body">
+<div class="scenario-col">
+<h4>Setup</h4>
+<p>First in STATE-0: screenshot every analytics view (Home, Progress, Insights, StrengthLab). Then restore STATE-LIVE: screenshot the same views. Compare.</p>
+</div>
+<div class="scenario-col">
+<h4>Run</h4>
+<ul>
+<li>For the same exercise: count how many charts, numbers, and insights are available at session 1 vs session 18.</li>
+<li>Read the coaching note at session 1 and the most recent coaching note. Note the difference in specificity.</li>
+<li>Open the Emergent Insights carousel at both states. How many insights are populated vs placeholders?</li>
+</ul>
+</div>
+<div class="scenario-col">
+<h4>Observe</h4>
+<ul>
+<li><strong>Is the session 18 experience structurally richer,</strong> or are the same features just populated with more data?</li>
+<li><strong>Has the coaching become more specific over 18 sessions?</strong></li>
+<li><strong>What is still a placeholder at session 18</strong> that you would expect to be populated by now?</li>
+</ul>
+</div>
+</div>
+</div>
+
+<!-- SC-11 -->
+<div class="scenario-card">
+<div class="scenario-header">
+<div class="scenario-id">SC-11</div>
+<div class="scenario-title">The Drill-Down Reward — Does Going Deeper Tell You More?</div>
+<div class="scenario-personas"><span class="tag tag-p2">P2 Skeptic</span> <span class="tag tag-p4">P4 Optimizer</span> · State: STATE-LIVE</div>
+</div>
+<div class="scenario-body">
+<div class="scenario-col">
+<h4>Setup</h4>
+<p>STATE-LIVE. Start from the top-level of any analytics section. Drill down as deep as the app allows. Repeat for: MomentumChipsCard → sheet, OverloadScoreboard → detail, Plateau Risk → detail, ExerciseInsights row → full detail view.</p>
+</div>
+<div class="scenario-col">
+<h4>Run</h4>
+<ul>
+<li>At each drill-down level: note the first new piece of information that wasn't visible at the parent level.</li>
+<li>If the first tap reveals no new information, continue to the next tap. If no level reveals new information, the drill-down chain is non-functional.</li>
+</ul>
+</div>
+<div class="scenario-col">
+<h4>Observe</h4>
+<ul>
+<li><strong>Which drill-downs reward curiosity with genuinely new data?</strong></li>
+<li><strong>Which drill-downs are just the same card in a larger sheet?</strong></li>
+<li><strong>At the deepest level (ExerciseInsightDetailView): how many of the 6 charts contain substantive data vs placeholder text?</strong></li>
+</ul>
+</div>
+</div>
+</div>
+
+<!-- SC-12 -->
+<div class="scenario-card">
+<div class="scenario-header">
+<div class="scenario-id">SC-12</div>
+<div class="scenario-title">The Empty State Audit — What Does the App Say When It Has Nothing to Say?</div>
+<div class="scenario-personas"><span class="tag tag-p3">P3 Beginner</span> <span class="tag tag-p1">P1 Returner</span> · State: STATE-0</div>
+</div>
+<div class="scenario-body">
+<div class="scenario-col">
+<h4>Setup</h4>
+<p>STATE-0. Navigate every tab and every section. The goal is to find every empty state, placeholder, and "not enough data" message in the app.</p>
+</div>
+<div class="scenario-col">
+<h4>Run</h4>
+<ul>
+<li>Open every tab. Open every card. Open every sheet.</li>
+<li>Photograph or screenshot every empty state message you encounter.</li>
+<li>For each: does it tell you what to do to fill it?</li>
+</ul>
+</div>
+<div class="scenario-col">
+<h4>Observe</h4>
+<ul>
+<li><strong>What % of empty states give you a specific action to take?</strong></li>
+<li><strong>What % say "not enough data" without explanation?</strong></li>
+<li><strong>Is there any feature that shows a chart or number with no data, rather than an honest empty state?</strong></li>
+<li><strong>After 0 sessions, does any feature appear fully populated?</strong> That's a red flag.</li>
+</ul>
+</div>
+</div>
+</div>
+
+<!-- SC-13 -->
+<div class="scenario-card">
+<div class="scenario-header">
+<div class="scenario-id">SC-13</div>
+<div class="scenario-title">The Tired Session — Does the App Know What You're Feeling?</div>
+<div class="scenario-personas"><span class="tag tag-p1">P1 Returner</span> · State: STATE-5</div>
+</div>
+<div class="scenario-body">
+<div class="scenario-col">
+<h4>Setup</h4>
+<p>STATE-5. Log a session where you select feel=Tired at the end. Log weights that are slightly below your typical performance (5–10% lower reps or weight vs prior session).</p>
+</div>
+<div class="scenario-col">
+<h4>Run</h4>
+<ul>
+<li>Complete the session with feel=Tired selected.</li>
+<li>Open Home: read the coaching note verbatim.</li>
+<li>Check the next session's readiness score — does it reflect the Tired rating from yesterday?</li>
+</ul>
+</div>
+<div class="scenario-col">
+<h4>Observe</h4>
+<ul>
+<li><strong>Does any coaching text acknowledge that you felt tired?</strong></li>
+<li><strong>Does the coaching contradict the feel rating</strong> (e.g., "strong session" when you marked Tired)?</li>
+<li><strong>Does the EmergentInsight section surface anything related to the Tired feel?</strong></li>
+<li><strong>Does the feel data affect tomorrow's readiness?</strong> (readinessBefore path — currently disabled.)</li>
+</ul>
+</div>
+</div>
+</div>
+
+<!-- SC-14 -->
+<div class="scenario-card">
+<div class="scenario-header">
+<div class="scenario-id">SC-14</div>
+<div class="scenario-title">The Closing Moment — Does the App Plant a Hook for the Next Session?</div>
+<div class="scenario-personas"><span class="tag tag-p1">P1 Returner</span> <span class="tag tag-p4">P4 Optimizer</span> · State: Any</div>
+</div>
+<div class="scenario-body">
+<div class="scenario-col">
+<h4>Setup</h4>
+<p>Run any complete session. Observe everything the app shows from "end session" button through the last screen before you leave the app. This is the hook for the next visit.</p>
+</div>
+<div class="scenario-col">
+<h4>Run</h4>
+<ul>
+<li>End the session. Note the exact sequence: feel prompt → recap → coaching → what else?</li>
+<li>Note the last thing you read before closing the app.</li>
+<li>24 hours later (or simulate by reopening): does anything about the previous session's closing plant a reason to return?</li>
+</ul>
+</div>
+<div class="scenario-col">
+<h4>Observe</h4>
+<ul>
+<li><strong>Does the closing sequence reference the next session</strong> (next target weight, next exercise, next goal)?</li>
+<li><strong>Is the last screen action-oriented or summary-oriented?</strong></li>
+<li><strong>Would you remember anything from the closing if you came back 3 days later?</strong></li>
+<li><strong>Does anything tease a feature you haven't explored yet?</strong></li>
+</ul>
+</div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<h2>Biases and Traps — What Will Corrupt Your Simulation</h2>
+
+<p>Simulation run by the product's creator has a structural validity problem. These are the failure modes. Name them before you start.</p>
+
+<div class="bias-card">
+<div class="bias-name">The Rationalization Trap</div>
+<div class="bias-desc">You hesitate at a screen. Before you can write it down, your brain generates an excuse: "users will learn this," "that's fine once you know where to look," "it's intuitive when you're used to it." You believe the excuse and don't log the hesitation.</div>
+<div class="bias-fix">Any hesitation is a finding regardless of the rationalization. The rule: if you hesitate, write it down first, explain it later. The rationalization is the bias. The hesitation is the data.</div>
+</div>
+
+<div class="bias-card">
+<div class="bias-name">The Feature Familiarity Effect</div>
+<div class="bias-desc">You navigate without thinking because you built the navigation. You know that the drop set button is in the set row's trailing actions. A real user doesn't. Your 0-second navigation time is not the user's navigation time.</div>
+<div class="bias-fix">Before each major navigation action: pause and state aloud where you expect the feature to be. If you're right without thinking, you have the familiarity effect. Force yourself to forget by using a timer: find [feature X] in under 30 seconds as if you'd never seen the app.</div>
+</div>
+
+<div class="bias-card">
+<div class="bias-name">Emotional Neutrality</div>
+<div class="bias-desc">You test when you're calm, focused, and attentive. Real users open the app after a long day, when they're tired, when they have 20 minutes before the gym closes, when they're coming back after two weeks away with low-grade guilt. Their emotional state affects their perception of friction.</div>
+<div class="bias-fix">Run at least two simulation sessions in genuinely suboptimal conditions: physically tired, time-constrained, or emotionally distracted. These are the conditions under which the UX either holds or fails.</div>
+</div>
+
+<div class="bias-card">
+<div class="bias-name">The "I Would Never Do That" Input Problem</div>
+<div class="bias-desc">You enter correct, sensible inputs because you understand the domain. A real P3 beginner enters whatever looks right in the placeholder. A real user might enter their total dumbbell load, not their per-hand load. They might skip fields they don't understand. You won't do any of these unless you explicitly force yourself to.</div>
+<div class="bias-fix">For P3 sessions specifically: before every input field, ask "what would I enter here if I had never exercised before?" Enter that, not the correct value. This is where the most consequential input capture failures live.</div>
+</div>
+
+<div class="bias-card">
+<div class="bias-name">The "It Works" Definition of UX Success</div>
+<div class="bias-desc">You complete a task and call it a pass. "I was able to log the session" is not a UX pass. The question is whether you wanted to do it again, whether it felt like it was working with you or making you work for it, whether the coaching after the session made you feel understood. Functional is table stakes.</div>
+<div class="bias-fix">After every scenario, rate these two dimensions separately: task completion (did it work?) and experience quality (did it feel right?). A feature can be 100% on task completion and 40% on experience. Both matter.</div>
+</div>
+
+<div class="bias-card">
+<div class="bias-name">Positive Recency Bias</div>
+<div class="bias-desc">Whatever the last screen you saw was good, you'll remember the session as good. If the post-session summary is satisfying, you'll rate the whole experience higher than warranted. The converse is also true: a frustrating last screen tanks the whole experience evaluation.</div>
+<div class="bias-fix">Capture observations in real-time during the session, not just at the end. The end-of-session reflection should summarize the notes you already took, not reconstruct the experience from memory.</div>
+</div>
+
+<!-- ============================================================ -->
+<h2>Observation Capture Format</h2>
+
+<p>Use this format for every simulation session. Fill it in real-time, not from memory. One file per simulation run.</p>
+
+<div class="card">
+<h4 style="margin-top:0">Session log header</h4>
+<div class="obs-row"><span class="obs-label">Simulation ID</span><span class="obs-prompt">Which scenario (SC-01 etc.) and which protocol (P1–P6)</span><span class="obs-format">e.g. SC-04 / Protocol 1</span></div>
+<div class="obs-row"><span class="obs-label">Persona</span><span class="obs-prompt">Which persona you are simulating (P1–P4) and their 3-sentence context</span><span class="obs-format">P1 / [3 sentences]</span></div>
+<div class="obs-row"><span class="obs-label">Starting state</span><span class="obs-prompt">Data state name and how it was created</span><span class="obs-format">STATE-GAP / JSON edit</span></div>
+<div class="obs-row"><span class="obs-label">Emotional condition</span><span class="obs-prompt">Your actual state during the session: rested/tired, focused/distracted, time-pressured?</span><span class="obs-format">Tired after work</span></div>
+</div>
+
+<div class="card">
+<h4 style="margin-top:0">Real-time observation log (one row per event)</h4>
+<div class="obs-row"><span class="obs-label">Timestamp</span><span class="obs-prompt">MM:SS from session start</span><span class="obs-format">01:23</span></div>
+<div class="obs-row"><span class="obs-label">Screen / feature</span><span class="obs-prompt">Where in the app you are</span><span class="obs-format">Home → coaching note</span></div>
+<div class="obs-row"><span class="obs-label">What happened</span><span class="obs-prompt">Exactly what you observed or did — no interpretation yet</span><span class="obs-format">"Hesitated 4s before tapping"</span></div>
+<div class="obs-row"><span class="obs-label">Expected vs actual</span><span class="obs-prompt">What you expected to happen before the action, what happened instead</span><span class="obs-format">"Expected a score; saw text"</span></div>
+<div class="obs-row"><span class="obs-label">Emotional response</span><span class="obs-prompt">One word: confused / surprised / pleased / annoyed / neutral</span><span class="obs-format">confused</span></div>
+</div>
+
+<div class="card">
+<h4 style="margin-top:0">Post-session assessment</h4>
+<div class="obs-row"><span class="obs-label">Task completion</span><span class="obs-prompt">Did you complete the scenario's objective? (0–100%)</span><span class="obs-format">100%</span></div>
+<div class="obs-row"><span class="obs-label">Experience quality</span><span class="obs-prompt">How did it feel? Not "did it work" but "did it feel right"? (0–100%)</span><span class="obs-format">60%</span></div>
+<div class="obs-row"><span class="obs-label">Top friction moment</span><span class="obs-prompt">The single moment of highest friction — timestamp, screen, what caused it</span><span class="obs-format">02:40 / RPE field</span></div>
+<div class="obs-row"><span class="obs-label">Top delight moment</span><span class="obs-prompt">The single moment that worked best — what it was and why</span><span class="obs-format">04:12 / coaching was specific</span></div>
+<div class="obs-row"><span class="obs-label">Would return?</span><span class="obs-prompt">As this persona, after this experience, would you open the app for the next workout? Why or why not?</span><span class="obs-format">Yes / because of X</span></div>
+</div>
+
+<!-- ============================================================ -->
+<h2>Finding Classification — Simulation vs Audit</h2>
+
+<p>Simulation findings are a different type from audit findings. They are not bugs — they are friction moments, expectation mismatches, and emotional signals. Classify them accordingly.</p>
+
+<div class="table-wrap"><table>
+<tr><th>Type</th><th>Definition</th><th>Example</th><th>Audit equivalent</th></tr>
+<tr><td><strong>F-Friction</strong></td><td>A task that was possible but harder than it needed to be. Took more taps, more thought, or more time than the task's importance warranted.</td><td>"Finding the drop set input required knowing it existed first."</td><td>P3 — UX friction</td></tr>
+<tr><td><strong>F-Mismatch</strong></td><td>The outcome of an action was different from what the persona expected before taking the action.</td><td>"I expected the coaching to reference my tiredness. It talked about progressive overload."</td><td>P1 — Trust breach</td></tr>
+<tr><td><strong>F-Void</strong></td><td>The persona wanted something that the app simply didn't provide. Not a broken feature — an absent one.</td><td>"After logging the session, I wanted to know what to do next time. Nothing told me."</td><td>P2 — Brand violation (coaching promise unfulfilled)</td></tr>
+<tr><td><strong>F-Delight</strong></td><td>The app provided something the persona didn't expect, that improved the experience. Document these — they're the features to amplify.</td><td>"The coaching mentioned the exact weight from last session. That's specific. I noticed."</td><td>N/A in audit (positive signal)</td></tr>
+<tr><td><strong>F-Abandon</strong></td><td>The persona would have stopped using the app because of this experience. The highest severity finding in simulation.</td><td>"As P3, I entered the wrong weight format and got an analytics result that looked wrong. I'd distrust everything after that."</td><td>P0 — Data integrity</td></tr>
+</table></div>
+
+<!-- ============================================================ -->
+<h2>Recommended Simulation Sequence</h2>
+
+<p>Not all simulations are equally urgent. Run them in this order. The first four are mandatory before the audit executes — they generate hypotheses that the audit then verifies. The remaining can follow after the first audit cycle.</p>
+
+<div class="table-wrap"><table>
+<tr><th>Order</th><th>Simulation</th><th>Protocol</th><th>Persona</th><th>State</th><th>Priority</th><th>Why this order</th></tr>
+<tr><td>1</td><td>SC-02 (First Workout)</td><td>Screen Recording</td><td>P3</td><td>STATE-0</td><td><span class="tag tag-hard">Mandatory</span></td><td>The onboarding and first session experience sets the user's mental model. Everything else builds on it.</td></tr>
+<tr><td>2</td><td>SC-04 (Gap Return)</td><td>Screen Recording</td><td>P1</td><td>STATE-GAP</td><td><span class="tag tag-hard">Mandatory</span></td><td>The gap return is the most emotionally loaded moment in the product. It either earns or breaks the relationship.</td></tr>
+<tr><td>3</td><td>SC-07 (Cross-Tab Walk)</td><td>Persona Walkthrough</td><td>P2</td><td>STATE-10</td><td><span class="tag tag-hard">Mandatory</span></td><td>Analytics integrity can only be verified with a skeptic's lens. A casual user won't catch discrepancies that will eventually break trust.</td></tr>
+<tr><td>4</td><td>SC-06 (Zero-Rep)</td><td>Forced Condition</td><td>P2</td><td>STATE-3</td><td><span class="tag tag-hard">Mandatory</span></td><td>Zero-rep sessions exist in the live data (10/149 sets). If this condition breaks the analytics pipeline, it's affecting real data right now.</td></tr>
+<tr><td>5</td><td>SC-10 (S1 vs S18)</td><td>Persona Walkthrough</td><td>P4</td><td>STATE-0 + STATE-LIVE</td><td><span class="tag tag-med">High value</span></td><td>Progressive value is the app's core promise. Testing it directly is a necessary complement to the audit's D6 questions.</td></tr>
+<tr><td>6</td><td>SC-11 (Drill-Down)</td><td>Persona Walkthrough</td><td>P2</td><td>STATE-LIVE</td><td><span class="tag tag-med">High value</span></td><td>55 visualizations exist. Only simulation reveals which drill-downs reward curiosity and which are decoration.</td></tr>
+<tr><td>7</td><td>FC-01 to FC-08</td><td>Forced Conditions (all 8)</td><td>P2</td><td>Any</td><td><span class="tag tag-med">High value</span></td><td>Every forced condition is a known real user behavior from the existing 18 sessions. These aren't edge cases — they're existing data.</td></tr>
+<tr><td>8</td><td>SC-03 (Confidence Threshold)</td><td>Persona Walkthrough</td><td>P4</td><td>STATE-3 + STATE-10</td><td><span class="tag tag-easy">Run after audit</span></td><td>Verifies the audit's D6-Q2 and D4-Q1 findings in lived experience.</td></tr>
+<tr><td>9</td><td>Protocol 6 (Cold User Test)</td><td>Real user</td><td>Real person</td><td>STATE-0</td><td><span class="tag tag-easy">Run after first cycle</span></td><td>Requires finding the right person. The most calibrating test — but needs the other simulations to generate hypotheses first.</td></tr>
+</table></div>
+
+<div class="note-sage"><strong>How simulation findings feed the audit:</strong> Run simulations first. Each F-Friction or F-Mismatch finding maps to an audit question — it tells you where to focus the numeric verification. A mismatch in the gap return experience (SC-04) points to D8-Q1, D8-Q2, and D8-Q3 as priority questions. Simulation generates hypotheses; audit verifies them with code and data.</div>
+
+<hr>
+<footer>H.O.N. UX Simulation Guide · 2026-05-26 · 4 personas · 6 protocols · 14 scenarios · 8 forced conditions · 6 bias traps · Branch: claude/workout-app-code-review-QI5zm</footer>
+</div>
+</body>
+</html>
