@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H.O.N. Consultant Audit — 2026-05-26</title>
+<style>
+:root {
+  --bg:#0f0f11;--s1:#1a1a1e;--s2:#222228;--s3:#2a2a32;--border:#2e2e36;
+  --text:#e8e8ee;--muted:#888896;--dim:#555560;
+  --amber:#D4943A;--sage:#7BAF85;--rose:#C26B6B;--lav:#9B8EC4;--slate:#6B85A0;
+  --red:#c25050;--orange:#c27830;--yellow:#b8882a;--blue:#5080c0;--green:#4a9a5a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,'SF Pro Text','Helvetica Neue',sans-serif;font-size:14px;line-height:1.65}
+.page{max-width:1280px;margin:0 auto;padding:40px 24px}
+a{color:var(--amber);text-decoration:none}
+
+/* Typography */
+h1{font-size:30px;font-weight:700;letter-spacing:-.5px;color:var(--amber)}
+h2{font-size:19px;font-weight:700;color:var(--text);margin:48px 0 16px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+h3{font-size:15px;font-weight:600;color:var(--amber);margin:24px 0 10px}
+h4{font-size:13px;font-weight:600;color:var(--text);margin:16px 0 8px;text-transform:uppercase;letter-spacing:.6px}
+p{color:var(--muted);margin-bottom:10px;line-height:1.75}
+code{background:var(--s2);color:var(--sage);padding:1px 5px;border-radius:4px;font-family:'SF Mono','Fira Code',monospace;font-size:12px}
+strong{color:var(--text)}
+em{color:var(--muted);font-style:italic}
+
+/* Layout blocks */
+.subtitle{color:var(--muted);font-size:13px;margin:6px 0 36px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:800px){.grid2,.grid3,.grid4{grid-template-columns:1fr}}
+
+/* Cards */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:14px}
+.card-sm{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.card-header{background:var(--s2);border-bottom:1px solid var(--border);border-radius:12px 12px 0 0;padding:16px 20px;margin:-18px -20px 16px}
+.inset{background:var(--s2);border-radius:8px;padding:12px 14px;margin:10px 0}
+
+/* Badges */
+.badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px;white-space:nowrap}
+.b-red{background:rgba(194,80,80,.18);color:var(--red)}
+.b-orange{background:rgba(194,120,48,.18);color:var(--orange)}
+.b-yellow{background:rgba(184,136,42,.18);color:var(--yellow)}
+.b-blue{background:rgba(80,128,192,.18);color:var(--blue)}
+.b-green{background:rgba(74,154,90,.18);color:var(--green)}
+.b-amber{background:rgba(212,148,58,.12);color:var(--amber)}
+.b-lav{background:rgba(155,142,196,.15);color:var(--lav)}
+.b-sage{background:rgba(123,175,133,.15);color:var(--sage)}
+
+/* Verdict blocks */
+.verdict{border-radius:0 8px 8px 0;padding:12px 14px;margin:10px 0}
+.v-pass{background:rgba(74,154,90,.07);border-left:3px solid var(--green)}
+.v-fail{background:rgba(194,80,80,.07);border-left:3px solid var(--red)}
+.v-warn{background:rgba(184,136,42,.07);border-left:3px solid var(--yellow)}
+.v-info{background:rgba(107,133,160,.07);border-left:3px solid var(--slate)}
+.verdict .label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px}
+.v-pass .label{color:var(--green)}
+.v-fail .label{color:var(--red)}
+.v-warn .label{color:var(--yellow)}
+.v-info .label{color:var(--slate)}
+.verdict p{margin:0;font-size:13px;color:var(--text)}
+
+/* Scenario cards */
+.scenario{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden}
+.sc-head{background:var(--s2);padding:12px 16px;display:flex;align-items:flex-start;gap:12px}
+.sc-id{font-family:'SF Mono',monospace;font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap;margin-top:2px}
+.sc-title{font-size:14px;font-weight:600;flex:1}
+.sc-body{padding:14px 16px}
+.sc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+@media(max-width:650px){.sc-grid{grid-template-columns:1fr}}
+
+/* Stat pills */
+.stat-row{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+.stat{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 12px}
+.stat-val{font-size:20px;font-weight:700;color:var(--amber)}
+.stat-lbl{font-size:11px;color:var(--muted);margin-top:1px}
+
+/* Day table */
+.table-wrap{overflow-x:auto;margin:14px 0}
+table{width:100%;border-collapse:collapse;font-size:11.5px;min-width:900px}
+th{background:var(--s2);color:var(--muted);font-weight:600;text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);white-space:nowrap;font-size:10px;letter-spacing:.5px;text-transform:uppercase}
+td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:nth-child(even) td{background:rgba(255,255,255,.018)}
+.c-red{color:var(--red);font-weight:600}
+.c-green{color:var(--green)}
+.c-amber{color:var(--amber);font-weight:600}
+.c-muted{color:var(--muted)}
+.c-lav{color:var(--lav)}
+
+/* Score cells */
+.score{display:inline-block;width:22px;height:22px;border-radius:50%;font-size:10px;font-weight:700;text-align:center;line-height:22px}
+.sc-A{background:rgba(74,154,90,.2);color:var(--green)}
+.sc-B{background:rgba(80,160,90,.15);color:#6ab870}
+.sc-C{background:rgba(184,136,42,.2);color:var(--yellow)}
+.sc-D{background:rgba(194,120,48,.2);color:var(--orange)}
+.sc-F{background:rgba(194,80,80,.2);color:var(--red)}
+
+/* Phase bars */
+.phase{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:20px}
+.phase-header{padding:16px 20px;display:flex;align-items:center;gap:14px}
+.phase-num{font-size:24px;font-weight:800;color:var(--amber);width:32px}
+.phase-title{font-size:16px;font-weight:600}
+.phase-span{font-size:12px;color:var(--muted)}
+.phase-body{padding:16px 20px;border-top:1px solid var(--border)}
+
+/* TOC */
+.toc{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:32px}
+.toc ul{list-style:none;columns:2;gap:20px}
+.toc li{padding:3px 0}
+.toc a{font-size:13px;color:var(--muted)}
+.toc a:hover{color:var(--amber)}
+.toc-num{color:var(--amber);font-size:11px;font-family:monospace;margin-right:6px}
+
+/* Quote */
+blockquote{border-left:3px solid var(--amber);padding:8px 14px;margin:12px 0;font-style:italic;color:var(--muted);font-size:13px}
+
+/* Tab bar */
+.tab-eval{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:20px}
+.tab-eval-head{background:var(--s2);padding:16px 20px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border)}
+.tab-icon{font-size:22px}
+.tab-eval-body{padding:20px}
+.tab-metric{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.tab-metric:last-child{border-bottom:none}
+.tab-metric-name{flex:1;font-size:13px;color:var(--muted)}
+.tab-rating{width:120px;text-align:right}
+
+hr{border:none;border-top:1px solid var(--border);margin:40px 0}
+.note{background:rgba(212,148,58,.07);border:1px solid rgba(212,148,58,.2);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--text);margin:12px 0}
+.note strong{color:var(--amber)}
+.warn-note{background:rgba(194,80,80,.06);border:1px solid rgba(194,80,80,.2);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--text);margin:12px 0}
+.info-note{background:rgba(80,128,192,.06);border:1px solid rgba(80,128,192,.2);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--text);margin:12px 0}
+
+footer{color:var(--dim);font-size:12px;text-align:center;margin-top:60px}
+/* Scorecard */
+.day-row td{font-size:11px}
+.grade-A{color:var(--green);font-weight:700}
+.grade-B{color:#6ab870;font-weight:600}
+.grade-C{color:var(--yellow);font-weight:600}
+.grade-D{color:var(--orange);font-weight:600}
+.grade-F{color:var(--red);font-weight:700}
+.opportunity{font-style:italic;color:var(--muted);font-size:10px}
+.px-matrix table{min-width:600px}
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>H.O.N. App — Consultant Audit</h1>
+<p class="subtitle">Comprehensive scenario-based evaluation · Derived from 18 sessions (Apr 20 – May 21 2026) · Evaluated May 26 2026</p>
+
+<div class="toc">
+  <h4 style="margin:0 0 12px;color:var(--muted)">Contents</h4>
+  <ul>
+    <li><a href="#brief"><span class="toc-num">01</span>Executive Brief</a></li>
+    <li><a href="#profile"><span class="toc-num">02</span>User Profile (from data)</a></li>
+    <li><a href="#mental-model"><span class="toc-num">03</span>App Mental Model</a></li>
+    <li><a href="#phases"><span class="toc-num">04</span>Journey Phases</a></li>
+    <li><a href="#tabs"><span class="toc-num">05</span>Tab-by-Tab Evaluation</a></li>
+    <li><a href="#scenarios"><span class="toc-num">06</span>Scenario Bank (40 scenarios)</a></li>
+    <li><a href="#scorecard"><span class="toc-num">07</span>Day-Level Scorecard</a></li>
+    <li><a href="#systemic"><span class="toc-num">08</span>Systemic Findings</a></li>
+    <li><a href="#priority"><span class="toc-num">09</span>Priority Matrix</a></li>
+  </ul>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="brief">01 · Executive Brief</h2>
+
+<div class="grid2">
+<div class="card">
+<h3 style="margin-top:0">What This App Is</h3>
+<p>H.O.N. is a strength-first training companion that replaces the coach-in-your-pocket model with a data-in-your-pocket model. Its thesis: <em>give the user honest numbers, not motivational fluff, and they will make better decisions.</em></p>
+<p>The value loop is: <strong>Log → Analyse → Advise → Return</strong>. Everything routes through SeedStore, analytics rebuild on background thread, and coaching language is generated fresh each session. The stack is sophisticated — PCSA-weighted strength scoring, fatigue-adjusted e1RM, physiological decay model, emergent cross-domain insights — but the interface must make this legible to someone who just wants to know if they should go heavy today.</p>
+</div>
+<div class="card">
+<h3 style="margin-top:0">The Central Tension</h3>
+<p>The app is built for a technically confident, science-interested user who nonetheless has beginner training data (18 sessions). Many of the most powerful features — EmergentInsightEngine, PCSA-weighted composites, allometric scaling — require a data density the user hasn't yet produced.</p>
+<p>The risk: a user who opens the Insights tab on session 5 sees sophisticated-looking cards filled with placeholders or misleading low-confidence estimates. This is more damaging to trust than showing nothing. <strong>The audit asks: does the app honestly reflect what it knows vs. what it doesn't?</strong></p>
+</div>
+</div>
+
+<div class="grid4" style="margin-top:4px">
+<div class="card-sm"><div class="stat-val">18</div><div class="stat-lbl">Sessions audited</div></div>
+<div class="card-sm"><div class="stat-val">5</div><div class="stat-lbl">Tabs in production<br><span style="color:var(--red);font-size:10px">CLAUDE.md says 6 ✗</span></div></div>
+<div class="card-sm"><div class="stat-val">0/18</div><div class="stat-lbl">readinessBefore filled</div></div>
+<div class="card-sm"><div class="stat-val">10</div><div class="stat-lbl">Zero-rep completed sets</div></div>
+</div>
+
+<div class="warn-note"><strong>Documentation drift detected:</strong> CLAUDE.md documents 6 tabs (Home, Trainer, Workout, Progress, Strength Lab, Settings). ContentView.swift has 5 tabs: Home (0), Workout (1), Progress (2), Insights/ExerciseInsightsView (3), Settings (4). TrainerTabView exists but is NOT mounted in the main tab bar. StrengthLabView lives under Features/Strength/ and appears accessible via navigation within other views. Audit conducted against actual ContentView, not the spec.</div>
+
+<!-- ============================================================ -->
+<h2 id="profile">02 · User Profile (Derived from Log)</h2>
+
+<div class="grid2">
+<div class="card">
+<h3 style="margin-top:0">Who This User Is</h3>
+<p><strong>Training age:</strong> Beginner — 18 sessions over 36 days. No prior log data. First session Apr 20.</p>
+<p><strong>Consistency:</strong> 0.5 sessions/day on active weeks. Trains in bursts: 3-4 days on, 4-5 days off. Longest gap: 5 days (Apr 27–May 1, and May 21–26).</p>
+<p><strong>Equipment access:</strong> Full gym. Uses dumbbells, barbells, cable machines, Smith machine, leg press, assisted pull-up machine. Not constrained to home equipment.</p>
+<p><strong>Program structure:</strong> Loosely PPL. Push days (DBP, shoulder press), Pull days (lat pulldown, seated row), Leg days (squat, leg press). Rarely mixes patterns within a session.</p>
+<p><strong>Characteristic behavior:</strong> Logs incomplete sessions. 3 sessions with zero-rep completed sets. Double-sessions on May 13 and May 21. Logs Assisted Pull-Up as 2 sets and finishes. Does not fill readinessBefore. Does not enter RPE.</p>
+</div>
+<div class="card">
+<h3 style="margin-top:0">What the Data Tells Us the App Cannot See</h3>
+<p><strong>Real-world readiness:</strong> Feel ratings exist (Tired on Apr 29, May 13; Strong on most others) but readinessBefore = null for all 18 sessions. The engine's most personalized modifier never fires.</p>
+<p><strong>Body composition:</strong> muscleMassPercent = 79.85 (= 100 − BF%). This is lean mass, not skeletal muscle. The app stores and displays it as "Muscle Mass %" — a mislabeled field. Actual skeletal muscle for a 66.7kg male at 20.2% BF would be ~38–42% (27–28kg).</p>
+<p><strong>Equipment convention:</strong> User logs "25kg" for Incline DB Press. Whether this means 25 per hand or 25 total is never established. The app silently doubles it. If the user's mental model is "total weight," all dumbbell analytics are 2× inflated.</p>
+<p><strong>Session naming:</strong> 14 of 18 sessions are "Hon's Routine." Two sessions on May 13 and two on May 21 share names, making history review ambiguous in the Progress tab.</p>
+</div>
+</div>
+
+<div class="card">
+<h3 style="margin-top:0">Progress Trajectory (What Actually Happened)</h3>
+<div class="table-wrap">
+<table>
+<tr><th>Exercise</th><th>First Session</th><th>Best Session</th><th>Last Session</th><th>Trend</th><th>Valid Sessions</th><th>Issue</th></tr>
+<tr><td><strong>Dumbbell Bench Press</strong></td><td>Apr 20 · 17.5kg×8 · e1RM≈22kg/hand</td><td>May 11 · 20kg×8 · e1RM≈25.3kg/hand</td><td>May 18 · 17.5kg×8 (1/3 sets) · e1RM≈22kg/hand</td><td class="c-amber">↗ then drop</td><td>5</td><td>May 18: 2 zero-rep sets distort</td></tr>
+<tr><td><strong>Lat Pulldown</strong></td><td>Apr 29 · 30kg×6 · e1RM≈36kg</td><td>May 20 · 40kg×6 · e1RM≈48kg</td><td>May 20 · 40kg×6</td><td class="c-green">↗ Linear</td><td>4</td><td>Cleanest trend in the log</td></tr>
+<tr><td><strong>Machine Shoulder Press</strong></td><td>May 1 · 15kg×6 · e1RM≈18kg</td><td>May 19 · 30kg×12 · e1RM≈42kg</td><td>May 19</td><td class="c-red">Noisy</td><td>2 valid of 5</td><td>3 sessions all-zero reps</td></tr>
+<tr><td><strong>Incline DB Press</strong></td><td>May 7 · 15kg×8 · e1RM≈19kg/hand</td><td>May 13 · 20kg×8 · e1RM≈25kg/hand</td><td>May 21 · 25kg×3 · e1RM≈27.5kg/hand</td><td class="c-amber">Possible stall</td><td>3</td><td>Last 2 sessions identical e1RM?</td></tr>
+<tr><td><strong>Barbell Squat</strong></td><td>Apr 21 · 40kg×8</td><td>May 12 · 60kg×5</td><td>May 12</td><td class="c-lav">Unknown</td><td>3</td><td>Gaps too large to assess trend</td></tr>
+<tr><td><strong>Overhead Press</strong></td><td>May 12 · 0kg→20kg floor · e1RM≈23.3kg</td><td>May 18 · 22.5kg×3 · e1RM≈24.8kg</td><td>May 18</td><td class="c-muted">2 sessions</td><td>2</td><td>Floor weight distorts session 1</td></tr>
+</table>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="mental-model">03 · App Mental Model</h2>
+
+<div class="note"><strong>This section answers:</strong> When the user opens the app, what do they believe they are looking at? Where does their mental model diverge from the system's internal model?</div>
+
+<div class="grid2">
+<div>
+<div class="card">
+<h3 style="margin-top:0">User's Assumed Mental Model</h3>
+<ul style="list-style:none;padding:0">
+<li style="padding:6px 0;border-bottom:1px solid var(--border)">📱 <strong>Home tab</strong> = "How am I doing today?" Dashboard of readiness + what to do</li>
+<li style="padding:6px 0;border-bottom:1px solid var(--border)">🏋️ <strong>Workout tab</strong> = "Log my session." Sets, weights, timer.</li>
+<li style="padding:6px 0;border-bottom:1px solid var(--border)">📊 <strong>Progress tab</strong> = "Am I getting stronger?" History + charts.</li>
+<li style="padding:6px 0;border-bottom:1px solid var(--border)">🔍 <strong>Insights tab</strong> = "What does the app know about each exercise?" Per-exercise deep dive.</li>
+<li style="padding:6px 0">⚙️ <strong>Settings</strong> = "My profile and preferences."</li>
+</ul>
+</div>
+
+<div class="card" style="margin-top:14px">
+<h3 style="margin-top:0">Reality (System's Actual Model)</h3>
+<ul style="list-style:none;padding:0">
+<li style="padding:6px 0;border-bottom:1px solid var(--border)">📱 <strong>Home</strong> = HomeCache (pre-computed on bg thread): readiness score, progressTrend, todayHints, exerciseNotes. Re-built every time analytics refresh fires. Contains <em>14+ insight types</em> the user has no visibility into.</li>
+<li style="padding:6px 0;border-bottom:1px solid var(--border)">🏋️ <strong>Workout</strong> = ActiveWorkoutView + ReadinessPromptCard (shown before first set, gone after) + WeightSuggestionSheet (on appear if pending suggestions) + narrative engine firing post-set + PR detection comparing live e1RM to exerciseHistoryCache.</li>
+<li style="padding:6px 0;border-bottom:1px solid var(--border)">📊 <strong>Progress</strong> = 6 CollapsibleDashSections, ProgressChartsViews (3032 lines), insights computed fresh on every render (not cached), overload scoreboard with &lt;6-wk fallback, plateau risk detection, momentum chips, population percentile.</li>
+<li style="padding:6px 0;border-bottom:1px solid var(--border)">🔍 <strong>Insights</strong> = ExerciseInsightsView listing all logged exercises → ExerciseInsightDetailView with per-exercise PCSA-weighted score, e1RM trend, relative strength tier. StrengthLabView (PCSA global composite) accessible from within this tab.</li>
+<li style="padding:6px 0">⚙️ <strong>Settings</strong> = Body composition (mislabeled Muscle Mass %), training location, insight level, fatigue decay override, REST timer, weight unit, coaching nudge frequency, reminder time, backup/restore.</li>
+</ul>
+</div>
+</div>
+
+<div>
+<div class="card">
+<h3 style="margin-top:0">Where Mental Models Diverge</h3>
+<div class="verdict v-fail">
+<div class="label">Divergence 1 — Trainer tab is missing from nav</div>
+<p>CLAUDE.md and presumably the product roadmap includes a "Trainer" tab generating AI workout plans. In production this is absent from the main TabView. WorkoutPlanEngine exists and TrainerTabView is a complete view — but it is inaccessible from the primary navigation. Users who rely on AI workout suggestions have no clear entry point.</p>
+</div>
+<div class="verdict v-fail">
+<div class="label">Divergence 2 — Readiness prompt can be bypassed invisibly</div>
+<p>The ReadinessPromptCard appears only when <code>readinessBefore == nil &amp;&amp; !hasAnyCompletedSets</code>. The moment the user completes <em>any set</em>, the prompt disappears permanently for that session. A user who opens a workout and taps "complete" on the first set before rating has silently bypassed the entire readiness data capture — with no confirmation, no error, no warning. 0/18 sessions captured confirms this is happening.</p>
+</div>
+<div class="verdict v-warn">
+<div class="label">Divergence 3 — Dumbbell weight convention is implicit</div>
+<p>The app doubles all dumbbell entries (<code>effectiveWeight × 2</code>). A user who enters "20" intending "20kg total" (one dumbbell in each hand at 10kg) will have their analytics computed against 40kg. A user entering "20" intending "20kg per hand" will be correct. No label clarifies which convention is assumed. The weight entry field shows no unit hint or per-hand indicator.</p>
+</div>
+<div class="verdict v-warn">
+<div class="label">Divergence 4 — Plan randomization on every Trainer open</div>
+<p><code>WorkoutPlanEngine.generatePlans()</code> is called inside the TrainerTabView body using <code>randomElement()</code> with no seed. Every time the Trainer view appears, the three plans change. A user who likes plan A, navigates away, then returns will see a different plan A. This makes the "Trainer" feel unreliable and undermines planning intention.</p>
+</div>
+<div class="verdict v-fail">
+<div class="label">Divergence 5 — muscleMassPercent is lean mass, not muscle</div>
+<p>The Settings field is labeled "Muscle Mass %" with placeholder "e.g. 40" and range 10–65. The stored value is 79.85 (= 100 − 20.2% BF). This value is outside the UI's documented valid range yet is stored and displayed. Any screen showing "Muscle Mass: 79.9%" is presenting anatomically impossible data as fact.</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="phases">04 · Journey Phases</h2>
+
+<p style="margin-bottom:20px">Evaluated from the user's perspective at the time — not with hindsight about what the data would eventually show.</p>
+
+<!-- Phase 1 -->
+<div class="phase">
+<div class="phase-header" style="background:var(--s2)">
+<div class="phase-num">1</div>
+<div>
+<div class="phase-title">Cold Start — Building the Habit Loop</div>
+<div class="phase-span">Sessions 1–3 · Apr 20–23 · 3 days · Volume: 842 / 1080 / 430 kg</div>
+</div>
+<div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+<span class="badge b-blue">Confidence: Low</span>
+<span class="badge b-amber">Readiness: ~46 / 68 / 80</span>
+</div>
+</div>
+<div class="phase-body">
+<div class="grid2">
+<div>
+<h4>What the user experiences</h4>
+<p>The onboarding collects name, body weight, age, and training location over 3 pages. Page 2 is skippable ("Skip for now"). After onboarding, an AppearanceChoiceSheet asks dark/light preference. The user sees the Home tab with a readiness card, likely showing low confidence and a score around 46 — reflecting no prior training data. The coaching note will be generic ("Your readiness estimate is low confidence — build a pattern first").</p>
+<p>First session: ReadinessPromptCard appears before sets begin. If the user logs a set before answering, the prompt disappears. After each set, WorkoutNarrativeEngine generates coaching text — for a first-ever session, historyKey = "First Time" which routes to specific onboarding phrases.</p>
+<p>By session 3, the user has 3 sessions — Confidence transitions from Low to Medium. The Home tab begins to show more meaningful data. The ExerciseInsightsView starts listing exercises but per-exercise analytics require ≥3 sessions of the same exercise — not yet met for anything except potentially DBP (only 2 sessions by Apr 23).</p>
+</div>
+<div>
+<h4>Consultant Assessment</h4>
+<div class="verdict v-warn">
+<div class="label">Onboarding doesn't teach the readiness prompt</div>
+<p>The 3-page onboarding collects baseline data but never explains that the pre-workout feel check matters. When the ReadinessPromptCard appears on session 1, users who dismiss it have no context for what they're skipping. Zero of this user's 18 sessions captured it.</p>
+</div>
+<div class="verdict v-warn">
+<div class="label">First readiness score (≈46) may create a wrong first impression</div>
+<p>Score 46 on session 1 is technically correct — no training history means the engine can't verify freshness. But a user opening the app for the first time and seeing "Readiness: 46 / 100" may interpret this as "the app thinks I'm not ready to train." The coaching note must contextualise this precisely. A generic low-confidence note here does damage.</p>
+</div>
+<div class="verdict v-pass">
+<div class="label">historyKey "First Time" is correct</div>
+<p>WorkoutNarrativeEngine routes to "First Time" phrases for all exercises on session 1. This is the right path — no comparison possible, so onboarding phrases fire. Confirm these phrases don't attempt to reference previous performance.</p>
+</div>
+<div class="verdict v-info">
+<div class="label">Progress tab: what does a user with 3 sessions see?</div>
+<p>After S3 (Apr 23), the user opens the Progress tab. "Where Am I" section (expanded by default): population percentile requires relStrength — which needs bodyWeight AND ≥1 valid e1RM per exercise. With 3 sessions and only 2 DBP sessions, percentile may render with a caveat. "Am I Getting Stronger" starts collapsed. A new user is unlikely to discover it.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Phase 2 -->
+<div class="phase">
+<div class="phase-header" style="background:var(--s2)">
+<div class="phase-num">2</div>
+<div>
+<div class="phase-title">Habit Formation — Patterns Emerge</div>
+<div class="phase-span">Sessions 4–9 · Apr 27 – May 7 · 11 days · Volume: 500 / 1200 / 570 / 978 / 1234 / 350 kg</div>
+</div>
+<div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+<span class="badge b-yellow">Confidence: Medium</span>
+<span class="badge b-amber">Readiness: ~64–76</span>
+</div>
+</div>
+<div class="phase-body">
+<div class="grid2">
+<div>
+<h4>What the user experiences</h4>
+<p>This is the phase where the app should start earning trust. By session 6, the user has trained 6 times — enough for Lat Pulldown and DBP to have 2-3 sessions each. The WorkoutNarrativeEngine begins using historyKey "Normal" (within 7 days) and starts comparing weights. Progressive suggestions begin appearing.</p>
+<p><strong>The problem sessions:</strong> S6 (Apr 29) feel=Tired after 3 consecutive training days. S9 (May 7) Machine Shoulder Press all-zero reps — 3 completed sets with 0 reps each. This is the first major data quality event. If the engine handles it gracefully, trust is built. If it celebrates a 0-rep session, trust breaks.</p>
+<p><strong>5-day gap before S8:</strong> User returns May 6 after 5 days. The readiness score should be ≈64 (4-6d gap = −4). But the user reported feel=Strong. The coaching note should acknowledge the gap and welcome return without shame — per the brand principle "Never punish gaps."</p>
+</div>
+<div>
+<h4>Consultant Assessment</h4>
+<div class="verdict v-fail">
+<div class="label">Machine Shoulder Press S9 — most critical test of data trust</div>
+<p>May 7: 3 sets × 10kg × 0 reps, all isCompleted=true. StrengthAnalyticsEngine's first filter excludes reps&lt;1. But if the first filter returns empty, the fallback <code>we.completedSets.filter { eq.effectiveWeight($0.weight) &gt; 0 }</code> runs — which includes these sets. effectiveWeight(10) = 10 &gt; 0. So they are included via fallback. e1RM formula with reps=0 returns 0. The session contributes e1RM=0 to the trend chart — a visual data error.</p>
+</div>
+<div class="verdict v-warn">
+<div class="label">WorkoutPlanEngine uses recentlyTrainedRegions from last 2 entries</div>
+<p>After S6 (pull: Lat Pulldown + Row) and S7 (push: DBP + Shoulder Press + Cable), the engine's recentlyTrainedRegions = {back, arms, chest, shoulders}. Primary plan for S8 would route to Legs or Core — correct. But randomElement() means the user might see a different plan each time they check. If they open Trainer, navigate away to check something, and come back: plan has changed. Undermines the "today's recommendation" premise.</p>
+</div>
+<div class="verdict v-pass">
+<div class="label">5-day return framing — brand test</div>
+<p>S8 (May 6): user returns after 5-day gap, feel=Strong. Readiness ≈64 (Moderate). The coaching note must not say "you've been away too long." Per USER_RESEARCH.md: "Never punish gaps — the return is celebrated, not the streak." Confirm the 5-day gap note uses shame-free language. This is a core brand promise.</p>
+</div>
+<div class="verdict v-warn">
+<div class="label">S6 feel=Tired with consecutive days — coaching contradiction risk</div>
+<p>Apr 29: 3rd consecutive training day. Readiness ≈68 (1-day gap +8, but consecutive-3 has no penalty until day 4). User reports Tired. If the coaching note says "Go hard today" while the user feels Tired, the user learns not to trust the app. The score (68 = Moderate) doesn't capture that this is day 3 of 3.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Phase 3 -->
+<div class="phase">
+<div class="phase-header" style="background:var(--s2)">
+<div class="phase-num">3</div>
+<div>
+<div class="phase-title">Analytics Maturation — App Starts Knowing You</div>
+<div class="phase-span">Sessions 10–14 · May 11–18 · 8 days · Volume: 890 / 800 / 934 / 1215 / 600 kg</div>
+</div>
+<div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+<span class="badge b-green">Confidence: High</span>
+<span class="badge b-amber">Readiness: ~62–68</span>
+</div>
+</div>
+<div class="phase-body">
+<div class="grid2">
+<div>
+<h4>What the user experiences</h4>
+<p>Session 10 (May 11) is the 10th session — Confidence transitions to High. This is a product milestone. Does the app acknowledge it? Per USER_RESEARCH.md: <em>"Which HON message library kinds resonate most over 6 months?"</em> — a session-count milestone message here would validate the habit loop. HONHabitEngine tracks totalSessions and can generate milestone messages.</p>
+<p><strong>Same-day double sessions (May 13):</strong> S12 (Lat Pulldown + Row, feel=Tired) followed by S13 (Incline DB + Low Row + Cable OTE, feel=Strong) on the same day. Two "Hon's Routine" entries. Analytics must correctly separate these. The readiness for S13 is computed after S12 — the 5-consecutive-day streak penalty (−14) fires, making S13's expected readiness ≈62. But user feels Strong.</p>
+<p><strong>DBP crisis (May 18, S14):</strong> 17.5kg × 8 reps (Set1), then 0 reps (Set2), 0 reps (Set3). The user stopped after one set. This is qualitatively a failed session. The narrative must reflect this. The weight wasn't increased — all 3 sets at the same 17.5kg. WeightState = held. RepOutcome = underSignificant (8/24 = 33%) if zero-rep sets included, or onTarget (8/8 = 100%) if they're excluded — a binary difference in coaching quality.</p>
+</div>
+<div>
+<h4>Consultant Assessment</h4>
+<div class="verdict v-warn">
+<div class="label">Session 10 milestone — does HONHabitEngine fire?</div>
+<p>HONHabitEngine.onSessionLogged() checks totalSessions and can generate milestone messages. Verify that crossing into "High" confidence produces a user-visible message — either an in-app banner or a coaching note that references the data density. "10 sessions in — your data is now reliable enough to track real trends" aligns with the brand voice. A missed milestone here is a missed retention moment.</p>
+</div>
+<div class="verdict v-fail">
+<div class="label">DBP May 18 — the zero-rep verdict determines narrative quality</div>
+<p>If zero-rep guard exists: 1 completed set at 8/8 = 100% → onTarget. User receives "Solid session" narrative for what was a 1-of-3 completion. If no guard: 8/24 = 33% → underSignificant. Narrative correctly reflects failure. The guard behavior here is anti-correctness. An app that can't tell the difference between "you completed 1 set and stopped" vs "you completed all 3 sets" is not a coaching app — it's a logging app.</p>
+</div>
+<div class="verdict v-warn">
+<div class="label">Machine Shoulder Press target-jump pattern (S10)</div>
+<p>S10 (May 11): MSP target pre-filled at 10kg (from zero-rep S9 history). User enters 20kg × 8/8/6. WeightState = userIncreasedHit. The narrative should celebrate this — but the jump was a correction of a data error, not genuine progressive overload. The engine has no way to know the difference. Risk: user gets "You crushed it — new weight incoming" praise for recovering from a logging mistake.</p>
+</div>
+<div class="verdict v-info">
+<div class="label">Overhead Press floor on May 12 — display coherence</div>
+<p>S11 (May 12): OHP logged at 0kg. effectiveWeight floors to 20kg (barbell). e1RM computed against 20kg. The StrengthAnalyticsEngine correctly uses effectiveWeight. But what does the ExerciseInsightDetailView display for this session — "0 kg" (raw) or "20 kg" (floor)? If 0kg, the chart has a misleading data point. If 20kg, the user sees a weight they don't recall entering.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Phase 4 -->
+<div class="phase">
+<div class="phase-header" style="background:var(--s2)">
+<div class="phase-num">4</div>
+<div>
+<div class="phase-title">Optimization — First Plateau Signal &amp; Volume Peak</div>
+<div class="phase-span">Sessions 15–18 · May 19–21 · 3 days · Volume: 3015 / 1410 / 450 / 800(?) kg</div>
+</div>
+<div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+<span class="badge b-green">Confidence: High</span>
+<span class="badge b-amber">Readiness: ~58–76</span>
+</div>
+</div>
+<div class="phase-body">
+<div class="grid2">
+<div>
+<h4>What the user experiences</h4>
+<p><strong>Volume spike on May 19 (S15):</strong> 3015kg — the highest single-session volume in the log by 2.4×. Smith Machine Squat × 4 sets, Smith RDL × 3 sets, Leg Press × 3 sets, MSP × 3 sets. This is the session most likely to trigger the volume spike modifier (−10) for S16.</p>
+<p><strong>Consecutive streak (May 19–21):</strong> 3 consecutive training days, with May 21 having two sessions. The consecutive modifier fires: May 21 = day 4 (−8), potentially day 5 if same-day counts. The user is building into a fatigue hole.</p>
+<p><strong>Incline DB plateau signal (S17, May 21):</strong> 25kg × 3/3/3. This is the 3rd Incline DB session. May 13 = 20kg × 8 (e1RM ≈ 25.3kg/hand). May 21 = 25kg × 3 (e1RM ≈ 27.5kg/hand). The e1RM did increase — but only because the weight went up and reps fell. The actual strength progression is unclear. This is a data richness problem, not a plateau yet.</p>
+<p><strong>S18 Assisted Pull-Up (May 21):</strong> 2 sets, 1-minute session. effectiveLoad = bodyWeight − assist. This is the app's most complex single calculation — and it happens with the least context.</p>
+</div>
+<div>
+<h4>Consultant Assessment</h4>
+<div class="verdict v-warn">
+<div class="label">S16 (May 20) readiness — spike penalty must visibly affect the score</div>
+<p>S15 volume = 3015kg. Median of prior sessions ≈ 900kg. Ratio ≈ 3.35× — far above the 1.8× threshold for a −10 penalty. S16 readiness should reflect this: expected ≈58 (68 + 8 (1d gap) − 10 (spike) − 8 (4th consecutive day)). If the displayed score is ≈76 (just 1d gap, spike not applied), the engine is missing the largest training stimulus in the dataset. Verify by checking S16's displayed readiness in the app.</p>
+</div>
+<div class="verdict v-fail">
+<div class="label">S18 volume calculation is inconsistent with stored value</div>
+<p>S18 Assisted Pull-Up: Set1 = 15kg assist × 5 reps, Set2 = 10kg assist × 5 reps. effectiveLoad = bodyWeight − assist = 51.75kg and 56.75kg respectively. Correct volume = 51.75×5 + 56.75×5 = 542kg. Raw weight volume = (15+10)×5 = 125kg. The stored session summary shows "800kg" — this matches neither calculation. A phantom volume number is being stored or displayed.</p>
+</div>
+<div class="verdict v-info">
+<div class="label">May 26 — 5-day rest state (today)</div>
+<p>Last training was May 21. Today is May 26. The user is 5 days out. Expected readiness ≈69: 68 + (−4, 5-day gap) + (+5, 4 sessions in last 7 days). Intensity suggestion: Moderate. WorkoutPlanEngine should route to a Moderate primary plan. The recentlyTrainedRegions from last 2 sessions (S17=Incline DB/chest, S18=Assisted Pull-Up/back) should steer the plan toward Legs or Push. This is a good "return from rest" scenario to verify.</p>
+</div>
+<div class="verdict v-warn">
+<div class="label">HONHabitEngine drift detection — 5 days since last session</div>
+<p>HONPatternEngine.isDrifting() is called on app foreground and runs at most once per calendar day. After 5 days of inactivity, this should have fired. Verify that the user sees a return-from-gap message — and that it uses shame-free framing per USER_RESEARCH.md. A "you've been away" message that feels like a scolding breaks the core product promise.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="tabs">05 · Tab-by-Tab Evaluation</h2>
+
+<!-- Home Tab -->
+<div class="tab-eval">
+<div class="tab-eval-head">
+<div class="tab-icon">🏠</div>
+<div>
+<div style="font-size:16px;font-weight:600">Home Tab <span class="badge b-amber" style="margin-left:8px">Tab 0</span></div>
+<div style="font-size:12px;color:var(--muted);margin-top:2px">Dashboard · Readiness · Today's exercises · HONHabitEngine messages</div>
+</div>
+</div>
+<div class="tab-eval-body">
+<div class="grid2">
+<div>
+<div class="tab-metric"><span class="tab-metric-name">Readiness card — score accuracy</span><span class="tab-rating"><span class="badge b-yellow">Verify required</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">Readiness card — confidence label</span><span class="tab-rating"><span class="badge b-green">Low→Med→High progression exists</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">Coaching note — shame-free on return</span><span class="tab-rating"><span class="badge b-yellow">Test on May 26 open</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">Today's exercises — from routine</span><span class="tab-rating"><span class="badge b-blue">Depends on routine assignment</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">Progress trend card</span><span class="tab-rating"><span class="badge b-yellow">Based on homeCache — verify</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">EmergentInsight card</span><span class="tab-rating"><span class="badge b-red">Most guard on empty data</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">HONHabitEngine drift message</span><span class="tab-rating"><span class="badge b-yellow">5-day gap should trigger</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">HealthKit nudge — appears post-session</span><span class="tab-rating"><span class="badge b-blue">Per AD-005</span></span></div>
+</div>
+<div>
+<p><strong>Critical finding:</strong> The Home tab's readiness card shows "~score" (tilde prefix) when confidence is Low. This is correct behavior — but it only applies to confidence.low. After session 3, confidence = Medium, and the tilde disappears. From session 10 onward, confidence = High. The user should understand that the tilde means "estimated" — but this is never explained in onboarding.</p>
+<p><strong>EmergentInsight on Home:</strong> The EmergentInsight card on Home shows one cross-domain insight. With 0/18 readinessBefore filled and no HealthKit, most insights will guard and show placeholders. The user sees a sophisticated card layout rendering "Collecting data…" states. At 18 sessions, the user might reasonably wonder why the app still needs to "collect data" for basic insights.</p>
+<p><strong>HealthKit integration:</strong> Per AD-005, the HealthKit prompt is deferred until after the first session. The user has 18 sessions — HealthKit was presumably offered but not authorized (no HealthKit data in the log). If HealthKit is not connected, sleep, HRV, RHR, VO2 Max modifiers all return nil. The readiness score is computed with approximately 50% of its intended modifier surface.</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Workout Tab -->
+<div class="tab-eval">
+<div class="tab-eval-head">
+<div class="tab-icon">🏋️</div>
+<div>
+<div style="font-size:16px;font-weight:600">Workout Tab <span class="badge b-amber" style="margin-left:8px">Tab 1</span></div>
+<div style="font-size:12px;color:var(--muted);margin-top:2px">Active workout · Set logging · Narrative coaching · Superset · Equipment swap</div>
+</div>
+</div>
+<div class="tab-eval-body">
+<div class="grid2">
+<div>
+<div class="tab-metric"><span class="tab-metric-name">ReadinessPromptCard — capture rate</span><span class="tab-rating"><span class="badge b-red">0/18 captured — structural bug</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">WeightSuggestionSheet — appears on open</span><span class="tab-rating"><span class="badge b-blue">Only if pending suggestions exist</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">Target pre-fill from lastPerformance</span><span class="tab-rating"><span class="badge b-red">Zero-rep sessions create wrong targets</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">Narrative post-set — zero-rep sessions</span><span class="tab-rating"><span class="badge b-red">Routing uncertain for 0-rep sets</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">PR detection — e1RM comparison</span><span class="tab-rating"><span class="badge b-green">Correctly guards prevBest &gt; 0</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">Equipment swap — target weight handoff</span><span class="tab-rating"><span class="badge b-yellow">Test: DB→Barbell Bench</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">Rest timer — auto-starts post-set</span><span class="tab-rating"><span class="badge b-blue">Per AppStorage restTimerSeconds</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">Superset auto-scroll</span><span class="tab-rating"><span class="badge b-blue">scrollToId pattern via ScrollViewProxy</span></span></div>
+</div>
+<div>
+<p><strong>ReadinessPromptCard bypass:</strong> The condition <code>readinessBefore == nil &amp;&amp; !hasAnyCompletedSets</code> means the prompt vanishes after the first set. This is the structural reason for 0/18 captures. The correct fix: use <code>.interactiveDismissDisabled(true)</code> on a sheet, matching the pattern used by FeelSelectorSheet (which correctly requires explicit action per AD-008). The current implementation uses an inline card that disappears — the opposite pattern.</p>
+<p><strong>PR detection correctness:</strong> The guard <code>prevBest &gt; 0</code> is correct — it prevents first-ever sessions from triggering a false PR (there's no comparison baseline). However, if zero-rep sessions produce e1RM=0 in historyCache, then a subsequent valid session would compare against a 0 baseline and incorrectly trigger a "PR" banner for what is actually just the first valid set.</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Progress Tab -->
+<div class="tab-eval">
+<div class="tab-eval-head">
+<div class="tab-icon">📊</div>
+<div>
+<div style="font-size:16px;font-weight:600">Progress Tab <span class="badge b-amber" style="margin-left:8px">Tab 2</span></div>
+<div style="font-size:12px;color:var(--muted);margin-top:2px">6 sections · Charts · Overload scoreboard · Plateau risk · Momentum · Population rank</div>
+</div>
+</div>
+<div class="tab-eval-body">
+<div class="grid2">
+<div>
+<div class="tab-metric"><span class="tab-metric-name">Section ordering — actionable first</span><span class="tab-rating"><span class="badge b-red">"Where Am I" expanded by default</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">Overload scoreboard — baseline label</span><span class="tab-rating"><span class="badge b-red">"6 weeks ago" when data is 5.1 wks</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">e1RM chart — zero-rep handling</span><span class="tab-rating"><span class="badge b-red">Fallback path includes 0-rep sessions</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">Plateau risk — Incline DB</span><span class="tab-rating"><span class="badge b-yellow">2 identical e1RM sessions — may trigger</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">Momentum chips — Lat Pulldown</span><span class="tab-rating"><span class="badge b-green">4.0 kg/wk slope — should appear</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">Population percentile data quality</span><span class="tab-rating"><span class="badge b-yellow">MSP has only 2 valid sessions</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">7pt text in PlateauRiskCard</span><span class="tab-rating"><span class="badge b-red">Below legible threshold</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">Name truncation in rings card</span><span class="tab-rating"><span class="badge b-orange">10-char limit hides exercise identity</span></span></div>
+</div>
+<div>
+<p><strong>The most valuable section is buried:</strong> "Am I Getting Stronger" contains the overload scoreboard, momentum chips, and plateau risk — the data most directly connected to next-session decisions. It starts collapsed. "Where Am I" (population percentile at beginner data density) starts expanded. For a user with 18 sessions, this is inverted priority.</p>
+<p><strong>Insights computed on render:</strong> Unlike most analytics which are cached, the Progress tab computes insights fresh on every render. On an older device or with a large log, this creates a measurable lag. More importantly, it means two rapid renders could produce different insight states if analytics refresh fires between them.</p>
+<p><strong>Color collision in context:</strong> PRs shown with HONTheme.accent (amber) and INOL moderate intensity shown with HONTheme.warning (same amber). A PR badge next to a moderate-intensity session indicator are visually identical. Users must read the label to distinguish positive from neutral.</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Insights Tab -->
+<div class="tab-eval">
+<div class="tab-eval-head">
+<div class="tab-icon">🔍</div>
+<div>
+<div style="font-size:16px;font-weight:600">Insights Tab (ExerciseInsightsView) <span class="badge b-amber" style="margin-left:8px">Tab 3</span></div>
+<div style="font-size:12px;color:var(--muted);margin-top:2px">Per-exercise PCSA-weighted strength · Relative strength tier · e1RM detail · Strength Lab</div>
+</div>
+</div>
+<div class="tab-eval-body">
+<div class="grid2">
+<div>
+<div class="tab-metric"><span class="tab-metric-name">Exercise list — all 18 sessions indexed</span><span class="tab-rating"><span class="badge b-green">ExerciseHistoryCache built at init</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">Relative strength — requires bodyWeight</span><span class="tab-rating"><span class="badge b-green">bodyWeightKg=66.75 is set</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">Relative strength — MSP with 2 valid sessions</span><span class="tab-rating"><span class="badge b-red">2 zero-rep sessions distort percentile</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">PCSA-weighted score — unit switching</span><span class="tab-rating"><span class="badge b-blue">kg / kg·cm² / N·cm² — expert feature</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">Allometric scaling (BW^0.67)</span><span class="tab-rating"><span class="badge b-blue">Expert-only, Jaric 2002 cited</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">StrengthLabView — discoverable?</span><span class="tab-rating"><span class="badge b-yellow">Navigation entry not confirmed</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">90-day decay anchor explained?</span><span class="tab-rating"><span class="badge b-yellow">Complex model — needs UX explanation</span></span></div>
+</div>
+<div>
+<p><strong>This tab is the most technically sophisticated in the app</strong> — PCSA-weighted composites, PPL group classification by dominant muscle activation, allometric scaling, physiological decay model with 14-day no-decay window, 90-day anchor. The science is correct and cited. The question is: does the average user with 18 sessions understand what they're looking at?</p>
+<p><strong>For the 66.75kg user:</strong> DBP e1RM ≈ 44kg → e1RM/BW ≈ 0.66 → approaches Intermediate for males. Lat Pulldown e1RM ≈ 48kg → 0.72/BW → similar tier. The relative strength rows should show something meaningful. The allometric option divides by 66.75^0.67 ≈ 16.7 — producing scores in the 2–3 kg range that are only meaningful in comparison to norms.</p>
+<p><strong>Discoverability:</strong> StrengthLabView appears to be accessible via navigation from within this tab. Whether there's a visible button or it requires knowing to navigate there is unclear from the code read. This feature may be effectively hidden from most users.</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Settings Tab -->
+<div class="tab-eval">
+<div class="tab-eval-head">
+<div class="tab-icon">⚙️</div>
+<div>
+<div style="font-size:16px;font-weight:600">Settings <span class="badge b-amber" style="margin-left:8px">Tab 4</span></div>
+<div style="font-size:12px;color:var(--muted);margin-top:2px">Profile · Body composition · Preferences · Backup/Restore · HealthKit sync</div>
+</div>
+</div>
+<div class="tab-eval-body">
+<div class="grid2">
+<div>
+<div class="tab-metric"><span class="tab-metric-name">muscleMassPercent label</span><span class="tab-rating"><span class="badge b-red">"Muscle Mass %" — should be "Lean Mass %"</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">muscleMassPercent range 10–65</span><span class="tab-rating"><span class="badge b-red">User's stored value 79.85 exceeds range</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">bodyWeight change → logBodyWeight()</span><span class="tab-rating"><span class="badge b-green">Correctly builds weightHistory</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">Insight Level picker (Essential/Standard/Expert)</span><span class="tab-rating"><span class="badge b-blue">Controls feature depth globally</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">Fatigue decay α override (Expert+DEBUG)</span><span class="tab-rating"><span class="badge b-blue">DEBUG-gated, range 0.03–0.10</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">HealthKit sync button — body comp</span><span class="tab-rating"><span class="badge b-yellow">Only shown when health.isAuthorized</span></span></div>
+<div class="tab-metric"><span class="tab-metric-name">Backup/Restore — includes generalLog</span><span class="tab-rating"><span class="badge b-green">Backward-compatible decode</span></span></div>
+</div>
+<div>
+<p><strong>The muscleMassPercent problem is visible here:</strong> The user's stored value (79.85%) exceeds the UI field's documented range (10–65%). The field labeled "Muscle Mass %" shows 79.85. A new user seeing this would believe they have 79.85% muscle mass — anatomically impossible. The field should be labeled "Lean Body Mass %" and the stored value should either be validated on import or clearly prefaced with "Lean (not skeletal muscle)".</p>
+<p><strong>Insight Level affects depth across all tabs:</strong> "Essential" mode shows basic metrics. "Standard" adds trend lines and momentum. "Expert" adds INOL, PSI, fatigue-adjusted e1RM, allometric scaling. This is a powerful personalization mechanism — but users need to know it exists. New users default to "Standard" — confirm this is set correctly during onboarding and that the setting is surfaced prominently enough that users discover it.</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="scenarios">06 · Scenario Bank</h2>
+<p style="margin-bottom:20px">40 scenarios across 8 categories. Each specifies: trigger, what to observe, pass/fail criterion grounded in real session data.</p>
+
+<!-- CATEGORY: Onboarding & First Use -->
+<h3>A · Onboarding &amp; First Use</h3>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-A01</span><span class="sc-title">First app open — onboarding collects useful data</span><span class="badge b-amber" style="margin-left:auto">Retention</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> Fresh install, hasCompletedOnboarding = false.</p><p><strong>Observe:</strong> 3-page flow: Welcome+Name → Baseline (bodyWeight, age, training location) → Ready. Page 2 has "Skip for now" button.</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>Name and bodyWeight captured. The strength tier calculation requires bodyWeight — skipping page 2 means the app operates without percentile ranking for first sessions. The "Skip" option is labeled clearly and the consequence is explained ("strength comparisons need your body weight").</p></div><div class="verdict v-fail"><div class="label">Fail</div><p>"Skip for now" exits onboarding with no bodyWeight. First open of Insights tab shows all relStrength cards in a "Set body weight in Settings" placeholder state — with no path back to Settings visible from that screen.</p></div></div></div>
+</div>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-A02</span><span class="sc-title">First readiness score — framing for a beginner</span><span class="badge b-red" style="margin-left:auto">Critical UX</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> S1 (Apr 20). No prior sessions. Expected score ≈46.</p><p><strong>Observe:</strong> Home readiness card shows "~46" (tilde for Low confidence). Coach note for a score of 46 with confidence=Low and no training history.</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>Coach note says something like "Your first few sessions build the baseline — we'll refine this as we learn your pattern." Score of 46 is contextualized as a data-thin estimate, not a verdict on the user's fitness.</p></div><div class="verdict v-fail"><div class="label">Fail</div><p>Coach note says "Your readiness is low. Consider resting or light movement." — treating a data-estimation artifact as a coaching directive. User who opens the app for the first time and sees "low readiness" before training session 1 may feel the app is already working against them.</p></div></div></div>
+</div>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-A03</span><span class="sc-title">ReadinessPromptCard — can it be bypassed by completing a set first?</span><span class="badge b-red" style="margin-left:auto">Data Integrity</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> Start any workout. Before answering the readiness prompt, complete Set1 of the first exercise.</p><p><strong>Observe:</strong> Does the ReadinessPromptCard disappear? Is readinessBefore = null for the session?</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>The prompt persists regardless of set completion, OR it converts to a non-dismissible sheet that requires an answer before the first set can be logged. readinessBefore is captured for the session.</p></div><div class="verdict v-fail"><div class="label">Fail — confirmed by log data</div><p>0/18 sessions have readinessBefore captured. The condition <code>!hasAnyCompletedSets</code> means completing any set before answering silently removes the prompt. This is the most likely explanation for 0/18. The ReadinessPromptCard should use the <code>.interactiveDismissDisabled(true)</code> pattern like FeelSelectorSheet (AD-008).</p></div></div></div>
+</div>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-A04</span><span class="sc-title">Appearance choice sheet — fires after onboarding once</span><span class="badge b-blue" style="margin-left:auto">Polish</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> hasCompletedOnboarding = true, hasSeenAppearanceChoice = false.</p><p><strong>Observe:</strong> AppearanceChoiceSheet appears. Select dark/light. Verify hasSeenAppearanceChoice is set to true and sheet never re-appears.</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>Sheet appears once, preference is saved, never shown again on subsequent opens.</p></div><div class="verdict v-fail"><div class="label">Fail</div><p>Sheet re-appears on app restart, or preference is not persisted to AppStorage correctly.</p></div></div></div>
+</div>
+
+<!-- CATEGORY: Readiness & Planning -->
+<h3>B · Readiness &amp; Planning</h3>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-B01</span><span class="sc-title">Return after 5 days — shame-free framing verified</span><span class="badge b-red" style="margin-left:auto">Brand Critical</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> Today, May 26. Last session May 21. 5-day gap.</p><p><strong>Observe:</strong> Home coaching note text. HONHabitEngine banner text (if shown). Readiness score.</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>Expected score ≈69 (Moderate). Coaching note uses return-framing: "Back at it — your body had a chance to recover." or similar. No reference to absence duration as a failure. Per USER_RESEARCH.md: "Never punish gaps — the return is celebrated, not the streak."</p></div><div class="verdict v-fail"><div class="label">Fail</div><p>Coaching note says "You've been away for 5 days — your readiness score has dropped" or any language that frames the rest period as a failure state. HONHabitEngine drift message uses guilt-adjacent language.</p></div></div></div>
+</div>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-B02</span><span class="sc-title">WorkoutPlanEngine — plan is stable within a session</span><span class="badge b-orange" style="margin-left:auto">UX Trust</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> Open Trainer (if accessible). Note the 3 plans. Navigate away. Return to Trainer.</p><p><strong>Observe:</strong> Are the 3 plans the same after returning? Same exercises, same order?</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>Plans are seeded or cached per session/day. Opening Trainer twice in the same session shows the same 3 plans.</p></div><div class="verdict v-fail"><div class="label">Fail — confirmed by code</div><p><code>WorkoutPlanEngine.generatePlans()</code> calls <code>randomElement()</code> with no seed inside the SwiftUI body. Plans regenerate on every render. User who checks Trainer, goes back, returns: different plans. The "Today's Plans" label is a promise that is violated on every navigation event.</p></div></div></div>
+</div>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-B03</span><span class="sc-title">High readiness day (≥78) — plan routes to Heavy, coaching is assertive</span><span class="badge b-blue" style="margin-left:auto">Coherence</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> Simulate readiness ≥78. Occurs if user trains after optimal rest (1-2 days) with high recentFreq and no volume spike.</p><p><strong>Observe:</strong> WorkoutPlanEngine intensity = Heavy. Primary plan exercises = 4×5. Coaching note in TrainerTabView references "good day to push."</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>Primary plan shows compound exercises at 4 sets × 5 reps. Coach note says "Your readiness is high — a great day to push hard. Focus on progressive overload." Home and Trainer notes are internally consistent.</p></div><div class="verdict v-fail"><div class="label">Fail</div><p>Readiness ≥78 but plan shows 3×12 (Light intensity). Or coach note is generic and doesn't reference the high readiness state. Or Home says "high readiness" but Trainer says "keep it moderate."</p></div></div></div>
+</div>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-B04</span><span class="sc-title">Plan respects recently trained regions — leg day after two push sessions</span><span class="badge b-blue" style="margin-left:auto">Coherence</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> Last 2 sessions = S17 (Incline DB Press — chest) and S18 (Assisted Pull-Up — back). recentlyTrainedRegions = {chest, back}. Today's primary plan should NOT route to chest or back.</p><p><strong>Observe:</strong> Primary plan regions. Expected: Legs or Core focus.</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>Primary plan on May 26 shows Legs or Core focus (since chest and back were trained in last 2 sessions). The split logic routes away from recently trained regions.</p></div><div class="verdict v-fail"><div class="label">Fail</div><p>Plan recommends Chest + Shoulders (Push Day) despite chest being trained in S17. The freshness routing doesn't account for the user's actual last 2 sessions correctly.</p></div></div></div>
+</div>
+
+<!-- CATEGORY: Workout Logging -->
+<h3>C · Workout Logging</h3>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-C01</span><span class="sc-title">Zero-rep set entry — what does the UX allow?</span><span class="badge b-red" style="margin-left:auto">Data Integrity</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> During active workout, enter weight=10kg, reps=0. Tap "Complete set."</p><p><strong>Observe:</strong> Is the set accepted? Does the UI warn? Does isCompleted = true get set?</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>App prevents completing a 0-rep set (validation on the complete action), or flags it with "Did you mean to skip this set?" with options to skip vs. log 0 reps explicitly. A completed 0-rep set is semantically contradictory.</p></div><div class="verdict v-fail"><div class="label">Fail — confirmed by log data</div><p>10 instances of isCompleted=true with reps=0 across 6 sessions. The UX accepts 0-rep sets without warning. These flow through completedSets into all downstream calculations. Root cause is in the logging UI — no validation on the complete action.</p></div></div></div>
+</div>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-C02</span><span class="sc-title">Dumbbell weight entry — per-hand or total?</span><span class="badge b-orange" style="margin-left:auto">Convention</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> Log Incline DB Press. Enter "20" in weight field.</p><p><strong>Observe:</strong> What does the field label say? Does the narrative reference "20 kg" or "40 kg"? Does the analytics chart show 20 or 40?</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>Field label reads "per dumbbell" or "(per hand)". Narrative uses the per-hand value consistently. Analytics chart shows per-hand value (20kg) — not silently doubled value (40kg) — so the user can verify their entry.</p></div><div class="verdict v-fail"><div class="label">Fail</div><p>Field has no label. Narrative says "20 kg" while e1RM is computed against 40kg. User who tracks their own progress in a separate log will see mismatched numbers. On the analytics side, the bilateral ×2 makes DB Bench appear to have a higher e1RM than Barbell Bench at equivalent actual loads.</p></div></div></div>
+</div>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-C03</span><span class="sc-title">Equipment swap mid-session — target weight is correct for the new exercise</span><span class="badge b-orange" style="margin-left:auto">Data Correctness</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> During active workout on Dumbbell Bench Press (last perf: 17.5kg × 8). Tap equipment chip "Barbell." App resolves to Barbell Bench Press (0 sessions in log).</p><p><strong>Observe:</strong> Pre-filled target weight for Barbell Bench Press after the swap.</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>Barbell Bench Press has no lastPerformance → pre-fills 3 sets × 0/0. The 17.5kg from DBP is not carried over. User sees blank targets and must enter fresh.</p></div><div class="verdict v-fail"><div class="label">Fail</div><p>Target weight = 17.5kg (carried from DBP). User attempts Barbell Bench with a dumbbell-derived target — a different movement, different loading pattern. The pre-fill creates a false anchor for a first-ever exercise.</p></div></div></div>
+</div>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-C04</span><span class="sc-title">Assisted Pull-Up — counterweight notation is explained</span><span class="badge b-orange" style="margin-left:auto">Convention</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> S18 (May 21). Assisted Pull-Up Machine. Set1=15kg × 5.</p><p><strong>Observe:</strong> Does the narrative or UI explain that "15kg" is assistance weight (counterweight), not the lifted load? Does the e1RM display show 51.75kg or 15kg?</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>Exercise name or a tooltip labels the weight as "assistance" or "counterweight." ExerciseInsightDetailView shows effective load (body weight − assist) clearly. User understands they lifted 51.75kg, not 15kg.</p></div><div class="verdict v-fail"><div class="label">Fail</div><p>UI shows "15 kg" with no counterweight context. e1RM chart for Assisted Pull-Up shows ≈60kg derived from 15kg assist — without explanation, this looks like an enormous strength number that the user can't reconcile with their experience of the exercise.</p></div></div></div>
+</div>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-C05</span><span class="sc-title">Barbell entered as 0kg — floor silently applied</span><span class="badge b-orange" style="margin-left:auto">Transparency</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> S11 (May 12) Overhead Press entered at 0kg. effectiveWeight floors to 20kg (barbell).</p><p><strong>Observe:</strong> What does the narrative <code>{weight}</code> substitution show — "0 kg" or "20 kg"? What does ExerciseInsightDetailView show for this session?</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>Narrative shows "20 kg (bar)" or the floor is applied with a visual note. Analytics chart shows 20kg for May 12, not 0kg. User can reconcile displayed number with what they entered.</p></div><div class="verdict v-fail"><div class="label">Fail</div><p>Narrative shows "0 kg" (raw value) while analytics uses 20kg (floor). Display/analytics mismatch. Or: analytics shows 20kg with no explanation, and the user who entered 0 can't understand why the chart shows 20.</p></div></div></div>
+</div>
+
+<!-- CATEGORY: Coaching Narrative -->
+<h3>D · Coaching Narrative Quality</h3>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-D01</span><span class="sc-title">All-zero reps session — narrative must not reward</span><span class="badge b-red" style="margin-left:auto">Critical</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> S9 (May 7) Machine Shoulder Press — 3 sets × 10kg × 0 reps, all isCompleted=true.</p><p><strong>Observe:</strong> WorkoutNarrativeEngine output. What phrase pool does it route to? Does it suggest increasing weight?</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>Narrative routes to underSignificant (pct=0%). Text reflects inability to complete the exercise — does not use encouragement phrases, does not suggest next-session weight. Possibly suggests technique review or weight reduction.</p></div><div class="verdict v-fail"><div class="label">Fail</div><p>Narrative says "Solid effort — keep it up" or suggests a weight increase for the next session. The engine cannot distinguish between a genuinely easy session logged at 0 reps (impossible) and a data entry error — it must fail safely toward the conservative interpretation.</p></div></div></div>
+</div>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-D02</span><span class="sc-title">DBP May 18 — 1 of 3 sets completed, narrative reflects reality</span><span class="badge b-red" style="margin-left:auto">Critical</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> S14 (May 18) DBP: Set1=17.5×8 (completed), Set2=17.5×0, Set3=17.5×0.</p><p><strong>Observe:</strong> Narrative outcome. If zero-rep guard removes Set2/3: rep% = 100% → onTarget. If no guard: rep% = 33% → underSignificant.</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>Either: (a) zero-rep sets counted → underSignificant narrative correctly flags incomplete session, OR (b) zero-rep guard active but the system additionally checks set completion rate (1/3 sets completed) and flags it separately. User does not receive "on target" feedback for a 1-of-3 session.</p></div><div class="verdict v-fail"><div class="label">Fail</div><p>Zero-rep guard removes Set2/3. Remaining Set1 = 8/8 = 100% → onTarget. User receives "Solid session" coaching text despite completing only one of three planned sets. The app is praising partial completion as success.</p></div></div></div>
+</div>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-D03</span><span class="sc-title">Lat Pulldown May 20 — 4th session, linear trend acknowledged</span><span class="badge b-yellow" style="margin-left:auto">Coaching Quality</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> S16 (May 20) Lat Pulldown 40kg×6/6. 4th session with slope ≈4.0 kg/wk.</p><p><strong>Observe:</strong> Does the narrative reference the sustained trend? trendKey should be "Build" or "Linear." historyKey = Normal (5 days since S13).</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>Narrative references steady progress: "You've been building consistently on this one." trendKey routes to a phrase that reflects sustained momentum, not just today's session. MomentumChipsCard on Progress shows Lat Pulldown as best mover.</p></div><div class="verdict v-fail"><div class="label">Fail</div><p>Narrative is generic per-session — same phrase that would fire on session 1. The cross-session trend is invisible to the coaching layer despite 4 clean data points showing 4.0 kg/wk improvement.</p></div></div></div>
+</div>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-D04</span><span class="sc-title">Voice tone audit — direct, dry, not cheerleader</span><span class="badge b-lav" style="margin-left:auto">Brand</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> Review 5 consecutive coaching narratives across different sessions.</p><p><strong>Observe:</strong> Does any narrative use: "Amazing!", "You're crushing it!", "Keep up the great work!", "Awesome session!" or similar cheerleader language?</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>Narratives use specific, data-referenced language: "You hit all 8 reps at 20 kg — weight increase ready." Non-generic specificity. No exclamation-point enthusiasm. No empty praise.</p></div><div class="verdict v-fail"><div class="label">Fail</div><p>Any narrative containing generic enthusiasm without data reference. Per DESIGN_SYSTEM.md Voice: "Specific, not generic ('Session 50. Half a hundred.' not 'Great job!')." The brand voice is the app's strongest differentiator — any cheerleader phrasing breaks the product identity.</p></div></div></div>
+</div>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-D05</span><span class="sc-title">Stall detection — Incline DB Press after 2 identical e1RM sessions</span><span class="badge b-orange" style="margin-left:auto">Analytics</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> S17 (May 21) Incline DB Press — 3rd session. Prior e1RM: May 13 ≈25kg/hand, May 21 ≈27.5kg/hand. (Plateau requires ≥3 sessions AND slope &lt;0.5 kg/wk over 4 wks.)</p><p><strong>Observe:</strong> Does the narrative mention the stall or suggest variation? Does PlateauRiskCard include Incline DB?</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>With only 3 sessions spanning 14 days, the 4-week plateau window isn't fully met. Plateau card correctly does NOT flag Incline DB yet. Narrative does not falsely alarm. But if stuckSessionCount is used (consecutive sessions at same weight ±2% where not all target reps hit), it may trigger a "consider variation" note on S17.</p></div><div class="verdict v-fail"><div class="label">Fail</div><p>Plateau card shows Incline DB as high-risk after only 3 sessions — false positive with insufficient data. OR: two identical e1RM sessions at exactly the same weight (May 13 = May 21 = 25kg/hand entered, but different rep counts) triggers stall logic incorrectly.</p></div></div></div>
+</div>
+
+<!-- CATEGORY: Analytics -->
+<h3>E · Analytics Accuracy</h3>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-E01</span><span class="sc-title">e1RM chart — Machine Shoulder Press does not show 0-value troughs</span><span class="badge b-red" style="margin-left:auto">Critical</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> Open Insights tab → Machine Shoulder Press → e1RM trend chart.</p><p><strong>Observe:</strong> Does the chart show data points at e1RM=0 for May 7 and May 12? Does the line dip to zero for these sessions?</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>Zero-rep sessions produce gaps in the trend line (no data point) rather than zero values. The chart interpolates across gaps or shows broken line. Valid sessions (May 1 ≈18kg, May 11 ≈31kg, May 19 ≈42kg) form a clean upward trend.</p></div><div class="verdict v-fail"><div class="label">Fail</div><p>Chart shows: May 1=18 → May 7=0 → May 11=31 → May 12=0 → May 19=42. The W-shaped trend with two zero troughs makes it impossible to assess real strength development. User sees a volatile graph and loses confidence in the analytics.</p></div></div></div>
+</div>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-E02</span><span class="sc-title">Overload scoreboard — baseline label is honest about timespan</span><span class="badge b-orange" style="margin-left:auto">Transparency</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> Open Progress tab → "Am I Getting Stronger" → Overload Scoreboard.</p><p><strong>Observe:</strong> What does the baseline label say? "vs 6 weeks ago" or "vs Apr 20" or something else?</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>Label reads "vs first session (Apr 20)" or "vs start of training" — acknowledging the 5.1-week actual span. Or: a footnote explains the &lt;6-week fallback. Deltas (e.g., +47% DBP) are contextualized by the honest timeframe.</p></div><div class="verdict v-fail"><div class="label">Fail</div><p>Label says "vs 6 weeks ago" when the actual baseline is Apr 20 (5.1 weeks). The user who checks their calendar knows this is wrong. An app built on data honesty cannot mislabel its own time windows.</p></div></div></div>
+</div>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-E03</span><span class="sc-title">EmergentInsights — none fire with empty prerequisite data</span><span class="badge b-orange" style="margin-left:auto">Data Honesty</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> Open Home EmergentInsight card. Review all insight states.</p><p><strong>Observe:</strong> Which insights show data vs. placeholder? mindBodyAlignment requires feelRating (has data). sleepPRCorrelation requires HealthKit sleep (no data). bodyWeightStrengthCorrelation requires weightHistory (empty array).</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>sleepPRCorrelation shows "Connect Apple Health to unlock sleep analysis." bodyWeightStrengthCorrelation shows "Add body weight readings over time to unlock." mindBodyAlignment fires correctly using feel ratings from S6, S8–S18. Placeholder states are specific about what's needed, not generic "collecting data."</p></div><div class="verdict v-fail"><div class="label">Fail</div><p>Any insight presents a correlation or trend with a specific number when the underlying data is an empty array. E.g., "Your strength improves 12% after good sleep" when sleepHours = nil. Or mindBodyAlignment shows a specific alignment state when recentFeel is empty (confirm: this user does have feelRating on most sessions).</p></div></div></div>
+</div>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-E04</span><span class="sc-title">Volume spike penalty — S16 readiness correctly depressed after S15 high volume</span><span class="badge b-yellow" style="margin-left:auto">Engine Accuracy</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> S15 (May 19) volume = 3015kg. S16 (May 20) should incur −10 penalty.</p><p><strong>Observe:</strong> S16 readiness score displayed. Expected: 68 + 8 (1d gap) − 10 (spike) − 8 (4th consecutive) ≈ 58.</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>S16 readiness shows in the 55–62 range. Lower than a plain 1-day gap (which would be 76). Coaching note references "big volume session yesterday" or "your body took on a lot yesterday — keep intensity in check today."</p></div><div class="verdict v-fail"><div class="label">Fail</div><p>S16 readiness = 76 (only 1d gap applied, spike ignored). User trained with 3015kg the day before and the app suggests a normal Moderate session with no fatigue acknowledgment. The largest single training stimulus in the dataset goes unrecognized.</p></div></div></div>
+</div>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-E05</span><span class="sc-title">Confidence level — correctly High from session 10 onward</span><span class="badge b-blue" style="margin-left:auto">Data Quality</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> Open app today (May 26, post-S18). 18 sessions in log.</p><p><strong>Observe:</strong> Confidence label in readiness card. Expected: High (≥10 sessions).</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>Confidence = "High". Score shown without tilde. MiniReadinessCard in Trainer (if accessible) shows "High" confidence with the correct color.</p></div><div class="verdict v-fail"><div class="label">Fail</div><p>Confidence still shows "Low" or "Medium" after 18 sessions, OR the confidence.color is incorrect (shows warning amber for High instead of sage/positive green).</p></div></div></div>
+</div>
+
+<!-- CATEGORY: Progress Tab UX -->
+<h3>F · Progress Tab UX</h3>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-F01</span><span class="sc-title">Section order — "Am I Getting Stronger" discoverable without scrolling</span><span class="badge b-orange" style="margin-left:auto">Information Architecture</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> Open Progress tab for the first time (default state). Observe without scrolling or expanding.</p><p><strong>Observe:</strong> What section is expanded? Can the user see overload scoreboard or momentum chips without any tap?</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>"Am I Getting Stronger" is either the first section (above "Where Am I") or is expanded by default. The overload scoreboard, the most actionable data at this stage, is visible on first open.</p></div><div class="verdict v-fail"><div class="label">Fail — confirmed by code</div><p><code>@State private var expandedWhere = true</code> and all others default false. Population percentile (interesting, not actionable for a beginner) is the first thing seen. The overload scoreboard, momentum chips, and plateau risk are all one tap away but entirely hidden on default open.</p></div></div></div>
+</div>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-F02</span><span class="sc-title">Same-day sessions visible as distinct entries in history</span><span class="badge b-yellow" style="margin-left:auto">Disambiguation</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> Open Progress tab → workout history section. Scroll to May 13.</p><p><strong>Observe:</strong> How are S12 and S13 displayed? Are they distinguishable without tapping into each?</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>History cards show a subtitle with primary exercises (e.g., "Lat Pulldown · Cable Row" vs "Incline DB Press · Low Row") and/or session time. Two "Hon's Routine" cards on the same date are visually distinct.</p></div><div class="verdict v-fail"><div class="label">Fail</div><p>Two cards: "Hon's Routine — May 13" and "Hon's Routine — May 13." Identical appearance. User cannot determine which session was which from the list view. History becomes unreliable for review.</p></div></div></div>
+</div>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-F03</span><span class="sc-title">7pt text in PlateauRiskCard — legibility on real device</span><span class="badge b-orange" style="margin-left:auto">Accessibility</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> Open Progress → "Am I Getting Stronger" → PlateauRiskCard. Read the "why" explanation text inside each 110pt-wide card.</p><p><strong>Observe:</strong> Can you read the text at arm's length without zooming? What font size is displayed?</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>"Why" text is ≥9pt and legible at normal reading distance. Text is not the primary information (the score number is) but the explanation is still readable.</p></div><div class="verdict v-fail"><div class="label">Fail — confirmed by code</div><p><code>.font(.system(size: 7))</code> in PlateauRiskCard "why" factors. On a 3x retina device this renders at 7 logical points — approximately 2.3mm tall. Standard reading distance of 30–40cm makes this unreadable without zooming. Apple HIG minimum for body text: 11pt.</p></div></div></div>
+</div>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-F04</span><span class="sc-title">Tier label consistency — same terminology across all cards</span><span class="badge b-yellow" style="margin-left:auto">Design Coherence</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> Open Progress tab. Compare tier labels across: TierProgressBar, PopulationPercentileCard, StrengthRetentionRingsCard, Insights tab tier display.</p><p><strong>Observe:</strong> Does any screen say "Beg" while another says "Novice" for the same tier?</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>All tier displays use a single consistent vocabulary: either {Novice, Intermediate, Advanced, Elite} or {Beginner, Intermediate, Advanced, Elite}. No mixing of abbreviated and full forms.</p></div><div class="verdict v-fail"><div class="label">Fail — confirmed by code review</div><p>TierProgressBar uses "Beg/Int/Adv/Elite" (mixed abbreviation). PopulationPercentileCard uses "Novice/Intermediate/Advanced/Elite." Two different conceptual vocabularies for the same scale in the same tab. User at "Int" in one card questions whether that's the same as "Intermediate" in the other.</p></div></div></div>
+</div>
+
+<!-- CATEGORY: Design System -->
+<h3>G · Design System &amp; Visual Language</h3>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-G01</span><span class="sc-title">Amber collision — PRs and caution warnings are visually identical</span><span class="badge b-yellow" style="margin-left:auto">Semantic Clarity</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> Find a session that has both a PR indicator and an INOL moderate-intensity indicator in the same view.</p><p><strong>Observe:</strong> HONTheme.accent (PR) vs HONTheme.warning (moderate intensity) — are they visually distinguishable?</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>Shape, icon, or label differentiates PR elements from warning elements, even if both use amber. A user can tell at a glance which amber element represents a positive achievement vs. a load caution.</p></div><div class="verdict v-fail"><div class="label">Fail — documented in DESIGN_SYSTEM.md</div><p>HONTheme.accent = HONTheme.warning = amber #D4943A. Two semantically opposite signals share the exact same color. DESIGN_SYSTEM.md acknowledges this: "accent — Highlights, PRs, primary actions — Amber (same as warning)." The fact that it's documented doesn't make it correct — it means the problem is known and accepted rather than fixed.</p></div></div></div>
+</div>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-G02</span><span class="sc-title">ExpandableChartCard — tap affordance is discoverable</span><span class="badge b-blue" style="margin-left:auto">Discoverability</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> Show the Progress tab to a new user who has not been told about expandable charts.</p><p><strong>Observe:</strong> Do they discover the tap-to-expand behavior within 30 seconds? What visual cue draws their attention?</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>The 10pt expand icon, while small, is accompanied by a subtle animation or is positioned in a standard "expand" corner location that users recognize from other apps. Or a "Tap to expand" hint text appears on first view.</p></div><div class="verdict v-fail"><div class="label">Fail</div><p>New user views multiple chart cards and treats them as static graphics. The 10pt tertiary-color expand icon is not noticed. Full-screen detail view — which may contain the most legible version of the data — goes undiscovered. The content shape (Rectangle()) tap zone works mechanically but has no visual affordance.</p></div></div></div>
+</div>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-G03</span><span class="sc-title">Exercise name truncation — identity preserved at 10-char limit</span><span class="badge b-yellow" style="margin-left:auto">Readability</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> Open the StrengthRetentionRingsCard (if visible in Progress). Identify ring labels for the user's exercises.</p><p><strong>Observe:</strong> Are any exercise names ambiguous at 10 characters? "Dumbbell B" vs "Dumbbell Bi" (Bench vs Bicep Curl)?</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>All exercise names in the user's log are uniquely identifiable at 10 characters. "Incline DB" (10 chars) is clear. "Lat Pulldo" might be ambiguous but is the only pulldown variant logged. Context makes identification possible even if not ideal.</p></div><div class="verdict v-fail"><div class="label">Fail</div><p>"Dumbbell B" could be Dumbbell Bench or Dumbbell Bicep Curl (if both logged). The truncation algorithm cuts at character count without checking for disambiguation. An exercise name displayed as "Machine Sh" for both Machine Shoulder Press and Machine Shrug would be indistinguishable.</p></div></div></div>
+</div>
+
+<!-- CATEGORY: Return & Retention -->
+<h3>H · Return &amp; Retention</h3>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-H01</span><span class="sc-title">Session 10 milestone — HONHabitEngine fires a confidence acknowledgment</span><span class="badge b-lav" style="margin-left:auto">Retention</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> Completing S10 (May 11). totalSessions crosses from 9 to 10. Confidence transitions from Medium to High.</p><p><strong>Observe:</strong> Does HONHabitEngine.onSessionLogged() produce a milestone message? Does the Home tab show any acknowledgment?</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>In-app banner or coaching note references the milestone: "10 sessions in — your data is now reliable enough to track real trends." Per brand voice: specific, not cheerleader. Not "Congratulations on 10 sessions!" — but something that conveys the data quality improvement.</p></div><div class="verdict v-fail"><div class="label">Fail</div><p>Session 10 is indistinguishable from session 9. No milestone acknowledgment. The confidence transition from Medium to High — which has real implications for score reliability — goes unannounced. A retention moment is missed.</p></div></div></div>
+</div>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-H02</span><span class="sc-title">HONHabitEngine drift — after 5 days, message is shame-free</span><span class="badge b-red" style="margin-left:auto">Brand Critical</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> App opened on May 26 after 5-day gap. HONPatternEngine.isDrifting() has had opportunity to fire on each of May 22–25.</p><p><strong>Observe:</strong> Is there a drift detection message? What does it say?</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>Message (if shown) says something like "Your body had time to rest. Ready when you are." or "5 days since your last session — perfect window for a fresh start." No mention of streak loss, no implicit guilt about the gap.</p></div><div class="verdict v-fail"><div class="label">Fail</div><p>Message says "You haven't trained in 5 days — your streak is at risk" or "You're losing your momentum." Any framing that treats rest as failure violates the core USER_RESEARCH.md principle and the brand identity. This is the strongest single test of product integrity.</p></div></div></div>
+</div>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-H03</span><span class="sc-title">PR banner — fires at the right moment during active workout</span><span class="badge b-sage" style="margin-left:auto">Delight</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> Log a set with e1RM exceeding all prior history for that exercise. Expected: DBP May 11 (e1RM ≈25.3kg/hand) exceeds Apr 27 (≈21.9kg/hand).</p><p><strong>Observe:</strong> Does the PR banner appear? Is the exercise name correct? Does the accessibility announcement fire?</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>Banner appears with "🏆 New PR — Dumbbell Bench Press!" text. UIAccessibility.post announcement fires. Banner auto-dismisses after 3 seconds. prevBest guard correctly prevents false PR on session 1 (prevBest = 0 → no banner).</p></div><div class="verdict v-fail"><div class="label">Fail</div><p>PR banner fires when prevBest = 0 (from a zero-rep session contributing e1RM=0 to history). Any session with a valid rep count would then "set a PR" on the first valid attempt — a false positive. Or banner doesn't appear when a genuine e1RM PR is set.</p></div></div></div>
+</div>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-H04</span><span class="sc-title">HealthKit not connected — app functions fully and honestly</span><span class="badge b-blue" style="margin-left:auto">Graceful Degradation</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> health.isAuthorized = false (this user's state).</p><p><strong>Observe:</strong> Are any features broken, misleading, or silently degraded? Does readiness score still work? Do insight cards explain their data requirements?</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>Readiness score computes with training-data-only modifiers (no sleep/HRV/RHR). Score is valid but reflects only ~50% of potential modifier surface. Insight cards that need HealthKit show "Connect Apple Health to unlock [specific feature]" — specific, not generic. No features crash or show blank states without explanation.</p></div><div class="verdict v-fail"><div class="label">Fail</div><p>An insight card shows a specific number derived from HealthKit data when HealthKit is not authorized. Or a card shows as blank/empty with no explanation. Or the readiness card includes HealthKit-derived modifiers (HRV, RHR, sleep) that are actually nil/0, silently depressing the score.</p></div></div></div>
+</div>
+
+<div class="scenario">
+<div class="sc-head"><span class="sc-id">S-H05</span><span class="sc-title">Muscle Mass % — displayed value matches what the user can expect</span><span class="badge b-red" style="margin-left:auto">Data Integrity</span></div>
+<div class="sc-body"><p><strong>Trigger:</strong> Open Settings. Observe "Muscle Mass %" field.</p><p><strong>Observe:</strong> What value is displayed? Is 79.85% shown? Is there any label explaining this is lean body mass, not skeletal muscle?</p><div class="sc-grid"><div class="verdict v-pass"><div class="label">Pass</div><p>Field is labeled "Lean Body Mass %" or "Lean Mass %." Placeholder says "e.g. 80" (reflecting lean mass norm) not "e.g. 40" (reflecting skeletal muscle norm). Footer explains the distinction. Or: the value 79.85 is flagged as outside normal range with an inline explanation.</p></div><div class="verdict v-fail"><div class="label">Fail</div><p>Field shows "Muscle Mass: 79.9%" with no clarification. The placeholder "e.g. 40" contradicts the stored value. Any display of "79.9% muscle mass" in any screen — Settings, analytics, insights — presents anatomically impossible data as fact to the user.</p></div></div></div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="scorecard">07 · Day-Level Consultant Scorecard</h2>
+<p>Graded on: <strong>Value Delivered</strong> (did the app add value this session?), <strong>Coaching Grade</strong> (A=excellent, F=harmful), <strong>Key Moment</strong> (what mattered most), <strong>Missed Opportunity</strong>.</p>
+
+<div class="table-wrap">
+<table class="day-row">
+<thead>
+<tr>
+<th>#</th><th>Date</th><th>Feel</th><th>Value<br>Delivered</th><th>Coach<br>Grade</th><th>Key Moment</th><th>Missed Opportunity</th><th>What a Great Coach Would Say</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>S1</strong></td><td>Apr 20<br><span style="color:var(--muted)">Day 1</span></td><td class="c-muted">—</td>
+<td><span class="badge b-yellow">Medium</span></td><td><span class="grade-C">C</span></td>
+<td>First session ever. Readiness ≈46 displayed. historyKey="First Time" fires on all exercises. Zero-rep on DB Shoulder Press Set2 — engine's first data quality test.</td>
+<td>Readiness score of 46 on day 1 could feel discouraging. The coaching note must contextualize this as a data-estimation state, not a verdict on fitness. ReadinessPromptCard appears but is bypassable.</td>
+<td>"First session logged. Your readiness estimate is just that — an estimate. Train today and give us something to measure against."</td>
+</tr>
+<tr>
+<td><strong>S2</strong></td><td>Apr 21<br><span style="color:var(--muted)">Day 2</span></td><td class="c-muted">—</td>
+<td><span class="badge b-yellow">Medium</span></td><td><span class="grade-C">C</span></td>
+<td>Readiness ≈68 (1d gap +8). Leg day after a push day — split is correct. Barbell Squat 40kg × 8. No data quality issues. Good clean session.</td>
+<td>Second session — still only 2 total, no pattern yet. The app has very little to offer beyond basic set logging. No trend, no comparison, no meaningful insight. Value is in the logging infrastructure, not in coaching intelligence yet.</td>
+<td>"Legs after push — good rotation. 40 kg squat for 8 reps. That's your baseline. We'll check back in a few weeks."</td>
+</tr>
+<tr>
+<td><strong>S3</strong></td><td>Apr 23<br><span style="color:var(--muted)">Day 4</span></td><td class="c-muted">—</td>
+<td><span class="badge b-green">High</span></td><td><span class="grade-B">B</span></td>
+<td>Confidence transitions to Medium. 2-day gap = +12 modifier → readiness ≈80 (highest so far). Pull day. 3rd session milestone — analytics can begin.</td>
+<td>Confidence transition to Medium is not communicated. A user who has been seeing "Low confidence" and now sees "Medium" deserves an acknowledgment that the app's data quality just improved.</td>
+<td>"Three sessions in — confidence is now Medium. Your numbers are starting to mean something."</td>
+</tr>
+<tr>
+<td><strong>S4</strong></td><td>Apr 27<br><span style="color:var(--muted)">Day 8</span></td><td class="c-muted">Normal</td>
+<td><span class="badge b-yellow">Medium</span></td><td><span class="grade-C">C</span></td>
+<td>4-day gap. Readiness ≈64. DBP 17.5kg×8 again (same as S1). Engine should detect: same weight, same reps, same exercise as S1 → no weight change. historyKey = "Normal" (7 days). WeightState = held.</td>
+<td>DBP is now in its 2nd session. The engine could note "Same weight as last time — want to try 20 today?" A nudge toward progressive overload at this stage is more valuable than a generic session note. The beginner mode should be more assertive about small increments.</td>
+<td>"Same weight as your first session. That's fine — let's lock in the reps first. When you can hit 3×10 comfortably, we add 2.5 kg."</td>
+</tr>
+<tr>
+<td><strong>S5</strong></td><td>Apr 28<br><span style="color:var(--muted)">Day 9</span></td><td class="c-muted">Normal</td>
+<td><span class="badge b-green">High</span></td><td><span class="grade-B">B</span></td>
+<td>Barbell Squat 60kg × 8 (up from 40kg in S2). Significant jump. This is a genuine PR for squat. PR banner should fire. e1RM: 60×(1+8/30) = 76kg. Previous: 40×1.267 = 50.7kg. PR confirmed.</td>
+<td>If PR banner fires, it's a high-value retention moment. If it doesn't fire (bug) or if the banner text is generic ("New PR!") without the specific weight, the moment is diluted. The brand requires specificity: "76 kg estimated 1RM — up from 51 kg two weeks ago."</td>
+<td>"76 kg estimated max on squat — 25% above your baseline session. Linear strength gains are real in the first months. Enjoy this phase."</td>
+</tr>
+<tr>
+<td><strong>S6</strong></td><td>Apr 29<br><span style="color:var(--muted)">Day 10</span></td><td class="c-red">Tired</td>
+<td><span class="badge b-yellow">Medium</span></td><td><span class="grade-D">D</span></td>
+<td>3rd consecutive day. feel=Tired. Lat Pulldown first session (historyKey="First Time"). Many incomplete sets. Readiness ≈68 but should feel lower.</td>
+<td>The engine doesn't apply consecutive penalty until day 4. Day 3 at readiness=68 with feel=Tired is a coaching contradiction. The coaching note should acknowledge "You've trained 3 days straight and are feeling it." Instead, the score suggests a normal day. The gap between engine and user experience is at its widest here.</td>
+<td>"Third day in a row and you're feeling it — that tracks. Light effort today is still progress. Lat Pulldown is new; focus on feel, not numbers."</td>
+</tr>
+<tr>
+<td><strong>S7</strong></td><td>May 1<br><span style="color:var(--muted)">Day 12</span></td><td class="c-muted">Normal</td>
+<td><span class="badge b-green">High</span></td><td><span class="grade-C">C</span></td>
+<td>2-day gap. Readiness ≈72. DBP 3rd session (historyKey="Normal"). DBP now has trend data. Chest Press Machine first session — 0 reps Set1, then valid sets. Data quality event.</td>
+<td>DBP is in its 3rd session — the app can now say something about trend. If DBP e1RM is rising (Apr 20 ≈22kg/hand → Apr 27 ≈22kg/hand → May 1 ≈?), the trend is flat for 2 sessions. This warrants a "weight increase ready?" suggestion.</td>
+<td>"Three DBP sessions logged. You've been at 17.5 kg for two straight — same weight, same reps. Your next session, try 20 kg."</td>
+</tr>
+<tr>
+<td><strong>S8</strong></td><td>May 6<br><span style="color:var(--muted)">Day 17</span></td><td class="c-green">Strong</td>
+<td><span class="badge b-green">High</span></td><td><span class="grade-B">B</span></td>
+<td>5-day gap. Readiness ≈64 (moderate). feel=Strong. Lat Pulldown 35kg×6 (up from 30kg×6 in S6). PR on Lat Pulldown: e1RM 36→42kg. Clean progression.</td>
+<td>The 5-day gap return is a critical brand moment. Coaching must not penalize the rest. Lat Pulldown PR is real and should be highlighted. The user who feels Strong and delivers a PR after rest should be affirmed — but specifically, not generically.</td>
+<td>"Back after 5 days — and you set a new Lat Pulldown mark: 42 kg estimated max, up from 36 kg. Rest working as intended."</td>
+</tr>
+<tr>
+<td><strong>S9</strong></td><td>May 7<br><span style="color:var(--muted)">Day 18</span></td><td class="c-green">Strong</td>
+<td><span class="badge b-red">Negative</span></td><td><span class="grade-F">F</span></td>
+<td>Machine Shoulder Press — 3 sets × 10kg × 0 reps, all completed. feel=Strong. This session's MSP data is entirely invalid. If the engine handles this incorrectly, it sets wrong targets for S10 and delivers a misleading narrative.</td>
+<td>This is the most important failure scenario in the dataset. 3 zero-rep completed sets produce e1RM=0, wrong targets (10kg pre-filled for S10), and a narrative that either praises a 0-rep session or is deeply confused. If the narrative fires "Great session — you're improving!" on a 0-rep exercise, trust is broken permanently.</td>
+<td>"Something went wrong with Machine Shoulder Press — three sets logged at 0 reps. Log it as skipped or enter your actual numbers. We'll hold this session's data until you confirm."</td>
+</tr>
+<tr>
+<td><strong>S10</strong></td><td>May 11<br><span style="color:var(--muted)">Day 22</span></td><td class="c-green">Strong</td>
+<td><span class="badge b-yellow">Medium</span></td><td><span class="grade-C">C</span></td>
+<td>10th session — Confidence crosses to High. MSP target pre-filled at 10kg (from zero-rep S9). User enters 20kg × 8/8/6. WeightState = userIncreasedHit. DBP 20kg×8 — genuine improvement.</td>
+<td>Session 10 milestone missed. MSP's 20kg actual vs 10kg target is a 2× jump being celebrated as progressive overload when it's a correction of bad data. DBP at 20kg is the genuine story here — the user increased their actual working weight from 17.5kg.</td>
+<td>"10 sessions. Your data is now telling a real story. DBP: you moved to 20 kg and hit 3 clean sets — that's the progression we've been building toward."</td>
+</tr>
+<tr>
+<td><strong>S11</strong></td><td>May 12<br><span style="color:var(--muted)">Day 23</span></td><td class="c-green">Strong</td>
+<td><span class="badge b-yellow">Medium</span></td><td><span class="grade-D">D</span></td>
+<td>MSP all-zero again (15kg × 0 × 2). OHP at 0kg (floored to 20kg). Consecutive day 4 → −8 penalty applies. Readiness should be ≈68 (1d +8, consecutive-4 −8).</td>
+<td>MSP zero-reps again after zero-reps in S9. The deload trigger requires 2 consecutive sessions &lt;65% reps. S9=0% and S11=0% on MSP — this SHOULD trigger needsDeload=true for MSP. If it doesn't, the consecutive 0-rep problem is masked. If it does, the user gets a deload recommendation for an exercise they may have simply been logging incorrectly.</td>
+<td>"Machine Shoulder Press has zero reps in two sessions. We need to resolve this — either there's a logging issue, or this weight genuinely isn't working and needs a reset."</td>
+</tr>
+<tr>
+<td><strong>S12</strong></td><td>May 13<br><span style="color:var(--muted)">Day 24</span></td><td class="c-red">Tired</td>
+<td><span class="badge b-yellow">Medium</span></td><td><span class="grade-C">C</span></td>
+<td>5th consecutive day. feel=Tired. Consecutive penalty −14 fires. Readiness ≈62. Lat Pulldown 37.5kg×6 (3rd session, progression continues). Pull day — appropriate after MSP/OHP.</td>
+<td>5 consecutive days with feel=Tired is a clear fatigue signal the engine should surface prominently. Readiness ≈62 is in the moderate range — the coaching note must not encourage high effort. Lat Pulldown progression is the positive story but should come with a "light session today" framing.</td>
+<td>"Day 5 in a row and you're feeling it. Lat Pulldown is progressing well — 37.5 kg, up from 35 kg. Do your sets and call it today."</td>
+</tr>
+<tr>
+<td><strong>S13</strong></td><td>May 13<br><span style="color:var(--muted)">Day 24</span></td><td class="c-green">Strong</td>
+<td><span class="badge b-yellow">Medium</span></td><td><span class="grade-C">C</span></td>
+<td>Same-day second session. feel=Strong despite S12 feel=Tired. Incline DB 2nd session. Same-day gap (0 days) — readiness calculation for back-to-back sessions within one day is ambiguous.</td>
+<td>Two sessions on the same day with conflicting feel states is a product edge case. If the readiness for S13 doesn't account for the intra-day fatigue from S12, the engine is only looking at calendar-day gaps. The same-day pattern deserves specific handling: "Second session today — keep it controlled."</td>
+<td>"Two sessions in one day. Whatever you're running on, keep it crisp — this one counts, but don't push the edge."</td>
+</tr>
+<tr>
+<td><strong>S14</strong></td><td>May 18<br><span style="color:var(--muted)">Day 29</span></td><td class="c-muted">Normal</td>
+<td><span class="badge b-red">Negative</span></td><td><span class="grade-F">F</span></td>
+<td>DBP: 17.5×8 (hit), 17.5×0 (zero), 17.5×0 (zero). 5-day gap since S13. Readiness ≈64. This is the definitive zero-rep narrative test — the engine's verdict on this session defines its trustworthiness.</td>
+<td>If the narrative says "Solid session" for a 1-of-3 set completion, the coaching engine fails its core promise. If it says "Incomplete — only one of three sets done," it succeeds. The result hinges entirely on whether zero-rep sets are counted. This is the most consequential single test in the entire dataset.</td>
+<td>"One of three sets completed. The other two were logged at 0 reps. That's a significant signal — was this fatigue, discomfort, or a logging error? Next session at 17.5 kg to confirm."</td>
+</tr>
+<tr>
+<td><strong>S15</strong></td><td>May 19<br><span style="color:var(--muted)">Day 30</span></td><td class="c-green">Strong</td>
+<td><span class="badge b-green">High</span></td><td><span class="grade-B">B</span></td>
+<td>Highest volume session: 3015kg. Smith Machine Squat, RDL, Leg Press, MSP. MSP 30kg×12 — finally a valid, high-rep session. Volume spike flag should set for S16.</td>
+<td>MSP at 30kg×12 with target=15kg (from 0-rep history) is being celebrated as a 2× weight jump. The real story is: this is the first valid MSP session since May 1. The narrative should acknowledge the recovery from data issues, not just celebrate the "increase."</td>
+<td>"3015 kg total volume — your biggest session yet. Machine Shoulder Press finally clicked at 30 kg. This is the baseline. Note it."</td>
+</tr>
+<tr>
+<td><strong>S16</strong></td><td>May 20<br><span style="color:var(--muted)">Day 31</span></td><td class="c-green">Strong</td>
+<td><span class="badge b-green">High</span></td><td><span class="grade-B">B</span></td>
+<td>Lat Pulldown 40kg×6 (4th session, slope ≈4 kg/wk). Volume spike penalty from S15 should apply. Consecutive day 4 → −8. Expected readiness ≈58.</td>
+<td>If readiness correctly shows ≈58, the coaching note should reference both the volume spike from S15 and the consecutive-day fatigue. Lat Pulldown is now clearly the user's best-progressing exercise — MomentumChipsCard should show it as best mover. If it does: excellent. If not: the most visible analytics win is missed.</td>
+<td>"40 kg on Lat Pulldown — four sessions, four improvements. That's the cleanest progression in your log. Your readiness is lower today after yesterday's volume — smart to go to the pull exercises."</td>
+</tr>
+<tr>
+<td><strong>S17</strong></td><td>May 21<br><span style="color:var(--muted)">Day 32</span></td><td class="c-green">Strong</td>
+<td><span class="badge b-yellow">Medium</span></td><td><span class="grade-C">C</span></td>
+<td>Incline DB 3rd session, 25kg×3. Short session (3 sets only). Consecutive day 5 → −14 penalty. Readiness ≈62.</td>
+<td>3 sets and done. The session feels abbreviated. Was this intentional? The narrative should note the short session without judgment. The Incline DB stall signal (if e1RM hasn't improved) should be surfacing around now — 3 sessions is the minimum for any trend assessment.</td>
+<td>"Three sets and out — sometimes that's the session. Incline DB is in its third week. We'll have a better read on your trajectory after one more data point."</td>
+</tr>
+<tr>
+<td><strong>S18</strong></td><td>May 21<br><span style="color:var(--muted)">Day 32</span></td><td class="c-muted">Normal</td>
+<td><span class="badge b-yellow">Low</span></td><td><span class="grade-D">D</span></td>
+<td>Assisted Pull-Up Machine. 2 sets, ≈1 minute. Second session of the day (after S17). effectiveLoad calculation is the most complex in the app. Volume stored as 800kg doesn't match any formula.</td>
+<td>The 1-minute session duration and the volume discrepancy (800kg stored, neither raw nor effective-load calculation matches) suggest this session was logged retrospectively or with incorrect data. No coaching narrative would be appropriate here without first confirming the data is valid. The app should flag the duration anomaly.</td>
+<td>"2 sets on the assisted pull-up machine. Effective load: 52 kg and 57 kg. Short session — but the data is in. Come back with a full set of these next time."</td>
+</tr>
+<tr style="background:rgba(212,148,58,.04)">
+<td><strong>Today</strong></td><td>May 26<br><span style="color:var(--muted)">Day 37</span></td><td class="c-muted">TBD</td>
+<td><span class="badge b-blue">Evaluate now</span></td><td><span class="badge b-blue">Live test</span></td>
+<td>5-day rest. Expected readiness ≈69 (Moderate). recentlyTrainedRegions from S17 (chest) + S18 (back) → plan should route to Legs. HONHabitEngine drift message may be showing. Lat Pulldown is the clear best-mover story.</td>
+<td>The return-from-rest experience is the most important moment for retention. If today's app open produces a shame-free welcome back, accurate readiness (≈69), a Legs-focused workout plan, and a Lat Pulldown trend story — the app delivers on its promise. If any of these fail, the product breaks at its most critical retention point.</td>
+<td>"Day 37. Five days off — your pattern this month has been bursts of 3–4 days with recovery windows. That's working. Today, Legs are fresh. Readiness is moderate. Lat Pulldown on your next pull day — we're watching that one."</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="systemic">08 · Systemic Findings</h2>
+<div class="grid2">
+<div>
+<h3>What the App Gets Right</h3>
+<div class="verdict v-pass"><div class="label">Data architecture</div><p>SeedStore with background analytics, token-based debouncing, and HomeCache pre-computation is correctly designed. Performance caches avoid per-render log scans. The isLoaded gate prevents mid-state flash. These are production-quality patterns.</p></div>
+<div class="verdict v-pass"><div class="label">Strength scoring sophistication</div><p>PCSA-weighted composites, allometric scaling, physiological decay model with a 14-day no-decay window, OLS regression for slopes — the analytics engine is methodologically correct and science-cited. For a user who grows into the app, this is a genuine differentiator.</p></div>
+<div class="verdict v-pass"><div class="label">PR detection guard</div><p><code>prevBest &gt; 0</code> prevents false PRs on first sessions. The PR banner with accessibility announcement is a well-implemented delight moment.</p></div>
+<div class="verdict v-pass"><div class="label">FeelSelectorSheet uses interactiveDismissDisabled</div><p>Per AD-008, the feel rating at session end requires explicit action. This is the correct UX pattern. It contrasts badly with ReadinessPromptCard, which uses an inline card that disappears — the inconsistency suggests ReadinessPromptCard was added later without applying the established pattern.</p></div>
+<div class="verdict v-pass"><div class="label">Shame-free return framing in USER_RESEARCH.md</div><p>The design principle "Never punish gaps — the return is celebrated, not the streak" is explicitly documented and correctly reflected in ReadinessEngine gap modifiers (5-day gap = −4, not catastrophic). The brand intention is right. The execution needs verification.</p></div>
+</div>
+<div>
+<h3>What Needs Work</h3>
+<div class="verdict v-fail"><div class="label">Zero-rep completed sets — root cause unfixed</div><p>10 zero-rep completed sets across 6 sessions. No UI validation prevents this. The fix is a single guard in the complete-set action: if reps == 0, show "Did you mean to skip this set?" before isCompleted = true. This single fix resolves A-01, B-01, B-02, B-03, D-02, D-06.</p></div>
+<div class="verdict v-fail"><div class="label">ReadinessPromptCard bypass — architectural mismatch</div><p>The prompt disappears after the first set. 0/18 captures. The fix: convert ReadinessPromptCard to a sheet with .interactiveDismissDisabled(true), matching FeelSelectorSheet. This is a 1-hour fix with outsized impact on engine personalization.</p></div>
+<div class="verdict v-fail"><div class="label">WorkoutPlanEngine randomization — no seed</div><p>Plans change on every render. Fix: seed with date (Calendar.current.dateComponents of today) so plans are stable per day. A user's "today's plan" should mean something for the whole day.</p></div>
+<div class="verdict v-warn"><div class="label">muscleMassPercent mislabeled and out-of-range</div><p>Fix: rename field to "Lean Body Mass %" and update placeholder to "e.g. 78–82" (realistic lean mass range). Add a footer note: "Lean body mass = 100% − body fat %. This differs from skeletal muscle mass (~40–50% of body weight)."</p></div>
+<div class="verdict v-warn"><div class="label">Progress tab section ordering</div><p>Fix: set expandedStrong = true by default and expandedWhere = false. The most actionable data ("Am I Getting Stronger") should be the first thing a returning user sees. Population percentile is interesting but not decision-relevant for a 18-session user.</p></div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="priority">09 · Priority Matrix</h2>
+<div class="px-matrix">
+<div class="table-wrap">
+<table>
+<thead><tr><th>ID</th><th>Finding</th><th>Impact</th><th>Fix Complexity</th><th>Priority</th></tr></thead>
+<tbody>
+<tr><td>P1</td><td>Zero-rep sets accepted as completed — flows into all analytics</td><td><span class="badge b-red">Critical — 6 scenarios</span></td><td><span class="badge b-green">Low — 1 UI guard</span></td><td><span class="grade-A">P0</span></td></tr>
+<tr><td>P2</td><td>ReadinessPromptCard bypassed — 0/18 captures</td><td><span class="badge b-red">Critical — personalisation disabled</span></td><td><span class="badge b-green">Low — use sheet pattern</span></td><td><span class="grade-A">P0</span></td></tr>
+<tr><td>P3</td><td>WorkoutPlanEngine randomElement() — plan changes every render</td><td><span class="badge b-orange">High — breaks planning promise</span></td><td><span class="badge b-green">Low — seed with date</span></td><td><span class="grade-B">P1</span></td></tr>
+<tr><td>P4</td><td>TrainerTabView not mounted in main nav — feature inaccessible</td><td><span class="badge b-orange">High — missing feature</span></td><td><span class="badge b-yellow">Medium — tab restructure</span></td><td><span class="grade-B">P1</span></td></tr>
+<tr><td>P5</td><td>Progress section ordering — actionable data starts collapsed</td><td><span class="badge b-orange">High — discovery failure</span></td><td><span class="badge b-green">Low — flip one @State default</span></td><td><span class="grade-B">P1</span></td></tr>
+<tr><td>P6</td><td>e1RM chart plots 0-value for zero-rep sessions</td><td><span class="badge b-orange">High — misleading trend</span></td><td><span class="badge b-yellow">Medium — filter in analytics</span></td><td><span class="grade-B">P1</span></td></tr>
+<tr><td>P7</td><td>muscleMassPercent labeled as "Muscle Mass" (79.85% stored)</td><td><span class="badge b-yellow">Medium — data trust</span></td><td><span class="badge b-green">Low — relabel field</span></td><td><span class="grade-C">P2</span></td></tr>
+<tr><td>P8</td><td>Overload scoreboard says "6 weeks ago" when data is 5.1 weeks</td><td><span class="badge b-yellow">Medium — data honesty</span></td><td><span class="badge b-green">Low — conditional label</span></td><td><span class="grade-C">P2</span></td></tr>
+<tr><td>P9</td><td>7pt text in PlateauRiskCard — below legible threshold</td><td><span class="badge b-yellow">Medium — accessibility</span></td><td><span class="badge b-green">Low — increase font size</span></td><td><span class="grade-C">P2</span></td></tr>
+<tr><td>P10</td><td>Dumbbell weight convention not communicated (per-hand vs total)</td><td><span class="badge b-yellow">Medium — mental model</span></td><td><span class="badge b-green">Low — add field label</span></td><td><span class="grade-C">P2</span></td></tr>
+<tr><td>P11</td><td>Session 10 milestone not acknowledged</td><td><span class="badge b-blue">Low — retention moment</span></td><td><span class="badge b-green">Low — HONHabitEngine rule</span></td><td><span class="grade-C">P2</span></td></tr>
+<tr><td>P12</td><td>Tier label inconsistency (Beg vs Novice)</td><td><span class="badge b-blue">Low — design coherence</span></td><td><span class="badge b-green">Low — standardize vocabulary</span></td><td><span class="grade-D">P3</span></td></tr>
+<tr><td>P13</td><td>HONTheme.accent = HONTheme.warning (amber collision)</td><td><span class="badge b-blue">Low — semantic clarity</span></td><td><span class="badge b-orange">High — color system change</span></td><td><span class="grade-D">P3</span></td></tr>
+<tr><td>P14</td><td>Exercise name truncated to 10 chars in rings card</td><td><span class="badge b-blue">Low — readability</span></td><td><span class="badge b-yellow">Medium — layout change</span></td><td><span class="grade-D">P3</span></td></tr>
+<tr><td>P15</td><td>ExpandableChartCard expand affordance not visible enough</td><td><span class="badge b-blue">Low — discoverability</span></td><td><span class="badge b-green">Low — icon size + label</span></td><td><span class="grade-D">P3</span></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<footer>H.O.N. Consultant Audit · 2026-05-26 · 18 sessions · 40 scenarios · 9 sections · Branch: claude/workout-app-code-review-QI5zm</footer>
+</div><!-- end page -->
+</body>
+</html>
