@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H.O.N. Audit Approach — 2026-05-26</title>
+<style>
+:root {
+  --bg:#0f0f11;--s1:#1a1a1e;--s2:#222228;--s3:#2a2a32;
+  --border:#2e2e36;--border2:#383842;
+  --text:#e8e8ee;--muted:#888896;--dim:#444450;
+  --amber:#D4943A;--sage:#7BAF85;--rose:#C26B6B;
+  --slate:#6B85A0;--lav:#9B8EC4;
+  --red:#c25050;--orange:#c27830;--yellow:#b8882a;
+  --blue:#5080c0;--green:#4a9a5a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,'SF Pro Text','Helvetica Neue',sans-serif;font-size:14px;line-height:1.7}
+.page{max-width:1200px;margin:0 auto;padding:48px 28px}
+
+h1{font-size:28px;font-weight:700;letter-spacing:-.4px;color:var(--amber)}
+h2{font-size:17px;font-weight:700;color:var(--text);margin:52px 0 18px;padding-bottom:10px;border-bottom:1px solid var(--border);letter-spacing:-.2px}
+h3{font-size:14px;font-weight:700;color:var(--amber);margin:28px 0 10px;text-transform:uppercase;letter-spacing:.8px}
+h4{font-size:13px;font-weight:600;color:var(--text);margin:18px 0 8px}
+p{color:var(--muted);margin-bottom:10px;line-height:1.8}
+strong{color:var(--text)}
+em{color:var(--muted);font-style:italic}
+code{background:var(--s2);color:var(--sage);padding:1px 5px;border-radius:4px;font-size:12px;font-family:'SF Mono','Fira Code',monospace}
+ul{list-style:none;padding:0}
+li{padding:5px 0;border-bottom:1px solid var(--border);color:var(--muted)}
+li:last-child{border-bottom:none}
+li strong{color:var(--text)}
+
+.subtitle{color:var(--muted);font-size:13px;margin:6px 0 40px}
+.note{background:rgba(212,148,58,.07);border:1px solid rgba(212,148,58,.2);border-radius:8px;padding:13px 16px;font-size:13px;color:var(--text);margin:16px 0}
+.note strong{color:var(--amber)}
+
+/* Grid */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+@media(max-width:800px){.g2,.g3{grid-template-columns:1fr}}
+
+/* Cards */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:14px}
+.dim-card{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:20px}
+.dim-header{padding:16px 22px;background:var(--s2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px}
+.dim-num{font-size:22px;font-weight:800;color:var(--amber);width:30px;line-height:1}
+.dim-name{font-size:15px;font-weight:700}
+.dim-q{font-size:12px;color:var(--muted);margin-top:1px}
+.dim-body{padding:20px 22px}
+
+/* Question table */
+.table-wrap{overflow-x:auto;margin:14px 0}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{background:var(--s2);color:var(--muted);font-weight:600;text-align:left;padding:9px 12px;border-bottom:2px solid var(--border);white-space:nowrap;font-size:11px;letter-spacing:.5px;text-transform:uppercase}
+td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--muted)}
+tr:last-child td{border-bottom:none}
+tr:nth-child(even) td{background:rgba(255,255,255,.015)}
+td:first-child{color:var(--amber);font-family:'SF Mono',monospace;font-size:11px;white-space:nowrap}
+td strong{color:var(--text)}
+
+/* Data map */
+.field-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)}
+.field-row:last-child{border-bottom:none}
+.field-name{font-family:'SF Mono',monospace;font-size:12px;color:var(--sage);flex:0 0 180px}
+.field-capture{flex:0 0 120px}
+.field-note{font-size:12px;color:var(--muted);flex:1}
+
+/* Fill bars */
+.fill-bar{height:6px;border-radius:3px;background:var(--s3);overflow:hidden;width:100px;display:inline-block;vertical-align:middle;margin-right:6px}
+.fill-fill{height:100%;border-radius:3px}
+.fill-0{background:var(--red)}
+.fill-low{background:var(--orange)}
+.fill-mid{background:var(--yellow)}
+.fill-high{background:var(--sage)}
+.fill-full{background:var(--green)}
+
+/* Trigger tags */
+.tag{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;white-space:nowrap;margin:2px 2px 0 0}
+.tag-always{background:rgba(74,154,90,.15);color:var(--green)}
+.tag-gap{background:rgba(107,133,160,.15);color:var(--slate)}
+.tag-first{background:rgba(155,142,196,.15);color:var(--lav)}
+.tag-threshold{background:rgba(212,148,58,.12);color:var(--amber)}
+.tag-event{background:rgba(194,80,80,.15);color:var(--red)}
+.tag-data{background:rgba(184,136,42,.12);color:var(--yellow)}
+
+/* Session protocol rows */
+.proto-row{display:grid;grid-template-columns:80px 100px 1fr 1fr;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);align-items:start}
+.proto-row:last-child{border-bottom:none}
+.proto-session{font-family:'SF Mono',monospace;font-size:12px;color:var(--amber);font-weight:700}
+.proto-gate{font-size:11px;color:var(--muted)}
+.proto-checks{font-size:12px;color:var(--text)}
+.proto-watch{font-size:11px;color:var(--muted);font-style:italic}
+
+/* Verdict key */
+.verd{display:inline-flex;align-items:center;gap:6px;font-size:12px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0}
+.dot-pass{background:var(--green)}
+.dot-watch{background:var(--yellow)}
+.dot-fail{background:var(--red)}
+.dot-na{background:var(--dim)}
+
+/* Section anchor */
+a.anchor{color:inherit;text-decoration:none}
+
+hr{border:none;border-top:1px solid var(--border);margin:44px 0}
+footer{color:var(--dim);font-size:12px;text-align:center;margin-top:60px}
+
+/* Callout blocks */
+.callout{border-radius:0 8px 8px 0;padding:12px 16px;margin:12px 0;font-size:13px}
+.c-slate{background:rgba(107,133,160,.07);border-left:3px solid var(--slate)}
+.c-slate p{margin:0;color:var(--text)}
+.c-amber{background:rgba(212,148,58,.07);border-left:3px solid var(--amber)}
+.c-amber p{margin:0;color:var(--text)}
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>H.O.N. Audit Approach</h1>
+<p class="subtitle">A framework for evaluating the app — before any finding is written</p>
+
+<!-- ================================================================ -->
+<h2>What This Document Is</h2>
+
+<p>This is the audit plan. Not the findings. The plan tells us what questions to ask, in what order, under what conditions, and how to grade the answer. The audit runs those questions against real sessions and produces verdicts. Nothing in this document assumes a finding — it only defines the standards.</p>
+
+<div class="g2">
+<div class="callout c-amber">
+<p><strong>The central question of this audit:</strong> Does the app know what it knows, say what it means, and use what it has? Three failure modes exist: the app has data and ignores it, the app lacks data and pretends otherwise, or the app has data and interprets it incorrectly. The audit exists to find all three.</p>
+</div>
+<div class="callout c-slate">
+<p><strong>What the log is used for:</strong> The workout log establishes what data the app actually captures — the fill rate of every field. This tells us which audit questions are live (testable with real data) and which are structural (testable by attempting to produce data). It does not pre-determine findings.</p>
+</div>
+</div>
+
+<!-- ================================================================ -->
+<h2>The Data Map — What the App Tracks</h2>
+
+<p>Derived from 18 sessions, 149 sets. Every field that exists in the data model is listed with its actual capture rate. This is the ground truth for what can be tested.</p>
+
+<h3>Session-Level Fields</h3>
+<div class="card">
+<div class="field-row"><span class="field-name">startedAt / finishedAt</span><span class="field-capture"><div class="fill-bar"><div class="fill-fill fill-full" style="width:100%"></div></div>18/18</span><span class="field-note">Always captured. Duration is computable. Edge cases: same-day sessions, very short durations.</span></div>
+<div class="field-row"><span class="field-name">feelRating</span><span class="field-capture"><div class="fill-bar"><div class="fill-fill fill-high" style="width:83%"></div></div>15/18</span><span class="field-note">Captured at session end. 3 sessions missing. This is the primary subjective input the engine uses for coaching contradiction checks and EmergentInsights.</span></div>
+<div class="field-row"><span class="field-name">readinessBefore</span><span class="field-capture"><div class="fill-bar"><div class="fill-fill fill-0" style="width:0%"></div></div>0/18</span><span class="field-note">Designed input. Zero captures. Either UX allows bypass, prompt has a bug, or users are systematically skipping it. Downstream: ReadinessEngine modifier, mindBodyAlignment insight — both disabled.</span></div>
+<div class="field-row"><span class="field-name">averageHeartRate</span><span class="field-capture"><div class="fill-bar"><div class="fill-fill fill-full" style="width:100%"></div></div>18/18</span><span class="field-note">Session-level. Present and filled. Source unclear — possibly Apple Watch or HealthKit ambient data. Used in fatigue analysis.</span></div>
+<div class="field-row"><span class="field-name">activeCalories</span><span class="field-capture"><div class="fill-bar"><div class="fill-fill fill-full" style="width:100%"></div></div>18/18</span><span class="field-note">Present. Source: HealthKit or device estimation. Downstream usage and accuracy not yet verified.</span></div>
+<div class="field-row"><span class="field-name">notes</span><span class="field-capture"><div class="fill-bar"><div class="fill-fill fill-0" style="width:0%"></div></div>0/18</span><span class="field-note">Empty for all sessions. Intentional or no prompt to use this field? If the app surfaces notes but they're never used, it's dead UI.</span></div>
+<div class="field-row"><span class="field-name">name</span><span class="field-capture"><div class="fill-bar"><div class="fill-fill fill-full" style="width:100%"></div></div>18/18</span><span class="field-note">14/18 = "Hon's Routine." Same name can appear multiple times on one day. Disambiguation question: can a user tell sessions apart by name alone in the history view?</span></div>
+</div>
+
+<h3>Set-Level Fields</h3>
+<div class="card">
+<div class="field-row"><span class="field-name">weight / reps</span><span class="field-capture"><div class="fill-bar"><div class="fill-fill fill-full" style="width:87%"></div></div>87%</span><span class="field-note">Core logging fields. 13% of sets have weight=0 — floor rules apply. 18% of sets have reps=0. Not all zero-reps are errors (warmup sets, skipped sets) but all <em>completed</em> zero-rep sets are semantically contradictory.</span></div>
+<div class="field-row"><span class="field-name">targetWeight</span><span class="field-capture"><div class="fill-bar"><div class="fill-fill fill-mid" style="width:50%"></div></div>50%</span><span class="field-note">Only half of sets have a target weight. Pre-fill comes from lastPerformanceCache. If prior session was a zero-rep session, pre-fill inherits a bad target. This is the primary vector for coaching quality degradation.</span></div>
+<div class="field-row"><span class="field-name">targetReps</span><span class="field-capture"><div class="fill-bar"><div class="fill-fill fill-high" style="width:90%"></div></div>90%</span><span class="field-note">Most sets have a target rep count. 10% missing — these sets cannot produce a meaningful rep outcome classification.</span></div>
+<div class="field-row"><span class="field-name">isCompleted</span><span class="field-capture"><div class="fill-bar"><div class="fill-fill fill-high" style="width:84%"></div></div>84%</span><span class="field-note">84% of sets are marked completed. 16% not completed — these are sets that were logged but not executed. How does the analytics engine treat non-completed sets?</span></div>
+<div class="field-row"><span class="field-name">rpe</span><span class="field-capture"><div class="fill-bar"><div class="fill-fill fill-0" style="width:0%"></div></div>0/149</span><span class="field-note">Designed for per-set perceived exertion (6–10). Zero entries. Downstream: ReadinessEngine RPE modifier, ProgramCalibration insight, efficiency metrics — all using null/default. Is RPE entry offered in the UI? Is it prominent enough?</span></div>
+<div class="field-row"><span class="field-name">dropWeight / dropReps</span><span class="field-capture"><div class="fill-bar"><div class="fill-fill fill-low" style="width:19%"></div></div>29/149</span><span class="field-note">Drop sets are being actively used — not a dead feature. 19% of sets have drop data logged. This is significant: these sets have a different analysis path in WorkoutNarrativeEngine (weightState = droppedCompleted / droppedStillUnder).</span></div>
+<div class="field-row"><span class="field-name">isDropCompleted</span><span class="field-capture"><div class="fill-bar"><div class="fill-fill fill-low" style="width:15%"></div></div>22/149</span><span class="field-note">22 drop sets have been completed. Slight discrepancy vs dropWeight count (29) — some drop sets were planned but not completed. Narrative engine has specific paths for completed vs. incomplete drop sets.</span></div>
+<div class="field-row"><span class="field-name">toFailure</span><span class="field-capture"><div class="fill-bar"><div class="fill-fill fill-low" style="width:9%"></div></div>14/149</span><span class="field-note">Used on 9% of sets — another active feature. WorkoutNarrativeEngine has a specific "To Failure" connective modifier. These sets represent the user's hardest efforts and should trigger specific coaching responses.</span></div>
+<div class="field-row"><span class="field-name">velocityProfile</span><span class="field-capture"><div class="fill-bar"><div class="fill-fill fill-0" style="width:0%"></div></div>0/149</span><span class="field-note">Apple Watch rep detection. Zero entries. Either no Apple Watch or the feature isn't being used. If the UI surfaces this, it should explain the requirement. If it doesn't surface it, it's a background feature with no user-facing presence to audit.</span></div>
+</div>
+
+<div class="note"><strong>What this map tells us:</strong> The app has a three-tier data reality. Tier 1 — always captured (time, basic sets, feel). Tier 2 — sometimes captured (drop sets, toFailure, targetWeight). Tier 3 — never captured (readinessBefore, RPE, velocity, notes). The audit must treat each tier differently. Tier 3 gaps are the most consequential because they power the app's most personalized features.</div>
+
+<!-- ================================================================ -->
+<h2>Audit Dimensions</h2>
+<p>Eight dimensions. Each represents a distinct layer of product quality. They are ordered from foundation to surface — data capture before interpretation, interpretation before output, output before experience.</p>
+
+<!-- D1 -->
+<div class="dim-card">
+<div class="dim-header">
+  <div class="dim-num">1</div>
+  <div>
+    <div class="dim-name">Input Capture</div>
+    <div class="dim-q">Is the app collecting what it's designed to collect?</div>
+  </div>
+  <div style="margin-left:auto;font-size:12px;color:var(--muted)">Every session · Pre-session focus</div>
+</div>
+<div class="dim-body">
+<p>This dimension asks whether the designed data collection actually works. Capture failures upstream contaminate every downstream feature. A feature that's designed to use RPE but never gets RPE data is not a coaching feature — it's a logging feature with coaching theater.</p>
+<div class="table-wrap"><table>
+<tr><th>ID</th><th>Question</th><th>What to look for</th><th>Trigger</th></tr>
+<tr><td>D1-Q1</td><td><strong>Is readinessBefore captured before the session?</strong></td><td>Open a new workout. Does a readiness prompt appear? Can it be skipped or bypassed? After completing the first set, is the prompt still visible? Check the saved session for a non-null readinessBefore value.</td><td><span class="tag tag-always">every session</span></td></tr>
+<tr><td>D1-Q2</td><td><strong>Is feelRating captured at session end?</strong></td><td>Complete a session. Does a feel rating prompt appear before the session closes? Is it dismissible? Check the saved session for a non-null feelRating value. Compare with the 15/18 capture rate as baseline.</td><td><span class="tag tag-always">every session</span></td></tr>
+<tr><td>D1-Q3</td><td><strong>Is RPE offered as a per-set input?</strong></td><td>During active workout, find the RPE entry point. Is it visible without additional taps? Is it explained? After logging with RPE, verify the set record stores a non-null rpe value (6–10).</td><td><span class="tag tag-always">every session</span></td></tr>
+<tr><td>D1-Q4</td><td><strong>Are drop sets and toFailure prompts surfaced during logging?</strong></td><td>These are the two set-level enrichment features that ARE being used (19% and 9% of sets respectively). Are they easy to invoke? Are they visible without knowing to look for them?</td><td><span class="tag tag-always">every session</span></td></tr>
+<tr><td>D1-Q5</td><td><strong>Is the dumbbell weight convention communicated at point of entry?</strong></td><td>Log any dumbbell exercise. Does the weight field indicate "per dumbbell" or "per hand"? Does the app document that it doubles the entry for bilateral load? If not, the user doesn't know whether to enter 20 (per hand) or 40 (total).</td><td><span class="tag tag-first">first dumbbell exercise</span></td></tr>
+<tr><td>D1-Q6</td><td><strong>Is the assisted exercise counterweight convention communicated?</strong></td><td>Log an Assisted Pull-Up or Assisted Dip. Does the weight field indicate this is the assistance amount (not the lifted load)? The effective load formula (bodyWeight − assistWeight) is non-obvious and must be communicated at entry time.</td><td><span class="tag tag-first">first assisted exercise</span></td></tr>
+<tr><td>D1-Q7</td><td><strong>Does the session notes field have a clear purpose?</strong></td><td>The notes field exists at session and exercise level. 0/18 sessions have notes entered. Is the field visible? Is there a prompt or placeholder that explains what to put there? A field that's never used is either not surfaced or not purposeful.</td><td><span class="tag tag-always">every session</span></td></tr>
+</table></div>
+</div>
+</div>
+
+<!-- D2 -->
+<div class="dim-card">
+<div class="dim-header">
+  <div class="dim-num">2</div>
+  <div>
+    <div class="dim-name">Data Correctness</div>
+    <div class="dim-q">Does the app interpret captured data without introducing errors?</div>
+  </div>
+  <div style="margin-left:auto;font-size:12px;color:var(--muted)">Edge cases · Formulas · Boundaries</div>
+</div>
+<div class="dim-body">
+<p>Data correctness is about the system's internal logic. Given what was captured, did the app compute the right thing? Failures here are invisible to the user — they trust the number displayed, even when it's wrong.</p>
+<div class="table-wrap"><table>
+<tr><th>ID</th><th>Question</th><th>What to look for</th><th>Trigger</th></tr>
+<tr><td>D2-Q1</td><td><strong>Can the app accept a completed set with zero reps?</strong></td><td>Enter weight=10, reps=0. Tap the complete action. Does the app accept it? If yes: is there a warning? Does the set appear in completedSets? Does it affect volume, e1RM, and rep outcome calculations? The answer to this question determines whether 10 known data quality events are anomalies or systematic failures.</td><td><span class="tag tag-event">zero reps entered</span></td></tr>
+<tr><td>D2-Q2</td><td><strong>When a floor weight is applied, is the applied value visible?</strong></td><td>Enter weight=0 on a barbell exercise. The effectiveWeight formula floors to 20kg. What does the narrative display — "0 kg" (raw) or "20 kg" (floor)? What does the e1RM chart plot? Analytics and display must agree on which value they use.</td><td><span class="tag tag-event">zero weight on barbell</span></td></tr>
+<tr><td>D2-Q3</td><td><strong>Is targetWeight pre-filled correctly after an anomalous prior session?</strong></td><td>The next session after a zero-rep session: what weight is pre-filled as the target? If last session had reps=0, the pre-fill from lastPerformanceCache should either be suppressed or flagged as unreliable, not propagated as a valid target.</td><td><span class="tag tag-event">session after zero-rep session</span></td></tr>
+<tr><td>D2-Q4</td><td><strong>Are same-day sessions handled correctly in volume, streak, and readiness?</strong></td><td>When two sessions share a calendar date: does the streak count the day once? Does the volume metric sum both sessions? Does readiness for session 2 reflect intra-day fatigue rather than treating it as a fresh start?</td><td><span class="tag tag-event">second session same day</span></td></tr>
+<tr><td>D2-Q5</td><td><strong>Does the app correctly apply the bilateral load adjustment for dumbbells?</strong></td><td>Verify that dumbbell e1RM uses effectiveWeight (×2) in StrengthAnalyticsEngine. Then verify that the displayed e1RM is consistent with what was entered. If the user enters "20" expecting total and the app doubles it to 40 for analytics, the chart shows a value that doesn't match the user's mental model of what they lifted.</td><td><span class="tag tag-data">any dumbbell exercise</span></td></tr>
+<tr><td>D2-Q6</td><td><strong>Is the assisted exercise effective load formula (bodyWeight − assist) applied consistently?</strong></td><td>For Assisted Pull-Up / Dip: e1RM should use (bodyWeight − assistedWeight) not assistedWeight directly. Verify the e1RM shown for an assisted exercise reflects the actual load lifted, not the counterweight entered.</td><td><span class="tag tag-event">assisted exercise logged</span></td></tr>
+<tr><td>D2-Q7</td><td><strong>Is session volume calculated with the same formula everywhere it appears?</strong></td><td>Pick any session. Calculate volume manually: Σ(effectiveWeight × reps) for completed sets. Compare with: the workout summary, the Progress tab weekly volume chart, the volume spike modifier input. All three should use the same formula and produce the same number.</td><td><span class="tag tag-data">any session with known sets</span></td></tr>
+</table></div>
+</div>
+</div>
+
+<!-- D3 -->
+<div class="dim-card">
+<div class="dim-header">
+  <div class="dim-num">3</div>
+  <div>
+    <div class="dim-name">Coaching Output</div>
+    <div class="dim-q">Does the coaching reflect this session's data, specifically and honestly?</div>
+  </div>
+  <div style="margin-left:auto;font-size:12px;color:var(--muted)">Post-set narrative · Coach notes · Session summary</div>
+</div>
+<div class="dim-body">
+<p>Coaching is the product's primary promise. The questions here go beyond "is the text correct" to "does it add value specific to this user, this session, this set." Generic coaching that could have been written without any data is a failure of the coaching promise, even if it's technically accurate.</p>
+<div class="table-wrap"><table>
+<tr><th>ID</th><th>Question</th><th>What to look for</th><th>Trigger</th></tr>
+<tr><td>D3-Q1</td><td><strong>Is the coaching specific to this session's data — or is it generic?</strong></td><td>After each set, read the narrative. Could this exact text have been generated without knowing the weight, reps, exercise, or history? If yes, it's generic. If it references at minimum one of: actual weight, actual reps, trend, history gap — it is specific. Generic coaching is a brand failure regardless of accuracy.</td><td><span class="tag tag-always">every set</span></td></tr>
+<tr><td>D3-Q2</td><td><strong>Does the coaching contradict any other signal visible in the same session?</strong></td><td>If feel=Tired, does any coaching output suggest "push hard today"? If readiness is low, does the coach note encourage max effort? If the session had a significant failure (zero reps, incomplete sets), does the coaching celebrate success? One contradiction in a session is a trust-breaking event.</td><td><span class="tag tag-always">every session</span></td></tr>
+<tr><td>D3-Q3</td><td><strong>Does the coaching voice match the brand criteria?</strong></td><td>Brand spec: Direct, not cheerleader. Dry, not corporate. Specific, not generic. Shame-free. Check for: exclamation points used as enthusiasm signals, empty affirmations ("Great job!", "Amazing effort!"), corporate hedging ("It's important to remember that..."), gap-shaming ("You've been away for X days"). Any of these is a voice failure.</td><td><span class="tag tag-always">every coaching output</span></td></tr>
+<tr><td>D3-Q4</td><td><strong>When the session is incomplete or anomalous, does the coaching reflect reality?</strong></td><td>For a session where sets were not completed, zero reps were logged, or targets were significantly missed: does the coaching output match the qualitative reality of the session? An incomplete session should not receive a "session complete" narrative. A zero-rep set should not receive praise.</td><td><span class="tag tag-event">incomplete or anomalous session</span></td></tr>
+<tr><td>D3-Q5</td><td><strong>Does the coaching for a drop set use the drop-set specific narrative path?</strong></td><td>Drop sets are used on 19% of sets. WorkoutNarrativeEngine has specific weightState values (droppedCompleted, droppedStillUnder) and phrase bank keys ("Drop Set — Completed"). Verify that a completed drop set triggers the drop-set narrative branch, not the standard held/increased branch.</td><td><span class="tag tag-event">drop set completed</span></td></tr>
+<tr><td>D3-Q6</td><td><strong>Does the coaching for a toFailure set use the to-failure modifier?</strong></td><td>toFailure is used on 9% of sets. WorkoutNarrativeEngine has a "To Failure" connective modifier (phrase IDs 105–114). Verify that a set marked toFailure produces coaching that references the failure attempt, not the standard "hit reps" path.</td><td><span class="tag tag-event">set marked toFailure</span></td></tr>
+<tr><td>D3-Q7</td><td><strong>Does the coaching change meaningfully as session count grows?</strong></td><td>Compare the coaching text for the same exercise at: session 1 (historyKey="First Time"), session 2-3 (historyKey="Normal", first trend data), session 8+ (trend data available, possible plateau signal). Is there a qualitatively different depth of insight at higher session counts, or is the output structurally similar regardless of data richness?</td><td><span class="tag tag-threshold">sessions 1, 3, 10</span></td></tr>
+</table></div>
+</div>
+</div>
+
+<!-- D4 -->
+<div class="dim-card">
+<div class="dim-header">
+  <div class="dim-num">4</div>
+  <div>
+    <div class="dim-name">Analytics Integrity</div>
+    <div class="dim-q">Are the numbers honest — and honest about their own confidence?</div>
+  </div>
+  <div style="margin-left:auto;font-size:12px;color:var(--muted)">Charts · Scores · Trend lines · Confidence</div>
+</div>
+<div class="dim-body">
+<p>Analytics integrity has two parts: accuracy (are the numbers right?) and honesty (do they communicate their own reliability?). A confidence score shown without its data basis is not analytics — it's speculation dressed as data. The audit asks both questions for every metric.</p>
+<div class="table-wrap"><table>
+<tr><th>ID</th><th>Question</th><th>What to look for</th><th>Trigger</th></tr>
+<tr><td>D4-Q1</td><td><strong>Does the readiness confidence level accurately reflect session count?</strong></td><td>Confidence specification: &lt;3 sessions = Low, 3–9 = Medium, ≥10 = High. Verify the label transitions at the right thresholds. Is the tilde (~) prefix present only during Low confidence? Does the confidence level's color or styling reinforce its meaning?</td><td><span class="tag tag-threshold">sessions 1, 3, 10</span></td></tr>
+<tr><td>D4-Q2</td><td><strong>Are trend charts free of data artifacts from anomalous sessions?</strong></td><td>For any exercise with known anomalous sessions (zero-rep sessions, floor-weight sessions), check the e1RM trend chart. Do these sessions produce data points at 0 or at the floor value? Do they distort the visible trend line? A valid trend should omit or flag sessions that don't represent actual performance.</td><td><span class="tag tag-event">after any zero-rep or floor-weight session</span></td></tr>
+<tr><td>D4-Q3</td><td><strong>Are comparison windows labeled with their actual timespan?</strong></td><td>Any chart or card that says "vs X weeks ago" or "over the last Y days" — verify the claim. If the user has less history than the stated window, does the label adjust? If the baseline falls back to first session, is that stated? Mislabeled time windows are a data honesty failure, not a display bug.</td><td><span class="tag tag-data">any progress card with a time comparison</span></td></tr>
+<tr><td>D4-Q4</td><td><strong>Do EmergentInsights only surface when their prerequisite data exists?</strong></td><td>For each insight type, identify its data prerequisite (feelRating, HealthKit sleep, weight history, RPE, etc.). If that prerequisite is empty or null, what does the insight show? A specific correlation or state shown with no data is worse than a placeholder — it's a fabrication.</td><td><span class="tag tag-always">every Progress/Home open</span></td></tr>
+<tr><td>D4-Q5</td><td><strong>Do plateau and momentum signals match the actual e1RM trajectory?</strong></td><td>Pick any exercise flagged as "plateau" or "best mover." Calculate the e1RM slope manually using the session data. Does the engine's classification match the math? Plateau: slope &lt;0.5 kg/wk over ≥4 weeks with ≥3 sessions. Momentum: positive slope, above threshold. Verify the threshold and window are applied correctly.</td><td><span class="tag tag-data">after ≥3 sessions of same exercise</span></td></tr>
+<tr><td>D4-Q6</td><td><strong>Is the Composite Strength Score isolated from data quality artifacts?</strong></td><td>The CSS has three pillars: Level (35%), Momentum (40%), Process (25%). If anomalous sessions (zero-rep, target mismatch) contribute to Momentum, the score is contaminated. Check: does removing the anomalous sessions change the CSS significantly? If so, the score is data-quality sensitive.</td><td><span class="tag tag-threshold">after ≥5 total sessions</span></td></tr>
+<tr><td>D4-Q7</td><td><strong>Is volume calculated the same way in every view that displays it?</strong></td><td>Weekly volume chart, session summary, volume spike modifier in ReadinessEngine, overload scoreboard — do they all use effectiveWeight, or do some use raw weight? A user who sees "3015 kg" in one place and "2800 kg" in another for the same session loses trust in both numbers.</td><td><span class="tag tag-data">any high-volume session</span></td></tr>
+</table></div>
+</div>
+</div>
+
+<!-- D5 -->
+<div class="dim-card">
+<div class="dim-header">
+  <div class="dim-num">5</div>
+  <div>
+    <div class="dim-name">Cross-Feature Coherence</div>
+    <div class="dim-q">Do different parts of the app tell the same story?</div>
+  </div>
+  <div style="margin-left:auto;font-size:12px;color:var(--muted)">Tab-to-tab · Metric consistency · Vocabulary</div>
+</div>
+<div class="dim-body">
+<p>A user navigates between tabs expecting the same facts in each. If the readiness score on Home differs from the one in Trainer plans, or if "Intermediate" in Progress means something different than "Int" in Insights, the user can't build a mental model. Coherence failures erode trust even when each individual feature is correct in isolation.</p>
+<div class="table-wrap"><table>
+<tr><th>ID</th><th>Question</th><th>What to look for</th><th>Trigger</th></tr>
+<tr><td>D5-Q1</td><td><strong>Does the readiness score drive consistent behavior across Home and Trainer?</strong></td><td>Note the readiness score on Home. Open Trainer (if accessible). Do the generated plan intensities correspond to the score shown? Score ≥78 → Heavy plans (4×5). 55–77 → Moderate (3×8). &lt;55 → Light (3×12). The plan intensity and the home score must be internally consistent.</td><td><span class="tag tag-always">every app open</span></td></tr>
+<tr><td>D5-Q2</td><td><strong>Is strength tier terminology consistent across all views?</strong></td><td>Find every place in the app that labels a strength tier (Progress, Insights, any chart, any coaching note). Is the same vocabulary used everywhere? Mixing "Beg/Int/Adv" with "Novice/Intermediate/Advanced" for the same user on the same day is a coherence failure.</td><td><span class="tag tag-always">any Progress or Insights open</span></td></tr>
+<tr><td>D5-Q3</td><td><strong>After completing a session, does all downstream state update consistently?</strong></td><td>Complete a session. Immediately check: streak on Home, last session in Progress history, exercise in Insights tab, readiness score change. All should reflect the new session. If any view shows stale data (previous session data, unchanged streak), there's a cache refresh issue.</td><td><span class="tag tag-always">post-session</span></td></tr>
+<tr><td>D5-Q4</td><td><strong>Does the e1RM value for an exercise agree between Progress and Insights?</strong></td><td>Pick any exercise. Note its e1RM in the Progress overload scoreboard. Open the Insights tab and find the same exercise. Note its e1RM there. They should be identical — same formula, same data, same point in time. If they differ, the app has two analytics pipelines with different results.</td><td><span class="tag tag-data">any exercise with ≥1 session</span></td></tr>
+<tr><td>D5-Q5</td><td><strong>Do Trainer plan regions respect what was actually trained recently?</strong></td><td>After training chest and back in the last two sessions, open Trainer. The primary plan should focus on legs or core. WorkoutPlanEngine uses recentlyTrainedRegions from the last 2 log entries. Verify the plan regions correspond to the actual exercises in those sessions — not assumed regions based on session name.</td><td><span class="tag tag-always">every Trainer open</span></td></tr>
+<tr><td>D5-Q6</td><td><strong>Is the same session's feel=Tired visible in both coaching narrative and EmergentInsights?</strong></td><td>For sessions with feel=Tired: does the coaching note acknowledge fatigue? Does the feelArchetype EmergentInsight reflect the Tired rating? Do both features draw from the same feelRating data, or do they use different signals that could point in opposite directions?</td><td><span class="tag tag-event">session with feel=Tired</span></td></tr>
+</table></div>
+</div>
+</div>
+
+<!-- D6 -->
+<div class="dim-card">
+<div class="dim-header">
+  <div class="dim-num">6</div>
+  <div>
+    <div class="dim-name">Progressive Value</div>
+    <div class="dim-q">Does the app become meaningfully more valuable as sessions accumulate?</div>
+  </div>
+  <div style="margin-left:auto;font-size:12px;color:var(--muted)">Session 1 vs 10 vs 18 · Milestones · Feature unlocks</div>
+</div>
+<div class="dim-body">
+<p>A fitness app that shows the same interface on session 1 and session 50 has failed its core promise. The data should compound into progressively richer insights. This dimension tests whether the app's depth is visible — and whether users are guided toward it as their data grows.</p>
+<div class="table-wrap"><table>
+<tr><th>ID</th><th>Question</th><th>What to look for</th><th>Trigger</th></tr>
+<tr><td>D6-Q1</td><td><strong>On session 1, is the experience coherent with no prior data?</strong></td><td>Every metric and insight should either show a valid value (even if low confidence) or an honest "not enough data yet" state. Specifically: does the app try to show trend lines, momentum, or plateau risk with 0 or 1 sessions? Does confidence = Low and is that communicated?</td><td><span class="tag tag-first">session 1</span></td></tr>
+<tr><td>D6-Q2</td><td><strong>Are confidence thresholds communicated when they are crossed?</strong></td><td>Confidence transitions at sessions 3 (→Medium) and 10 (→High) represent genuine improvements in data reliability. Does the app acknowledge these crossings? An uncelebrated confidence upgrade is a missed retention moment — the user doesn't know their data just became meaningful.</td><td><span class="tag tag-threshold">sessions 3, 10</span></td></tr>
+<tr><td>D6-Q3</td><td><strong>At what session count do each of the major analytics features produce useful output?</strong></td><td>Map the minimum session count for: e1RM trend line (≥2 sessions of same exercise), plateau detection (≥3 sessions, ≥4 weeks), momentum classification (≥3 sessions), EmergentInsights (varies per insight), Composite Strength Score (≥1 valid session). Are features presented before they have enough data? If yes, they should show honest empty states, not guessed values.</td><td><span class="tag tag-threshold">any feature-first exposure</span></td></tr>
+<tr><td>D6-Q4</td><td><strong>Do placeholder states tell the user specifically what's needed to unlock them?</strong></td><td>For any feature showing an empty or placeholder state, what does the message say? "Collecting data" is not actionable. "Complete 3 sessions of this exercise to see your trend" is. "Connect Apple Health to see sleep impact on your performance" is. Specificity in placeholder states is both a UX and a trust question.</td><td><span class="tag tag-always">any empty state encountered</span></td></tr>
+<tr><td>D6-Q5</td><td><strong>Is the session 18 experience qualitatively richer than session 5?</strong></td><td>Open the same features after session 5 and after session 18. Is there more data in the charts? Are more insights available? Is the coaching more specific? If the experience is structurally identical, data accumulation isn't producing compounding value for the user.</td><td><span class="tag tag-threshold">sessions 5, 18</span></td></tr>
+</table></div>
+</div>
+</div>
+
+<!-- D7 -->
+<div class="dim-card">
+<div class="dim-header">
+  <div class="dim-num">7</div>
+  <div>
+    <div class="dim-name">Honesty &amp; Transparency</div>
+    <div class="dim-q">Does the app tell users what it doesn't know as clearly as what it does?</div>
+  </div>
+  <div style="margin-left:auto;font-size:12px;color:var(--muted)">Data labeling · Terminology · Assumption communication</div>
+</div>
+<div class="dim-body">
+<p>An app built on data has an obligation to be honest about the limits of that data. Presenting estimates as facts, mislabeling derived values, or drawing conclusions from insufficient data are integrity failures. This dimension is about the gap between what the app knows and what it claims.</p>
+<div class="table-wrap"><table>
+<tr><th>ID</th><th>Question</th><th>What to look for</th><th>Trigger</th></tr>
+<tr><td>D7-Q1</td><td><strong>Are estimates labeled as estimates?</strong></td><td>The tilde (~) prefix on the readiness score during Low confidence is the designed mechanism. Are there other places in the app where estimated values are presented as measured values? Trend slopes, projected e1RM, EmergentInsight states derived from HRV proxies — all are estimates. Are they labeled as such?</td><td><span class="tag tag-always">any metric displayed</span></td></tr>
+<tr><td>D7-Q2</td><td><strong>Is terminology accurate and not misleading?</strong></td><td>Profile field labeled "Muscle Mass %" — is this skeletal muscle mass or lean body mass? These are different values with different normal ranges. Any label that uses a technical term with a commonly understood meaning must use that term correctly, or redefine it in context.</td><td><span class="tag tag-always">any labeled field</span></td></tr>
+<tr><td>D7-Q3</td><td><strong>When a transformation is applied to data, is it visible?</strong></td><td>Three transformations apply silently: effectiveWeight doubling for dumbbells, floor weight for barbells/EZ bars, and counterweight inversion for assisted exercises. When these apply, does the user see the transformed value or the raw value? Do they know a transformation occurred?</td><td><span class="tag tag-data">any dumbbell, barbell, or assisted exercise</span></td></tr>
+<tr><td>D7-Q4</td><td><strong>Are there features that present specific insights based on data that doesn't exist?</strong></td><td>List every feature that requires data from: HealthKit (sleep, HRV, RHR, VO2 Max), readinessBefore, RPE, weight history, cardio sessions. For each, verify what happens when the data is absent. Does the feature produce a genuine insight, an honest placeholder, or a fabricated one?</td><td><span class="tag tag-always">any insight card</span></td></tr>
+<tr><td>D7-Q5</td><td><strong>Does the app explain why it's making a recommendation?</strong></td><td>For any actionable recommendation (increase weight, deload, take rest, switch exercise), can the user trace the recommendation to its data basis? Or is it opaque — "you should increase weight" with no visible reason why? An app that gives recommendations without showing the reasoning is asking for blind trust.</td><td><span class="tag tag-always">any recommendation surfaced</span></td></tr>
+</table></div>
+</div>
+</div>
+
+<!-- D8 -->
+<div class="dim-card">
+<div class="dim-header">
+  <div class="dim-num">8</div>
+  <div>
+    <div class="dim-name">Return &amp; Retention</div>
+    <div class="dim-q">Does the app earn the next session?</div>
+  </div>
+  <div style="margin-left:auto;font-size:12px;color:var(--muted)">Gap handling · Milestone messaging · Habit loop</div>
+</div>
+<div class="dim-body">
+<p>The fitness app that succeeds is not the one with the best analytics — it's the one the user comes back to. This dimension asks: what is the experience of returning after time away? Does the app make the next session feel possible, or does it make the absence feel like failure?</p>
+<div class="table-wrap"><table>
+<tr><th>ID</th><th>Question</th><th>What to look for</th><th>Trigger</th></tr>
+<tr><td>D8-Q1</td><td><strong>Does the first thing the user sees after a gap communicate return, not absence?</strong></td><td>After any gap ≥3 days: what is the first element on the Home screen? Is it the readiness score (forward-looking), a streak count (backward-looking), a gap penalty indicator, or a welcome-back message? The difference between "Readiness: 69 — good day to train" and "You haven't trained in 5 days" is the entire product philosophy.</td><td><span class="tag tag-gap">gap ≥3 days</span></td></tr>
+<tr><td>D8-Q2</td><td><strong>Is any language in the app gap-punishing?</strong></td><td>Scan every text output after a gap return: coaching notes, HONHabitEngine messages, streak indicators, progress trend language. Does any of it reference the absence negatively? Key test phrases: "you've been away," "you haven't trained in X days," "your streak is broken," "you're losing momentum." Any of these fails the core brand promise.</td><td><span class="tag tag-gap">gap ≥3 days</span></td></tr>
+<tr><td>D8-Q3</td><td><strong>Does the readiness score reflect a gap as recovery, not penalty?</strong></td><td>After a 5-day rest: the engine applies −4 for the day-gap modifier and potentially +5 for recentFreq ≥4. The net effect should be moderate readiness, not low readiness. More importantly: does the coaching note describe the gap as recovery time ("Your muscles had time to rebuild") or as drift ("Your fitness is declining")?</td><td><span class="tag tag-gap">gap ≥4 days</span></td></tr>
+<tr><td>D8-Q4</td><td><strong>Are there meaningful retention moments beyond streak tracking?</strong></td><td>The HONHabitEngine generates milestone and pattern messages. Verify: does the app produce any milestone acknowledgment at session 10 (confidence: High)? Does it acknowledge a strong training week? Does it surface the user's best progression (Lat Pulldown slope) as a motivating data point? Or is the only retention mechanism a streak counter?</td><td><span class="tag tag-threshold">sessions 3, 10, 18+</span></td></tr>
+<tr><td>D8-Q5</td><td><strong>Does the post-session experience (feel rating, narrative summary) close the loop for the next visit?</strong></td><td>After completing a session: what is the last thing the user sees before leaving the app? Does it tease the next session ("Next time, try 20 kg on DBP"), contextualize what happened ("Your strongest session in two weeks"), or just close? The closing moment is the opening moment for the next session — does it plant a hook?</td><td><span class="tag tag-always">every session end</span></td></tr>
+</table></div>
+</div>
+</div>
+
+<!-- ================================================================ -->
+<h2>Session-Level Test Protocol</h2>
+<p>The protocol specifies which dimensions to apply at each session, based on what conditions that session represents. Not every dimension applies to every session — the triggers define when to activate each audit thread. The column "Watch For" names the specific conditions most likely to produce a finding for that session.</p>
+
+<div class="note"><strong>How to run it:</strong> For each session in the log, identify its trigger conditions (column 2). Run the corresponding dimension questions. Record verdict: <span class="verd"><span class="dot dot-pass"></span>Pass</span> · <span class="verd"><span class="dot dot-watch"></span>Watch</span> · <span class="verd"><span class="dot dot-fail"></span>Fail</span> · <span class="verd"><span class="dot dot-na"></span>N/A</span>. A Watch verdict means the behavior is technically correct but creates a trust or UX risk over time — not a failure today, but a compounding problem.</div>
+
+<div class="table-wrap"><table>
+<thead>
+<tr><th>Session</th><th>Date</th><th>Active Triggers</th><th>Dimensions to Run</th><th>Watch For</th></tr>
+</thead>
+<tbody>
+<tr>
+<td>S1</td><td>Apr 20</td>
+<td><span class="tag tag-first">first session</span> <span class="tag tag-gap">cold start</span></td>
+<td>D1 (all), D2-Q1 (zero-rep), D3-Q1,Q2,Q3, D6-Q1, D8-Q1,Q2</td>
+<td>Readiness ≈46 framing — is it presented as an estimate or a verdict? Coaching with zero history — is it generic? ReadinessPromptCard — can it be bypassed?</td>
+</tr>
+<tr>
+<td>S2</td><td>Apr 21</td>
+<td><span class="tag tag-always">baseline</span></td>
+<td>D3-Q1,Q3, D4-Q1 (confidence=Low)</td>
+<td>1-day gap response in coach note. Volume formula on leg day. Streak = 2.</td>
+</tr>
+<tr>
+<td>S3</td><td>Apr 23</td>
+<td><span class="tag tag-threshold">confidence: Medium</span></td>
+<td>D3-Q7, D4-Q1, D6-Q2,Q3, D7-Q1</td>
+<td>Does confidence transition from Low to Medium update the tilde? Is this transition acknowledged anywhere? First exercise with ≥2 sessions — do comparisons begin appearing?</td>
+</tr>
+<tr>
+<td>S4</td><td>Apr 27</td>
+<td><span class="tag tag-gap">4-day gap</span></td>
+<td>D3-Q1,Q2,Q3, D4-Q2, D8-Q1,Q2,Q3</td>
+<td>Gap framing — shame-free? Coach note matches feel=Normal. DBP 2nd session — does coaching compare to S1 or treat as fresh?</td>
+</tr>
+<tr>
+<td>S5</td><td>Apr 28</td>
+<td><span class="tag tag-data">potential PR (Squat)</span></td>
+<td>D3-Q1, D4-Q5, D5-Q3</td>
+<td>PR banner for Squat (60kg vs 40kg in S2 — genuine improvement). Does PR detection fire? Is the PR text specific to the weight and exercise?</td>
+</tr>
+<tr>
+<td>S6</td><td>Apr 29</td>
+<td><span class="tag tag-event">feel=Tired</span> <span class="tag tag-first">LP first session</span></td>
+<td>D3-Q1,Q2,Q3, D5-Q6, D6-Q3, D7-Q5</td>
+<td>Coaching on a Tired session. 3rd consecutive day — does the engine flag cumulative fatigue? LP "First Time" historyKey — does coaching correctly indicate no comparison data?</td>
+</tr>
+<tr>
+<td>S7</td><td>May 1</td>
+<td><span class="tag tag-event">zero-rep (Chest Press Machine)</span> <span class="tag tag-event">drop sets likely</span></td>
+<td>D1-Q3, D2-Q1, D3-Q1,Q4,Q5, D4-Q2</td>
+<td>Chest Press Machine 0-rep set — is it accepted? What does the narrative say for that set? DBP 3rd session — does coaching begin referencing the pattern?</td>
+</tr>
+<tr>
+<td>S8</td><td>May 6</td>
+<td><span class="tag tag-gap">5-day gap</span> <span class="tag tag-event">feel=Strong</span> <span class="tag tag-data">LP PR</span></td>
+<td>D3-Q1,Q2,Q3, D4-Q5, D8-Q1,Q2,Q3</td>
+<td>Return after 5 days with feel=Strong — does coaching match the user's subjective state? LP e1RM improvement — is momentum signal correct? Shame-free framing on the gap.</td>
+</tr>
+<tr>
+<td>S9</td><td>May 7</td>
+<td><span class="tag tag-event">3× zero-rep (MSP)</span> <span class="tag tag-event">feel=Strong</span></td>
+<td>D2-Q1,Q3, D3-Q1,Q2,Q4, D4-Q2,Q6</td>
+<td>MSP all-zero session: does the narrative reward a zero-rep exercise? Does e1RM chart for MSP show 0? Does the next session's MSP target pre-fill at the correct (not zero-derived) weight? Contradiction: feel=Strong with zero-rep session.</td>
+</tr>
+<tr>
+<td>S10</td><td>May 11</td>
+<td><span class="tag tag-threshold">confidence: High</span> <span class="tag tag-event">MSP target mismatch</span> <span class="tag tag-event">toFailure used</span></td>
+<td>D3-Q1,Q6,Q7, D4-Q1,Q6, D6-Q2,Q5, D8-Q4</td>
+<td>Confidence crosses to High — is it acknowledged? MSP target=10kg, actual=20kg — does narrative treat this as progressive overload or flag the jump? toFailure sets — does coaching use the failure modifier? Milestone moment: session 10.</td>
+</tr>
+<tr>
+<td>S11</td><td>May 12</td>
+<td><span class="tag tag-event">zero-rep (MSP again)</span> <span class="tag tag-event">floor weight (OHP)</span></td>
+<td>D2-Q1,Q2, D3-Q4, D4-Q2, D7-Q3</td>
+<td>MSP zero-reps second consecutive session — deload trigger check. OHP entered as 0kg — floor applied to 20kg. What value does the narrative show? What does the analytics chart show for OHP?</td>
+</tr>
+<tr>
+<td>S12</td><td>May 13</td>
+<td><span class="tag tag-event">feel=Tired</span> <span class="tag tag-event">5th consecutive day</span> <span class="tag tag-event">same-day session 1 of 2</span></td>
+<td>D2-Q4, D3-Q2,Q3, D5-Q6, D8-Q2</td>
+<td>5 consecutive days — consecutive penalty should fire (−14). feel=Tired. Does coaching acknowledge cumulative fatigue? Does the readiness score reflect the streak penalty? First of two same-day sessions — does streak count correctly?</td>
+</tr>
+<tr>
+<td>S13</td><td>May 13</td>
+<td><span class="tag tag-event">same-day session 2 of 2</span> <span class="tag tag-event">feel=Strong</span></td>
+<td>D2-Q4,Q5, D3-Q1,Q2, D5-Q1, D7-Q1</td>
+<td>Two sessions same day, conflicting feels (S12=Tired, S13=Strong). Does readiness for S13 reflect intra-day fatigue? Are both sessions separately visible in Progress history? Do they both appear in analytics or are they merged?</td>
+</tr>
+<tr>
+<td>S14</td><td>May 18</td>
+<td><span class="tag tag-event">2× zero-rep (DBP)</span> <span class="tag tag-gap">5-day gap</span></td>
+<td>D2-Q1, D3-Q1,Q2,Q4, D4-Q2, D8-Q1,Q2,Q3</td>
+<td>DBP: 1 valid set, 2 zero-rep. What does the narrative say — "solid session" or "incomplete"? This is the most consequential narrative test. Return after 5 days — shame-free? Overload scoreboard baseline check — 5.1 weeks since S1.</td>
+</tr>
+<tr>
+<td>S15</td><td>May 19</td>
+<td><span class="tag tag-event">highest volume (3015kg)</span> <span class="tag tag-event">MSP large target jump</span> <span class="tag tag-event">zero-rep (Leg Press)</span></td>
+<td>D2-Q1,Q7, D3-Q1,Q4, D4-Q3,Q7, D7-Q3</td>
+<td>Volume spike set for S16. MSP 30kg vs target 15kg — celebrated as overload or flagged as target mismatch? Volume calculation verified across all views. Leg Press zero-rep: narrative behavior.</td>
+</tr>
+<tr>
+<td>S16</td><td>May 20</td>
+<td><span class="tag tag-data">LP 4th session (trend mature)</span> <span class="tag tag-event">volume spike from S15</span></td>
+<td>D3-Q1,Q7, D4-Q2,Q4,Q5, D5-Q1,Q4, D7-Q1</td>
+<td>Readiness should reflect S15 volume spike (−10). LP momentum — MomentumChipsCard check. LP e1RM consistency between Progress and Insights tabs. Coaching for 4th LP session — does it reference the sustained trend?</td>
+</tr>
+<tr>
+<td>S17</td><td>May 21</td>
+<td><span class="tag tag-event">Incline DB 3rd session</span></td>
+<td>D3-Q1,Q7, D4-Q5, D5-Q2,Q4</td>
+<td>Incline DB plateau assessment: 3 sessions minimum met. Does PlateauRiskCard include or exclude it? Is the classification correct given the e1RM trajectory? Short session (3 sets) — does the app note this?</td>
+</tr>
+<tr>
+<td>S18</td><td>May 21</td>
+<td><span class="tag tag-event">assisted exercise</span> <span class="tag tag-event">same-day session 2 of 2</span> <span class="tag tag-event">1-min duration</span></td>
+<td>D1-Q6, D2-Q4,Q6,Q7, D3-Q1, D7-Q3</td>
+<td>Counterweight convention communicated? Effective load shown vs counterweight entered? Volume calculation for assisted exercises. 1-minute session — is duration displayed and is it accurate?</td>
+</tr>
+<tr style="background:rgba(212,148,58,.04)">
+<td><strong>Today</strong></td><td>May 26</td>
+<td><span class="tag tag-gap">5-day gap</span> <span class="tag tag-threshold">18 sessions</span></td>
+<td>D4-Q1,Q4, D5-Q1,Q5, D7-Q4, D8-Q1,Q2,Q3,Q4,Q5</td>
+<td>Return experience. Readiness ≈69. Trainer plan should route to Legs. HONHabitEngine message: shame-free? All EmergentInsights with empty prerequisites: honest placeholders? This is the live state of the product.</td>
+</tr>
+</tbody>
+</table></div>
+
+<!-- ================================================================ -->
+<h2>Grading Framework</h2>
+
+<div class="g2">
+<div>
+<div class="card">
+<h4 style="margin-top:0">Verdict Definitions</h4>
+<ul>
+<li><span class="verd"><span class="dot dot-pass"></span></span> <strong>Pass</strong> — The app behaves as designed and as the user would reasonably expect. No follow-up required.</li>
+<li style="margin-top:8px"><span class="verd"><span class="dot dot-watch"></span></span> <strong>Watch</strong> — Technically correct but creates a subtle trust, UX, or coherence risk. Not a failure today, but a compounding problem over time. Document and monitor.</li>
+<li style="margin-top:8px"><span class="verd"><span class="dot dot-fail"></span></span> <strong>Fail</strong> — The app produces incorrect output, misleads the user, contradicts the data, or violates the product promise. Requires a finding and a fix.</li>
+<li style="margin-top:8px"><span class="verd"><span class="dot dot-na"></span></span> <strong>N/A</strong> — The trigger condition for this question was not present in this session.</li>
+</ul>
+</div>
+</div>
+<div>
+<div class="card">
+<h4 style="margin-top:0">Severity Classification (for Fails)</h4>
+<ul>
+<li><strong>P0 — Data integrity:</strong> The app stores or displays incorrect data that flows into other features. Requires immediate fix. Affects all downstream calculations.</li>
+<li style="margin-top:8px"><strong>P1 — Trust breach:</strong> The app says something that contradicts what the user can observe or know. Coaching that praises a failed session. A number that doesn't add up. A label that's wrong. Erodes trust on each occurrence.</li>
+<li style="margin-top:8px"><strong>P2 — Brand violation:</strong> The app's voice or framing contradicts the product identity (cheerleader language, gap-shaming, generic coaching). Cumulative erosion of brand differentiation.</li>
+<li style="margin-top:8px"><strong>P3 — UX friction:</strong> The app's design makes it harder than it should be to capture good data or consume insights. Includes discoverability, affordance, and label accuracy issues.</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div class="card">
+<h4 style="margin-top:0">What Makes a Finding</h4>
+<p>A finding requires three things: (1) the question that was asked, (2) what the app actually did, and (3) what the app should have done. A finding without all three is an observation, not a finding. Every finding must be reproducible — it must be possible to point to the exact user action, the exact screen, and the exact output that produced it.</p>
+<p>Data from the workout log can be cited as context but is not itself a finding. "The log shows 0/18 readinessBefore values" is context. "Starting a session, completing one set before answering the readiness prompt causes the prompt to disappear — verified by [specific reproduction steps]" is a finding.</p>
+</div>
+
+<hr>
+<footer>H.O.N. Audit Approach · 2026-05-26 · 8 dimensions · 47 questions · Session protocol: S1–S18 + today · Branch: claude/workout-app-code-review-QI5zm</footer>
+</div>
+</body>
+</html>
