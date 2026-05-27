@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H.O.N. Interdisciplinary Review Board — 2026-05-26</title>
+<style>
+:root {
+  --bg:#0f0f11;--s1:#1a1a1e;--s2:#222228;--s3:#2a2a32;
+  --border:#2e2e36;--text:#e8e8ee;--muted:#888896;--dim:#444450;
+  --amber:#D4943A;--sage:#7BAF85;--rose:#C26B6B;
+  --slate:#6B85A0;--lav:#9B8EC4;
+  --red:#c25050;--orange:#c27830;--yellow:#b8882a;
+  --blue:#5080c0;--green:#4a9a5a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,'SF Pro Text','Helvetica Neue',sans-serif;font-size:14px;line-height:1.7}
+.page{max-width:1240px;margin:0 auto;padding:48px 28px}
+h1{font-size:30px;font-weight:800;letter-spacing:-.5px;color:var(--amber)}
+h2{font-size:18px;font-weight:700;color:var(--text);margin:56px 0 18px;padding-bottom:10px;border-bottom:2px solid var(--border);letter-spacing:-.2px}
+h3{font-size:13px;font-weight:700;color:var(--amber);margin:26px 0 10px;text-transform:uppercase;letter-spacing:.8px}
+h4{font-size:13px;font-weight:700;color:var(--text);margin:14px 0 6px}
+p{color:var(--muted);margin-bottom:10px;line-height:1.8}
+strong{color:var(--text)}
+em{color:var(--muted);font-style:italic}
+code{background:var(--s2);color:var(--sage);padding:2px 6px;border-radius:4px;font-size:11.5px;font-family:'SF Mono','Fira Code',monospace}
+ul,ol{padding-left:0;list-style:none}
+li{padding:5px 0;border-bottom:1px solid var(--border);color:var(--muted);font-size:13px}
+li:last-child{border-bottom:none}
+li strong{color:var(--text)}
+.subtitle{color:var(--muted);font-size:13px;margin:6px 0 44px;max-width:760px;line-height:1.8}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+@media(max-width:900px){.g2,.g3,.g4{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.g2,.g3,.g4{grid-template-columns:1fr}}
+.card{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:14px}
+.note{background:rgba(212,148,58,.07);border:1px solid rgba(212,148,58,.2);border-radius:8px;padding:13px 16px;font-size:13px;color:var(--text);margin:16px 0}
+.note strong{color:var(--amber)}
+.alarm{background:rgba(194,80,80,.07);border:1px solid rgba(194,80,80,.25);border-radius:8px;padding:13px 16px;font-size:13px;color:var(--text);margin:16px 0}
+.alarm strong{color:var(--rose)}
+.good{background:rgba(123,175,133,.06);border:1px solid rgba(123,175,133,.2);border-radius:8px;padding:13px 16px;font-size:13px;color:var(--text);margin:16px 0}
+.good strong{color:var(--sage)}
+.table-wrap{overflow-x:auto;margin:14px 0}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{background:var(--s2);color:var(--muted);font-weight:600;text-align:left;padding:9px 12px;border-bottom:2px solid var(--border);font-size:11px;letter-spacing:.4px;text-transform:uppercase;white-space:nowrap}
+td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--muted)}
+tr:last-child td{border-bottom:none}
+tr:nth-child(even) td{background:rgba(255,255,255,.012)}
+td:first-child{color:var(--amber);font-family:'SF Mono',monospace;font-size:11px;white-space:nowrap}
+td strong{color:var(--text)}
+.section-num{display:inline-block;background:var(--amber);color:#000;font-weight:900;font-size:11px;padding:2px 8px;border-radius:4px;margin-right:10px;letter-spacing:.4px}
+.tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;white-space:nowrap;margin:2px 2px 0 0}
+.tc-red{background:rgba(194,80,80,.15);color:var(--red)}
+.tc-amber{background:rgba(212,148,58,.12);color:var(--amber)}
+.tc-sage{background:rgba(123,175,133,.12);color:var(--sage)}
+.tc-slate{background:rgba(107,133,160,.12);color:var(--slate)}
+.tc-lav{background:rgba(155,142,196,.12);color:var(--lav)}
+.tc-dim{background:rgba(68,68,80,.3);color:var(--muted)}
+.expert-block{border-left:3px solid var(--border);padding:10px 14px;margin:8px 0;background:var(--s1);border-radius:0 8px 8px 0}
+.expert-block.agree{border-left-color:var(--sage)}
+.expert-block.disagree{border-left-color:var(--rose)}
+.expert-block.warn{border-left-color:var(--amber)}
+.expert-name{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.expert-block p{font-size:13px;margin:0;color:var(--text)}
+.risk-row{display:grid;grid-template-columns:24px 1fr 80px 100px 90px;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);align-items:start;font-size:12px}
+.risk-row:last-child{border-bottom:none}
+.risk-n{color:var(--amber);font-weight:800;font-family:'SF Mono',monospace}
+.meter{height:5px;border-radius:3px;background:var(--s3)}
+.m-low{background:var(--sage)}
+.m-med{background:var(--yellow)}
+.m-high{background:var(--orange)}
+.m-crit{background:var(--red)}
+.cohort-card{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:18px}
+.cohort-header{padding:14px 20px;display:flex;gap:14px;align-items:center;background:var(--s2);border-bottom:1px solid var(--border)}
+.cohort-icon{font-size:20px}
+.cohort-name{font-size:14px;font-weight:700}
+.cohort-meta{font-size:12px;color:var(--muted)}
+.cohort-body{padding:18px 20px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px}
+@media(max-width:800px){.cohort-body{grid-template-columns:1fr 1fr}}
+.cohort-col h4{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.cohort-col p,.cohort-col li{font-size:12px;color:var(--muted);margin-bottom:4px}
+.cohort-col li strong{font-size:12px}
+.retention-bar{height:8px;border-radius:4px;background:var(--s3);margin-top:4px}
+.r30{background:linear-gradient(90deg,var(--green),var(--yellow))}
+.r90{background:linear-gradient(90deg,var(--red),var(--orange))}
+.callout{border-radius:0 8px 8px 0;padding:12px 16px;margin:12px 0;font-size:13px}
+.c-amber{background:rgba(212,148,58,.07);border-left:3px solid var(--amber)}
+.c-amber p{margin:0;color:var(--text)}
+.c-rose{background:rgba(194,107,107,.07);border-left:3px solid var(--rose)}
+.c-rose p{margin:0;color:var(--text)}
+.c-sage{background:rgba(123,175,133,.07);border-left:3px solid var(--sage)}
+.c-sage p{margin:0;color:var(--text)}
+.c-slate{background:rgba(107,133,160,.07);border-left:3px solid var(--slate)}
+.c-slate p{margin:0;color:var(--text)}
+.verdict-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;margin:18px 0}
+@media(max-width:800px){.verdict-grid{grid-template-columns:1fr 1fr}}
+.verdict-cell{border-radius:10px;padding:16px;border:1px solid}
+.v-diff{background:rgba(123,175,133,.05);border-color:rgba(123,175,133,.2)}
+.v-comm{background:rgba(107,133,160,.05);border-color:rgba(107,133,160,.2)}
+.v-frag{background:rgba(212,148,58,.05);border-color:rgba(212,148,58,.2)}
+.v-fail{background:rgba(194,80,80,.05);border-color:rgba(194,80,80,.2)}
+.v-head{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}
+.v-diff .v-head{color:var(--sage)}
+.v-comm .v-head{color:var(--slate)}
+.v-frag .v-head{color:var(--amber)}
+.v-fail .v-head{color:var(--rose)}
+.verdict-cell li{font-size:12px;padding:4px 0}
+.simplify-row{display:grid;grid-template-columns:1fr 1fr 50px;gap:14px;padding:10px 0;border-bottom:1px solid var(--border);font-size:12px;align-items:start}
+.simplify-row:last-child{border-bottom:none}
+.cut{color:var(--red);font-weight:700}
+.keep{color:var(--sage);font-weight:700}
+.watch{color:var(--amber);font-weight:700}
+hr{border:none;border-top:1px solid var(--border);margin:48px 0}
+footer{color:var(--dim);font-size:12px;text-align:center;margin-top:60px}
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>H.O.N. Interdisciplinary Review Board</h1>
+<p class="subtitle">A structured critical evaluation by a 12-discipline panel assessing shippability, behavioral realism, scientific validity, and long-term product viability. The goal is not to impress. The goal is to find what fails.</p>
+
+<!-- ============================================================ -->
+<h2><span class="section-num">PANEL</span> Who Is Evaluating This</h2>
+
+<p>Twelve expert perspectives are represented. They do not agree. Where disagreement exists, it is shown explicitly — consensus is not assumed because it does not exist in the underlying evidence.</p>
+<div class="g4">
+<div class="card" style="padding:14px 16px"><strong style="font-size:12px">Sports Scientist</strong><br><span style="font-size:11px;color:var(--muted)">e1RM validity, strength standards, PCSA, periodization models</span></div>
+<div class="card" style="padding:14px 16px"><strong style="font-size:12px">Exercise Physiologist</strong><br><span style="font-size:11px;color:var(--muted)">RPE scales, fatigue accumulation, deload protocols, bilateral mechanics</span></div>
+<div class="card" style="padding:14px 16px"><strong style="font-size:12px">Elite Strength Coach</strong><br><span style="font-size:11px;color:var(--muted)">Coaching quality, program design, practical cue effectiveness</span></div>
+<div class="card" style="padding:14px 16px"><strong style="font-size:12px">Behavioral Psychologist</strong><br><span style="font-size:11px;color:var(--muted)">Habit formation, motivation dynamics, shame and gap psychology</span></div>
+<div class="card" style="padding:14px 16px"><strong style="font-size:12px">Habit Formation Researcher</strong><br><span style="font-size:11px;color:var(--muted)">Lally/Wood/Fogg frameworks, automaticity timelines, trigger design</span></div>
+<div class="card" style="padding:14px 16px"><strong style="font-size:12px">Consumer App Product Lead</strong><br><span style="font-size:11px;color:var(--muted)">Feature discovery, competitive moat, retention mechanics, onboarding</span></div>
+<div class="card" style="padding:14px 16px"><strong style="font-size:12px">UX Researcher</strong><br><span style="font-size:11px;color:var(--muted)">First-use experience, conventions, labels, cognitive load, trust signals</span></div>
+<div class="card" style="padding:14px 16px"><strong style="font-size:12px">Retention Specialist</strong><br><span style="font-size:11px;color:var(--muted)">D1/D7/D30/D90 benchmarks, churn triggers, lifecycle mechanics</span></div>
+<div class="card" style="padding:14px 16px"><strong style="font-size:12px">AI Safety Reviewer</strong><br><span style="font-size:11px;color:var(--muted)">Hallucination risk, confidence calibration, recommendation safety</span></div>
+<div class="card" style="padding:14px 16px"><strong style="font-size:12px">Mobile Engineering Lead</strong><br><span style="font-size:11px;color:var(--muted)">Render performance, data correctness, failure modes, scale</span></div>
+<div class="card" style="padding:14px 16px"><strong style="font-size:12px">Data Scientist</strong><br><span style="font-size:11px;color:var(--muted)">Statistical validity, sample size, model assumptions, noise</span></div>
+<div class="card" style="padding:14px 16px"><strong style="font-size:12px">Healthcare Compliance</strong><br><span style="font-size:11px;color:var(--muted)">Medical framing, liability, recommendation disclaimers, scope</span></div>
+</div>
+
+<!-- ============================================================ -->
+<h2><span class="section-num">1</span> The Idealized System — What Gold Standard Looks Like</h2>
+
+<p>This section describes what the world's best possible system would do for the same user need. It is not a product roadmap. It is a calibration instrument: every gap between the ideal and the current product is a deliberate or accidental tradeoff.</p>
+
+<div class="table-wrap"><table>
+<tr><th>Domain</th><th>Gold Standard Approach</th><th>Current App Equivalent</th><th>Gap</th></tr>
+<tr><td>Readiness</td><td><strong>HRV measurement via chest strap (Polar H10) + validated WHOOP/Oura algorithm</strong>. HRV-based readiness has strong evidence (Flatt 2017, Plews 2013). Adds resting HR, SPO2, respiratory rate, skin temperature. Produces a confidence-weighted, longitudinal, objective score.</td><td>Dynamic baseline (<code>65 + min(15, sessions_last30d)</code>) + heuristic modifiers. Sleep, HR, and steps modifiers exist in code but require HealthKit — which is not connected. Actual score uses ~3 of 10+ designed modifiers.</td><td><span class="tag tc-red">Critical</span> Objective readiness requires hardware. App designed for it but 6+ modifiers are inert.</td></tr>
+<tr><td>e1RM Estimation</td><td><strong>Velocity-based training (VBT) with linear encoder or accelerometer.</strong> Velocity-load profile per exercise, per individual. Mean propulsive velocity predicts 1RM to ±2–4% (Banyard 2017). Eliminates Epley's ±10–15% individual variance entirely.</td><td>Epley (2–10 reps) / Mayhew (11–15). Validated but ±5–15% individual variance. Zero velocity data (0/149 sets). Fallback path accepts zero-rep sets if first filter empty.</td><td><span class="tag tc-amber">Moderate</span> Consumer-grade acceptable. VBT requires hardware. Fallback path is the real problem.</td></tr>
+<tr><td>Periodization</td><td><strong>Block periodization with individualized mesocycles.</strong> Accumulation → Intensification → Realization blocks. Load prescribed by validated RPE (Zourdos RPE 1-10 or RIR). Auto-regulation adjusts daily based on HRV and performance.</td><td>WorkoutPlanEngine: readiness tier → intensity band (Heavy/Moderate/Light) → randomElement(). No mesocycle awareness. No week-to-week accumulation model. Plans re-randomize every render.</td><td><span class="tag tc-red">Critical</span> Current system is not periodization — it is intensity selection. The foundation is missing.</td></tr>
+<tr><td>Coaching Quality</td><td><strong>Certified personal trainer reviewing AI drafts before delivery.</strong> Human-in-the-loop for high-stakes recommendations (deload, injury, max effort). AI generates, human approves. Trust is earned through track record, not claimed.</td><td>Rule-based phrase bank (8 categories, 10-phrase rotation window per exercise/category). No human review. Coaching correctness depends entirely on ExerciseAnalysis accuracy, which depends on data quality.</td><td><span class="tag tc-amber">Moderate</span> Rule-based is safer than LLM for this use case. But phrase repetition at ~session 15 is near-certain.</td></tr>
+<tr><td>Muscle Physiology</td><td><strong>Individual PCSA from MRI or DEXA.</strong> Individual fiber type ratio, moment arm measurement. Predicts inter-individual strength differences to within 8% (Holzbaur 2005). Requires clinical imaging.</td><td>Generic PCSA coefficients from literature (typical population means). User-specific only via entered bodyweight. <code>muscleMassPercent</code> field stores 79.85 (outside labeled 10–65 range — likely lean body mass %, not skeletal muscle mass %).</td><td><span class="tag tc-amber">Moderate</span> Population-mean PCSA is reasonable for relative comparisons. The mislabeled field is the real error.</td></tr>
+<tr><td>Habit Design</td><td><strong>BJ Fogg Tiny Habits framework + implementation intentions.</strong> Specific if-then plans ("After I finish work on Tuesday, I will open H.O.N. and log my workout") increase follow-through by 2-3× vs generic intent (Gollwitzer 1999). Personalized for individual schedule and context.</td><td>HONHabitEngine milestone messages + drift detection. Gap return only fires at ≥7 days. No pre-commitment prompts. No implementation intentions captured.</td><td><span class="tag tc-amber">Moderate</span> Milestone messages have weak evidence for sustained behavior change. Implementation intentions have strong evidence.</td></tr>
+</table></div>
+
+<!-- ============================================================ -->
+<h2><span class="section-num">2</span> The Realistic High-Performing Consumer Version</h2>
+
+<p>After compressing gold-standard approaches through the constraints of a consumer mobile app — minimal friction, imperfect data, normal compliance — this is what a high-performing version looks like. These are achievable without hardware, without clinical data, and with normal user behavior.</p>
+
+<div class="g2">
+<div>
+<h3>What Gets Built</h3>
+<ul>
+<li><strong>One readiness question, not zero.</strong> Pre-workout: "How ready do you feel? 1–5." Displayed on the Home screen as a prominent tap, not buried. This single input, captured 70%+ of the time, would unlock the readinessBefore modifier and the mindBodyAlignment insight. Currently: 0/18. One UX change.</li>
+<li><strong>RPE on the last set only.</strong> Not every set — the last one. "How hard was that? 1–10." After the user already feels the effort, one tap. This populates 8 of 14 EmergentInsight prerequisites. Currently: 0/149.</li>
+<li><strong>Weighted recent history for coaching.</strong> Weight suggestion uses the last 3 sessions average, not just the last session. Anomalous sessions (zero-rep, floor-weight) receive less weight. One failed session does not contaminate the target pre-fill.</li>
+<li><strong>Deload based on rolling 2-week trend, not single session.</strong> Current deload trigger (2 consecutive sessions under 65%) is too hair-trigger. Validated deload criteria: ≥3 sessions showing performance decline over ≥2 weeks (Zourdos 2016).</li>
+<li><strong>Trainer tab in navigation.</strong> The entire plan generation feature exists and is unreachable. Fix the navigation. This is a one-day engineering change with zero scientific dependencies.</li>
+<li><strong>Gap return message at 3 days, not 7.</strong> Current HONHabitEngine fires returnAfterLapse only at ≥7 days. Research shows the churn risk window begins at day 3 (Fogg 2020 — habits break at disruption points, recovery must be immediate).</li>
+<li><strong>Seed WorkoutPlanEngine.</strong> Plans should not change on every render. One seed, stable plan for the day. Change on next app open or manual refresh.</li>
+<li><strong>Cap visualizations to 3 per view.</strong> Hick's Law: decision time increases logarithmically with options. 55 visualizations is an analytics showcase, not a fitness tool.</li>
+</ul>
+</div>
+<div>
+<h3>What Gets Removed or Hidden</h3>
+<ul>
+<li><strong>Fatigue-adjusted e1RM chart.</strong> Requires RPE data. 0/149 sets have RPE. The chart's second series is identical to the first series. Hidden until RPE capture rate exceeds 20%.</li>
+<li><strong>INOL zones in user-facing views.</strong> INOL (Intensity + Number of Lifts) is a powerlifting programming metric. Consumer users don't know what it means and can't act on it. Keep in engine, remove from UI.</li>
+<li><strong>Fiber load / primary muscle contributor grid.</strong> Scientifically interesting, operationally meaningless for users logging with phone in hand. Keep as a "for enthusiasts" deep-dive, not front-surface analytics.</li>
+<li><strong>EmergentInsights carousel when &lt;4 are populated.</strong> A carousel rotating through 10 placeholder cards and 4 real ones signals "this app doesn't know you yet" — which is the opposite of the personalization promise. Show 1 specific insight or nothing.</li>
+<li><strong>12 of 14 EmergentInsights behind HealthKit wall.</strong> If HealthKit isn't connected, surface one card: "Connect Apple Health to unlock 12 additional insights." Not a carousel of locked tiles.</li>
+<li><strong>PCSA-weighted labels in user-facing views.</strong> The Fiber Load card shows "raw a.u." and "allometric PSI" values to users who cannot interpret them. These are engineer-facing metrics presented as user value. Remove unit labels or add a single-sentence explanation.</li>
+</ul>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<h2><span class="section-num">3</span> Highest-Risk Assumptions — With Expert Disagreements</h2>
+
+<p>These are not hypothetical risks. Each is grounded in the codebase, the data map, or documented behavior patterns. Expert disagreements are shown explicitly — the panel does not agree on severity.</p>
+
+<h3>A1 — The Readiness Score Is Materially Incomplete Without HealthKit</h3>
+<div class="g2">
+<div>
+<p>The engine has 10+ modifiers. Sleep hours (+5/+2/−5/−10), resting HR (+3/−3/−6), steps (0.3–0.85 multiplier), and readinessBefore trend (±4–5) are all inactive when HealthKit is disconnected. Of 18 sessions, HealthKit data has never been connected. The score the user sees is produced by, at most, 4 of 10+ modifiers — daysSinceLast, consecutiveActive, recentFreq, volumeSpike, and RPE (also null). A user with 5 hours of sleep and elevated HR gets the same score as a fully rested user.</p>
+<p>Furthermore: the baseline itself is dynamic — <code>65 + min(15, sessions_last30d)</code> — but the CLAUDE.md documentation states the baseline as a fixed "68." This is not true. With 18 sessions in 30 days, the baseline is 80, not 68. The worked example in the audit approach document is wrong by 11 points.</p>
+</div>
+<div>
+<div class="expert-block disagree"><div class="expert-name">AI Safety Reviewer</div><p>This is not a minor gap. A readiness score that ignores sleep is not a readiness score — it's a training frequency score dressed up as personalized wellness. If the score is presented as "readiness" and it ignores the most evidence-supported predictor of athletic performance (sleep), the product is making a claim it cannot support. <strong>Severity: P0.</strong></p></div>
+<div class="expert-block warn"><div class="expert-name">Consumer App Product Lead</div><p>Most fitness apps operate without HRV or sleep data. The score still provides useful directional signal — "you trained 5 days in a row" is real information even without sleep data. The fix is labeling: if HealthKit is disconnected, show "Training Readiness" (what it actually measures) not "Readiness" (what it implies).</p></div>
+<div class="expert-block agree"><div class="expert-name">Sports Scientist</div><p>The dynamic baseline finding is more concerning than the HealthKit gap. If the score can range from 65 (no sessions) to 80 (fully active) as a baseline alone, and this is undocumented, the modifiers are being applied against an opaque denominator. Users cannot understand why their score changed.</p></div>
+</div>
+</div>
+
+<h3>A2 — The Coaching Narrative Will Repeat Within 4–6 Weeks for Active Users</h3>
+<div class="g2">
+<div>
+<p>The phrase bank rotation uses a 10-phrase window per exercise per category. With a user logging the same exercise 2–3 times per week, each phrase category is hit approximately every 3–5 sessions. The 10-phrase window means repetition at exactly session 10 for the most-used exercise/category combination. At 18 sessions, any exercise logged ≥5 times has almost certainly produced a repeated coaching line.</p>
+<p>When coaching repeats, the personalization illusion breaks. Users who notice repetition categorize the coaching as "copy-paste" regardless of whether it was technically correct. This is the transition from "the app knows me" to "the app is a template." Once that transition occurs, it rarely reverses.</p>
+</div>
+<div>
+<div class="expert-block disagree"><div class="expert-name">Elite Strength Coach</div><p>This is the most serious long-term risk in the product. Real coaching becomes repetitive too — but real coaches build a relationship that makes repetition acceptable. This app has no relationship layer. When the user notices the same phrase in week 6 that appeared in week 2, there is no relationship to absorb the disappointment. The coaching must either have genuine novelty or the relationship must be built elsewhere.</p></div>
+<div class="expert-block warn"><div class="expert-name">Behavioral Psychologist</div><p>Mild disagreement on severity. Research on habit formation shows that after automaticity (roughly 66 sessions — Lally 2010), users no longer need motivational coaching — they need confirmation. Repetitive confirmation is acceptable. The problem is that 18 sessions is still in the habit-building window, where novelty matters most.</p></div>
+</div>
+</div>
+
+<h3>A3 — 12 of 14 EmergentInsights Are Placeholders for This User</h3>
+<div class="g2">
+<div>
+<p>Of 14 EmergentInsight types, a systematic check against the data map:</p>
+<ul>
+<li>Mind-Body Alignment: needs HRV ≥65ms → HealthKit absent → proxy only</li>
+<li>True Adaptation State: needs velocity &gt;0.3 kg/wk → velocity 0/149 → disabled</li>
+<li>Program Calibration: needs RPE ≥7.5 → 0/149 RPE → disabled</li>
+<li>Net Recovery Capacity: needs sleep hours → HealthKit absent → disabled</li>
+<li>PR Attempt Quality: needs velocity data → 0/149 → disabled</li>
+<li>Cardio Fatigue Pattern: needs RPE within 48h → RPE null → disabled</li>
+<li>Body Weight × Strength: needs ≥4 weight entries over ≥2 months → unclear</li>
+<li>Aerobic Capacity: needs VO2 Max (HealthKit) → absent → disabled</li>
+<li>Rest Day Activity: needs step data (HealthKit) → absent → disabled</li>
+<li>Sleep & Peak Performance: needs ≥3 PR sessions → possibly active</li>
+<li>Strongest Day: needs ≥15 sessions, ≥3 same weekday → possibly active at 18 sessions</li>
+<li>Feel Archetype: needs ≥6 sessions + feel → 15/18 feel → likely active</li>
+<li>Load Tolerance Profile: needs ≥5 sessions + feel + duration &gt;60m → possibly active</li>
+<li>Imbalance Trajectory: needs ≥2 category analytics → likely active</li>
+</ul>
+<p><strong>Result: approximately 3–4 of 14 insights are live. The carousel shows 10–11 placeholders rotating with 3–4 real insights.</strong> The feature's visual presence exceeds its data-backed substance by a factor of 3–4×.</p>
+</div>
+<div>
+<div class="expert-block disagree"><div class="expert-name">UX Researcher</div><p>This is a trust destruction mechanism. When users see a card that says "Connect Apple Health to unlock this insight" five times in the same carousel, the net message is "this app doesn't work for me." The feature should be hidden entirely until 8+ insights can be populated, then introduced as a meaningful unlock event.</p></div>
+<div class="expert-block warn"><div class="expert-name">Consumer App Product Lead</div><p>Placeholders can be intentional — they show aspiration and create a pull toward HealthKit connection. This only works if the placeholders are specific ("Connect Health to see how your sleep affects your deadlift performance") not generic ("Not enough data"). Check the actual placeholder text quality before making a verdict.</p></div>
+<div class="expert-block agree"><div class="expert-name">Data Scientist</div><p>Three active insights from 14 is a 21% utilization rate for the feature's primary screen real estate. From a product metrics standpoint, this is a failing feature that is being surfaced at full visual weight. The feature needs a data gate before it appears, not a post-loading placeholder replacement.</p></div>
+</div>
+</div>
+
+<h3>A4 — The Allometric Scaling and PCSA Inputs Are Systematically Wrong</h3>
+<p>The <code>muscleMassPercent</code> field stores 79.85 (likely lean body mass % — body weight minus fat). The UI labels it "Muscle Mass %" with a valid range of 10–65%. True skeletal muscle mass for an adult male is 30–50% of body weight. Lean body mass is 70–85%. The stored value is lean body mass, labeled as muscle mass. Every PCSA-dependent calculation (fiber load, allometric PSI, primary muscle contributor grid) uses this input. The values shown are wrong by a systematic factor, calculated from a mislabeled input against the wrong reference range.</p>
+<div class="alarm"><strong>Engineering Lead note:</strong> The PCSA computation uses population-mean fiber PCSA × the user's muscleMassPercent as a scaling factor. With 79.85 entered where the formula expects 30–50 (skeletal muscle), the PSI values displayed are inflated by roughly 1.5–2×. This doesn't affect progression tracking (relative values are still meaningful) but makes the absolute PSI numbers uninterpretable and scientifically invalid.</div>
+
+<h3>A5 — The Deload and Plateau Detection Have Insufficient Statistical Power at 18 Sessions</h3>
+<div class="g2">
+<div>
+<p>Plateau detection requires ≥3 sessions over ≥4 weeks with OLS slope &lt;0.5 kg/wk. With 18 sessions across 19 exercises, most exercises have ≤3 sessions total. The OLS slope from 2–3 points has enormous variance. A "plateau" detected from 3 sessions may reverse on the 4th. A "momentum" classification from 3 sessions may be noise.</p>
+<p>The deload trigger (2 consecutive sessions &lt;65% of target completion) is particularly unstable at low session counts. One zero-rep session followed by a cautious second session triggers the deload flag without meaningful evidence of systematic overtraining.</p>
+</div>
+<div>
+<div class="expert-block disagree"><div class="expert-name">Data Scientist</div><p>With 3 data points, OLS has 1 degree of freedom. The confidence interval on a slope from 3 points is so wide that it is statistically indistinguishable from zero. Displaying a "plateau" classification from 3 sessions is presenting noise as signal. The minimum threshold for reliable OLS trend detection in this context is 6–8 sessions of the same exercise. </p></div>
+<div class="expert-block warn"><div class="expert-name">Sports Scientist</div><p>Practical objection: waiting for 6–8 sessions of the same exercise before showing trend data means waiting 6–12 weeks for most users. That's too long to be actionable. A 3-session trend with explicit uncertainty labeling is better than no trend at all. The fix is confidence communication, not the threshold.</p></div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<h2><span class="section-num">4</span> The Most Likely Reasons Real Users Churn</h2>
+
+<p>Ranked by estimated impact across realistic user cohorts. These are not the most technically interesting problems — they are the ones that end sessions permanently.</p>
+
+<div class="table-wrap"><table>
+<tr><th>Rank</th><th>Churn Reason</th><th>Trigger Point</th><th>Cohort at Risk</th><th>Estimated Churn %</th><th>Preventable?</th></tr>
+<tr><td>1</td><td><strong>Coaching text repeats visibly.</strong> User notices the same phrase from session 3 appears in session 14. The personalization promise breaks. The product becomes a "fancy logbook."</td><td>Sessions 8–15 for exercises logged 3×/week</td><td>All active users</td><td>~30% of active cohort</td><td><span class="tag tc-amber">Yes — phrase bank expansion + session context</span></td></tr>
+<tr><td>2</td><td><strong>Gap return is not gentle enough, soon enough.</strong> After 4–5 days away, users feel the app hasn't acknowledged their return until day 7 (HONHabitEngine fires at ≥7 days). The readiness score at −4 (4–6d gap) may read as "the app thinks you're behind." Return friction = abandonment.</td><td>Day 4–6 of any gap</td><td>P1 Returners, inconsistent users</td><td>~25% of gap-experiencing users</td><td><span class="tag tc-sage">Yes — fire returnAfterLapse at ≥3 days</span></td></tr>
+<tr><td>3</td><td><strong>No social layer.</strong> Fitness apps that survive at 90 days have one thing in common: the user told someone. Strong's PR sharing, MyFitnessPal's friend feed, Strava's segments. H.O.N. has no shareable moment. A PR banner appears and disappears. No one saw it.</td><td>First major PR, no share mechanism</td><td>Beginners, casual users</td><td>~20% long-term</td><td><span class="tag tc-amber">Yes — but requires engineering investment</span></td></tr>
+<tr><td>4</td><td><strong>Analytics overwhelm at first deep exploration.</strong> User opens Insights or Progress expecting to understand something about their performance. They see 10+ charts, 5+ terminology strings they don't know (INOL, PSI, allometric, e1RM). They close the tab. They don't come back to it. The analytics become invisible.</td><td>First visit to Progress/Insights (usually week 2)</td><td>P3 Beginners, P1 Returners</td><td>~35% don't return to analytics tabs</td><td><span class="tag tc-sage">Yes — cap visible complexity, progressive disclosure</span></td></tr>
+<tr><td>5</td><td><strong>The app doesn't know their goal.</strong> Onboarding captures name, weight, age, location. It does not ask: what are you trying to achieve? Why are you here? Without a stated goal, coaching cannot be directional. "You should increase weight" lacks power without "because you want to deadlift 2× bodyweight by December."</td><td>Onboarding + first session</td><td>All users — P3 most affected</td><td>Reduces session 2 open rate by est. ~15%</td><td><span class="tag tc-sage">Yes — one goal question in onboarding</span></td></tr>
+<tr><td>6</td><td><strong>Weight entry convention is invisible for dumbbells.</strong> Users enter total load (40 kg) expecting it means 40 kg. App doubles it to 80 kg for bilateral. e1RM shows an inflated number. When the skeptic notices ("I only lifted 40 kg, why does it say 80?"), trust breaks. When the beginner doesn't notice, they get falsely inflated strength scores — which creates unrealistic expectations.</td><td>First dumbbell session</td><td>P3 Beginners, P2 Skeptics</td><td>Individually low but permanent trust damage</td><td><span class="tag tc-sage">Yes — one-line convention note at weight entry</span></td></tr>
+<tr><td>7</td><td><strong>No injury or illness handling.</strong> User gets a minor injury. App doesn't know. Training log goes quiet. When they return, the readiness engine doesn't distinguish "I was injured" from "I was lazy." No protocol for substitutions, modified training, or return-from-injury ramp-up. The app treats injury as equivalent to a motivational gap.</td><td>Any injury or illness event</td><td>All users — high impact at any session count</td><td>~40% of injured users don't return</td><td><span class="tag tc-amber">Yes — injury flag + substitution suggestions</span></td></tr>
+<tr><td>8</td><td><strong>Trainer tab is unreachable.</strong> The entire AI workout planning feature is built, styled, and inaccessible from main navigation. Users who want personalized plans — which is the product's headline promise — cannot find it. If they ask friends "does this app give you a workout plan?", the answer is no, functionally.</td><td>First time user looks for guidance</td><td>P3 Beginners especially</td><td>Significant — addresses primary use case</td><td><span class="tag tc-sage">Yes — add tab or navigation entry</span></td></tr>
+</table></div>
+
+<!-- ============================================================ -->
+<h2><span class="section-num">5</span> Features That Sound Impressive But Probably Don't Matter</h2>
+
+<p>Ranked by the gap between perceived sophistication and actual user-outcome improvement. These are not bad features — some are scientifically sound. They are features whose cost in complexity, cognitive load, and maintenance outweighs their contribution to the app's core mission.</p>
+
+<div class="table-wrap"><table>
+<tr><th>Feature</th><th>Why It Sounds Impressive</th><th>Why It Probably Doesn't Matter</th><th>Evidence Strength</th><th>Verdict</th></tr>
+<tr><td><strong>PCSA-weighted composites</strong></td><td>Uses real muscle physiology; cross-sectional area is the determinant of force production</td><td>Population-mean PCSA applied to individual users has ~25–35% variance from true individual PCSA (Erskine 2010). Users cannot verify, correct, or understand the value. The mislabeled muscleMassPercent field adds systematic error on top. Relative comparisons (is bench improving?) are the same without it.</td><td>★★★☆☆ (valid concept, wrong implementation)</td><td><span class="tag tc-amber">Simplify: use bodyweight-relative scoring without PCSA weighting for user-facing outputs</span></td></tr>
+<tr><td><strong>Allometric scaling (BW^0.67, Jaric 2002)</strong></td><td>Jaric's allometric method is peer-reviewed; properly normalizes strength for bodyweight comparison</td><td>Jaric's paper uses measured mass from controlled studies. Applied to user-entered bodyweight, with the muscleMassPercent error, the allometric exponent amplifies the input error. The resulting "kg·cm²" number is uninterpretable by users. Zero users know what BW^0.67 means.</td><td>★★★☆☆ (legitimate science, wrong context)</td><td><span class="tag tc-red">Remove from UI: keep relative ranking, drop the allometric unit label</span></td></tr>
+<tr><td><strong>INOL zones</strong></td><td>Intensity × Number of Lifts is used by elite powerlifting coaches (Prilepin tables)</td><td>INOL was designed for high-frequency Olympic lifting, where volume-intensity management is session-level critical. For general fitness users training 2–4×/week with moderate loads, INOL adds no actionable information that "volume × intensity" doesn't capture. No RCT evidence for consumer outcome improvement.</td><td>★★☆☆☆ (niche evidence, wrong population)</td><td><span class="tag tc-red">Remove from user-facing views entirely</span></td></tr>
+<tr><td><strong>Fatigue-adjusted e1RM (dual-series chart)</strong></td><td>Adjusting for session fatigue is methodologically sound; Tuchscherer's RIR-based adjustment is evidence-backed</td><td>Requires per-set RPE. 0/149 sets have RPE. The "fatigue-adjusted" series is identical to the standard series. Displaying a scientifically-named dual-series chart that shows the same data twice is worse than showing nothing — it falsely implies meaningful adjustment was made.</td><td>★★★★☆ (excellent concept, zero data)</td><td><span class="tag tc-red">Hide until RPE capture rate exceeds 20% (≥30 sets)</span></td></tr>
+<tr><td><strong>Rep decay metric</strong></td><td>Intra-set rep quality decline (Wilk 2020) is a real fatigue signal in powerlifting science</td><td>Requires rep-level data (velocity profile or at minimum set-level RPE). Neither is captured. With only total reps and weight, rep decay is estimated from population norms, not measured. A metric that is entirely inferred from aggregate data and presented with a precision that implies measurement is misleading.</td><td>★★☆☆☆ (real metric, no data to compute it)</td><td><span class="tag tc-red">Remove until velocity data exists</span></td></tr>
+<tr><td><strong>Session cost metric</strong></td><td>Quantifying neural and muscular cost per session is theoretically useful for periodization</td><td>The formula is proprietary and unvalidated externally. Users cannot verify it. It doesn't appear in peer-reviewed training load literature. Without external validation, a "session cost" number is more likely to create confusion ("why did this short session cost more than the long one?") than insight.</td><td>★★☆☆☆ (plausible, unvalidated)</td><td><span class="tag tc-amber">Keep in engine; remove from user-facing views until validated against training outcomes</span></td></tr>
+<tr><td><strong>14 EmergentInsight types</strong></td><td>Cross-domain pattern detection (sleep × performance, feel × volume) is genuinely sophisticated</td><td>At current data fill rates, 10–11 of 14 show placeholders. The psychological effect of a carousel full of locked/placeholder content is the opposite of "this app is intelligent" — it reads as "this app needs more from me before it works." The right number of insights is: however many have data to support them. For most users, that's 2–4.</td><td>★★★★☆ (concept excellent; execution gated by data)</td><td><span class="tag tc-amber">Data-gate the carousel: show only populated insights, no placeholders</span></td></tr>
+</table></div>
+
+<!-- ============================================================ -->
+<h2><span class="section-num">6</span> The 20% of Features Responsible for 80% of User Outcomes</h2>
+
+<p>If the app shipped with only these features, it would retain more users at 90 days than the full current feature set. These are the features that directly produce the outcomes users actually want: progressive overload, habit formation, and the belief that the app works.</p>
+
+<div class="g2">
+<div class="card-sage" style="background:rgba(123,175,133,.05);border:1px solid rgba(123,175,133,.25);border-radius:12px;padding:20px 22px">
+<h4 style="color:var(--sage);margin-top:0">The Core Six</h4>
+<ul>
+<li><strong>Progressive overload tracking.</strong> The fundamental driver of strength gains. The app logs weight and reps, computes e1RM, and compares to prior sessions. This is the entire scientific basis of the product. Every other feature derives value from whether this is correct.</li>
+<li><strong>Post-set coaching narrative.</strong> The primary emotional experience. The moment after a set is the highest-engagement point in the session. A specific, accurate coaching response here is worth more than 10 additional analytics charts. Quality matters more than sophistication.</li>
+<li><strong>PR detection and acknowledgment.</strong> The single highest-stakes reward signal in strength training. A personal record is an identity event, not a data point. The current implementation (banner + guard prevBest > 0) is correct in principle. Display quality and emotional weight of the PR moment are the execution questions.</li>
+<li><strong>Gap return framing.</strong> The make-or-break retention moment. A user who returns after 5 days away and feels welcomed comes back again. A user who feels behind, punished, or scolded does not. This single UX moment has a larger effect on 90-day retention than any analytics feature.</li>
+<li><strong>Feel rating at session end.</strong> The only subjective enrichment signal that is being captured at scale (83%). It feeds coaching coherence, EmergentInsights, and readiness proxying. More important than any objective metric because it's available.</li>
+<li><strong>Pre-filled weight/rep target from prior session.</strong> The single most valuable UX affordance for logging speed. Users who see their prior performance auto-filled log faster and with less friction. The quality of this pre-fill (what happens after an anomalous session) is directly correlated with user trust in the app's intelligence.</li>
+</ul>
+</div>
+<div>
+<div class="card-amber" style="background:rgba(212,148,58,.05);border:1px solid rgba(212,148,58,.2);border-radius:12px;padding:20px 22px;margin-bottom:14px">
+<h4 style="color:var(--amber);margin-top:0">The Two That Unlock the Tier Above</h4>
+<ul>
+<li><strong>readinessBefore capture.</strong> One UX fix. This single field, if captured consistently, enables: ReadinessEngine mindBodyAlignment modifier, readinessBefore trend modifier (±4–5 points), and the mindBodyAlignment EmergentInsight. It also differentiates this app from every competitor that treats readiness as a post-hoc calculation. Capture requires a non-dismissible pre-workout prompt — identical to the FeelSelectorSheet approach already implemented for feel.</li>
+<li><strong>RPE on last set.</strong> One additional tap per exercise. This enables: fatigue-adjusted e1RM (the differentiated analytics feature), ProgramCalibration insight, CardioFatigue insight, RPE trend in ExerciseInsightDetailView. Currently 0/149. A single design change — move the RPE tap to immediately follow the "Complete Set" action — would change this.</li>
+</ul>
+</div>
+<div class="note"><strong>The 80/20 in plain English:</strong> Log the workout. Show accurate progress. Say something specific after each set. Welcome users back without guilt. These four things, done well, are the product. Everything else is optionality that only advanced users will discover and value.</div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<h2><span class="section-num">7</span> Shippability Assessment</h2>
+
+<div class="verdict-grid">
+<div class="verdict-cell v-diff">
+<div class="v-head">Genuinely Differentiated</div>
+<ul>
+<li>Coaching narrative layer on workout logging — competitors don't have this</li>
+<li>Gap-free brand philosophy (when it holds)</li>
+<li>PCSA-informed strength scoring (when the input error is fixed)</li>
+<li>Drop set + toFailure tracking with specific coaching paths — rare in consumer apps</li>
+<li>Dynamic readiness that incorporates training frequency and volume</li>
+</ul>
+</div>
+<div class="verdict-cell v-comm">
+<div class="v-head">Commodity</div>
+<ul>
+<li>e1RM calculation (Epley/Mayhew — in every serious lifting app)</li>
+<li>Weekly volume bar chart</li>
+<li>Streak counter</li>
+<li>Session history list</li>
+<li>PR detection</li>
+<li>Tier progress bars (BEG/INT/ADV/ELITE)</li>
+<li>Feel rating at session end</li>
+</ul>
+</div>
+<div class="verdict-cell v-frag">
+<div class="v-head">Fragile</div>
+<ul>
+<li>WorkoutPlanEngine randomizes every render — plan inconsistency erodes trust</li>
+<li>EmergentInsights: 10–11 of 14 inactive without HealthKit</li>
+<li>Strength decay model: −0.7%/day constant is assumed, not validated for this population</li>
+<li>Readiness score: undocumented dynamic baseline; 6+ modifiers inactive</li>
+<li>Coaching quality: 10-phrase rotation window hits repetition by session 12–15</li>
+<li>CSS weights (35/40/25): arbitrary, no external validation</li>
+</ul>
+</div>
+<div class="verdict-cell v-fail">
+<div class="v-head">Likely to Fail in Production</div>
+<ul>
+<li>Trainer tab: built, unreachable, zero user value delivered</li>
+<li>readinessBefore: 0/18 — the UX actively allows bypass; feature is dead</li>
+<li>RPE: 0/149 — never surfaced prominently enough to be discovered</li>
+<li>Fatigue-adjusted e1RM: identical to standard series without RPE data</li>
+<li>PCSA allometric values: systematically inflated by muscleMassPercent input error</li>
+<li>Zero-rep completed set path: produces coaching for "completed" sets that have no reps</li>
+</ul>
+</div>
+</div>
+
+<div class="card-sage" style="background:rgba(123,175,133,.05);border:1px solid rgba(123,175,133,.25);border-radius:12px;padding:20px 22px">
+<h4 style="color:var(--sage);margin-top:0">What Could Become Exceptional (in priority order)</h4>
+<ul>
+<li><strong>1. The coaching narrative.</strong> If phrase bank quality is raised, context-sensitivity is deepened (using actual weight values, specific comparisons to the user's own history), and the rotation window is expanded to 25–30 phrases, this feature becomes the primary differentiator. No competitor has this at quality. Currently it's at 70% of its potential.</li>
+<li><strong>2. The readiness-to-plan pipeline.</strong> readiness → plan intensity → specific exercise selection is the right architecture. When readinessBefore is captured and HealthKit provides sleep/HR data, this system can produce genuine day-level personalization that even expensive apps don't achieve. Currently running at ~30% of designed capacity.</li>
+<li><strong>3. The progressive overload intelligence.</strong> The OverloadScoreboard + MomentumChipsCard + PlateauRiskCard together tell a complete story of which exercises are working and which aren't. This is genuinely useful for any user who has ≥10 sessions. Currently buried under 52 other visualizations. Surfaced correctly, this becomes the reason users stay.</li>
+</ul>
+</div>
+
+<!-- ============================================================ -->
+<h2><span class="section-num">SIM</span> 90-Day Cohort Simulation — 100 Users</h2>
+
+<p>Seven cohorts with realistic behavioral profiles. Dropout rates are estimated from fitness app industry benchmarks (D30 average: 20–30% retention; D90 average: 5–15% — Comscore 2023 fitness vertical data). Cohort-specific behaviors are based on the specific features and failure modes identified in the audit and simulation documents.</p>
+
+<!-- Cohort 1 -->
+<div class="cohort-card">
+<div class="cohort-header">
+<div class="cohort-icon">🏋️</div>
+<div>
+<div class="cohort-name">Cohort 1: Beginners (25 users)</div>
+<div class="cohort-meta">No prior fitness app · 1–2×/week training intent · Don't know e1RM, RPE, INOL · High initial motivation</div>
+</div>
+<div style="margin-left:auto;text-align:right">
+<div style="font-size:11px;color:var(--muted)">D30 retention est.</div>
+<div style="font-size:18px;font-weight:800;color:var(--orange)">35%</div>
+<div style="font-size:11px;color:var(--muted)">D90 retention est.</div>
+<div style="font-size:18px;font-weight:800;color:var(--red)">12%</div>
+</div>
+</div>
+<div class="cohort-body">
+<div class="cohort-col">
+<h4>Where They Confuse</h4>
+<ul>
+<li>Dumbbell weight entry — most enter total load. e1RM shows doubled value. Confusing or unnoticed.</li>
+<li>e1RM label in Insights — "What is this number?"</li>
+<li>INOL, PSI, allometric — never decoded</li>
+<li>Readiness score on first open — "69 out of what? Is this good?"</li>
+<li>Trainer tab missing — search for a workout plan, find nothing</li>
+</ul>
+</div>
+<div class="cohort-col">
+<h4>Where Motivation Drops</h4>
+<ul>
+<li>Week 2: coaching text starts repeating. "It said the same thing last time."</li>
+<li>Week 3: gap of 5 days. Returns. No acknowledgment until day 7. Feels invisible to the app.</li>
+<li>Week 4: opens Progress tab. Overwhelmed. Closes. Never returns to analytics.</li>
+<li>Month 2: streak breaks during travel. No mechanism for "I had to pause — that's fine."</li>
+</ul>
+</div>
+<div class="cohort-col">
+<h4>Where Trust Erodes</h4>
+<ul>
+<li>Skeptical beginner calculates e1RM after noticing doubled dumbbell value. Distrust permanent.</li>
+<li>EmergentInsights shows placeholders. "This app is all potential, no delivery."</li>
+<li>Coaching says "strong progression" after a session where they failed half their sets.</li>
+<li>Readiness score drops after a good sleep weekend. Can't explain why. Stops checking.</li>
+</ul>
+</div>
+<div class="cohort-col">
+<h4>What Causes Abandonment</h4>
+<ul>
+<li><strong>Primary:</strong> No workout plan discoverable. They came for guidance. There isn't any.</li>
+<li>Coaching repetition + no social sharing = "the app doesn't care about me"</li>
+<li>Injury: app offers nothing. They stop logging. Gap widens. Never return.</li>
+<li>Competing app (friend recommends Strong) — logging speed comparison is unfavorable</li>
+</ul>
+</div>
+</div>
+</div>
+
+<!-- Cohort 2 -->
+<div class="cohort-card">
+<div class="cohort-header">
+<div class="cohort-icon">🔄</div>
+<div>
+<div class="cohort-name">Cohort 2: Returning Exercisers (25 users)</div>
+<div class="cohort-meta">Used Strong or MyFitnessPal previously · 2–3×/week training · Know RPE but won't enter it unprompted</div>
+</div>
+<div style="margin-left:auto;text-align:right">
+<div style="font-size:11px;color:var(--muted)">D30 retention est.</div>
+<div style="font-size:18px;font-weight:800;color:var(--yellow)">55%</div>
+<div style="font-size:11px;color:var(--muted)">D90 retention est.</div>
+<div style="font-size:18px;font-weight:800;color:var(--orange)">25%</div>
+</div>
+</div>
+<div class="cohort-body">
+<div class="cohort-col">
+<h4>Where They Confuse</h4>
+<ul>
+<li>Plan changes on every app open — "I had a chest day, now it's legs?" Distrust builds.</li>
+<li>CSS weights (35/40/25) — "Where do these percentages come from?"</li>
+<li>Trainer tab invisible — they specifically want AI planning, a core pitch of the product</li>
+<li>muscleMassPercent field — they know what muscle mass is. The value 79.85 is wrong and they can tell.</li>
+</ul>
+</div>
+<div class="cohort-col">
+<h4>Where Motivation Drops</h4>
+<ul>
+<li>Week 3: they do the mental math. e1RM from Epley has 10–15% variance. "This isn't my real 1RM."</li>
+<li>Month 2: compare analytics depth to Hevy Premium. Hevy has simpler interface, same core metrics, cheaper.</li>
+<li>Month 3: coaching is repetitive. They've read the phrase bank. Stops reading coaching text entirely.</li>
+</ul>
+</div>
+<div class="cohort-col">
+<h4>Where Trust Erodes</h4>
+<ul>
+<li>e1RM cross-tab inconsistency (if present) — they check multiple tabs and notice discrepancy</li>
+<li>Plateau detection fires on 3-session exercise — "I've done this 3 times, it's not plateaued"</li>
+<li>Deload recommendation after one bad session — premature, and they know it</li>
+<li>Readiness score doesn't correlate with how they actually feel two days in a row — they notice</li>
+</ul>
+</div>
+<div class="cohort-col">
+<h4>What Causes Abandonment</h4>
+<ul>
+<li>Plan randomization is the most frequent single complaint in this cohort — breaks the training narrative</li>
+<li>Discovery: Trainer tab exists but isn't in nav. "Why is this here and not reachable?"</li>
+<li>HealthKit refused or not connected → Health tiles empty → entire health analytics layer is dead weight</li>
+<li>Strong is faster to log. Speed matters to this cohort more than depth.</li>
+</ul>
+</div>
+</div>
+</div>
+
+<!-- Cohort 3 -->
+<div class="cohort-card">
+<div class="cohort-header">
+<div class="cohort-icon">🌊</div>
+<div>
+<div class="cohort-name">Cohort 3: Inconsistent Users (20 users)</div>
+<div class="cohort-meta">High gap frequency · 3–10 day gaps common · Guilt-prone on return · Training is aspirational</div>
+</div>
+<div style="margin-left:auto;text-align:right">
+<div style="font-size:11px;color:var(--muted)">D30 retention est.</div>
+<div style="font-size:18px;font-weight:800;color:var(--orange)">40%</div>
+<div style="font-size:11px;color:var(--muted)">D90 retention est.</div>
+<div style="font-size:18px;font-weight:800;color:var(--red)">15%</div>
+</div>
+</div>
+<div class="cohort-body">
+<div class="cohort-col">
+<h4>The Gap Return Sequence</h4>
+<ul>
+<li>Day 4 of gap: readiness −4 (daysSinceLast). HONHabitEngine silent. No message.</li>
+<li>Day 7 of gap: HONHabitEngine fires returnAfterLapse. <em>This is the first contact since the gap began.</em></li>
+<li>Days 4–6 are the critical window. The app is silent during the period when the user most needs a non-judgmental nudge.</li>
+<li>Return: readiness shows a lower score than on their last workout day. They read this as "the app knows I've been bad."</li>
+</ul>
+</div>
+<div class="cohort-col">
+<h4>The Guilt Loop</h4>
+<ul>
+<li>User returns after 8 days. HONHabitEngine message fires. If message references days away: abandonment risk.</li>
+<li>No "recovery plan" offered. Just: here's the current readiness score and a blank workout.</li>
+<li>Progress tab shows gap in timeline. Visual punishment even if text is neutral.</li>
+<li>No "I was sick / traveling / injured" flag. Gap = default = motivational failure in app's implicit framing.</li>
+</ul>
+</div>
+<div class="cohort-col">
+<h4>What They Actually Need</h4>
+<ul>
+<li>Day 3–4 of gap: proactive non-judgmental message. "Good day to come back whenever you're ready."</li>
+<li>Return framing: forward, not backward. "Your muscles have had 8 days to recover. Your readiness reflects recovery, not loss."</li>
+<li>Easy re-entry: one tap from Home to a "comeback session" — lower volume, familiar exercises.</li>
+<li>No streak count visible on return. Show next milestone instead of broken streak.</li>
+</ul>
+</div>
+<div class="cohort-col">
+<h4>Abandonment Trigger</h4>
+<ul>
+<li>Any language during gap return that references the absence negatively → permanent churn for this cohort</li>
+<li>The brand promise ("never punish gaps") must survive every edge case in HONHabitEngine and ReadinessEngine framing</li>
+<li>Coaching after return session: if it praises the return with excessive enthusiasm, feels fake. Needs to be dry and specific.</li>
+</ul>
+</div>
+</div>
+</div>
+
+<!-- Cohort 4 -->
+<div class="cohort-card">
+<div class="cohort-header">
+<div class="cohort-icon">⏱️</div>
+<div>
+<div class="cohort-name">Cohort 4: Time-Constrained Users (10 users)</div>
+<div class="cohort-meta">30–45 min sessions max · Want fast logging · Will not read coaching · Zero tolerance for friction</div>
+</div>
+<div style="margin-left:auto;text-align:right">
+<div style="font-size:11px;color:var(--muted)">D30 retention est.</div>
+<div style="font-size:18px;font-weight:800;color:var(--orange)">45%</div>
+<div style="font-size:11px;color:var(--muted)">D90 retention est.</div>
+<div style="font-size:18px;font-weight:800;color:var(--yellow)">28%</div>
+</div>
+</div>
+<div class="cohort-body">
+<div class="cohort-col">
+<h4>Logging Speed Test</h4>
+<ul>
+<li>Time from app open to first set logged: target ≤15 seconds. Actual: likely 20–30 seconds with exercise selection and navigation.</li>
+<li>Per-set logging: weight → reps → complete. 3 taps minimum. Coaching text after each set adds ~3 seconds of read time even if skipped.</li>
+<li>Feel rating at session end: one additional step before closing. They skip it. 17% of sessions already missing this.</li>
+</ul>
+</div>
+<div class="cohort-col">
+<h4>What They Use</h4>
+<ul>
+<li>The pre-filled weight from prior session is their most valuable feature — fastest path to logging</li>
+<li>They do not open Progress, Insights, or StrengthLab tabs</li>
+<li>Coaching text is scrolled past without reading</li>
+<li>The app is purely a logbook for this cohort</li>
+</ul>
+</div>
+<div class="cohort-col">
+<h4>Where Friction Builds</h4>
+<ul>
+<li>WeightSuggestionSheet appearing on exercise open — interrupts their flow</li>
+<li>Any modal or sheet that requires dismissal before logging begins</li>
+<li>The readiness prompt (if it appears) is dismissed immediately</li>
+<li>Navigation to a new exercise from the exercise library is slower than typing a name</li>
+</ul>
+</div>
+<div class="cohort-col">
+<h4>Retention Mechanic That Works</h4>
+<ul>
+<li>The app remembers their routine → they don't have to recreate it → fastest path to logging</li>
+<li>Pre-filled targets mean they log in 60% of the taps a fresh session would require</li>
+<li>PR banner is a genuine moment even for this cohort — it stops them mid-scroll</li>
+<li>This cohort stays longer than expected because the app is a fast logbook with memory</li>
+</ul>
+</div>
+</div>
+</div>
+
+<!-- Cohort 5 -->
+<div class="cohort-card">
+<div class="cohort-header">
+<div class="cohort-icon">📊</div>
+<div>
+<div class="cohort-name">Cohort 5: Data Optimizers (10 users)</div>
+<div class="cohort-meta">4–5×/week training · Read all coaching text · Verify numbers · Will find every discrepancy</div>
+</div>
+<div style="margin-left:auto;text-align:right">
+<div style="font-size:11px;color:var(--muted)">D30 retention est.</div>
+<div style="font-size:18px;font-weight:800;color:var(--sage)">80%</div>
+<div style="font-size:11px;color:var(--muted)">D90 retention est.</div>
+<div style="font-size:18px;font-weight:800;color:var(--yellow)">55%</div>
+</div>
+</div>
+<div class="cohort-body">
+<div class="cohort-col">
+<h4>Their Journey</h4>
+<ul>
+<li>Week 1: log every session with precision. Enter RPE manually in notes (since the field doesn't prompt). Explore all 5 tabs within 48 hours.</li>
+<li>Week 3: notice coaching repetition. Start ignoring coaching text.</li>
+<li>Week 6: discover the plan randomizes. File mental bug report. Trust fractionally reduced.</li>
+<li>Month 3: calculate e1RM independently. Compare to chart. Discrepancy (if zero-rep fallback fired) triggers investigation.</li>
+</ul>
+</div>
+<div class="cohort-col">
+<h4>What Keeps Them</h4>
+<ul>
+<li>The analytics depth is genuine — OverloadScoreboard, MomentumChips, PlateauRisk together are the best overload tracking they've seen in a consumer app</li>
+<li>Drill-down to ExerciseInsightDetailView with 6 charts is legitimately rich</li>
+<li>PCSA-based scoring is unique — even if the muscleMassPercent error is present, they appreciate the methodology</li>
+<li>They want more RPE and velocity support, not less analytics</li>
+</ul>
+</div>
+<div class="cohort-col">
+<h4>What Pushes Them Out</h4>
+<ul>
+<li>e1RM cross-tab discrepancy (if found) — this cohort will find it if it exists and will stop trusting all numbers</li>
+<li>EmergentInsights showing placeholders for features they want (sleep × performance): frustration at unfulfilled promise</li>
+<li>INOL/PSI labels with no explanation — they know what these mean and know the current inputs are wrong</li>
+<li>No export to CSV — this cohort wants to do their own analysis. Absence of data ownership is a dealbreaker at month 3+</li>
+</ul>
+</div>
+<div class="cohort-col">
+<h4>Feature Requests They'll Make</h4>
+<ul>
+<li>Apple Watch velocity detection (they have the Watch)</li>
+<li>RPE every set, prominent in UI</li>
+<li>Custom periodization templates (not random intensity selection)</li>
+<li>Data export</li>
+<li>HealthKit full integration — they'll use sleep, HRV, every available signal</li>
+</ul>
+</div>
+</div>
+</div>
+
+<!-- Cohort 6 -->
+<div class="cohort-card">
+<div class="cohort-header">
+<div class="cohort-icon">📉</div>
+<div>
+<div class="cohort-name">Cohort 6: Low-Motivation Users (5 users)</div>
+<div class="cohort-meta">Trained once, opened app enthusiastically · Motivation external or situational · Never established routine</div>
+</div>
+<div style="margin-left:auto;text-align:right">
+<div style="font-size:11px;color:var(--muted)">D14 retention est.</div>
+<div style="font-size:18px;font-weight:800;color:var(--red)">20%</div>
+<div style="font-size:11px;color:var(--muted)">D30 retention est.</div>
+<div style="font-size:18px;font-weight:800;color:var(--red)">8%</div>
+</div>
+</div>
+<div class="cohort-body">
+<div class="cohort-col">
+<h4>First 7 Days</h4>
+<ul>
+<li>Sessions 1–2: logged. Coaching seems relevant. Exciting.</li>
+<li>Day 5–7: first gap. No notification. App is silent.</li>
+<li>Day 8–10: opens app. Readiness shows moderate score. No hook back into a session.</li>
+<li>Day 14: effectively churned. Has not been given a specific reason to return.</li>
+</ul>
+</div>
+<div class="cohort-col">
+<h4>What the App Lacks for This Cohort</h4>
+<ul>
+<li>An opt-in habit trigger (push notification at their preferred training time)</li>
+<li>An implementation intention: "When do you usually train? I'll remind you."</li>
+<li>A low-barrier re-entry: "Quick 20-minute session" from the home screen</li>
+<li>A reason-to-open beyond intent to train: "Your Lat Pulldown is at peak — try to beat it today"</li>
+</ul>
+</div>
+<div class="cohort-col">
+<h4>What Analytics Features Do</h4>
+<ul>
+<li>Nothing. This cohort has 2 sessions. No analytics are populated. The entire Progress, Insights, and StrengthLab experience is empty states.</li>
+<li>Empty states without specific actionable guidance reinforce "this app isn't for me yet."</li>
+</ul>
+</div>
+<div class="cohort-col">
+<h4>Recovery Path</h4>
+<ul>
+<li>Notification at day 3 of gap: non-judgmental, forward-looking</li>
+<li>Home screen shows a specific exercise from their history: "Last time: 60kg squat × 5. Try again?"</li>
+<li>This cohort cannot be retained by analytics. They need a clear next action and a gentle nudge to take it.</li>
+</ul>
+</div>
+</div>
+</div>
+
+<!-- Cohort 7 -->
+<div class="cohort-card">
+<div class="cohort-header">
+<div class="cohort-icon">🩹</div>
+<div>
+<div class="cohort-name">Cohort 7: Injured / Disrupted Users (5 users)</div>
+<div class="cohort-meta">Injury, illness, or major life disruption mid-program · App has no protocol for this</div>
+</div>
+<div style="margin-left:auto;text-align:right">
+<div style="font-size:11px;color:var(--muted)">During injury</div>
+<div style="font-size:18px;font-weight:800;color:var(--red)">0%</div>
+<div style="font-size:11px;color:var(--muted)">Post-injury return</div>
+<div style="font-size:18px;font-weight:800;color:var(--orange)">35%</div>
+</div>
+</div>
+<div class="cohort-body">
+<div class="cohort-col">
+<h4>The Injury Scenario</h4>
+<ul>
+<li>User sprains wrist in week 4. Cannot bench press, push movements impossible.</li>
+<li>App has no "injury" flag, no exercise substitution, no lower-body-only template.</li>
+<li>Readiness score continues to show training gap penalty. The score frames injury as laziness.</li>
+<li>After 2–3 weeks of silence, user feels too far behind to return. The gap feels permanent.</li>
+</ul>
+</div>
+<div class="cohort-col">
+<h4>The App's Response</h4>
+<ul>
+<li>Days 1–6 of injury: silence</li>
+<li>Day 7+: HONHabitEngine returnAfterLapse fires</li>
+<li>Return message: assumes motivational gap, not injury</li>
+<li>No modification to readiness framing: score shows "training gap" penalty, not "recovery period"</li>
+</ul>
+</div>
+<div class="cohort-col">
+<h4>What Would Keep Them</h4>
+<ul>
+<li>An "I'm injured / resting" mode — pauses streak, disables gap penalty, surfaces accessible exercises</li>
+<li>Exercise substitution: "Can't bench? Try cable fly, chest press machine, or push-up variations"</li>
+<li>Readiness framing during injury: "Your upper body is resting. Lower body readiness: strong."</li>
+<li>Return protocol: reduced-volume comeback session pre-loaded</li>
+</ul>
+</div>
+<div class="cohort-col">
+<h4>Stakes</h4>
+<ul>
+<li>Injuries happen to ~60% of recreational lifters per year (Aasa 2017). This is not an edge case.</li>
+<li>If the app has no response to injury, it loses the user at the exact moment they most need support.</li>
+<li>This is a feature gap with high churn impact and moderate implementation complexity.</li>
+</ul>
+</div>
+</div>
+</div>
+
+<h3>90-Day Cohort Summary</h3>
+<div class="table-wrap"><table>
+<tr><th>Rank</th><th>Churn reason across all cohorts</th><th>Affected cohorts</th><th>Preventable with current architecture</th></tr>
+<tr><td>1</td><td><strong>Coaching text repetition (sessions 10–18)</strong></td><td>All engaged users</td><td>Yes — phrase bank expansion</td></tr>
+<tr><td>2</td><td><strong>No workout plan discoverable (Trainer tab unreachable)</strong></td><td>Beginners, Returners</td><td>Yes — one-day nav fix</td></tr>
+<tr><td>3</td><td><strong>Gap return support starts at day 7, not day 3</strong></td><td>Inconsistent users, Low-motivation</td><td>Yes — HONHabitEngine threshold change</td></tr>
+<tr><td>4</td><td><strong>Analytics overwhelm on first deep exploration</strong></td><td>Beginners, Returners, Low-motivation</td><td>Yes — progressive disclosure</td></tr>
+<tr><td>5</td><td><strong>No injury/illness protocol</strong></td><td>All users, ~60% probability over 1 year</td><td>Partial — requires feature work</td></tr>
+<tr><td>6</td><td><strong>Plan randomizes every render — inconsistent guidance</strong></td><td>All users seeking plans</td><td>Yes — seed the randomizer</td></tr>
+<tr><td>7</td><td><strong>EmergentInsights carousel mostly placeholders</strong></td><td>All users who explore</td><td>Yes — data-gate the carousel</td></tr>
+<tr><td>8</td><td><strong>No social/sharing mechanism for PRs</strong></td><td>Beginners, Returners, Optimizers</td><td>No — requires product investment</td></tr>
+</table></div>
+<div class="table-wrap" style="margin-top:18px"><table>
+<tr><th>Rank</th><th>Retention mechanics that actually work</th><th>Evidence strength</th><th>Current implementation quality</th></tr>
+<tr><td>1</td><td><strong>PR detection and acknowledgment</strong> — identity event, strongest emotional signal in training</td><td>★★★★★</td><td>Implemented. Guard logic correct. Display quality is the question.</td></tr>
+<tr><td>2</td><td><strong>Pre-filled targets from prior session</strong> — reduces friction, signals "the app remembers you"</td><td>★★★★☆</td><td>Implemented. Contamination risk after anomalous session is the open issue.</td></tr>
+<tr><td>3</td><td><strong>Specific post-set coaching referencing actual performance</strong> — when it fires correctly, it's retention-positive</td><td>★★★★☆</td><td>Partially implemented. Phrase rotation limits long-term quality.</td></tr>
+<tr><td>4</td><td><strong>Progressive overload visibility (MomentumChips, OverloadScoreboard)</strong> — showing users their progress is the primary reason people stay with training apps</td><td>★★★★★</td><td>Implemented. Discovery is the barrier — buried under 50+ other charts.</td></tr>
+<tr><td>5</td><td><strong>Gap-free return framing</strong> — removing shame from return is a proven retention lever</td><td>★★★★☆</td><td>Philosophy established. Execution has gaps (day 7 fire, readiness score framing).</td></tr>
+</table></div>
+
+<!-- ============================================================ -->
+<h2><span class="section-num">SIMP</span> Simplification Manifesto — What Survives Brutal Compression</h2>
+
+<p>After applying the simplification lens — cut anything that increases cognitive load without directly improving adherence, trust, or outcome — here is the verdict for every major feature and metric. The goal is preserving 80% of the product's real-world outcome potential with 40% of its current complexity.</p>
+
+<div class="alarm"><strong>Errata — documented baseline error:</strong> The CLAUDE.md documentation states readiness baseline = 68. The actual code computes <code>65 + min(15, sessions_last30d)</code>. With 18 sessions in the last 30 days, the actual baseline is 80. The audit approach document's worked example (68 − 4 + 5 = 69) is wrong by ~11 points. The readiness score shown to the user is higher than what the internal documentation describes. This must be corrected in documentation and communicated to any downstream analysis.</div>
+
+<div class="table-wrap"><table>
+<tr><th>Feature / Metric</th><th>Keep / Watch / Cut</th><th>Why</th><th>Real-world impact if cut</th></tr>
+<tr><td>Progressive overload tracking (core logging)</td><td><span class="keep">KEEP — Core</span></td><td>This IS the product. Everything else is wrapper.</td><td>N/A — cannot cut</td></tr>
+<tr><td>Post-set coaching narrative</td><td><span class="keep">KEEP — Expand</span></td><td>Primary emotional experience. Raise phrase bank to 30+ per category. Add session-specific data references (actual weight/reps).</td><td>Largest churn lever if degraded</td></tr>
+<tr><td>PR detection banner</td><td><span class="keep">KEEP — Amplify</span></td><td>Identity event. Make it more prominent. Add a one-tap share option.</td><td>Significant retention loss</td></tr>
+<tr><td>Readiness score on Home</td><td><span class="keep">KEEP — Fix</span></td><td>Useful even at 40% data fill. Fix the dynamic baseline documentation. Rename to "Training Readiness" when HealthKit disconnected.</td><td>Low — users already interpret it loosely</td></tr>
+<tr><td>Pre-filled weight/rep targets</td><td><span class="keep">KEEP — Fix</span></td><td>Critical for logging speed. Fix post-anomalous-session contamination.</td><td>Logging friction increases significantly</td></tr>
+<tr><td>Gap return messaging</td><td><span class="keep">KEEP — Fix</span></td><td>Fire at ≥3 days, not ≥7. Change the trigger threshold in HONHabitEngine. One-line code change with high retention impact.</td><td>~25% of inconsistent user churn</td></tr>
+<tr><td>OverloadScoreboard + MomentumChips</td><td><span class="keep">KEEP — Promote</span></td><td>The best feature for showing users their progress. Currently buried. Make it the first card in Progress tab.</td><td>Users never discover why their training is working</td></tr>
+<tr><td>Trainer tab (WorkoutPlanEngine)</td><td><span class="keep">KEEP — Ship</span></td><td>Already built. Unreachable. Add to navigation. Fix plan seed. One sprint of work, full feature delivered.</td><td>Primary use case (workout guidance) unmet</td></tr>
+<tr><td>Feel rating at session end</td><td><span class="keep">KEEP — Protect</span></td><td>Only enrichment signal being captured at scale. 83% rate must be protected. Do not add friction to this flow.</td><td>EmergentInsights, feel archetype, coaching coherence all degrade</td></tr>
+<tr><td>EmergentInsights carousel</td><td><span class="watch">WATCH — Gate</span></td><td>Show only populated insights. No placeholders. Minimum 4 active insights before carousel appears. Currently ~3 active.</td><td>Low — users who see placeholders don't benefit from the feature anyway</td></tr>
+<tr><td>Drop set + toFailure tracking</td><td><span class="keep">KEEP — Small fix</span></td><td>Used by real users (19%, 9%). Coaching paths exist. Fix the zero-rep completed set path which can corrupt these sessions.</td><td>Moderate for engaged users</td></tr>
+<tr><td>readinessBefore capture</td><td><span class="keep">KEEP — Fix UX</span></td><td>0/18 because UX allows bypass. Implement non-dismissible prompt (same pattern as FeelSelectorSheet). One sprint.</td><td>ReadinessEngine fires at 60% capacity without this</td></tr>
+<tr><td>RPE per set</td><td><span class="watch">WATCH — Simplify</span></td><td>Capture on last set only, not every set. Move the RPE tap immediately after "Complete Set" on the final set. Remove from mid-set UI. 0/149 → target 60%+ capture.</td><td>Fatigue-adjusted e1RM, 8 EmergentInsights unlocked</td></tr>
+<tr><td>ExerciseInsightDetailView (6 charts)</td><td><span class="watch">WATCH — Cap</span></td><td>Show 3 charts by default: e1RM trend, tonnage, tier bar. Reveal others behind "Show detailed analysis" toggle for P4 users. Reduces overwhelm for P1/P3.</td><td>Minimal — P4 users will find it; P1/P3 users currently ignore it</td></tr>
+<tr><td>INOL zones (user-facing)</td><td><span class="cut">CUT from UI</span></td><td>No evidence for consumer outcome improvement. Keep in engine. Remove from every user-facing view. No user loss.</td><td>Zero — no user is currently acting on INOL data</td></tr>
+<tr><td>Fiber load / allometric PSI (user-facing)</td><td><span class="cut">CUT from main UI</span></td><td>Systematically wrong due to muscleMassPercent input error. Move to "Expert Details" section visible only after deliberate navigation. Fix the input field label first.</td><td>Zero for P1/P3. P4 users want it fixed, not removed.</td></tr>
+<tr><td>Fatigue-adjusted e1RM chart</td><td><span class="cut">CUT until RPE exists</span></td><td>With 0/149 RPE data, the "adjusted" series is identical to the standard series. Displaying it implies an adjustment was made. Hide until RPE capture &gt;20%.</td><td>Zero — currently provides false signal</td></tr>
+<tr><td>Rep decay metric</td><td><span class="cut">CUT until velocity exists</span></td><td>Cannot be computed from current data (no velocity, no per-rep data). Keep in engine architecture. Remove from UI.</td><td>Zero — currently displays inferred noise as data</td></tr>
+<tr><td>CSS weights (35/40/25)</td><td><span class="watch">WATCH — Document</span></td><td>Arbitrary without external validation. Either validate against training outcomes or present as "one possible weighting." Users shouldn't be able to ask "where do these numbers come from?" and get silence.</td><td>Low currently. High if a skeptic user publishes the fact that the weights are arbitrary.</td></tr>
+<tr><td>55 chart visualizations</td><td><span class="cut">CUT to 15 primary</span></td><td>Every view should default to the 3 most important charts for that user's data maturity. Progressive disclosure reveals the rest. Hick's Law is real.</td><td>Discovery of the good charts improves. P4 users tap deeper.</td></tr>
+<tr><td>Zero-rep completed set acceptance</td><td><span class="cut">CUT behavior</span></td><td>Accepting a set with 0 reps as "completed" is a data integrity error that contaminates e1RM, coaching, and pre-fill. Either require reps &gt; 0 to mark complete, or create a distinct "skipped set" state.</td><td>High — removes 10 known corrupted data points from current log</td></tr>
+</table></div>
+
+<h3>The Simplified Product in One Paragraph</h3>
+<div class="callout c-sage">
+<p>Fix the data entry errors first (zero-rep, dumbbell convention, muscleMassPercent label). Add readinessBefore as a non-dismissible pre-workout prompt. Move RPE to post-last-set. Seed the plan engine. Put the Trainer tab in navigation. Fire the gap return message at 3 days. Show the OverloadScoreboard as the hero card in Progress. Cap each view to 3 visible charts with progressive disclosure. Expand the phrase bank to 30+ entries per category with session-specific data references. Gate the EmergentInsights carousel to populated insights only. <strong>The product that does these 10 things retains more users, builds more trust, and delivers more real-world outcome improvement than the product that also has INOL zones, allometric PSI, rep decay metrics, and 55 visualizations.</strong></p>
+</div>
+
+<hr>
+<footer>H.O.N. Review Board · 2026-05-26 · 12 disciplines · 7 cohorts · 100 simulated users · 90-day simulation · Priority: adherence, trust, clarity, retention · Branch: claude/workout-app-code-review-QI5zm</footer>
+</div>
+</body>
+</html>
