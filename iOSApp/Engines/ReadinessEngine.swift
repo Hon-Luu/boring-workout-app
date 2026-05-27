@@ -53,7 +53,8 @@ struct ReadinessEngine {
         stepsToday: Int? = nil,
         sleepHours: Double? = nil,
         restingHR: Double? = nil,
-        hrv: Double? = nil
+        hrv: Double? = nil,
+        scoreHistory: [String: Int] = [:]   // "yyyy-MM-dd" → stored score; used for real trend data
     ) -> ReadinessState {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
@@ -250,7 +251,7 @@ struct ReadinessEngine {
         let (headline, subtitle, coachingNote) = narrative(score: score, delta: delta, daysSinceLast: daysSinceLast, freq: recentAll, isGapReturn: isGapReturn, hrv: hrv, recentFeelLow: recentFeelLow)
 
         // --- Trend (14 days) ---
-        let trend = buildTrend(log: log, cardioLog: cardioLog, generalLog: generalLog, calendar: calendar, today: today, todayScore: Double(score))
+        let trend = buildTrend(log: log, cardioLog: cardioLog, generalLog: generalLog, calendar: calendar, today: today, todayScore: Double(score), scoreHistory: scoreHistory)
 
         // --- Factors ---
         let factors = buildFactors(daysSinceLast: daysSinceLast, freq: recentAll, volRatio: prior7 > 0 ? vol7 / prior7 : 1.0, log: log, cardioCount: recentCardio.count, generalCount: recentGeneral.count, stepsToday: stepsToday, sleepHours: sleepHours, restingHR: restingHR, avgReadinessBefore: avgReadinessBefore)
@@ -368,35 +369,57 @@ struct ReadinessEngine {
         }
     }
 
+    private static let dateKeyFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        f.locale = Locale(identifier: "en_US_POSIX")
+        return f
+    }()
+
     private static func buildTrend(
         log: [WorkoutLogEntry],
         cardioLog: [CardioLogEntry] = [],
         generalLog: [GeneralActivityEntry] = [],
         calendar: Calendar,
         today: Date,
-        todayScore: Double
+        todayScore: Double,
+        scoreHistory: [String: Int] = [:]
     ) -> [ReadinessState.TrendPoint] {
         var points: [ReadinessState.TrendPoint] = []
-        var baseVal = max(todayScore - 8, 40.0)
+        // Seed the running estimate from today's known score so fallback interpolation
+        // moves in the right direction on days without stored data.
+        var runningEstimate = max(todayScore - 8, 40.0)
 
         for i in 0..<14 {
             let dayOffset = i
-            let daysAgo = 13 - i
+            let daysAgo   = 13 - i
+            let pointDate = calendar.date(byAdding: .day, value: -daysAgo, to: today) ?? today
+            let dateKey   = dateKeyFormatter.string(from: pointDate)
 
-            // Check if there was any workout (strength, cardio, or general) on this day
-            let hadStrength = log.contains {
-                (calendar.dateComponents([.day], from: calendar.startOfDay(for: $0.startedAt), to: today).day ?? 99) == daysAgo
+            let val: Double
+            if daysAgo == 0 {
+                // Always use today's freshly-computed score
+                val = todayScore
+                runningEstimate = todayScore
+            } else if let stored = scoreHistory[dateKey] {
+                // We have a real historical score for this day — use it
+                val = Double(stored)
+                runningEstimate = Double(stored)
+            } else {
+                // No stored score: interpolate from session presence (same as before,
+                // but only for days we don't have real data — not the whole chart)
+                let hadWorkout = log.contains {
+                    (calendar.dateComponents([.day], from: calendar.startOfDay(for: $0.startedAt), to: today).day ?? 99) == daysAgo
+                } || cardioLog.contains {
+                    (calendar.dateComponents([.day], from: calendar.startOfDay(for: $0.startedAt), to: today).day ?? 99) == daysAgo
+                } || generalLog.contains {
+                    (calendar.dateComponents([.day], from: calendar.startOfDay(for: $0.startedAt), to: today).day ?? 99) == daysAgo
+                }
+                runningEstimate = hadWorkout
+                    ? min(runningEstimate + 4, 99)
+                    : max(runningEstimate - 2, 30)
+                val = runningEstimate
             }
-            let hadCardio = cardioLog.contains {
-                (calendar.dateComponents([.day], from: calendar.startOfDay(for: $0.startedAt), to: today).day ?? 99) == daysAgo
-            }
-            let hadGeneral = generalLog.contains {
-                (calendar.dateComponents([.day], from: calendar.startOfDay(for: $0.startedAt), to: today).day ?? 99) == daysAgo
-            }
-            let hadWorkout = hadStrength || hadCardio || hadGeneral
-
-            if hadWorkout { baseVal = min(baseVal + 4, 99) } else { baseVal = max(baseVal - 2, 30) }
-            let val = dayOffset == 13 ? todayScore : max(30, min(99, baseVal))
             points.append(ReadinessState.TrendPoint(dayOffset: dayOffset, score: val))
         }
         return points
@@ -407,10 +430,9 @@ struct ReadinessEngine {
         let first = trend.prefix(7).map(\.score).reduce(0, +) / 7
         let last  = trend.suffix(7).map(\.score).reduce(0, +) / 7
         let diff  = last - first
-        // Trend is estimated from session presence, not stored historical scores
-        if diff > 4  { return "Gradual upward slope · Past 14 days (est.)" }
-        if diff < -4 { return "Gradual downward slope · Past 14 days (est.)" }
-        return "Relatively stable · Past 14 days (est.)"
+        if diff > 4  { return "Trending up · Past 14 days" }
+        if diff < -4 { return "Trending down · Past 14 days" }
+        return "Stable · Past 14 days"
     }
 
     private static func buildFactors(

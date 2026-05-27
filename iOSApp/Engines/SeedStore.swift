@@ -27,7 +27,8 @@ struct HomeCache {
         stepsToday: Int? = nil,
         sleepHours: Double? = nil,
         restingHR: Double? = nil,
-        hrv: Double? = nil
+        hrv: Double? = nil,
+        scoreHistory: [String: Int] = [:]
     ) -> HomeCache {
         let weekday = Calendar.current.component(.weekday, from: Date())
         let todayIds: [UUID] = routines.flatMap { r in
@@ -38,7 +39,7 @@ struct HomeCache {
         for id in todayIds { notes[id] = WorkoutFeedbackEngine.exerciseNote(for: id, in: log) }
         return HomeCache(
             progressTrend: WorkoutFeedbackEngine.progressTrend(log: log),
-            readiness: ReadinessEngine.compute(log: log, cardioLog: cardioLog, generalLog: generalLog, stepsToday: stepsToday, sleepHours: sleepHours, restingHR: restingHR, hrv: hrv),
+            readiness: ReadinessEngine.compute(log: log, cardioLog: cardioLog, generalLog: generalLog, stepsToday: stepsToday, sleepHours: sleepHours, restingHR: restingHR, hrv: hrv, scoreHistory: scoreHistory),
             todayHints: hints,
             exerciseNotes: notes
         )
@@ -105,6 +106,9 @@ class SeedStore {
     /// Set by HealthKitService after fetch; passed into ReadinessEngine.
     var restingHR: Double? = nil
     var pendingWeightSuggestions: [WeightSuggestion] = []
+    /// "yyyy-MM-dd" → readiness score. Stored once per day by refreshAnalytics().
+    /// This is the source of truth for the 14-day readiness trend chart.
+    var readinessScoreHistory: [String: Int] = [:]
     var userProfile: UserProfile = UserProfile() {
         didSet {
             guard isLoaded else { return }   // suppress during background load
@@ -733,18 +737,32 @@ class SeedStore {
 
     // MARK: - Persistence
 
-    private let logKey              = "workoutLog_v1"
-    private let prKey               = "personalRecords_v1"
-    private let seedKey             = "sampleDataSeeded_v4"
-    private let templatesKey        = "templates_v1"
-    private let userProfileKey      = "userProfile_v1"
-    private let cardioCircuitsKey   = "cardioCircuits_v1"
-    private let cardioLogKey        = "cardioLog_v1"
-    let generalLogKey               = "generalLog_v1"
-    private let restDaysKey         = "restDays_v1"
-    private let injuryDaysKey       = "injuryDays_v1"
-    private let recentExercisesKey  = "recentExercises_v1"
-    private let activeWorkoutKey    = "activeWorkout_v1"
+    private let logKey                  = "workoutLog_v1"
+    private let prKey                   = "personalRecords_v1"
+    private let seedKey                 = "sampleDataSeeded_v4"
+    private let templatesKey            = "templates_v1"
+    private let userProfileKey          = "userProfile_v1"
+    private let cardioCircuitsKey       = "cardioCircuits_v1"
+    private let cardioLogKey            = "cardioLog_v1"
+    let generalLogKey                   = "generalLog_v1"
+    private let restDaysKey             = "restDays_v1"
+    private let injuryDaysKey           = "injuryDays_v1"
+    private let recentExercisesKey      = "recentExercises_v1"
+    private let activeWorkoutKey        = "activeWorkout_v1"
+    private let readinessHistoryKey     = "readinessScoreHistory_v1"
+
+    /// Keys that participate in iCloud sync (subset — excludes ephemeral keys).
+    private var iCloudSyncKeys: [String] {
+        [logKey, prKey, templatesKey, userProfileKey,
+         cardioLogKey, generalLogKey, restDaysKey, readinessHistoryKey]
+    }
+
+    private static let dateKeyFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        f.locale = Locale(identifier: "en_US_POSIX")
+        return f
+    }()
 
     func saveUserProfile() {
         if let data = try? JSONEncoder().encode(userProfile) {
@@ -839,16 +857,26 @@ class SeedStore {
         let glk  = generalLogKey
         DispatchQueue.global(qos: .background).async {
             if let data = try? JSONEncoder().encode(log) {
-                UserDefaults.standard.set(data, forKey: lk)
+                iCloudSync.shared.persist(data, forKey: lk)
             }
             if let data = try? JSONEncoder().encode(prs) {
-                UserDefaults.standard.set(data, forKey: pk)
+                iCloudSync.shared.persist(data, forKey: pk)
             }
             if let data = try? JSONEncoder().encode(cLog) {
-                UserDefaults.standard.set(data, forKey: clk)
+                iCloudSync.shared.persist(data, forKey: clk)
             }
             if let data = try? JSONEncoder().encode(gLog) {
-                UserDefaults.standard.set(data, forKey: glk)
+                iCloudSync.shared.persist(data, forKey: glk)
+            }
+        }
+    }
+
+    private func saveReadinessHistory() {
+        let hist = readinessScoreHistory
+        let key  = readinessHistoryKey
+        DispatchQueue.global(qos: .background).async {
+            if let data = try? JSONEncoder().encode(hist) {
+                iCloudSync.shared.persist(data, forKey: key)
             }
         }
     }
@@ -859,19 +887,26 @@ class SeedStore {
         let ck = cardioCircuitsKey, clk = cardioLogKey, glk = generalLogKey
         let rdk = restDaysKey, rek = recentExercisesKey
         let awk = activeWorkoutKey
+        let rhk = readinessHistoryKey
+        let syncKeys = iCloudSyncKeys
         let exs = exercises   // `let` — safe to read from any thread
 
         DispatchQueue.global(qos: .userInitiated).async { [self] in
-            var log       = [WorkoutLogEntry]()
-            var prs       = [UUID: PersonalRecord]()
-            var templates = [WorkoutTemplate]()
-            var profile   = UserProfile()
-            var circuits  = [CardioCircuit]()
-            var cLog      = [CardioLogEntry]()
-            var gLog      = [GeneralActivityEntry]()
-            var rDays     = [Date]()
-            var recentIds = [UUID]()
+            // Pull any iCloud data that is newer than local UserDefaults BEFORE reading.
+            // This is what restores data on a fresh install / new device.
+            iCloudSync.shared.mergeOnLaunch(keys: syncKeys)
+
+            var log          = [WorkoutLogEntry]()
+            var prs          = [UUID: PersonalRecord]()
+            var templates    = [WorkoutTemplate]()
+            var profile      = UserProfile()
+            var circuits     = [CardioCircuit]()
+            var cLog         = [CardioLogEntry]()
+            var gLog         = [GeneralActivityEntry]()
+            var rDays        = [Date]()
+            var recentIds    = [UUID]()
             var savedActiveWorkout: WorkoutLogEntry? = nil
+            var readinessHist = [String: Int]()
 
             if let d = UserDefaults.standard.data(forKey: lk),
                let v = try? JSONDecoder().decode([WorkoutLogEntry].self, from: d)         { log       = v }
@@ -888,11 +923,13 @@ class SeedStore {
             if let d = UserDefaults.standard.data(forKey: glk),
                let v = try? JSONDecoder().decode([GeneralActivityEntry].self, from: d)    { gLog      = v }
             if let d = UserDefaults.standard.data(forKey: rdk),
-               let v = try? JSONDecoder().decode([Date].self, from: d)                    { rDays     = v }
+               let v = try? JSONDecoder().decode([Date].self, from: d)                    { rDays        = v }
             if let d = UserDefaults.standard.data(forKey: rek),
-               let v = try? JSONDecoder().decode([UUID].self, from: d)                    { recentIds = v }
+               let v = try? JSONDecoder().decode([UUID].self, from: d)                    { recentIds    = v }
             if let d = UserDefaults.standard.data(forKey: awk),
                let v = try? JSONDecoder().decode(WorkoutLogEntry.self, from: d)           { savedActiveWorkout = v }
+            if let d = UserDefaults.standard.data(forKey: rhk),
+               let v = try? JSONDecoder().decode([String: Int].self, from: d)             { readinessHist = v }
 
             let needsSeed = !UserDefaults.standard.bool(forKey: sk)
             if needsSeed {
@@ -933,15 +970,16 @@ class SeedStore {
 
             // Phase 1: hand raw data to main thread immediately — app is visible now.
             DispatchQueue.main.async { [self] in
-                workoutLog        = log
-                personalRecords   = prs
-                routines          = templates
-                userProfile       = profile   // didSet is no-op while isLoaded == false
-                cardioCircuits    = circuits
-                cardioLog         = cLog
-                generalLog        = gLog
-                restDays          = rDays
-                recentExerciseIds = recentIds
+                workoutLog             = log
+                personalRecords        = prs
+                routines               = templates
+                userProfile            = profile   // didSet is no-op while isLoaded == false
+                cardioCircuits         = circuits
+                cardioLog              = cLog
+                generalLog             = gLog
+                restDays               = rDays
+                recentExerciseIds      = recentIds
+                readinessScoreHistory  = readinessHist
                 // Restore an in-progress workout if the app was killed mid-session
                 if !needsSeed, let recovered = savedActiveWorkout {
                     activeWorkout = recovered
@@ -959,7 +997,7 @@ class SeedStore {
             let (lpCache, histCache) = HomeCache.buildExerciseCaches(log: log)
             let analytics = StrengthAnalyticsEngine.compute(log: log, exercises: exs, userProfile: profile)
             // stepsToday not available at init time (HealthKit not yet fetched); passes nil
-            let home      = HomeCache.build(log: log, exercises: exs, routines: templates, cardioLog: cLog, generalLog: gLog, stepsToday: nil)
+            let home      = HomeCache.build(log: log, exercises: exs, routines: templates, cardioLog: cLog, generalLog: gLog, stepsToday: nil, scoreHistory: readinessHist)
 
             DispatchQueue.main.async { [self] in
                 analyticsCache       = analytics
@@ -983,16 +1021,22 @@ class SeedStore {
         let sleepCopy    = sleepHoursForReadiness
         let rhrCopy      = restingHRForReadiness
         let hrvCopy      = hrvForReadiness
+        let histCopy     = readinessScoreHistory
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             let (lpCache, histCache) = HomeCache.buildExerciseCaches(log: log)
             let result = StrengthAnalyticsEngine.compute(log: log, exercises: exs, userProfile: profile)
-            let home   = HomeCache.build(log: log, exercises: exs, routines: routinesCopy, cardioLog: cLogCopy, generalLog: gLogCopy, stepsToday: stepsCopy, sleepHours: sleepCopy, restingHR: rhrCopy, hrv: hrvCopy)
+            let home   = HomeCache.build(log: log, exercises: exs, routines: routinesCopy, cardioLog: cLogCopy, generalLog: gLogCopy, stepsToday: stepsCopy, sleepHours: sleepCopy, restingHR: rhrCopy, hrv: hrvCopy, scoreHistory: histCopy)
+            let todayKey  = Self.dateKeyFormatter.string(from: Date())
+            let todayScore = home.readiness.score
             DispatchQueue.main.async {
                 guard self?.analyticsPendingToken == token else { return }
                 self?.analyticsCache       = result
                 self?.homeCache            = home
                 self?.lastPerformanceCache = lpCache
                 self?.exerciseHistoryCache = histCache
+                // Stamp today's real score for future trend chart rendering
+                self?.readinessScoreHistory[todayKey] = todayScore
+                self?.saveReadinessHistory()
             }
         }
     }

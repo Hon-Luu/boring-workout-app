@@ -145,7 +145,7 @@ final class HONHabitEngine {
         let sortedAll = allDates.sorted(by: >)
         if let mostRecent = sortedAll.first {
             let gap = now.timeIntervalSince(mostRecent) / 86_400
-            userRecord.lapseStart = gap >= 3 ? mostRecent : nil
+            userRecord.lapseStart = gap >= 6 ? mostRecent : nil
         } else {
             userRecord.lapseStart = nil
         }
@@ -178,7 +178,7 @@ final class HONHabitEngine {
         if sortedLog.count >= 2 {
             let prev = sortedLog[sortedLog.count - 2]
             let gap  = Int(entry.startedAt.timeIntervalSince(prev.startedAt) / 86_400)
-            if gap >= 3 {
+            if gap >= 6 {
                 var ctx = HONMessageLibrary.MessageContext()
                 ctx.daysGone = gap
                 ctx.lastExerciseName = entry.exercises.first?.exercise.name ?? ""

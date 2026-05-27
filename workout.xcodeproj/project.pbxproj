@@ -36,7 +36,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		1E2E59902F138A9A0043AC67 /* Exceptions for "workout" folder in "workout" target */ = {
+		1E2E59902F138A9A0043AC67 /* Exceptions for "iOSApp" folder in "workout" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -53,10 +53,10 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		1E2E59592F138A990043AC67 /* workout */ = {
+		1E2E59592F138A990043AC67 /* iOSApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				1E2E59902F138A9A0043AC67 /* Exceptions for "workout" folder in "workout" target */,
+				1E2E59902F138A9A0043AC67 /* Exceptions for "iOSApp" folder in "workout" target */,
 			);
 			path = iOSApp;
 			sourceTree = "<group>";
@@ -106,7 +106,7 @@
 		1E2E594E2F138A990043AC67 = {
 			isa = PBXGroup;
 			children = (
-				1E2E59592F138A990043AC67 /* workout */,
+				1E2E59592F138A990043AC67 /* iOSApp */,
 				1EE451B02F30CD32006E9FB4 /* workoutWidget */,
 				1EF100052F31000100000005 /* workoutWatch */,
 				1EE451AB2F30CD32006E9FB4 /* Frameworks */,
@@ -151,7 +151,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				1E2E59592F138A990043AC67 /* workout */,
+				1E2E59592F138A990043AC67 /* iOSApp */,
 			);
 			name = workout;
 			packageProductDependencies = (
