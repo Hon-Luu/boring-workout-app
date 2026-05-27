@@ -27,6 +27,7 @@ struct ActiveWorkoutView: View {
     @State private var activeSetMap: [Int: Int] = [:]
     // ID of exercise card to scroll to after superset auto-advance
     @State private var scrollToId: UUID? = nil
+    @State private var showReadinessSheet = false
 
     private var hasAnyCompletedSets: Bool {
         store.activeWorkout?.exercises.contains { !$0.completedSets.isEmpty } ?? false
@@ -159,6 +160,9 @@ struct ActiveWorkoutView: View {
                                     if let v = store.bestVariant(equipment: equip, matching: we.exercise) {
                                         store.swapExercise(at: exerciseIndex, with: v)
                                     }
+                                },
+                                onUpdateSetRPE: { setIndex, rpe in
+                                    store.updateSetRPE(exerciseIndex: exerciseIndex, setIndex: setIndex, rpe: rpe)
                                 }
                             )
                             .id(we.id)
@@ -221,6 +225,18 @@ struct ActiveWorkoutView: View {
                 scrollToId = nil
             }
         }
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Done") {
+                    UIApplication.shared.sendAction(
+                        #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
+                    )
+                }
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(HONTheme.accent)
+            }
+        }
         .scrollDismissesKeyboard(.interactively)
         .onDisappear { stopRestTimer() }
         .onAppear {
@@ -228,6 +244,11 @@ struct ActiveWorkoutView: View {
             if !suggestions.isEmpty {
                 acceptedSuggestionIds = Set(suggestions.map(\.id))
                 showWeightSuggestions = true
+            }
+            if store.activeWorkout?.readinessBefore == nil && !hasAnyCompletedSets {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                    showReadinessSheet = true
+                }
             }
         }
         .sheet(isPresented: $showWeightSuggestions) {
@@ -252,6 +273,11 @@ struct ActiveWorkoutView: View {
                 }
             }
             .environment(store)
+        }
+        .sheet(isPresented: $showReadinessSheet) {
+            ReadinessBeforeSheet { rating in
+                store.setReadinessBefore(rating)
+            }
         }
     }
 
@@ -364,6 +390,7 @@ private struct ExerciseCard: View {
     let onUnlinkSuperset: () -> Void
     let variants: [Equipment]
     let onQuickSwap: (Equipment) -> Void
+    var onUpdateSetRPE: ((Int, Double?) -> Void)? = nil
 
     @State private var showPlateCalc = false
     @State private var editingWeight: [Int: String] = [:]
@@ -382,13 +409,12 @@ private struct ExerciseCard: View {
     private var equipment: Equipment { workoutExercise.exercise.equipment }
 
     private var weightColumnLabel: String {
-        let unit = useKg ? "KG" : "LBS"
-        return equipment == .dumbbell ? "\(unit)/HAND" : unit
+        useKg ? "KG" : "LBS"
     }
 
     private var equipmentBadge: String? {
         switch equipment {
-        case .dumbbell: return "Enter per-hand weight — app doubles for bilateral total"
+        case .dumbbell: return "Enter total weight (both dumbbells combined, e.g. 2 × 20 kg = 40)"
         case .barbell:  return "min \(Int(Equipment.barbellBarKg)) kg  (empty bar included)"
         default:        return nil
         }
@@ -398,62 +424,168 @@ private struct ExerciseCard: View {
     private func toDisplay(_ storedKg: Double) -> Double { useKg ? storedKg : storedKg * Self.lbsPerKg }
     private func toKg(_ display: Double) -> Double       { useKg ? display  : display * Self.kgPerLb   }
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Header
-            HStack(spacing: 10) {
-                if let group = supersetGroupId, let pos = supersetPosition {
-                    Text("\(group)\(pos)")
-                        .font(.caption.bold())
-                        .padding(.horizontal, 7)
-                        .padding(.vertical, 3)
-                        .background(HONTheme.accent.opacity(0.15), in: Capsule())
-                        .foregroundStyle(HONTheme.accent)
-                }
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(workoutExercise.exercise.name)
-                        .font(.headline)
-                    Text("\(workoutExercise.exercise.bodyRegion.rawValue) · \(workoutExercise.exercise.equipment.rawValue)")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                // Plate Calculator quick-access
-                Button {
-                    showPlateCalc = true
-                } label: {
-                    HStack(spacing: 3) {
-                        Image(systemName: "circle.grid.3x3.fill")
-                            .font(.system(size: 11))
-                        Text("Plates")
-                            .font(.system(size: 10, weight: .medium))
-                    }
+    @ViewBuilder
+    private var headerSection: some View {
+        HStack(spacing: 10) {
+            if let group = supersetGroupId, let pos = supersetPosition {
+                Text("\(group)\(pos)")
+                    .font(.caption.bold())
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 3)
+                    .background(HONTheme.accent.opacity(0.15), in: Capsule())
+                    .foregroundStyle(HONTheme.accent)
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(workoutExercise.exercise.name)
+                    .font(.headline)
+                Text("\(workoutExercise.exercise.bodyRegion.rawValue) · \(workoutExercise.exercise.equipment.rawValue)")
+                    .font(.caption)
                     .foregroundStyle(.secondary)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.secondary.opacity(0.1), in: Capsule())
+            }
+            Spacer()
+            Button {
+                showPlateCalc = true
+            } label: {
+                HStack(spacing: 3) {
+                    Image(systemName: "circle.grid.3x3.fill")
+                        .font(.system(size: 11))
+                    Text("Plates")
+                        .font(.system(size: 10, weight: .medium))
                 }
-                .accessibilityLabel("Open plate calculator for \(workoutExercise.exercise.name)")
-                Menu {
-                    Button(action: onSwap) {
-                        Label("Swap Exercise", systemImage: "arrow.left.arrow.right")
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.secondary.opacity(0.1), in: Capsule())
+            }
+            .accessibilityLabel("Open plate calculator for \(workoutExercise.exercise.name)")
+            Menu {
+                Button(action: onSwap) {
+                    Label("Swap Exercise", systemImage: "arrow.left.arrow.right")
+                }
+                if supersetGroupId != nil {
+                    Button(action: onUnlinkSuperset) {
+                        Label("Remove from Superset", systemImage: "link.badge.minus")
                     }
-                    if supersetGroupId != nil {
-                        Button(action: onUnlinkSuperset) {
-                            Label("Remove from Superset", systemImage: "link.badge.minus")
+                }
+                Button(role: .destructive, action: onRemoveExercise) {
+                    Label("Remove Exercise", systemImage: "trash")
+                }
+            } label: {
+                Image(systemName: "ellipsis")
+                    .foregroundStyle(.secondary)
+                    .padding(8)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+    }
+
+    @ViewBuilder
+    private func makeSetRow(setIndex: Int, set: SetRecord) -> some View {
+        let totalSets = workoutExercise.sets.count
+        SetRow(
+            record: set,
+            setNumber: setIndex + 1,
+            setIndex: setIndex,
+            isActive: !set.isCompleted && setIndex == activeSetIndex,
+            useKg: useKg,
+            weightInput: Binding(
+                get: { editingWeight[setIndex] ?? toDisplay(set.weight).weightFormatted },
+                set: { editingWeight[setIndex] = $0 }
+            ),
+            repsInput: Binding(
+                get: { editingReps[setIndex] ?? (set.reps > 0 ? "\(set.reps)" : "") },
+                set: { editingReps[setIndex] = $0 }
+            ),
+            targetRepsInput: Binding(
+                get: { editingTargetReps[setIndex] ?? (set.targetReps > 0 ? "\(set.targetReps)" : "") },
+                set: { editingTargetReps[setIndex] = $0 }
+            ),
+            dropWeightInput: Binding(
+                get: {
+                    if let s = editingDropWeight[setIndex] { return s }
+                    if let dw = set.dropWeight { return toDisplay(dw).weightFormatted }
+                    return ""
+                },
+                set: { editingDropWeight[setIndex] = $0 }
+            ),
+            dropRepsInput: Binding(
+                get: {
+                    if let s = editingDropReps[setIndex] { return s }
+                    if let dr = set.dropReps { return "\(dr)" }
+                    return ""
+                },
+                set: { editingDropReps[setIndex] = $0 }
+            ),
+            showDropPanel: showDropPanel.contains(setIndex),
+            onWeightChange: { raw in
+                if let v = Double(raw), v > 0 { onUpdateSet(setIndex, toKg(v), set.reps) }
+            },
+            onWeightStep: { delta in
+                let step = useKg ? delta : delta * Self.lbsPerKg
+                let cur = Double(editingWeight[setIndex] ?? toDisplay(set.weight).weightFormatted) ?? toDisplay(set.weight)
+                let next = max(0, cur + step)
+                editingWeight[setIndex] = next.weightFormatted
+                onUpdateSet(setIndex, toKg(next), set.reps)
+            },
+            onRepsChange: { raw in
+                if let v = Int(raw) { onUpdateSet(setIndex, set.weight, v) }
+            },
+            onTargetRepsChange: { raw in
+                if let tr = Int(raw) { onUpdateSetTarget(setIndex, set.weight, tr) }
+            },
+            onComplete: { onCompleteSet(setIndex) },
+            onUncomplete: { onUncompleteSet(setIndex) },
+            onDelete: { onRemoveSet(setIndex) },
+            onToggleDropPanel: {
+                withAnimation(.spring(duration: 0.22)) {
+                    if showDropPanel.contains(setIndex) {
+                        showDropPanel.remove(setIndex)
+                    } else {
+                        showDropPanel.insert(setIndex)
+                        if editingDropReps[setIndex] == nil && set.dropReps == nil {
+                            let remaining = set.targetReps - set.reps
+                            if remaining > 0 { editingDropReps[setIndex] = "\(remaining)" }
                         }
                     }
-                    Button(role: .destructive, action: onRemoveExercise) {
-                        Label("Remove Exercise", systemImage: "trash")
-                    }
-                } label: {
-                    Image(systemName: "ellipsis")
-                        .foregroundStyle(.secondary)
-                        .padding(8)
                 }
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            },
+            onDropWeightChange: { raw in
+                let dw = Double(raw).map { toKg($0) }
+                let dr = editingDropReps[setIndex].flatMap(Int.init) ?? set.dropReps
+                onUpdateDrop(setIndex, dw, dr)
+            },
+            onDropRepsChange: { raw in
+                let dr = Int(raw)
+                let dw = editingDropWeight[setIndex].flatMap(Double.init).map { toKg($0) } ?? set.dropWeight
+                onUpdateDrop(setIndex, dw, dr)
+            },
+            onClearDrop: {
+                editingDropWeight.removeValue(forKey: setIndex)
+                editingDropReps.removeValue(forKey: setIndex)
+                showDropPanel.remove(setIndex)
+                onUpdateDrop(setIndex, nil, nil)
+            },
+            onCompleteDropSet: { onCompleteDropSet(setIndex) },
+            onUncompleteDropSet: { onUncompleteDropSet(setIndex) },
+            onToggleFailure: {
+                onUpdateFailure(setIndex, !set.toFailure)
+            },
+            onCompleteAsFailed: {
+                onUpdateSet(setIndex, set.weight, 0)
+                onUpdateFailure(setIndex, true)
+                onCompleteSet(setIndex)
+            },
+            isLastSet: setIndex == totalSets - 1,
+            onUpdateRPE: onUpdateSetRPE.map { fn in { rpe in fn(setIndex, rpe) } }
+        )
+        .swipeToDelete { onRemoveSet(setIndex) }
+        .padding(.horizontal, 16)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            headerSection
 
             if !variants.isEmpty {
                 EquipmentChipRow(
@@ -507,106 +639,16 @@ private struct ExerciseCard: View {
                     Text(badge)
                         .font(.system(size: 9, weight: .medium))
                 }
-                .foregroundStyle(HONTheme.warning)
+                .foregroundStyle(HONTheme.accent)
                 .padding(.horizontal, 20)
                 .padding(.bottom, 4)
             }
 
             // Sets
             VStack(spacing: 0) {
-             ForEach(Array(workoutExercise.sets.enumerated()), id: \.element.id) { setIndex, set in
-                SetRow(
-                    record: set,
-                    setNumber: setIndex + 1,
-                    setIndex: setIndex,
-                    isActive: !set.isCompleted && setIndex == activeSetIndex,
-                    useKg: useKg,
-                    weightInput: Binding(
-                        get: { editingWeight[setIndex] ?? toDisplay(set.weight).weightFormatted },
-                        set: { editingWeight[setIndex] = $0 }
-                    ),
-                    repsInput: Binding(
-                        get: { editingReps[setIndex] ?? (set.reps > 0 ? "\(set.reps)" : "") },
-                        set: { editingReps[setIndex] = $0 }
-                    ),
-                    targetRepsInput: Binding(
-                        get: { editingTargetReps[setIndex] ?? (set.targetReps > 0 ? "\(set.targetReps)" : "") },
-                        set: { editingTargetReps[setIndex] = $0 }
-                    ),
-                    dropWeightInput: Binding(
-                        get: {
-                            if let s = editingDropWeight[setIndex] { return s }
-                            if let dw = set.dropWeight { return toDisplay(dw).weightFormatted }
-                            return ""
-                        },
-                        set: { editingDropWeight[setIndex] = $0 }
-                    ),
-                    dropRepsInput: Binding(
-                        get: {
-                            if let s = editingDropReps[setIndex] { return s }
-                            if let dr = set.dropReps { return "\(dr)" }
-                            return ""
-                        },
-                        set: { editingDropReps[setIndex] = $0 }
-                    ),
-                    showDropPanel: showDropPanel.contains(setIndex),
-                    onWeightChange: { raw in
-                        if let v = Double(raw), v > 0 { onUpdateSet(setIndex, toKg(v), set.reps) }
-                    },
-                    onWeightStep: { delta in
-                        let step = useKg ? delta : delta * Self.lbsPerKg
-                        let cur = Double(editingWeight[setIndex] ?? toDisplay(set.weight).weightFormatted) ?? toDisplay(set.weight)
-                        let next = max(0, cur + step)
-                        editingWeight[setIndex] = next.weightFormatted
-                        onUpdateSet(setIndex, toKg(next), set.reps)
-                    },
-                    onRepsChange: { raw in
-                        if let v = Int(raw) { onUpdateSet(setIndex, set.weight, v) }
-                    },
-                    onTargetRepsChange: { raw in
-                        if let tr = Int(raw) { onUpdateSetTarget(setIndex, set.weight, tr) }
-                    },
-                    onComplete: { onCompleteSet(setIndex) },
-                    onUncomplete: { onUncompleteSet(setIndex) },
-                    onDelete: { onRemoveSet(setIndex) },
-                    onToggleDropPanel: {
-                        withAnimation(.spring(duration: 0.22)) {
-                            if showDropPanel.contains(setIndex) {
-                                showDropPanel.remove(setIndex)
-                            } else {
-                                showDropPanel.insert(setIndex)
-                                if editingDropReps[setIndex] == nil && set.dropReps == nil {
-                                    let remaining = set.targetReps - set.reps
-                                    if remaining > 0 { editingDropReps[setIndex] = "\(remaining)" }
-                                }
-                            }
-                        }
-                    },
-                    onDropWeightChange: { raw in
-                        let dw = Double(raw).map { toKg($0) }
-                        let dr = editingDropReps[setIndex].flatMap(Int.init) ?? set.dropReps
-                        onUpdateDrop(setIndex, dw, dr)
-                    },
-                    onDropRepsChange: { raw in
-                        let dr = Int(raw)
-                        let dw = editingDropWeight[setIndex].flatMap(Double.init).map { toKg($0) } ?? set.dropWeight
-                        onUpdateDrop(setIndex, dw, dr)
-                    },
-                    onClearDrop: {
-                        editingDropWeight.removeValue(forKey: setIndex)
-                        editingDropReps.removeValue(forKey: setIndex)
-                        showDropPanel.remove(setIndex)
-                        onUpdateDrop(setIndex, nil, nil)
-                    },
-                    onCompleteDropSet: { onCompleteDropSet(setIndex) },
-                    onUncompleteDropSet: { onUncompleteDropSet(setIndex) },
-                    onToggleFailure: {
-                        onUpdateFailure(setIndex, !set.toFailure)
-                    }
-                )
-                .swipeToDelete { onRemoveSet(setIndex) }
-                .padding(.horizontal, 16)
-             }
+                ForEach(Array(workoutExercise.sets.enumerated()), id: \.element.id) { setIndex, set in
+                    makeSetRow(setIndex: setIndex, set: set)
+                }
             }
 
             let completedSets = workoutExercise.sets.filter(\.isCompleted)
@@ -690,8 +732,12 @@ private struct SetRow: View {
     let onCompleteDropSet: () -> Void
     let onUncompleteDropSet: () -> Void
     let onToggleFailure: () -> Void
+    var onCompleteAsFailed: (() -> Void)? = nil
+    var isLastSet: Bool = false
+    var onUpdateRPE: ((Double?) -> Void)? = nil
 
     @State private var showZeroRepsAlert = false
+    @State private var showRPERow = false
 
     private var accentColor: Color {
         record.isCompleted ? (record.repOutcome == .missed ? AppTheme.warning : AppTheme.positive) : isActive ? AppTheme.primary : .secondary
@@ -769,9 +815,12 @@ private struct SetRow: View {
                 .accessibilityLabel(record.isCompleted ? "Completed set \(setIndex + 1)" : "Complete set \(setIndex + 1)")
                 .accessibilityHint(record.isCompleted ? "Double-tap to mark as incomplete" : "Double-tap to mark as complete")
                 .alert("No Reps Entered", isPresented: $showZeroRepsAlert) {
-                    Button("OK", role: .cancel) {}
+                    Button("Enter Reps", role: .cancel) {}
+                    if onCompleteAsFailed != nil {
+                        Button("Log as Failed Set") { onCompleteAsFailed?() }
+                    }
                 } message: {
-                    Text("Enter at least 1 rep before completing a set.")
+                    Text("Enter reps, or log this as a failed set if you couldn't complete a single rep.")
                 }
                 .contextMenu {
                     if record.isCompleted {
@@ -809,6 +858,35 @@ private struct SetRow: View {
                 )
                 .padding(.leading, 30)
                 .padding(.vertical, 8)
+            }
+
+            // RPE capture — shown for last set when completed; toggled by user
+            if isLastSet && record.isCompleted {
+                VStack(spacing: 0) {
+                    if showRPERow || record.rpe != nil {
+                        RPERow(rpe: record.rpe) { newRPE in
+                            onUpdateRPE?(newRPE)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 6)
+                    } else {
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.2)) { showRPERow = true }
+                        } label: {
+                            HStack(spacing: 5) {
+                                Image(systemName: "gauge.with.needle.fill")
+                                    .font(.system(size: 11))
+                                Text("Rate effort (RPE)")
+                                    .font(.system(size: 11, weight: .semibold))
+                            }
+                            .foregroundStyle(HONTheme.accent.opacity(0.8))
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 6)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
             }
 
             // "Finish with lighter weight" nudge when set is completed but missed target
@@ -1277,18 +1355,6 @@ private struct NumberField: View {
             .padding(.horizontal, 4)
             .background(Color.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 8))
             .padding(.horizontal, 4)
-            .toolbar {
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-                    Button("Done") {
-                        UIApplication.shared.sendAction(
-                            #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
-                        )
-                    }
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(HONTheme.accent)
-                }
-            }
             .onChange(of: text) { _, new in onSubmit(new) }
             .onReceive(NotificationCenter.default.publisher(for: UITextField.textDidBeginEditingNotification)) { obj in
                 if let tf = obj.object as? UITextField {
@@ -1532,6 +1598,89 @@ private struct SwipeToDeleteModifier: ViewModifier {
 private extension View {
     func swipeToDelete(action: @escaping () -> Void) -> some View {
         modifier(SwipeToDeleteModifier(onDelete: action))
+    }
+}
+
+// MARK: - Readiness Before Sheet
+
+private struct ReadinessBeforeSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let onSelect: (Int) -> Void
+
+    private let options: [(label: String, icon: String, value: Int, detail: String)] = [
+        ("Tired",  "😴", 1, "Under-slept, sore, or low energy"),
+        ("Normal", "💪", 2, "Feeling baseline — ready to work"),
+        ("Strong", "🔥", 3, "High energy, well rested, fired up"),
+    ]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Handle
+            Capsule()
+                .fill(Color.secondary.opacity(0.3))
+                .frame(width: 36, height: 4)
+                .padding(.top, 12)
+                .padding(.bottom, 28)
+
+            VStack(spacing: 8) {
+                Text("How are you feeling?")
+                    .font(.custom("CormorantGaramond-Light", size: 32))
+                    .foregroundStyle(HONTheme.textPrimary)
+
+                Text("Logged before your first set — helps H.O.N. read your session in context.")
+                    .font(.custom("DMSans-Regular", size: 13))
+                    .foregroundStyle(HONTheme.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(3)
+                    .padding(.horizontal, 24)
+            }
+
+            VStack(spacing: 12) {
+                ForEach(options, id: \.value) { opt in
+                    Button {
+                        onSelect(opt.value)
+                        dismiss()
+                    } label: {
+                        HStack(spacing: 16) {
+                            Text(opt.icon)
+                                .font(.system(size: 28))
+                                .frame(width: 44)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(opt.label)
+                                    .font(.custom("DMSans-SemiBold", size: 16))
+                                    .foregroundStyle(HONTheme.textPrimary)
+                                Text(opt.detail)
+                                    .font(.custom("DMSans-Regular", size: 12))
+                                    .foregroundStyle(HONTheme.textSecondary)
+                            }
+
+                            Spacer()
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 16)
+                        .background(HONTheme.surface, in: RoundedRectangle(cornerRadius: 14))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14)
+                                .stroke(HONTheme.accent.opacity(0.15), lineWidth: 1)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 28)
+
+            Button("Skip for now") { dismiss() }
+                .font(.custom("DMSans-Regular", size: 13))
+                .foregroundStyle(HONTheme.textSecondary.opacity(0.6))
+                .padding(.top, 20)
+                .padding(.bottom, 36)
+        }
+        .frame(maxWidth: .infinity)
+        .background(HONTheme.background)
+        .presentationDetents([.medium])
+        .presentationDragIndicator(.hidden)
     }
 }
 

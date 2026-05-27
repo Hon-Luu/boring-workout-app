@@ -506,10 +506,15 @@ struct WhereSectionContent: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            // Movement pattern radar
+            // Standard lift tier bars — first since it's the most actionable at a glance
+            StandardLiftsCard(log: log, bodyWeightKg: bodyWeightKg)
+
+            // Movement pattern radar + development tier — equal-width side by side
             HStack(alignment: .top, spacing: 12) {
                 ExpandableChartCard(title: "Movement Pattern Strength") { patternRadarCard }
+                    .frame(maxWidth: .infinity)
                 muscleGridCard
+                    .frame(maxWidth: .infinity)
                     .overlay(alignment: .topTrailing) {
                         Image(systemName: "info.circle")
                             .font(.system(size: 11))
@@ -522,9 +527,6 @@ struct WhereSectionContent: View {
                         DevelopmentTierDetailSheet(analytics: analytics)
                     }
             }
-
-            // Standard lift tier bars
-            StandardLiftsCard(log: log, bodyWeightKg: bodyWeightKg)
 
             // Strength retention rings — only show once at least one exercise has ≥ 2 sessions
             let qualifiedForRings = analytics.exerciseAnalytics.filter { $0.sessions.count >= 2 }
@@ -542,8 +544,13 @@ struct WhereSectionContent: View {
     // Muscle group heat grid — maxHeight must come BEFORE .background so the fill stretches to match the radar card
     private var muscleGridCard: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Development Tier")
-                .font(.cardTitle)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Development Tier")
+                    .font(.cardTitle)
+                Text("Weekly e1RM improvement rate")
+                    .font(.system(size: 10))
+                    .foregroundStyle(.secondary)
+            }
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 6) {
                 ForEach(muscleData, id: \.name) { item in
                     VStack(spacing: 3) {
@@ -1053,6 +1060,7 @@ struct StrongerSectionContent: View {
                             .font(.system(size: 10))
                             .foregroundStyle(.tertiary)
                     }
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 if ex.id != exerciseAnalytics.prefix(5).last?.id {
@@ -3063,6 +3071,14 @@ struct InsightCard: View {
                     Text("LEARNING")
                         .font(.system(size: 11, weight: .bold))
                         .foregroundStyle(.secondary)
+                    if !insight.dataPoint.isEmpty {
+                        Text(insight.dataPoint)
+                            .font(.system(size: 9))
+                            .foregroundStyle(.tertiary)
+                            .lineLimit(3)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.top, 2)
+                    }
                 }
 
                 HStack {
@@ -3074,7 +3090,7 @@ struct InsightCard: View {
                 .padding(.top, 6)
             }
             .padding(12)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: 120, alignment: .topLeading)
             .background(AppTheme.cardBG, in: RoundedRectangle(cornerRadius: 12))
             .overlay(
                 RoundedRectangle(cornerRadius: 12)

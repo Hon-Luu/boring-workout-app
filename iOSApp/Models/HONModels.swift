@@ -160,4 +160,5 @@ struct HONUserRecord: Codable {
     var lastPatternFlagDate: Date? = nil
     var lastDriftDeloadCheckDate: Date = .distantPast
     var lastUpdated: Date = .distantPast
+    var dominantMovementCategory: String = ""      // most-logged movement pattern label
 }

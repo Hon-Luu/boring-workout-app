@@ -53,9 +53,11 @@ final class HONHabitEngine {
         let seed     = userRecord.totalSessions
 
         if HONPatternEngine.isDrifting(weekRecords: userRecord.weekRecords) {
+            var driftCtx = HONMessageLibrary.MessageContext()
+            driftCtx.driftCategoryName = userRecord.dominantMovementCategory
             if let (msg, icon) = HONMessageLibrary.pick(
                 kind: .driftDetection, phase: phase, userType: userType,
-                context: HONMessageLibrary.MessageContext(), seed: seed
+                context: driftCtx, seed: seed
             ) {
                 messages.append(HONPendingMessage(kind: .driftDetection, message: msg, icon: icon))
             }
@@ -143,10 +145,22 @@ final class HONHabitEngine {
         let sortedAll = allDates.sorted(by: >)
         if let mostRecent = sortedAll.first {
             let gap = now.timeIntervalSince(mostRecent) / 86_400
-            userRecord.lapseStart = gap >= 7 ? mostRecent : nil
+            userRecord.lapseStart = gap >= 3 ? mostRecent : nil
         } else {
             userRecord.lapseStart = nil
         }
+
+        // Compute dominant movement category from the full log (for drift messages)
+        userRecord.dominantMovementCategory = {
+            var counts: [String: Int] = [:]
+            for entry in log {
+                for we in entry.exercises {
+                    let label = we.exercise.movementPattern.rawValue
+                    counts[label, default: 0] += 1
+                }
+            }
+            return counts.max(by: { $0.value < $1.value })?.key ?? ""
+        }()
 
         userRecord.lastUpdated = now
     }
@@ -164,8 +178,10 @@ final class HONHabitEngine {
         if sortedLog.count >= 2 {
             let prev = sortedLog[sortedLog.count - 2]
             let gap  = Int(entry.startedAt.timeIntervalSince(prev.startedAt) / 86_400)
-            if gap >= 7 {
-                var ctx = HONMessageLibrary.MessageContext(); ctx.daysGone = gap
+            if gap >= 3 {
+                var ctx = HONMessageLibrary.MessageContext()
+                ctx.daysGone = gap
+                ctx.lastExerciseName = entry.exercises.first?.exercise.name ?? ""
                 if let (msg, icon) = HONMessageLibrary.pick(kind: .returnAfterLapse, phase: phase, userType: userType, context: ctx, seed: seed) {
                     messages.append(HONPendingMessage(kind: .returnAfterLapse, message: msg, icon: icon))
                 }

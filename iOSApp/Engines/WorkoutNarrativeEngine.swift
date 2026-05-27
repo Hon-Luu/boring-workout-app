@@ -91,6 +91,8 @@ private struct ExerciseAnalysis {
         }
     }
 
+    let isPullExercise: Bool
+
     var isUnder: Bool { repOutcome == .underSlight || repOutcome == .underSignificant }
     var needsAttention: Bool { repOutcome == .underSignificant || weightState == .droppedStillUnder }
     var isReady: Bool { repOutcome == .overTarget || repOutcome == .onTarget }
@@ -139,7 +141,8 @@ private struct ExerciseAnalysis {
 
 enum WorkoutNarrativeEngine {
 
-    static func generate(workout: WorkoutLogEntry, history: [WorkoutLogEntry]) -> String {
+    static func generate(workout: WorkoutLogEntry, history: [WorkoutLogEntry],
+                          isMindBodyOverconfident: Bool = false) -> String {
         guard let bank = loadBank() else { return legacyFallback(workout: workout, history: history) }
         let cal = Calendar.current
         let profile = UserCoachProfileEngine.load()
@@ -159,8 +162,8 @@ enum WorkoutNarrativeEngine {
         guard !analyses.isEmpty else { return "" }
 
         var text = analyses.count == 1
-            ? assembleSingle(analyses[0], bank: bank, workout: workout, profile: profile)
-            : assembleMulti(analyses, bank: bank)
+            ? assembleSingle(analyses[0], bank: bank, workout: workout, profile: profile, isMindBodyOverconfident: isMindBodyOverconfident)
+            : assembleMulti(analyses, bank: bank, isMindBodyOverconfident: isMindBodyOverconfident)
 
         // Append best-day observation as a final sentence when it's applicable
         if let bestDay = bestDayObservation(workout: workout, profile: profile) {
@@ -361,6 +364,9 @@ enum WorkoutNarrativeEngine {
             nextWeightKg = weightKg
         }
 
+        let isPullExercise = we.exercise.movementPattern == .horizontalPull
+            || we.exercise.movementPattern == .verticalPull
+
         return ExerciseAnalysis(
             exerciseId: we.exercise.id,
             name: we.exercise.name,
@@ -380,14 +386,21 @@ enum WorkoutNarrativeEngine {
             isNearTarget: isNearTarget,
             isImprovingUnder: isImprovingUnder,
             needsDeload: needsDeload,
-            stuckSessionCount: stuckSessionCount
+            stuckSessionCount: stuckSessionCount,
+            isPullExercise: isPullExercise
         )
     }
 
     // MARK: - Single exercise narrative
 
     private static func assembleSingle(_ a: ExerciseAnalysis, bank: PhraseBank,
-                                        workout: WorkoutLogEntry, profile: UserCoachProfile) -> String {
+                                        workout: WorkoutLogEntry, profile: UserCoachProfile,
+                                        isMindBodyOverconfident: Bool = false) -> String {
+        // CON-06: Neural Overload is counterproductive when physiology is overconfident (HRV low, feel high)
+        let effectiveWhatsNextKey = (a.whatsNextKey == "Stuck — Neural Overload" && isMindBodyOverconfident)
+            ? "Stuck — Rest & Microload"
+            : a.whatsNextKey
+
         // Combo template key: "{rep}|{weight}|{trend}|{history}"
         let trendCombo = a.trendKey == "Omitted" ? "Omitted" : a.trendKey.replacingOccurrences(of: " Target", with: "")
         let histCombo  = a.historyKey
@@ -438,10 +451,15 @@ enum WorkoutNarrativeEngine {
             parts.insert(fill(hPhrase.phrase, a), at: 0)
         }
 
-        // What's next
-        let nextKey = "\(a.whatsNextKey)|Single"
+        // What's next (using effective key — may be overridden by CON-06)
+        let nextKey = "\(effectiveWhatsNextKey)|Single"
         if let nextPhrase = pick(bank.whats_next[nextKey] ?? [], exerciseId: a.exerciseId, category: "next") {
             parts.append(fill(nextPhrase.phrase, a))
+        }
+
+        // CON-12: pull exercise deload — add bridging note about quality reps over heavy attempts
+        if a.needsDeload && a.isPullExercise {
+            parts.append("Dropping the weight lets you hit more quality reps — volume through clean reps beats failed attempts at heavy weight.")
         }
 
         // Profile-cited addendum replaces the generic connective when a personal pattern applies.
@@ -499,7 +517,8 @@ enum WorkoutNarrativeEngine {
 
     // MARK: - Multi exercise narrative
 
-    private static func assembleMulti(_ analyses: [ExerciseAnalysis], bank: PhraseBank) -> String {
+    private static func assembleMulti(_ analyses: [ExerciseAnalysis], bank: PhraseBank,
+                                       isMindBodyOverconfident: Bool = false) -> String {
         let hitCount    = analyses.filter { $0.isReady }.count
         let missedCount = analyses.filter { $0.isUnder }.count
         let total       = analyses.count
@@ -540,9 +559,12 @@ enum WorkoutNarrativeEngine {
             parts.append(filled)
         }
 
-        // What's next — most critical action
+        // What's next — most critical action (CON-06: override Neural Overload when overconfident)
         let lead = mostCritical(analyses)
-        let nextKey = "\(lead.whatsNextKey)|Single"
+        let leadNextKey = (lead.whatsNextKey == "Stuck — Neural Overload" && isMindBodyOverconfident)
+            ? "Stuck — Rest & Microload"
+            : lead.whatsNextKey
+        let nextKey = "\(leadNextKey)|Single"
         if let nextPhrase = pick(bank.whats_next[nextKey] ?? [], exerciseId: lead.exerciseId, category: "next") {
             parts.append(fill(nextPhrase.phrase, lead))
         }

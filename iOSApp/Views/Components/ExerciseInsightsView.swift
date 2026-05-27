@@ -337,7 +337,7 @@ struct ExerciseInsightDetailView: View {
             guard !completed.isEmpty else { return nil }
             let best = assisted
                 ? (completed.min { $0.weight < $1.weight } ?? completed[0])
-                : completed.max { epley($0, bw: bw, assisted: false) < epley($1, bw: bw, assisted: false) }!
+                : completed.max { SetRecord.e1RM(weight: $0.weight, reps: $0.reps) < SetRecord.e1RM(weight: $1.weight, reps: $1.reps) }!
             let vol = completed.reduce(0.0) {
                 let load = assisted ? max(0, (bw ?? 0) - $1.weight) : $1.weight
                 return $0 + load * Double($1.reps)
@@ -346,18 +346,14 @@ struct ExerciseInsightDetailView: View {
                 abs($0.startedAt.timeIntervalSince(session.date)) < 60
                     && $0.exercises.contains { $0.exercise.id == exercise.id }
             }
+            let load = assisted ? max(0, (bw ?? 0) - best.weight) : best.weight
             return E1RMPoint(
-                date: session.date, e1RM: epley(best, bw: bw, assisted: assisted),
+                date: session.date, e1RM: SetRecord.e1RM(weight: load, reps: best.reps),
                 bestWeight: best.weight, bestReps: best.reps,
                 volume: vol, setCount: completed.count,
                 entryId: entry?.id
             )
         }
-    }
-
-    private func epley(_ s: SetRecord, bw: Double?, assisted: Bool) -> Double {
-        let load = assisted ? max(0, (bw ?? 0) - s.weight) : s.weight
-        return s.reps == 1 ? load : load * (1 + Double(s.reps) / 30.0)
     }
 
     private func nextTierInfo(for rs: RelativeStrengthPoint) -> (label: String, multiplier: Double)? {
@@ -770,7 +766,7 @@ struct ExerciseInsightDetailView: View {
                 let latestRPE = ea.rpeHistory.last(where: { $0 > 0 })
                 metricTrendCard(
                     title: "Avg RPE",
-                    infoMetric: .e1RM,
+                    infoMetric: .rpe,
                     data: rpeData,
                     dates: rpeDates,
                     current: latestRPE,

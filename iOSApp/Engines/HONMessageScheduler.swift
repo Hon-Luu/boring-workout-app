@@ -17,7 +17,8 @@ enum HONMessageScheduler {
             ]
 
             // Deliver at 08:00 tomorrow local time
-            var comps        = DateComponents()
+            let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date()
+            var comps        = Calendar.current.dateComponents([.year, .month, .day], from: tomorrow)
             comps.hour       = 8
             comps.minute     = 0
             let trigger      = UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)

@@ -3,7 +3,7 @@ import SwiftUI
 // MARK: - MetricInfo enum
 
 enum MetricInfo {
-    case inol, psi, css, repDecay, efficiency, sessionCost, e1RM, tonnage, momentum, level, process, peakRetention, fiberLoad, allometricPSI, relativeStrength, readiness
+    case inol, psi, css, repDecay, efficiency, sessionCost, e1RM, tonnage, momentum, level, process, peakRetention, fiberLoad, allometricPSI, relativeStrength, readiness, rpe
 
     var title: String {
         switch self {
@@ -23,6 +23,7 @@ enum MetricInfo {
         case .allometricPSI:    return "Allometric PSI"
         case .relativeStrength: return "Relative Strength"
         case .readiness:        return "Readiness"
+        case .rpe:              return "RPE"
         }
     }
 
@@ -60,6 +61,8 @@ enum MetricInfo {
             return "Your estimated 1-rep max expressed as a multiple of your bodyweight, used to classify your strength tier."
         case .readiness:
             return "A 0–100 score combining days since last workout, session frequency, and volume trend to estimate training readiness."
+        case .rpe:
+            return "Rate of Perceived Exertion — a 1–10 scale rating how hard a set felt. 10 is a true maximum (couldn't do another rep), 7–8 is the productive training zone for most people."
         }
     }
 
@@ -97,6 +100,8 @@ enum MetricInfo {
             return "Relative strength is the most meaningful measure of strength for everyday athletes who are not competing by weight class."
         case .readiness:
             return "A high readiness score suggests you are well-recovered and primed for a quality session; low scores counsel restraint."
+        case .rpe:
+            return "An RPE trend that climbs for the same weight signals accumulated fatigue; a trend that drops signals positive adaptation — you've grown stronger and it now feels easier. That's your cue to add weight."
         }
     }
 
@@ -118,6 +123,7 @@ enum MetricInfo {
         case .allometricPSI:    return nil
         case .relativeStrength: return nil
         case .readiness:        return "≥ 70"
+        case .rpe:              return "7 – 8"
         }
     }
 
@@ -139,6 +145,7 @@ enum MetricInfo {
         case .allometricPSI:    return "/ BW⁰·⁶⁷"
         case .relativeStrength: return "× BW"
         case .readiness:        return "/ 100"
+        case .rpe:              return "/ 10"
         }
     }
 
@@ -160,6 +167,7 @@ enum MetricInfo {
         case .allometricPSI:    return HONTheme.accent
         case .relativeStrength: return HONTheme.chartSlate
         case .readiness:        return HONTheme.positive
+        case .rpe:              return HONTheme.chartClay
         }
     }
 }

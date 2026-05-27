@@ -52,7 +52,8 @@ struct ReadinessEngine {
         generalLog: [GeneralActivityEntry] = [],
         stepsToday: Int? = nil,
         sleepHours: Double? = nil,
-        restingHR: Double? = nil
+        restingHR: Double? = nil,
+        hrv: Double? = nil
     ) -> ReadinessState {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
@@ -171,7 +172,7 @@ struct ReadinessEngine {
         if let sleep = sleepHours {
             if sleep >= 7.5      { score += 5  }
             else if sleep >= 7.0  { score += 2  }
-            else if sleep >= 6.0  { }           // neutral
+            else if sleep >= 6.0  { score -= 2 }  // sub-optimal: mild penalty
             else if sleep >= 5.0  { score -= 5 }
             else                  { score -= 10 }  // <5h: significant impairment
         }
@@ -225,8 +226,28 @@ struct ReadinessEngine {
         let totalSessions = log.count + cardioLog.count + generalLog.count
         let confidence: ReadinessState.Confidence = totalSessions >= 10 ? .high : totalSessions >= 3 ? .medium : .low
 
+        // Gap-return detection: user trained today, but prior session was > 10 days ago
+        let isGapReturn: Bool = {
+            guard daysSinceLast == 0 else { return false }
+            let allSorted = allDates.sorted()
+            guard allSorted.count >= 2 else { return false }
+            let previousDate = allSorted[allSorted.count - 2]
+            let gap = calendar.dateComponents([.day], from: calendar.startOfDay(for: previousDate), to: today).day ?? 0
+            return gap > 10
+        }()
+
+        // CON-11: detect suppressed state (HRV good, feel low) for narrative override
+        let recentFeelLow: Bool = {
+            let recentFeel = log.prefix(3).compactMap(\.feelRating)
+            guard !recentFeel.isEmpty else { return false }
+            let avg = recentFeel.map { f -> Double in
+                switch f { case .easy: return 0.0; case .strong: return 0.25; case .normal: return 0.5; case .tired: return 0.75; case .brutal: return 1.0 }
+            }.reduce(0, +) / Double(recentFeel.count)
+            return avg < 0.5
+        }()
+
         // --- Narrative ---
-        let (headline, subtitle, coachingNote) = narrative(score: score, delta: delta, daysSinceLast: daysSinceLast, freq: recentAll)
+        let (headline, subtitle, coachingNote) = narrative(score: score, delta: delta, daysSinceLast: daysSinceLast, freq: recentAll, isGapReturn: isGapReturn, hrv: hrv, recentFeelLow: recentFeelLow)
 
         // --- Trend (14 days) ---
         let trend = buildTrend(log: log, cardioLog: cardioLog, generalLog: generalLog, calendar: calendar, today: today, todayScore: Double(score))
@@ -289,21 +310,48 @@ struct ReadinessEngine {
         return 65 + min(15, last30count)
     }
 
-    private static func narrative(score: Int, delta: Int, daysSinceLast: Int, freq: Int)
+    private static func narrative(score: Int, delta: Int, daysSinceLast: Int, freq: Int,
+                                   isGapReturn: Bool = false, hrv: Double? = nil, recentFeelLow: Bool = false)
         -> (headline: String, subtitle: String, coachingNote: String)
     {
+        // Gap-return override — alignment with HON returnAfterLapse messaging (H-01/CON-02)
+        if isGapReturn {
+            return (
+                "Good to be back.",
+                "First session after the break.",
+                "Good to be back after the break. First session back — treat it as a 70–75% effort day and see how the body responds before going full load."
+            )
+        }
+
         switch score {
         case 80...:
+            // CON-01: HRV suppressed despite high score — temper the "go hard" recommendation
+            if let hrv, hrv < 55 {
+                return (
+                    "Good momentum right now.",
+                    "Watch the HRV today.",
+                    "Recovery data looks solid but your HRV is below baseline. Aim for 80% effort today — your feel is running ahead of your physiology."
+                )
+            }
             return (
                 "Good momentum right now.",
                 "Recovery is stacking up.",
                 "You've been recovering well and the momentum is there. Don't hold back today — this is the kind of day you make progress on."
             )
         case 65..<80:
+            // CON-11: HRV says recovered but feel is low — acknowledge subjective-physiological gap
+            if let hrv, hrv >= 65, recentFeelLow {
+                return (
+                    "Physically ready, mentally not quite there.",
+                    "HRV says go — feel says otherwise.",
+                    "Your body is recovered but subjective energy isn't matching the data. Something non-training — stress, sleep quality, or motivation — is the limiting factor. Train, but scale expectations. This usually resolves in 1–2 days."
+                )
+            }
+            // CON-16: add fatigue framing to 65-79 band
             return (
                 "Ready to train.",
                 "Nothing in the way today.",
-                "Body feels balanced and you're in a good rhythm. Get your work in, stay focused, keep the streak alive."
+                "You're in a good rhythm. Get your work in with focus — if effort starts feeling disproportionate to load, that's early-fatigue signal worth noting."
             )
         case 50..<65:
             return (
@@ -423,8 +471,10 @@ struct ReadinessEngine {
         if let sleep = sleepHours {
             if sleep >= 7.5 {
                 factors.append(.init(text: String(format: "%.1f hours sleep — recovery optimised", sleep), isPositive: true))
-            } else if sleep < 6.0 {
-                factors.append(.init(text: String(format: "%.1f hours sleep — under-recovered; aim for 7–9 h", sleep), isPositive: false))
+            } else if sleep >= 7.0 {
+                factors.append(.init(text: String(format: "%.1f hours sleep — solid night", sleep), isPositive: true))
+            } else if sleep < 7.0 {
+                factors.append(.init(text: String(format: "%.1f hours sleep — aim for 7–9 h for full recovery", sleep), isPositive: false))
             }
         }
 

@@ -52,11 +52,12 @@ enum CompositeStrengthEngine {
     // MARK: - Entry Point
 
     static func compute(
-        exerciseAnalytics:  [ExerciseAnalytics],
-        psiHistory:         [PSIPoint],
-        userProfile:        UserProfile,
-        relativeStrengths:  [RelativeStrengthPoint] = [],
-        experienceTier:     StrengthTier = .intermediate
+        exerciseAnalytics:    [ExerciseAnalytics],
+        psiHistory:           [PSIPoint],
+        userProfile:          UserProfile,
+        relativeStrengths:    [RelativeStrengthPoint] = [],
+        experienceTier:       StrengthTier = .intermediate,
+        isExpectedSuppression: Bool = false
     ) -> CompositeStrengthResult {
         guard !exerciseAnalytics.isEmpty else { return .empty }
 
@@ -95,7 +96,8 @@ enum CompositeStrengthEngine {
             inolSub: inolSub,
             effSub: effSub,
             decaySub: decaySub,
-            exerciseAnalytics: exerciseAnalytics
+            exerciseAnalytics: exerciseAnalytics,
+            isExpectedSuppression: isExpectedSuppression
         )
 
         return CompositeStrengthResult(
@@ -415,7 +417,8 @@ enum CompositeStrengthEngine {
         inolSub: Double?,
         effSub: Double?,
         decaySub: Double?,
-        exerciseAnalytics: [ExerciseAnalytics]
+        exerciseAnalytics: [ExerciseAnalytics],
+        isExpectedSuppression: Bool = false
     ) -> String {
         // Find weakest pillar
         let pillars: [(String, Double)] = [
@@ -433,10 +436,14 @@ enum CompositeStrengthEngine {
             } else if pct >= 80 {
                 return "Strength is at \(pct)% of your personal best. A few consistent sessions should close the gap."
             } else {
-                return "Strength is at \(pct)% of your peak — signs of detraining or recovery debt. Prioritise consistency."
+                return "Strength is at \(pct)% of your peak — signs of detraining or an extended lighter block. Prioritise consistency."
             }
 
         case "momentum":
+            // CON-14: when TAS is expectedSuppression, low momentum is intended — hold course
+            if isExpectedSuppression {
+                return "Momentum is lower right now, but training load is elevated — that's expected suppression, not a problem. Hold the current program and let the work consolidate."
+            }
             let stalledNames = exerciseAnalytics
                 .filter { $0.isPlateau }
                 .prefix(2)

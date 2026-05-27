@@ -670,12 +670,14 @@ struct SetCompletionFlash: ViewModifier {
     let isCompleted: Bool
     @State private var scaleX: Double = 0
     @State private var opacity: Double = 0
+    @State private var contentScale: Double = 1.0
 
     func body(content: Content) -> some View {
         content
+            .scaleEffect(contentScale)
             .background(alignment: .bottom) {
                 HONTheme.accent
-                    .frame(height: 1)
+                    .frame(height: 2)
                     .scaleEffect(x: scaleX, anchor: .leading)
                     .opacity(opacity)
             }
@@ -683,6 +685,10 @@ struct SetCompletionFlash: ViewModifier {
                 guard new else { return }
                 scaleX = 0; opacity = 0
                 withAnimation(.easeOut(duration: 0.32)) { scaleX = 1; opacity = 1 }
+                withAnimation(.spring(response: 0.22, dampingFraction: 0.5)) { contentScale = 1.04 }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.22) {
+                    withAnimation(.spring(response: 0.18, dampingFraction: 0.7)) { contentScale = 1.0 }
+                }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.33) {
                     withAnimation(.easeIn(duration: 0.38)) { opacity = 0 }
                 }

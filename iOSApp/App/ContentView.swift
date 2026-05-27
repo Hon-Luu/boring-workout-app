@@ -64,13 +64,17 @@ struct ContentView: View {
                 .tabItem { Label("Progress", systemImage: "chart.line.uptrend.xyaxis") }
                 .tag(2)
 
-            ExerciseInsightsView(goToSettings: { selectedTab = 4 })
+            ExerciseInsightsView(goToSettings: { selectedTab = 5 })
                 .tabItem { Label("Insights", systemImage: "chart.dots.scatter") }
                 .tag(3)
 
+            TrainerTabView()
+                .tabItem { Label("Trainer", systemImage: "figure.strengthtraining.traditional") }
+                .tag(4)
+
             SettingsView()
                 .tabItem { Label("Settings", systemImage: "gearshape.fill") }
-                .tag(4)
+                .tag(5)
         }
         .tint(HONTheme.accent)
         .preferredColorScheme(prefersDarkMode ? .dark : .light)

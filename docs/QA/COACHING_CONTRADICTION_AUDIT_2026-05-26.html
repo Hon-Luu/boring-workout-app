@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coaching Contradiction Audit — 2026-05-26</title>
+<style>
+  :root {
+    --bg: #0e0e10;
+    --surface: #1a1a1e;
+    --card: #222228;
+    --border: #2e2e36;
+    --accent: #a78bfa;
+    --positive: #4ade80;
+    --warning: #f59e0b;
+    --negative: #f87171;
+    --text: #e2e2e8;
+    --text2: #8888a0;
+    --text3: #5a5a70;
+    --high: #f87171;
+    --medium: #f59e0b;
+    --low: #60a5fa;
+    --resolved: #4ade80;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif; font-size: 13px; line-height: 1.6; padding: 32px 24px; max-width: 960px; margin: 0 auto; }
+
+  h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 4px; }
+  .subtitle { color: var(--text2); font-size: 12px; margin-bottom: 28px; }
+
+  /* Summary bar */
+  .summary-bar { display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap; }
+  .summary-chip { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; text-align: center; min-width: 90px; }
+  .summary-chip .num { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .summary-chip .lbl { font-size: 10px; color: var(--text2); margin-top: 2px; letter-spacing: 0.4px; text-transform: uppercase; }
+  .chip-high .num { color: var(--high); }
+  .chip-med .num  { color: var(--medium); }
+  .chip-low .num  { color: var(--low); }
+  .chip-all .num  { color: var(--text); }
+
+  /* Filter buttons */
+  .filters { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .filter-btn { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 5px 12px; font-size: 11px; cursor: pointer; color: var(--text2); transition: all 0.15s; }
+  .filter-btn.active, .filter-btn:hover { color: var(--text); border-color: var(--accent); }
+  .filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* Section headers */
+  .section-header { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text3); padding: 6px 0 8px; margin-top: 24px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+
+  /* Contradiction cards */
+  .con-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; overflow: hidden; transition: opacity 0.15s; }
+  .con-card.hidden { display: none; }
+
+  .con-header { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; cursor: pointer; user-select: none; }
+  .con-header:hover { background: rgba(255,255,255,0.02); }
+
+  .check-col { flex-shrink: 0; padding-top: 1px; }
+  .check-col input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent); }
+
+  .badge { flex-shrink: 0; font-size: 9px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; margin-top: 2px; }
+  .badge-high   { background: rgba(248,113,113,0.18); color: var(--high); }
+  .badge-medium { background: rgba(245,158,11,0.18);  color: var(--medium); }
+  .badge-low    { background: rgba(96,165,250,0.18);  color: var(--low); }
+
+  .con-id { flex-shrink: 0; font-size: 10px; font-weight: 600; color: var(--text3); margin-top: 3px; min-width: 52px; }
+  .con-title-col { flex: 1; }
+  .con-title { font-size: 13px; font-weight: 600; color: var(--text); }
+  .con-surfaces { font-size: 11px; color: var(--text2); margin-top: 2px; }
+  .surface-tag { display: inline-block; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; font-size: 10px; margin-right: 4px; }
+  .expand-icon { flex-shrink: 0; font-size: 12px; color: var(--text3); margin-top: 3px; transition: transform 0.15s; }
+  .con-card.open .expand-icon { transform: rotate(90deg); }
+
+  /* Expanded body */
+  .con-body { display: none; padding: 0 16px 16px; }
+  .con-card.open .con-body { display: block; }
+
+  .con-body hr { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+
+  .clash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  @media (max-width: 600px) { .clash-grid { grid-template-columns: 1fr; } }
+
+  .clash-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+  .clash-box .source-label { font-size: 9px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text3); margin-bottom: 6px; }
+  .clash-box .source-loc { font-size: 10px; font-weight: 600; color: var(--accent); margin-bottom: 4px; }
+  .clash-box .source-trigger { font-size: 10px; color: var(--text3); margin-bottom: 6px; font-style: italic; }
+  .clash-box .source-msg { font-size: 12px; color: var(--text); line-height: 1.5; background: rgba(0,0,0,0.25); padding: 8px 10px; border-radius: 6px; border-left: 3px solid var(--border); }
+  .clash-box.msg-a .source-msg { border-left-color: var(--high); }
+  .clash-box.msg-b .source-msg { border-left-color: var(--low); }
+
+  .detail-row { margin-bottom: 8px; }
+  .detail-label { font-size: 10px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text3); margin-bottom: 3px; }
+  .detail-value { font-size: 12px; color: var(--text); line-height: 1.5; }
+  .detail-value.mono { font-family: "SF Mono", Menlo, monospace; font-size: 11px; color: var(--text2); }
+
+  .clash-icon { text-align: center; font-size: 18px; display: flex; align-items: center; justify-content: center; padding: 0 4px; color: var(--high); font-weight: 900; }
+
+  .fix-box { background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); border-radius: 8px; padding: 12px; margin-top: 10px; }
+  .fix-box .fix-label { font-size: 9px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+  .fix-box .fix-text { font-size: 12px; color: var(--text); line-height: 1.5; }
+
+  .check-status { font-size: 10px; color: var(--text3); margin-top: 6px; }
+  .con-card.checked { opacity: 0.5; }
+  .con-card.checked .con-title { text-decoration: line-through; color: var(--text2); }
+
+  /* Key */
+  .legend { display: flex; gap: 16px; font-size: 10px; color: var(--text2); margin-bottom: 20px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot-high { background: var(--high); }
+  .dot-med  { background: var(--medium); }
+  .dot-low  { background: var(--low); }
+
+  /* Intro note */
+  .intro-note { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 24px; font-size: 12px; color: var(--text2); line-height: 1.6; }
+  .intro-note strong { color: var(--text); }
+
+  /* Progress indicator */
+  .progress-bar-wrap { background: var(--border); border-radius: 4px; height: 4px; margin-bottom: 24px; }
+  .progress-bar-fill { background: var(--accent); border-radius: 4px; height: 4px; width: 0%; transition: width 0.3s; }
+  .progress-label { font-size: 10px; color: var(--text3); margin-bottom: 6px; }
+</style>
+</head>
+<body>
+
+<h1>Coaching Contradiction Audit</h1>
+<div class="subtitle">Cross-surface message consistency test · Generated 2026-05-26 · Pending sign-off</div>
+
+<div class="intro-note">
+  <strong>What this tests:</strong> Whether coaching messages shown during workout scenarios (Home tab: Readiness coaching note, HON milestone/habit messages, post-workout narrative) contradict or conflict with what the Progress tab simultaneously declares (Emerging Insights, Habit banner, Strength Score hero card insight, Pattern Detail). Each contradiction is documented with the exact trigger state, the literal strings in conflict, and a proposed resolution. Nothing is implemented — this is for your review.
+</div>
+
+<div class="summary-bar">
+  <div class="summary-chip chip-all"><div class="num" id="total-count">17</div><div class="lbl">Total Items</div></div>
+  <div class="summary-chip chip-high"><div class="num" id="high-count">6</div><div class="lbl">High</div></div>
+  <div class="summary-chip chip-med"><div class="num" id="med-count">8</div><div class="lbl">Medium</div></div>
+  <div class="summary-chip chip-low"><div class="num" id="low-count">3</div><div class="lbl">Low</div></div>
+  <div class="summary-chip chip-all" style="margin-left:auto"><div class="num" id="reviewed-count">0</div><div class="lbl">Reviewed</div></div>
+</div>
+
+<div class="progress-label" id="progress-label">0 of 17 reviewed</div>
+<div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-bar"></div></div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot dot-high"></div> High — directly opposite recommendations on same action, same day</div>
+  <div class="legend-item"><div class="legend-dot dot-med"></div> Medium — conflicting frame, incompatible advice across adjacent surfaces</div>
+  <div class="legend-item"><div class="legend-dot dot-low"></div> Low — subtle framing tension, unlikely to confuse but internally inconsistent</div>
+</div>
+
+<div class="filters">
+  <button class="filter-btn active" onclick="filter('all', this)">All (17)</button>
+  <button class="filter-btn" onclick="filter('high', this)">High (6)</button>
+  <button class="filter-btn" onclick="filter('medium', this)">Medium (8)</button>
+  <button class="filter-btn" onclick="filter('low', this)">Low (3)</button>
+  <button class="filter-btn" onclick="filter('home-home', this)">Home↔Home</button>
+  <button class="filter-btn" onclick="filter('home-progress', this)">Home↔Progress</button>
+  <button class="filter-btn" onclick="filter('progress-progress', this)">Progress↔Progress</button>
+</div>
+
+
+<!-- ═══════════════════════════════ HIGH ════════════════════════════════ -->
+<div class="section-header">High — Opposite Recommendations</div>
+
+<!-- CON-01 -->
+<div class="con-card" data-sev="high" data-scope="home-progress" id="card-1">
+  <div class="con-header" onclick="toggle(1)">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed(1, this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-high">High</div>
+    <div class="con-id">CON-01</div>
+    <div class="con-title-col">
+      <div class="con-title">Readiness "Don't hold back" vs Mind-Body Alignment "Athletes get hurt in this state"</div>
+      <div class="con-surfaces">
+        <span class="surface-tag">Home · Readiness coaching note</span>
+        <span class="surface-tag">Progress · Emerging Insights</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="con-body">
+    <div class="clash-grid">
+      <div class="clash-box msg-a">
+        <div class="source-label">Message A</div>
+        <div class="source-loc">Home tab → ReadinessCoachCard → ReadinessEngine.narrative() score ≥ 80</div>
+        <div class="source-trigger">Trigger: good training frequency + adequate sleep + low ATL → score climbs above 80</div>
+        <div class="source-msg">"You've been recovering well and the momentum is there. Don't hold back today — this is the kind of day you make progress on."</div>
+      </div>
+      <div class="clash-box msg-b">
+        <div class="source-label">Message B</div>
+        <div class="source-loc">Progress tab → Emerging Insights → MindBodyAlignment = OVERCONFIDENT</div>
+        <div class="source-trigger">Trigger: low HRV (physiology says fatigued) + feel rating "Strong" — feel outpaces biology</div>
+        <div class="source-msg">"Feel is high but physiology says otherwise. High failure risk on PR attempts. Athletes get hurt in this state."</div>
+      </div>
+    </div>
+    <hr>
+    <div class="detail-row">
+      <div class="detail-label">Root cause</div>
+      <div class="detail-value">ReadinessEngine does not read HRV. It scores from training frequency, sleep, RHR, and volume ratio. MindBodyAlignment uses HRV × feel. The two engines can reach opposite conclusions on the same day from non-overlapping inputs. No bridge between them.</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-label">Specific trigger scenario</div>
+      <div class="detail-value">User has been training consistently (freq=4, good sleep this week, low ATL) → Readiness lands ~82. Today HRV is 48 ms (suppressed from illness or life stress) but subjective feel is "Strong" → OVERCONFIDENT state fires in Progress. Both surfaces visible before and after workout.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">When <code>MindBodyAlignment == .overconfident</code> AND ReadinessEngine score ≥ 80 AND HRV is available: override the Readiness coaching note to: <em>"Recovery data looks solid but your HRV is below baseline. Aim for 80% effort today — your feel is running ahead of your physiology."</em> Requires passing <code>mindBodyState</code> into <code>ReadinessEngine.narrative()</code>.</div>
+    </div>
+  </div>
+</div>
+
+<!-- CON-02 -->
+<div class="con-card" data-sev="high" data-scope="home-home" id="card-2">
+  <div class="con-header" onclick="toggle(2)">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed(2, this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-high">High</div>
+    <div class="con-id">CON-02</div>
+    <div class="con-title-col">
+      <div class="con-title">HON "Start at 70%" vs Readiness "Don't hold back" — same screen, same morning</div>
+      <div class="con-surfaces">
+        <span class="surface-tag">Home · HON returnAfterLapse card</span>
+        <span class="surface-tag">Home · ReadinessCoachCard</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="con-body">
+    <div class="clash-grid">
+      <div class="clash-box msg-a">
+        <div class="source-label">Message A — HON Card (gap return, 14–30 days)</div>
+        <div class="source-loc">Home tab → HONMessageLibrary.returnAfterLapse → daysGone 14–29</div>
+        <div class="source-trigger">Trigger: user completes a session after 14–29 days absent</div>
+        <div class="source-msg">"X weeks away. Coming back is harder than it looks — you did it anyway. Start at 70% this week; strength returns faster than tendons."</div>
+      </div>
+      <div class="clash-box msg-b">
+        <div class="source-label">Message B — Readiness Card</div>
+        <div class="source-loc">Home tab → ReadinessEngine.narrative() score ≥ 80</div>
+        <div class="source-trigger">Trigger: gap was short enough that prior training frequency still elevates the score, or sleep/RHR push score high</div>
+        <div class="source-msg">"You've been recovering well and the momentum is there. Don't hold back today — this is the kind of day you make progress on."</div>
+      </div>
+    </div>
+    <hr>
+    <div class="detail-row">
+      <div class="detail-label">Root cause</div>
+      <div class="detail-value">Documented as H-01 in <code>SIMULATION_FINDINGS_2026-05-26.md</code>. The HON lapse message fires based on gap days; Readiness uses the last 7-day session count and biometric inputs. A 15-day gap still leaves the prior week's training in the computation window partially. The two engines have no awareness of each other.</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-label">Specific trigger scenario</div>
+      <div class="detail-value">User trained 4×/week through May 6, took two weeks off (gap = 15 days), returns May 21. ReadinessEngine daysSinceLast=0 → no penalty; recentAll may still show 1 session (today). Score near baseline 68 + sleep bonus → ~73–82. HON fires returnAfterLapse with "Start at 70%."</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">In <code>ReadinessEngine.narrative()</code>, add a gap-return check: if <code>daysSinceLast == 0</code> AND the second-most-recent session was more than 10 days ago, downgrade the coaching note to acknowledge the gap return and align with HON deload guidance. Draft: <em>"Good to be back after the break. First session back — treat it as a 70–75% effort day and see how the body responds before going full load."</em></div>
+    </div>
+  </div>
+</div>
+
+<!-- CON-03 -->
+<div class="con-card" data-sev="high" data-scope="progress-progress" id="card-3">
+  <div class="con-header" onclick="toggle(3)">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed(3, this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-high">High</div>
+    <div class="con-id">CON-03</div>
+    <div class="con-title-col">
+      <div class="con-title">TrueAdaptation "False Gains — don't mistake freshness" vs PRAttempt "Prime Window — highest PR probability" — same Progress screen</div>
+      <div class="con-surfaces">
+        <span class="surface-tag">Progress · Emerging Insights · True Adaptation State</span>
+        <span class="surface-tag">Progress · Emerging Insights · PR Attempt Quality</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="con-body">
+    <div class="clash-grid">
+      <div class="clash-box msg-a">
+        <div class="source-label">Message A — True Adaptation State</div>
+        <div class="source-loc">Progress → EmergentInsightEngine → TrueAdaptationState = .falseGains</div>
+        <div class="source-trigger">Trigger: velocityUp (slope > 0.3) AND TSB positive (CTL - ATL > 0)</div>
+        <div class="source-msg">"You're performing well because you're fresh (positive TSB), not structural adaptation. Don't mistake freshness for a trend."</div>
+      </div>
+      <div class="clash-box msg-b">
+        <div class="source-label">Message B — PR Attempt Quality</div>
+        <div class="source-loc">Progress → EmergentInsightEngine → PRAttemptQuality = .primeWindow</div>
+        <div class="source-trigger">Trigger: velocity positive AND TSB positive AND feel momentum up — same exact conditions as False Gains</div>
+        <div class="source-msg">"All three signals aligned — fresh, motivated, and strength velocity positive. Highest PR success probability of the training block."</div>
+      </div>
+    </div>
+    <hr>
+    <div class="detail-row">
+      <div class="detail-label">Root cause</div>
+      <div class="detail-value">Both insights fire on the same data state (velocity up, TSB positive, feel up), but draw opposite strategic conclusions. False Gains says "don't trust this, you're just fresh." Prime Window says "go for it, this is your peak window." They are two valid scientific interpretations of the same signal that have never been reconciled. User sees both cards in the Progress grid simultaneously.</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-label">Specific trigger scenario</div>
+      <div class="detail-value">User took 2 rest days (TSB positive), last 3 sessions show upward e1RM slope (velocity > 0.5), feel was "Strong" in last two sessions. TAS fires FALSE GAINS. PRAttemptQuality fires PRIME WINDOW. Both appear in the Emerging Insights row on Progress tab.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">In <code>EmergentInsightEngine</code>, when <code>TrueAdaptationState == .falseGains</code>, downgrade <code>PRAttemptQuality</code> to <code>.patientWindow</code> with modified implication: <em>"Physiology and feel are aligned, but recent gains may reflect freshness more than structural adaptation. A PR attempt is reasonable — just know the next loaded week will reveal whether it's real."</em> This adds nuance instead of blocking the recommendation.</div>
+    </div>
+  </div>
+</div>
+
+<!-- CON-04 -->
+<div class="con-card" data-sev="high" data-scope="home-progress" id="card-4">
+  <div class="con-header" onclick="toggle(4)">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed(4, this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-high">High</div>
+    <div class="con-id">CON-04</div>
+    <div class="con-title-col">
+      <div class="con-title">Narrative "Progress Weight — you've earned the increase" vs PRAttempt "Fool's Gold — wait 3–5 days, high injury risk"</div>
+      <div class="con-surfaces">
+        <span class="surface-tag">Home · Post-workout narrative (WorkoutNarrativeEngine)</span>
+        <span class="surface-tag">Progress · Emerging Insights · PR Attempt Quality</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="con-body">
+    <div class="clash-grid">
+      <div class="clash-box msg-a">
+        <div class="source-label">Message A — Post-workout narrative</div>
+        <div class="source-loc">Home tab → WorkoutNarrativeEngine → whatsNextKey = "Progress Weight"</div>
+        <div class="source-trigger">Trigger: all sets hit target reps (readyToProgress = true), no drop sets used</div>
+        <div class="source-msg">"[Exercise] handled well — time to move up. Add [X kg] next session." (assembled from phrase_bank.json via Progress Weight key)</div>
+      </div>
+      <div class="clash-box msg-b">
+        <div class="source-label">Message B — PR Attempt Quality</div>
+        <div class="source-loc">Progress → EmergentInsightEngine → PRAttemptQuality = .foolsGold</div>
+        <div class="source-trigger">Trigger: feel momentum up + TSB negative (fatigued) + velocity still positive</div>
+        <div class="source-msg">"Feel great, but body is fatigued. A PR attempt carries high failure risk and heightened injury exposure. Wait 3–5 days."</div>
+      </div>
+    </div>
+    <hr>
+    <div class="detail-row">
+      <div class="detail-label">Root cause</div>
+      <div class="detail-value">WorkoutNarrativeEngine is a pure double-progression gate: if you hit all reps, it says go up. It has no awareness of TSB (training stress balance) or HRV. PRAttemptQuality evaluates systemic readiness. The narrative can say "progress" on the exact day the Progress tab flags as a dangerous "Fool's Gold" window.</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-label">Specific trigger scenario</div>
+      <div class="detail-value">User trains 5 days in a row (ATL spikes, TSB turns negative). Feels great today ("Strong"). Hits all reps at current weight. Narrative says "Progress Weight." Progress Insights fires PRAttemptQuality = FOOL'S GOLD. User sees both in the same session review / immediately after on the Progress tab.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">Narrative can remain as-is (it describes last session performance accurately). PRAttemptQuality fix is softer language when velocity is positive: change FOOL'S GOLD implication to include acknowledgment that "your last session was strong — confirm the progression next session after a rest day." Alternative: add a small disclaimer to the "Progress Weight" phrase bank entries when TSB is negative, e.g., "Earned the increase — take a rest day first, then go up."</div>
+    </div>
+  </div>
+</div>
+
+<!-- CON-05 -->
+<div class="con-card" data-sev="high" data-scope="home-progress" id="card-5">
+  <div class="con-header" onclick="toggle(5)">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed(5, this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-high">High</div>
+    <div class="con-id">CON-05</div>
+    <div class="con-title-col">
+      <div class="con-title">Readiness "Get your work in, keep the streak alive" vs Net Recovery "Deload is not optional — it's structural"</div>
+      <div class="con-surfaces">
+        <span class="surface-tag">Home · ReadinessCoachCard (score 65–79)</span>
+        <span class="surface-tag">Progress · Emerging Insights · Net Recovery Capacity</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="con-body">
+    <div class="clash-grid">
+      <div class="clash-box msg-a">
+        <div class="source-label">Message A — Readiness coaching (score 65–79)</div>
+        <div class="source-loc">Home tab → ReadinessEngine.narrative() → score 65–79 band</div>
+        <div class="source-trigger">Trigger: reasonable training frequency + sleep 6–7h (neutral zone, no penalty) → score in mid-range</div>
+        <div class="source-msg">"Body feels balanced and you're in a good rhythm. Get your work in, stay focused, keep the streak alive."</div>
+      </div>
+      <div class="clash-box msg-b">
+        <div class="source-label">Message B — Net Recovery Capacity</div>
+        <div class="source-loc">Progress → EmergentInsightEngine → NetRecoveryCapacity = .compoundedDeficit</div>
+        <div class="source-trigger">Trigger: sleep &lt; 7h AND acute training load > 55/100 — both conditions simultaneously active</div>
+        <div class="source-msg">"Sleep debt and training debt simultaneously active. Recovery capacity is critically low. A deload is not optional — it's structural."</div>
+      </div>
+    </div>
+    <hr>
+    <div class="detail-row">
+      <div class="detail-label">Root cause</div>
+      <div class="detail-value">ReadinessEngine's sleep penalty requires sleep below 6h to fire (-5 pts). At 6.0–6.9h it applies no adjustment, leaving score neutral. NetRecoveryCapacity uses 7h as its threshold. A user sleeping 6.5h AND training heavily fails the Progress check but passes the Readiness check. Result: "everything fine, train on" vs "critical deload required."</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-label">Specific trigger scenario</div>
+      <div class="detail-value">User averages 6.5h sleep this week, trains 4× (ATL = 62). Readiness: sleep 6.5h = no penalty, freq 4 = +5, daysSinceLast=1 = +8 → ~81... actually might go high. More likely: sleep 6.2h (no penalty), daysSinceLast=3 (-4) → ~69. COMPOUNDED DEFICIT fires in Progress. Readiness says "good rhythm."</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">Lower ReadinessEngine's sleep threshold to 7.0h (matching NetRecovery standard): apply a small penalty (-2 pts) for sleep 6.0–6.99h instead of treating it as neutral. This aligns the two systems' view of "adequate sleep." Also: when NetRecovery fires COMPOUNDED DEFICIT, the Readiness coaching note should echo the deload recommendation rather than contradicting it.</div>
+    </div>
+  </div>
+</div>
+
+<!-- CON-06 -->
+<div class="con-card" data-sev="high" data-scope="home-progress" id="card-6">
+  <div class="con-header" onclick="toggle(6)">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed(6, this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-high">High</div>
+    <div class="con-id">CON-06</div>
+    <div class="con-title-col">
+      <div class="con-title">Narrative "Stuck — try 10% heavier to break plateau" vs Mind-Body "High failure risk. Athletes get hurt in this state"</div>
+      <div class="con-surfaces">
+        <span class="surface-tag">Home · Post-workout narrative (WorkoutNarrativeEngine)</span>
+        <span class="surface-tag">Progress · Emerging Insights · Mind-Body Alignment</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="con-body">
+    <div class="clash-grid">
+      <div class="clash-box msg-a">
+        <div class="source-label">Message A — Narrative (Stuck — Neural Overload)</div>
+        <div class="source-loc">Home tab → WorkoutNarrativeEngine → whatsNextKey = "Stuck — Neural Overload"</div>
+        <div class="source-trigger">Trigger: compound exercise, stuckSessionCount ≥ 3, weight held, not ready to progress</div>
+        <div class="source-msg">Phrase bank key resolves to: "Try [~10% heavier] for 3–5 reps next session — the nervous system sometimes needs a heavier signal to break a plateau." (assembled from whats_next bank)</div>
+      </div>
+      <div class="clash-box msg-b">
+        <div class="source-label">Message B — Mind-Body Alignment</div>
+        <div class="source-loc">Progress → EmergentInsightEngine → MindBodyAlignment = .overconfident</div>
+        <div class="source-trigger">Trigger: low HRV + feel rating "Strong" — physiology suppressed, subjective state elevated</div>
+        <div class="source-msg">"Feel is high but physiology says otherwise. High failure risk on PR attempts. Athletes get hurt in this state."</div>
+      </div>
+    </div>
+    <hr>
+    <div class="detail-row">
+      <div class="detail-label">Root cause</div>
+      <div class="detail-value">The neural overload technique (go heavier to break a stall) is functionally a PR attempt strategy. It requires neurological headroom. OVERCONFIDENT state is the exact condition where PR attempts are most dangerous. The narrative recommends the technique without checking HRV or Mind-Body alignment state.</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-label">Specific trigger scenario</div>
+      <div class="detail-value">User has stalled on Bench Press for 3 sessions at 80 kg. Today HRV = 44 ms (low), feel = "Strong" (user feels great despite biology). Narrative says try ~88 kg for 3–5 reps. Progress says high failure risk and injury exposure. These are directly contradictory on the heaviest, riskiest training day.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">In <code>WorkoutNarrativeEngine</code>, when the <code>whatsNextKey == "Stuck — Neural Overload"</code>, add a conditional: if <code>MindBodyAlignment == .overconfident</code> (accessible via analyticsResult or by passing the computed state), downgrade recommendation to "Stuck — Rest &amp; Microload" and note: <em>"HRV suggests today isn't the day for a heavy stimulus. Add a recovery session first, then try the heavier signal."</em></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════ MEDIUM ═══════════════════════════════ -->
+<div class="section-header">Medium — Conflicting Frame Across Adjacent Surfaces</div>
+
+<!-- CON-07 -->
+<div class="con-card" data-sev="medium" data-scope="home-progress" id="card-7">
+  <div class="con-header" onclick="toggle(7)">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed(7, this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-medium">Medium</div>
+    <div class="con-id">CON-07</div>
+    <div class="con-title-col">
+      <div class="con-title">HON "Start at 60–70%, connective tissue adapts slower" vs Program Calibration "Weights are due for a bump"</div>
+      <div class="con-surfaces">
+        <span class="surface-tag">Home · HON returnAfterLapse card (30–89 days)</span>
+        <span class="surface-tag">Progress · Emerging Insights · Program Calibration</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="con-body">
+    <div class="clash-grid">
+      <div class="clash-box msg-a">
+        <div class="source-label">Message A — HON Return (1–3 month gap)</div>
+        <div class="source-loc">Home → HONMessageLibrary.returnAfterLapse → daysGone 30–89</div>
+        <div class="source-trigger">Trigger: first session after 30–89 day absence</div>
+        <div class="source-msg">"A month gone. First week: reduce weight 20–30%, prioritize form, then push next week." / "Start at 60–70% intensity, connective tissue adapts slower than muscle."</div>
+      </div>
+      <div class="clash-box msg-b">
+        <div class="source-label">Message B — Program Calibration</div>
+        <div class="source-loc">Progress → EmergentInsightEngine → ProgramCalibrationState = .sandbagging</div>
+        <div class="source-trigger">Trigger: return sessions show ≥80% set success rate with low avg RPE (&lt;7.5) — loads feel easy</div>
+        <div class="source-msg">"Hitting all targets without apparent effort. Weights are due for a bump — current loads are no longer a stimulus."</div>
+      </div>
+    </div>
+    <hr>
+    <div class="detail-row">
+      <div class="detail-label">Root cause</div>
+      <div class="detail-value">User deliberately trains at 60–70% per HON guidance. The conservative loads read as SANDBAGGING to Program Calibration because the RPE is low and success rate is high. The two systems have no concept of "intentional return ramp." Program Calibration looks only at the last 10 sessions without knowing a deload protocol is in effect.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">In <code>EmergentInsightEngine.programCalibration()</code>, suppress SANDBAGGING state if the user has fewer than 5 total sessions or if the most recent session follows a gap &gt; 14 days. Replace with "RECALIBRATING" state: <em>"You're easing back in — these lighter sessions are intentional. Program Calibration will reassess once you've returned to your working weights."</em></div>
+    </div>
+  </div>
+</div>
+
+<!-- CON-08 -->
+<div class="con-card" data-sev="medium" data-scope="progress-progress" id="card-8">
+  <div class="con-header" onclick="toggle(8)">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed(8, this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-medium">Medium</div>
+    <div class="con-id">CON-08</div>
+    <div class="con-title-col">
+      <div class="con-title">Mind-Body "Optimal window for PR attempts" vs Net Recovery "Deload is not optional" — same Progress screen</div>
+      <div class="con-surfaces">
+        <span class="surface-tag">Progress · Emerging Insights · Mind-Body Alignment</span>
+        <span class="surface-tag">Progress · Emerging Insights · Net Recovery Capacity</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="con-body">
+    <div class="clash-grid">
+      <div class="clash-box msg-a">
+        <div class="source-label">Message A — Mind-Body Alignment</div>
+        <div class="source-loc">Progress → MindBodyAlignment = .alignedPeak</div>
+        <div class="source-trigger">Trigger: HRV ≥ 65 ms AND recent feel ratings high (≥ 0.5 on 0–1 scale)</div>
+        <div class="source-msg">"Body and mind are both signaling readiness. Optimal window for PR attempts and high-intensity work."</div>
+      </div>
+      <div class="clash-box msg-b">
+        <div class="source-label">Message B — Net Recovery Capacity</div>
+        <div class="source-loc">Progress → NetRecoveryCapacity = .compoundedDeficit</div>
+        <div class="source-trigger">Trigger: sleep &lt; 7h AND ATL > 55 — both conditions met simultaneously</div>
+        <div class="source-msg">"Sleep debt and training debt simultaneously active. Recovery capacity is critically low. A deload is not optional — it's structural."</div>
+      </div>
+    </div>
+    <hr>
+    <div class="detail-row">
+      <div class="detail-label">Root cause</div>
+      <div class="detail-value">HRV can spike temporarily even during a period of sleep deficit (e.g., one good night after several bad nights). Mind-Body Alignment reads the HRV spike as "peak." Net Recovery reads the accumulated sleep debt as a structural deficit. Both fire simultaneously in the same insight grid. A user will see "PR window" and "structural deload required" in adjacent cards.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">When <code>NetRecoveryCapacity == .compoundedDeficit</code>, suppress or downgrade <code>MindBodyAlignment</code> to max <code>.suppressed</code> state. Rationale: a single HRV reading can't override accumulated systemic debt. Add a note to the ALIGNED PEAK implication in these conditions: <em>"HRV looks good today, but your net recovery capacity is in deficit — the PR window is real but fragile. One more night of 7h+ sleep before attempting."</em></div>
+    </div>
+  </div>
+</div>
+
+<!-- CON-09 -->
+<div class="con-card" data-sev="medium" data-scope="progress-progress" id="card-9">
+  <div class="con-header" onclick="toggle(9)">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed(9, this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-medium">Medium</div>
+    <div class="con-id">CON-09</div>
+    <div class="con-title-col">
+      <div class="con-title">PR Attempt "Highest PR success probability" vs Net Recovery "Deload is not optional" — same Progress screen</div>
+      <div class="con-surfaces">
+        <span class="surface-tag">Progress · Emerging Insights · PR Attempt Quality</span>
+        <span class="surface-tag">Progress · Emerging Insights · Net Recovery Capacity</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="con-body">
+    <div class="clash-grid">
+      <div class="clash-box msg-a">
+        <div class="source-label">Message A — PR Attempt Quality</div>
+        <div class="source-loc">Progress → PRAttemptQuality = .primeWindow</div>
+        <div class="source-trigger">Trigger: TSB positive (rest day taken) + feel momentum up + velocity positive</div>
+        <div class="source-msg">"All three signals aligned — fresh, motivated, and strength velocity positive. Highest PR success probability of the training block."</div>
+      </div>
+      <div class="clash-box msg-b">
+        <div class="source-label">Message B — Net Recovery Capacity</div>
+        <div class="source-loc">Progress → NetRecoveryCapacity = .compoundedDeficit</div>
+        <div class="source-trigger">Trigger: sleep &lt; 7h AND ATL > 55 — can co-occur with positive TSB (rest day taken today)</div>
+        <div class="source-msg">"Sleep debt and training debt simultaneously active. Recovery capacity is critically low. A deload is not optional — it's structural."</div>
+      </div>
+    </div>
+    <hr>
+    <div class="detail-row">
+      <div class="detail-label">Root cause</div>
+      <div class="detail-value">TSB (CTL - ATL) can be positive after a single rest day even when sleep has been poor all week. PR Attempt Quality uses TSB as the freshness proxy. Net Recovery uses sleep + ATL as the systemic proxy. One rest day makes TSB positive; it doesn't repay 5 days of 6h sleep. Both co-occur in the same Progress insights grid.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">PRAttemptQuality should incorporate sleep as a gate. If sleep &lt; 6.5h, downgrade PRIME WINDOW to PATIENT WINDOW with note: <em>"Conditions are close to ideal but last night's sleep wasn't quite there. One more day of rest and recovery may be all you need."</em> This doesn't require the insights to know about each other — the fix is internal to PRAttemptQuality's compute logic.</div>
+    </div>
+  </div>
+</div>
+
+<!-- CON-10 -->
+<div class="con-card" data-sev="medium" data-scope="home-progress" id="card-10">
+  <div class="con-header" onclick="toggle(10)">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed(10, this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-medium">Medium</div>
+    <div class="con-id">CON-10</div>
+    <div class="con-title-col">
+      <div class="con-title">HON Deload "Body needed it — show up next week" vs Net Recovery "Can absorb a significant loading spike"</div>
+      <div class="con-surfaces">
+        <span class="surface-tag">Home · HON deloadDetection card</span>
+        <span class="surface-tag">Progress · Emerging Insights · Net Recovery Capacity</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="con-body">
+    <div class="clash-grid">
+      <div class="clash-box msg-a">
+        <div class="source-label">Message A — HON Deload Detection</div>
+        <div class="source-loc">Home → HONMessageLibrary.deloadDetection → typeA user, light week</div>
+        <div class="source-trigger">Trigger: current week session count well below rolling average (drift below threshold)</div>
+        <div class="source-msg">"Light week by the numbers — intentional or not, the body needed it. Show up next week."</div>
+      </div>
+      <div class="clash-box msg-b">
+        <div class="source-label">Message B — Net Recovery Capacity</div>
+        <div class="source-loc">Progress → NetRecoveryCapacity = .surplus</div>
+        <div class="source-trigger">Trigger: sleep ≥ 7h AND ATL ≤ 55 — comfortable recovery surplus</div>
+        <div class="source-msg">"Recovery bank is full. Can absorb a significant loading spike without consequence. Good time to start a new block."</div>
+      </div>
+    </div>
+    <hr>
+    <div class="detail-row">
+      <div class="detail-label">Root cause</div>
+      <div class="detail-value">The HON message implies the light week was physically necessary ("the body needed it"). Net Recovery's SURPLUS state says recovery is fine and you could have trained more. Both can be true simultaneously: a voluntarily light week (perhaps due to schedule) that happened to result in full recovery. The framing is opposite: one implies fatigue-driven rest, the other implies unused capacity.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">Change deloadDetection copy to remove the fatigue assumption when Recovery Surplus is active. Alternative phrasing: <em>"Lighter week this time. You're recovered and ready — if this was planned, great. If not, next week is a good opportunity to build back."</em> This doesn't assume the body "needed" rest that it demonstrably didn't require.</div>
+    </div>
+  </div>
+</div>
+
+<!-- CON-11 -->
+<div class="con-card" data-sev="medium" data-scope="home-progress" id="card-11">
+  <div class="con-header" onclick="toggle(11)">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed(11, this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-medium">Medium</div>
+    <div class="con-id">CON-11</div>
+    <div class="con-title-col">
+      <div class="con-title">Mind-Body "Suppressed — non-training stressors are the block" vs Readiness "Don't hold back today"</div>
+      <div class="con-surfaces">
+        <span class="surface-tag">Progress · Emerging Insights · Mind-Body Alignment</span>
+        <span class="surface-tag">Home · ReadinessCoachCard coaching note</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="con-body">
+    <div class="clash-grid">
+      <div class="clash-box msg-a">
+        <div class="source-label">Message A — Mind-Body Alignment</div>
+        <div class="source-loc">Progress → MindBodyAlignment = .suppressed</div>
+        <div class="source-trigger">Trigger: HRV high (body recovered) + feel rating "Tired" or "Normal" — physiological readiness but subjective block</div>
+        <div class="source-msg">"HRV says you're recovered but feel is low. Non-training stressors — sleep quality, life load, or motivation — are the block, not the program."</div>
+      </div>
+      <div class="clash-box msg-b">
+        <div class="source-label">Message B — Readiness coaching note</div>
+        <div class="source-loc">Home → ReadinessEngine.narrative() score ≥ 80</div>
+        <div class="source-trigger">Trigger: HRV not read by ReadinessEngine; good training frequency + sleep → score high</div>
+        <div class="source-msg">"You've been recovering well and the momentum is there. Don't hold back today — this is the kind of day you make progress on."</div>
+      </div>
+    </div>
+    <hr>
+    <div class="detail-row">
+      <div class="detail-label">Root cause</div>
+      <div class="detail-value">SUPPRESSED state indicates life/motivation factors are blocking performance despite physical recovery. Readiness score ≥80 says everything is fine and push hard. The SUPPRESSED message actually recommends addressing external stressors first, not training harder. Readiness ignores subjective feel entirely and says go for it.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">Minor: when <code>MindBodyAlignment == .suppressed</code>, allow the Readiness coaching note to acknowledge the subjective-physiological gap: <em>"Your physical recovery is stacking up well. If today feels flat, that's non-training stress at work — train, but don't pressure yourself into a PR."</em> This is supportive rather than commanding.</div>
+    </div>
+  </div>
+</div>
+
+<!-- CON-12 -->
+<div class="con-card" data-sev="medium" data-scope="home-progress" id="card-12">
+  <div class="con-header" onclick="toggle(12)">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed(12, this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-medium">Medium</div>
+    <div class="con-id">CON-12</div>
+    <div class="con-title-col">
+      <div class="con-title">Narrative deloads a pull exercise while Imbalance Trajectory urges adding pull volume</div>
+      <div class="con-surfaces">
+        <span class="surface-tag">Home · Post-workout narrative (WorkoutNarrativeEngine / WorkoutFeedbackEngine)</span>
+        <span class="surface-tag">Progress · Emerging Insights · Imbalance Trajectory</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="con-body">
+    <div class="clash-grid">
+      <div class="clash-box msg-a">
+        <div class="source-label">Message A — Post-workout narrative (exercise deload)</div>
+        <div class="source-loc">Home → WorkoutFeedbackEngine → consecutiveStruggle ≥ 2 on a pull exercise</div>
+        <div class="source-trigger">Trigger: 2+ consecutive sessions under 75% rep target on Lat Pulldown or Row</div>
+        <div class="source-msg">"Drop [pull exercise] to [X kg]. Get clean reps at lighter weight before building back up." / "Missed reps 2 sessions in a row — deload this one."</div>
+      </div>
+      <div class="clash-box msg-b">
+        <div class="source-label">Message B — Imbalance Trajectory</div>
+        <div class="source-loc">Progress → EmergentInsightEngine → ImbalanceTrajectory = .diverging</div>
+        <div class="source-trigger">Trigger: push improvement rate exceeds pull improvement rate by > 0.3%/wk</div>
+        <div class="source-msg">"Push patterns gaining faster than pull. Anterior-chain dominance is actively widening. Add horizontal pull volume now before the gap creates injury risk."</div>
+      </div>
+    </div>
+    <hr>
+    <div class="detail-row">
+      <div class="detail-label">Root cause</div>
+      <div class="detail-value">Both messages are technically correct at different scopes. Narrative is right: the specific pull exercise is struggling and needs a load reset. Progress is right: push/pull balance is diverging systemically. But to the user, the narrative says "do less pull" while the Progress tab says "add pull." They land as contradictory instructions in the same training week.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">Frame fix only. When the narrative recommends a pull exercise deload, add one line of context: <em>"Dropping the weight allows you to hit more quality reps — volume through clean reps beats failed attempts at heavy weight."</em> This bridges the gap: deload the weight to maintain pull volume, not eliminate it. The Imbalance Trajectory message needs no change.</div>
+    </div>
+  </div>
+</div>
+
+<!-- CON-13 -->
+<div class="con-card" data-sev="medium" data-scope="home-progress" id="card-13">
+  <div class="con-header" onclick="toggle(13)">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed(13, this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-medium">Medium</div>
+    <div class="con-id">CON-13</div>
+    <div class="con-title-col">
+      <div class="con-title">Program Calibration "Weights are due for a bump" vs narrative "Hold Weight — Work Reps" (drop set path)</div>
+      <div class="con-surfaces">
+        <span class="surface-tag">Progress · Emerging Insights · Program Calibration</span>
+        <span class="surface-tag">Home · Post-workout narrative (WorkoutNarrativeEngine)</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="con-body">
+    <div class="clash-grid">
+      <div class="clash-box msg-a">
+        <div class="source-label">Message A — Program Calibration</div>
+        <div class="source-loc">Progress → ProgramCalibrationState = .sandbagging</div>
+        <div class="source-trigger">Trigger: set success rate ≥ 80% AND avg RPE &lt; 7.5 across all exercises in last 10 sessions</div>
+        <div class="source-msg">"Hitting all targets without apparent effort. Weights are due for a bump — current loads are no longer a stimulus."</div>
+      </div>
+      <div class="clash-box msg-b">
+        <div class="source-label">Message B — Post-workout narrative</div>
+        <div class="source-loc">Home → WorkoutNarrativeEngine → whatsNextKey = "Use Drop Set Strategy" or "Hold Weight — Work Reps"</div>
+        <div class="source-trigger">Trigger: drop sets used → readyToProgress = false → narrative conservatively holds the weight</div>
+        <div class="source-msg">"Drop set helped bridge the gap. Hold at [current weight] — establish clean sets first before the next jump." (assembled from phrase bank)</div>
+      </div>
+    </div>
+    <hr>
+    <div class="detail-row">
+      <div class="detail-label">Root cause</div>
+      <div class="detail-value">The narrative correctly reads: drop sets mean the user needed a safety valve — they haven't earned the progression gate. ProgramCalibration reads: RPE is low and success rate is high — the loads are trivial. The conflict is that drop sets artificially inflate the success rate (the drop weight is easier) while keeping RPE low, making the program look too easy when the user is actually at capacity for the working weight.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">In <code>programCalibration()</code>, exclude drop set reps from the success rate calculation — only count the main working sets against targets. This more accurately reflects whether the working weight is genuinely easy, and prevents false SANDBAGGING diagnosis when drop sets are a regular training tool.</div>
+    </div>
+  </div>
+</div>
+
+<!-- CON-14 -->
+<div class="con-card" data-sev="medium" data-scope="progress-progress" id="card-14">
+  <div class="con-header" onclick="toggle(14)">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed(14, this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-medium">Medium</div>
+    <div class="con-id">CON-14</div>
+    <div class="con-title-col">
+      <div class="con-title">Hero card "stalled — vary rep range or deload" vs True Adaptation "Hold course — gains are being banked"</div>
+      <div class="con-surfaces">
+        <span class="surface-tag">Progress · Strength Score hero card (CompositeStrengthEngine.insight)</span>
+        <span class="surface-tag">Progress · Emerging Insights · True Adaptation State</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="con-body">
+    <div class="clash-grid">
+      <div class="clash-box msg-a">
+        <div class="source-label">Message A — Strength Score Hero Card insight</div>
+        <div class="source-loc">Progress → DashboardHeroCard → CompositeStrengthEngine.generateInsight() → weakest=momentum, isPlateau</div>
+        <div class="source-trigger">Trigger: one or more exercises flagged isPlateau AND momentum pillar is weakest of the three</div>
+        <div class="source-msg">"[Exercise] stalled. Vary rep range, add load, or deload for a week."</div>
+      </div>
+      <div class="clash-box msg-b">
+        <div class="source-label">Message B — True Adaptation State</div>
+        <div class="source-loc">Progress → TrueAdaptationState = .expectedSuppression</div>
+        <div class="source-trigger">Trigger: velocity DOWN (slope ≤ 0.3) AND TSB negative — normal loading block suppression</div>
+        <div class="source-msg">"Performance is temporarily suppressed by fatigue. Normal during a loading block. Hold course — the gains are being banked."</div>
+      </div>
+    </div>
+    <hr>
+    <div class="detail-row">
+      <div class="detail-label">Root cause</div>
+      <div class="detail-value">EXPECTED SUPPRESSION is the correct read: fatigue is masking adaptation. "Hold course" is the right strategy. But the hero card sees a plateau in the momentum pillar and fires "vary rep range, add load, or deload" — which is the opposite of "hold course." Both cards appear simultaneously on the Progress tab within scrolling distance of each other.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">In <code>CompositeStrengthEngine.generateInsight()</code>, when the weakest pillar is momentum but TrueAdaptationState is available as <code>.expectedSuppression</code>, change the recommendation to: <em>"[Exercise] looks stalled, but this appears to be fatigue-driven suppression — a normal sign of a loading block. Hold the program for another 1–2 sessions before making changes."</em> Requires passing the TAS state into the insight generator.</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════ LOW ═══════════════════════════════ -->
+<div class="section-header">Low — Framing Tension / Subtle Inconsistency</div>
+
+<!-- CON-15 -->
+<div class="con-card" data-sev="low" data-scope="home-progress" id="card-15">
+  <div class="con-header" onclick="toggle(15)">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed(15, this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-low">Low</div>
+    <div class="con-id">CON-15</div>
+    <div class="con-title-col">
+      <div class="con-title">HON Ramp "Follow this with a normal week, not another surge" vs Program Calibration "Increase loads next cycle"</div>
+      <div class="con-surfaces">
+        <span class="surface-tag">Home · HON rampDetection card</span>
+        <span class="surface-tag">Progress · Emerging Insights · Program Calibration</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="con-body">
+    <div class="clash-grid">
+      <div class="clash-box msg-a">
+        <div class="source-label">Message A — HON Ramp Detection</div>
+        <div class="source-loc">Home → HONMessageLibrary.rampDetection</div>
+        <div class="source-trigger">Trigger: current week session count significantly above rolling average</div>
+        <div class="source-msg">"Big week with [N] sessions. Your baseline is [X]. Follow this with a normal week, not another surge."</div>
+      </div>
+      <div class="clash-box msg-b">
+        <div class="source-label">Message B — Program Calibration</div>
+        <div class="source-loc">Progress → ProgramCalibrationState = .outpacingProgram</div>
+        <div class="source-trigger">Trigger: ≥80% set success AND avg RPE ≥ 7.5 — working hard but still hitting targets</div>
+        <div class="source-msg">"Crushing targets but working hard for it. You've outgrown the current loads. Increase them next cycle."</div>
+      </div>
+    </div>
+    <hr>
+    <div class="detail-row">
+      <div class="detail-label">Root cause</div>
+      <div class="detail-value">HON says calm down the frequency for next week. Program Calibration says increase the load next cycle. Both can fire during the same high-output week. These aren't strictly contradictory (frequency vs load), but to a user reading casually they can feel like opposite directives: "back off" vs "push more."</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">Low priority. No code change needed. If addressed: add a single sentence to the rampDetection message clarifying scope: "Follow this with a normal-frequency week — increasing loads is still fine, just don't add sessions on top of this volume." Keeps both messages internally coherent.</div>
+    </div>
+  </div>
+</div>
+
+<!-- CON-16 -->
+<div class="con-card" data-sev="low" data-scope="home-progress" id="card-16">
+  <div class="con-header" onclick="toggle(16)">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed(16, this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-low">Low</div>
+    <div class="con-id">CON-16</div>
+    <div class="con-title-col">
+      <div class="con-title">True Adaptation "Performance suppressed by fatigue" vs Readiness "Body feels balanced, get your work in"</div>
+      <div class="con-surfaces">
+        <span class="surface-tag">Progress · Emerging Insights · True Adaptation State</span>
+        <span class="surface-tag">Home · ReadinessCoachCard (score 65–79)</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="con-body">
+    <div class="clash-grid">
+      <div class="clash-box msg-a">
+        <div class="source-label">Message A — True Adaptation State</div>
+        <div class="source-loc">Progress → TrueAdaptationState = .expectedSuppression</div>
+        <div class="source-trigger">Trigger: velocity below threshold AND TSB negative — fatigue-masked loading block</div>
+        <div class="source-msg">"Performance is temporarily suppressed by fatigue. Normal during a loading block. Hold course — the gains are being banked."</div>
+      </div>
+      <div class="clash-box msg-b">
+        <div class="source-label">Message B — Readiness coaching</div>
+        <div class="source-loc">Home → ReadinessEngine.narrative() score 65–79</div>
+        <div class="source-trigger">Trigger: moderate training frequency, normal sleep range, no strong positive or negative biometrics</div>
+        <div class="source-msg">"Body feels balanced and you're in a good rhythm. Get your work in, stay focused, keep the streak alive."</div>
+      </div>
+    </div>
+    <hr>
+    <div class="detail-row">
+      <div class="detail-label">Root cause</div>
+      <div class="detail-value">Minor framing tension. TAS acknowledges suppression (implying don't expect big numbers). Readiness says everything's balanced (implies business as usual). Not directly contradictory but creates a small inconsistency in the mental model: if I'm suppressed, why does Readiness say I'm balanced?</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">Low priority. Consider adding "fatigue in the system" framing to the 65–79 Readiness band: <em>"There may be some background fatigue from the recent block, but you're still in good shape to train. Keep the execution clean today."</em> This aligns more naturally with EXPECTED SUPPRESSION when it fires.</div>
+    </div>
+  </div>
+</div>
+
+<!-- CON-17 -->
+<div class="con-card" data-sev="low" data-scope="progress-progress" id="card-17">
+  <div class="con-header" onclick="toggle(17)">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed(17, this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-low">Low</div>
+    <div class="con-id">CON-17</div>
+    <div class="con-title-col">
+      <div class="con-title">Net Recovery "Good time to start a new block — absorb a loading spike" vs hero card "Signs of detraining or recovery debt"</div>
+      <div class="con-surfaces">
+        <span class="surface-tag">Progress · Emerging Insights · Net Recovery Capacity</span>
+        <span class="surface-tag">Progress · Strength Score hero card (CompositeStrengthEngine.insight)</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="con-body">
+    <div class="clash-grid">
+      <div class="clash-box msg-a">
+        <div class="source-label">Message A — Net Recovery Capacity</div>
+        <div class="source-loc">Progress → NetRecoveryCapacity = .surplus</div>
+        <div class="source-trigger">Trigger: sleep ≥ 7h AND ATL ≤ 55 — comfortable recovery surplus</div>
+        <div class="source-msg">"Recovery bank is full. Can absorb a significant loading spike without consequence. Good time to start a new block."</div>
+      </div>
+      <div class="clash-box msg-b">
+        <div class="source-label">Message B — Hero Card insight</div>
+        <div class="source-loc">Progress → CompositeStrengthEngine.generateInsight() → weakest=level, peakRetention &lt; 80%</div>
+        <div class="source-trigger">Trigger: current e1RM is &lt;80% of all-time best (often occurs after a break or light block)</div>
+        <div class="source-msg">"Strength is at [X]% of your peak — signs of detraining or recovery debt. Prioritise consistency."</div>
+      </div>
+    </div>
+    <hr>
+    <div class="detail-row">
+      <div class="detail-label">Root cause</div>
+      <div class="detail-value">A user returning from a break will have: (a) great sleep and low ATL (light week → SURPLUS) and (b) e1RM below their peak (→ hero card says "signs of detraining"). SURPLUS says great time to spike load. Hero card says "recovery debt." The hero card is reading a performance gap, not a recovery state — but the word "recovery debt" directly clashes with SURPLUS "bank is full."</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">Rename "signs of detraining or recovery debt" to "signs of detraining or extended lighter block" in <code>generateInsight()</code> — the word "recovery debt" is inaccurate when the systemic recovery is actually fine. The strength drop is a training-specific deficit, not a recovery one. This removes the contradiction without changing any logic.</div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  const TOTAL = 17;
+  let checked = 0;
+
+  function toggle(id) {
+    const card = document.getElementById('card-' + id);
+    card.classList.toggle('open');
+  }
+
+  function markReviewed(id, checkbox) {
+    const card = document.getElementById('card-' + id);
+    if (checkbox.checked) {
+      card.classList.add('checked');
+      checked++;
+    } else {
+      card.classList.remove('checked');
+      checked--;
+    }
+    document.getElementById('reviewed-count').textContent = checked;
+    document.getElementById('progress-label').textContent = checked + ' of ' + TOTAL + ' reviewed';
+    document.getElementById('progress-bar').style.width = (checked / TOTAL * 100) + '%';
+  }
+
+  function filter(type, btn) {
+    // Update button states
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    document.querySelectorAll('.con-card').forEach(card => {
+      if (type === 'all') {
+        card.classList.remove('hidden');
+        return;
+      }
+      const sev   = card.dataset.sev;
+      const scope = card.dataset.scope;
+      if (type === 'high' || type === 'medium' || type === 'low') {
+        card.classList.toggle('hidden', sev !== type);
+      } else {
+        card.classList.toggle('hidden', scope !== type);
+      }
+    });
+  }
+</script>
+</body>
+</html>

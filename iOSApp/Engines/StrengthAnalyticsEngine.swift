@@ -195,12 +195,25 @@ enum StrengthAnalyticsEngine {
             patternMap: patternMap
         )
 
+        // CON-14: compute TAS expectedSuppression to inform CSS insight
+        let isExpectedSuppression: Bool = {
+            let cal = Calendar.current
+            let acuteCutoff = cal.date(byAdding: .day, value: -7, to: Date()) ?? Date()
+            let chronicCutoff = cal.date(byAdding: .day, value: -42, to: Date()) ?? Date()
+            let acuteVol = log.filter { $0.startedAt >= acuteCutoff }.reduce(0.0) { $0 + $1.totalVolume }
+            let chronicVol = log.filter { $0.startedAt >= chronicCutoff }.reduce(0.0) { $0 + $1.totalVolume } / 6
+            let tsbNegative = acuteVol > chronicVol
+            let velocityNotUp = (exerciseAnalytics.first(where: { $0.hasEnoughData })?.slopePerWeek ?? 1.0) <= 0.3
+            return velocityNotUp && tsbNegative
+        }()
+
         let compositeScore = CompositeStrengthEngine.compute(
             exerciseAnalytics: exerciseAnalytics,
             psiHistory: strengthScore.psiHistory,
             userProfile: userProfile,
             relativeStrengths: strengthScore.relativeStrengths,
-            experienceTier: experienceTier
+            experienceTier: experienceTier,
+            isExpectedSuppression: isExpectedSuppression
         )
 
         return AnalyticsResult(

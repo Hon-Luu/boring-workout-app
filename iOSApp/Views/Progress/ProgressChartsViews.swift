@@ -1058,6 +1058,7 @@ struct OverloadScoreboardCard: View {
         let currentE1RM: Double
         let gainKg: Double
         let gainPct: Double
+        let rateKgPerWeek: Double
     }
 
     // Returns the session closest to (but not after) 6 weeks ago;
@@ -1081,7 +1082,8 @@ struct OverloadScoreboardCard: View {
                     baselineE1RM: baseline.estimated1RM,
                     currentE1RM: current.estimated1RM,
                     gainKg: gain,
-                    gainPct: pct
+                    gainPct: pct,
+                    rateKgPerWeek: ea.slopePerWeek
                 )
             }
             .sorted { $0.gainKg > $1.gainKg }
@@ -1146,9 +1148,17 @@ struct OverloadScoreboardCard: View {
             Spacer()
 
             VStack(alignment: .trailing, spacing: 4) {
-                Text(row.gainKg >= 0 ? "+\(String(format: "%.0f", row.gainKg)) kg" : "\(String(format: "%.0f", row.gainKg)) kg")
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(barColor)
+                HStack(spacing: 6) {
+                    Text(row.gainKg >= 0 ? "+\(String(format: "%.0f", row.gainKg)) kg" : "\(String(format: "%.0f", row.gainKg)) kg")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundColor(barColor)
+
+                    let rateSign = row.rateKgPerWeek >= 0 ? "+" : ""
+                    Text("\(rateSign)\(String(format: "%.1f", row.rateKgPerWeek))/wk")
+                        .font(.system(size: 11))
+                        .foregroundColor(row.rateKgPerWeek > 0 ? HONTheme.positive
+                                         : row.rateKgPerWeek < -0.2 ? HONTheme.negative : HONTheme.warning)
+                }
 
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
@@ -2395,8 +2405,7 @@ struct VolumeHeatmapCard: View {
                                         .foregroundColor(HONTheme.textPrimary)
                                 }
                             }
-                            .frame(maxWidth: .infinity, maxHeight: 26)
-                            .aspectRatio(1, contentMode: .fit)
+                            .frame(maxWidth: .infinity, minHeight: 26, maxHeight: 26)
                         }
                     }
                 }

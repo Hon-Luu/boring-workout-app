@@ -245,6 +245,11 @@ struct ExercisePickerRow: View {
                     Text(exercise.name)
                         .font(.body)
                         .foregroundStyle(.primary)
+                    if exercise.equipment == .dumbbell {
+                        Text("Weight logged per hand")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
                     HStack(spacing: 6) {
                         EquipmentTag(equipment: exercise.equipment)
                         if let pr {

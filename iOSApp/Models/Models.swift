@@ -129,10 +129,10 @@ extension Equipment {
         }
     }
 
-    /// Weight the user enters in the UI (per-hand for dumbbell; total-loaded for bars).
-    /// Returns the total effective weight used for all strength calculations.
+    /// Weight the user enters in the UI (total weight for all equipment types).
+    /// Returns the effective weight used for all strength calculations.
     // stored = what the user enters:
-    //   dumbbell     → per-hand weight (×2 gives bilateral total)
+    //   dumbbell     → total weight (both dumbbells combined, e.g. 2×20 kg = enter 40)
     //   barbell      → total loaded weight; floors at bar weight so entering 0 = empty bar
     //   ezBar        → total loaded weight; floors at EZ bar weight (10 kg)
     //   straightBar  → total loaded weight; floors at straight bar weight (6 kg)
@@ -140,7 +140,7 @@ extension Equipment {
 
     func effectiveWeight(_ entered: Double) -> Double {
         switch self {
-        case .dumbbell:    return entered * 2
+        case .dumbbell:    return entered
         case .barbell:     return max(entered, Equipment.barbellBarKg)
         case .ezBar:       return max(entered, Equipment.ezBarKg)
         case .straightBar: return max(entered, Equipment.straightBarKg)
@@ -496,7 +496,7 @@ struct UserProfile: Codable, Equatable {
     var weightHistory: [WeightEntry] = []
     var age: Int?                      // used for age-adjusted tier thresholds
     var bodyFatPercent: Double?        // from smart scale: body fat %
-    var muscleMassPercent: Double?     // from smart scale: skeletal muscle mass %
+    var muscleMassPercent: Double?     // from smart scale: lean body mass % (not skeletal muscle %; range ~50–90)
     var boneMassKg: Double?            // from smart scale: bone mass in kg
     var waterPercent: Double?          // from smart scale: body water %
     var heightCm: Double?              // for future BMI / relative scaling

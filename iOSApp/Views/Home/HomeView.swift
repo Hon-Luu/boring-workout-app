@@ -274,7 +274,7 @@ struct HomeView: View {
 
                     // MARK: Zero state guidance — shown until first session
                     if store.isLoaded && store.workoutLog.isEmpty {
-                        Text("Log your first session to unlock your Readiness score, strength tiers, and weekly insights.")
+                        Text("Your first session starts the signal. Everything you see here — the score, the tiers, the coach — builds from what you log.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.leading)
@@ -283,7 +283,7 @@ struct HomeView: View {
 
                     // MARK: Welcome Back — shown after 7+ days away (all session types)
                     if store.isLoaded, totalSessionsAllTime > 0,
-                       let days = daysSinceLastActivity, days >= 7 {
+                       let days = daysSinceLastActivity, days >= 4 {
                         WelcomeBackCard(
                             daysSince: days,
                             totalSessions: totalSessionsAllTime,
@@ -501,6 +501,10 @@ struct HomeView: View {
         }
         .onChange(of: health.restingHR) { _, new in
             store.restingHRForReadiness = new
+            store.refreshAnalytics()
+        }
+        .onChange(of: health.hrv) { _, new in
+            store.hrvForReadiness = new
             store.refreshAnalytics()
         }
     }
@@ -1011,8 +1015,20 @@ private struct WorkoutRecapCard: View {
         guard let prev = previousVolume, prev > 0 else { return nil }
         return (workout.totalVolume - prev) / prev * 100
     }
+    private var isMindBodyOverconfident: Bool {
+        // CON-06: HRV low (< 65) but recent feel high (tired/brutal) → overconfident
+        guard let hrv = health.hrv, hrv < 65 else { return false }
+        let recentFeel = store.workoutLog.prefix(3).compactMap(\.feelRating)
+        guard !recentFeel.isEmpty else { return false }
+        let avgFeel = recentFeel.map { f -> Double in
+            switch f { case .easy: return 0.0; case .strong: return 0.25; case .normal: return 0.5; case .tired: return 0.75; case .brutal: return 1.0 }
+        }.reduce(0, +) / Double(recentFeel.count)
+        return avgFeel >= 0.5
+    }
+
     private var narrative: String {
-        WorkoutNarrativeEngine.generate(workout: workout, history: history)
+        WorkoutNarrativeEngine.generate(workout: workout, history: history,
+                                        isMindBodyOverconfident: isMindBodyOverconfident)
     }
 
     private var topLift: (name: String, weight: Double, reps: Int)? {
@@ -1388,7 +1404,7 @@ private struct HomeTile: View {
     var onTap: (() -> Void)? = nil
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 3) {
             HStack(spacing: 3) {
                 Image(systemName: icon)
                     .font(.system(size: 9, weight: .semibold))
@@ -1416,12 +1432,13 @@ private struct HomeTile: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(8)
-        .frame(height: 62)
+        .frame(height: 56)
         .background(AppTheme.cardBG, in: RoundedRectangle(cornerRadius: 12))
         .contentShape(RoundedRectangle(cornerRadius: 12))
         .onTapGesture { onTap?() }
     }
 }
+
 
 private struct MinutesTile: View {
     let weeklyMinutes: Int
@@ -1536,6 +1553,12 @@ private struct HomeHealthTilesGrid: View {
 
     var body: some View {
         LazyVGrid(columns: columns, spacing: 8) {
+            // Steps first — top-left position
+            if let v = health.stepsToday {
+                let (label, color) = stepsLabel(v)
+                HomeTile(icon: "figure.walk", title: "Steps", value: label, valueColor: color,
+                         onTap: { selectedHealthTile = .steps })
+            }
             if let v = health.hrv {
                 let (label, color) = hrvLabel(v)
                 HomeTile(icon: "waveform.path.ecg", title: "HRV", value: label, valueColor: color,
@@ -1557,11 +1580,6 @@ private struct HomeHealthTilesGrid: View {
                 monthMinutes: monthMinutes,
                 lastMonthMinutes: lastMonthMinutes
             )
-            if let v = health.stepsToday {
-                let (label, color) = stepsLabel(v)
-                HomeTile(icon: "figure.walk", title: "Steps", value: label, valueColor: color,
-                         onTap: { selectedHealthTile = .steps })
-            }
             if let v = health.activeCaloriesToday {
                 let (label, color) = calLabel(v)
                 HomeTile(icon: "bolt.fill", title: "Active Cal", value: label, valueColor: color,
@@ -2523,9 +2541,9 @@ private struct StreakHeatMapView: View {
                     .font(.system(size: 9))
                     .foregroundStyle(.secondary.opacity(0.4))
             }
-            // Fixed-size cells — compact heatmap
+            // Flexible columns — fill card width, fixed-height cells
             LazyVGrid(
-                columns: Array(repeating: GridItem(.fixed(cellSize), spacing: 2), count: 7),
+                columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 7),
                 spacing: 2
             ) {
                 ForEach(Array(padded.enumerated()), id: \.offset) { _, date in
@@ -2535,17 +2553,20 @@ private struct StreakHeatMapView: View {
                         let isRest = rests.contains(key)
                         RoundedRectangle(cornerRadius: 2)
                             .fill(cellColor(for: count, isRest: isRest))
-                            .frame(width: cellSize, height: cellSize)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: cellSize)
                             .contentShape(Rectangle())
                             .onTapGesture { tappedDay = HeatMapDayKey(date: date) }
                     } else {
-                        Color.clear.frame(width: cellSize, height: cellSize)
+                        Color.clear
+                            .frame(maxWidth: .infinity)
+                            .frame(height: cellSize)
                     }
                 }
             }
-            // Day labels aligned to same fixed columns
+            // Day labels
             LazyVGrid(
-                columns: Array(repeating: GridItem(.fixed(cellSize), spacing: 2), count: 7),
+                columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 7),
                 spacing: 0
             ) {
                 ForEach(Array(["M", "T", "W", "T", "F", "S", "S"].enumerated()), id: \.offset) { _, day in
@@ -2699,6 +2720,7 @@ private struct WelcomeBackCard: View {
 
     private var gapLabel: String {
         switch daysSince {
+        case 4...6:   return "Ready to pick up where you left off?"
         case 7...13:  return "Back after \(daysSince) days."
         case 14...29: return "Away for \(daysSince) days."
         case 30...89: return "Away for \(daysSince / 7) weeks."

@@ -26,7 +26,8 @@ struct HomeCache {
         generalLog: [GeneralActivityEntry] = [],
         stepsToday: Int? = nil,
         sleepHours: Double? = nil,
-        restingHR: Double? = nil
+        restingHR: Double? = nil,
+        hrv: Double? = nil
     ) -> HomeCache {
         let weekday = Calendar.current.component(.weekday, from: Date())
         let todayIds: [UUID] = routines.flatMap { r in
@@ -37,7 +38,7 @@ struct HomeCache {
         for id in todayIds { notes[id] = WorkoutFeedbackEngine.exerciseNote(for: id, in: log) }
         return HomeCache(
             progressTrend: WorkoutFeedbackEngine.progressTrend(log: log),
-            readiness: ReadinessEngine.compute(log: log, cardioLog: cardioLog, generalLog: generalLog, stepsToday: stepsToday, sleepHours: sleepHours, restingHR: restingHR),
+            readiness: ReadinessEngine.compute(log: log, cardioLog: cardioLog, generalLog: generalLog, stepsToday: stepsToday, sleepHours: sleepHours, restingHR: restingHR, hrv: hrv),
             todayHints: hints,
             exerciseNotes: notes
         )
@@ -90,12 +91,15 @@ class SeedStore {
     var cardioLog: [CardioLogEntry] = []
     var generalLog: [GeneralActivityEntry] = []
     var restDays: [Date] = []
+    var injuryDays: [Date] = []
     /// Updated from HomeView when HealthKit steps change; fed into readiness computation.
     var stepsTodayForReadiness: Int? = nil
     /// Updated from HomeView when HealthKit sleep changes; fed into readiness computation.
     var sleepHoursForReadiness: Double? = nil
     /// Updated from HomeView when HealthKit resting HR changes; fed into readiness computation.
     var restingHRForReadiness: Double? = nil
+    /// Updated from HomeView when HealthKit HRV changes; fed into readiness computation.
+    var hrvForReadiness: Double? = nil
     /// Set by HealthKitService after fetch; passed into ReadinessEngine.
     var sleepHoursLast7: Double = 0
     /// Set by HealthKitService after fetch; passed into ReadinessEngine.
@@ -456,6 +460,20 @@ class SeedStore {
         saveRestDays()
     }
 
+    var isInjuryActive: Bool {
+        let cal = Calendar.current
+        return injuryDays.contains { cal.isDateInToday($0) }
+    }
+
+    func logInjuryDay() {
+        if !isInjuryActive { injuryDays.append(Date()) }
+        if let data = try? JSONEncoder().encode(injuryDays) {
+            UserDefaults.standard.set(data, forKey: injuryDaysKey)
+        }
+        // Also log as rest so the readiness gap penalty is suppressed
+        logRestDay()
+    }
+
     func removeRestDay(for date: Date) {
         let cal = Calendar.current
         restDays.removeAll { cal.isDate($0, inSameDayAs: date) }
@@ -724,6 +742,7 @@ class SeedStore {
     private let cardioLogKey        = "cardioLog_v1"
     let generalLogKey               = "generalLog_v1"
     private let restDaysKey         = "restDays_v1"
+    private let injuryDaysKey       = "injuryDays_v1"
     private let recentExercisesKey  = "recentExercises_v1"
     private let activeWorkoutKey    = "activeWorkout_v1"
 
@@ -963,10 +982,11 @@ class SeedStore {
         let stepsCopy    = stepsTodayForReadiness
         let sleepCopy    = sleepHoursForReadiness
         let rhrCopy      = restingHRForReadiness
+        let hrvCopy      = hrvForReadiness
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             let (lpCache, histCache) = HomeCache.buildExerciseCaches(log: log)
             let result = StrengthAnalyticsEngine.compute(log: log, exercises: exs, userProfile: profile)
-            let home   = HomeCache.build(log: log, exercises: exs, routines: routinesCopy, cardioLog: cLogCopy, generalLog: gLogCopy, stepsToday: stepsCopy, sleepHours: sleepCopy, restingHR: rhrCopy)
+            let home   = HomeCache.build(log: log, exercises: exs, routines: routinesCopy, cardioLog: cLogCopy, generalLog: gLogCopy, stepsToday: stepsCopy, sleepHours: sleepCopy, restingHR: rhrCopy, hrv: hrvCopy)
             DispatchQueue.main.async {
                 guard self?.analyticsPendingToken == token else { return }
                 self?.analyticsCache       = result

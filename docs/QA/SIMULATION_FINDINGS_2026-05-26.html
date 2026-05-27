@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H.O.N. Simulation Findings — 2026-05-26</title>
+<style>
+  :root {
+    --bg: #0e0e10;
+    --surface: #1a1a1e;
+    --card: #222228;
+    --border: #2e2e36;
+    --accent: #a78bfa;
+    --positive: #4ade80;
+    --warning: #f59e0b;
+    --negative: #f87171;
+    --text: #e2e2e8;
+    --text2: #8888a0;
+    --text3: #5a5a70;
+    --high: #f87171;
+    --medium: #f59e0b;
+    --low: #60a5fa;
+    --pos: #4ade80;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif; font-size: 13px; line-height: 1.6; padding: 32px 24px; max-width: 980px; margin: 0 auto; }
+
+  h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 4px; }
+  .subtitle { color: var(--text2); font-size: 12px; margin-bottom: 6px; }
+  .meta { color: var(--text3); font-size: 11px; margin-bottom: 28px; }
+
+  /* Summary bar */
+  .summary-bar { display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap; }
+  .summary-chip { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; text-align: center; min-width: 90px; }
+  .summary-chip .num { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .summary-chip .lbl { font-size: 10px; color: var(--text2); margin-top: 2px; letter-spacing: 0.4px; text-transform: uppercase; }
+  .chip-high .num { color: var(--high); }
+  .chip-med  .num { color: var(--medium); }
+  .chip-low  .num { color: var(--low); }
+  .chip-pos  .num { color: var(--pos); }
+  .chip-all  .num { color: var(--text); }
+
+  /* Filter buttons */
+  .filters { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .filter-btn { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 5px 12px; font-size: 11px; cursor: pointer; color: var(--text2); transition: all 0.15s; }
+  .filter-btn:hover { color: var(--text); border-color: var(--accent); }
+  .filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* Section headers */
+  .section-header { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text3); padding: 6px 0 8px; margin-top: 24px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+
+  /* Finding cards */
+  .finding-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+  .finding-card.hidden { display: none; }
+
+  .finding-header { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; cursor: pointer; user-select: none; }
+  .finding-header:hover { background: rgba(255,255,255,0.02); }
+
+  .check-col { flex-shrink: 0; padding-top: 1px; }
+  .check-col input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent); }
+
+  .badge { flex-shrink: 0; font-size: 9px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; margin-top: 2px; }
+  .badge-high     { background: rgba(248,113,113,0.18); color: var(--high); }
+  .badge-medium   { background: rgba(245,158,11,0.18);  color: var(--medium); }
+  .badge-low      { background: rgba(96,165,250,0.18);  color: var(--low); }
+  .badge-positive { background: rgba(74,222,128,0.18);  color: var(--pos); }
+
+  .finding-id { flex-shrink: 0; font-size: 10px; font-weight: 600; color: var(--text3); margin-top: 3px; min-width: 44px; }
+  .finding-title-col { flex: 1; }
+  .finding-title { font-size: 13px; font-weight: 600; color: var(--text); }
+  .finding-meta  { font-size: 11px; color: var(--text2); margin-top: 2px; }
+  .tag { display: inline-block; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; font-size: 10px; margin-right: 4px; }
+  .expand-icon { flex-shrink: 0; font-size: 12px; color: var(--text3); margin-top: 3px; transition: transform 0.15s; }
+  .finding-card.open .expand-icon { transform: rotate(90deg); }
+
+  /* Body */
+  .finding-body { display: none; padding: 0 16px 16px; }
+  .finding-card.open .finding-body { display: block; }
+  .finding-body hr { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+
+  .detail-row { margin-bottom: 10px; }
+  .detail-label { font-size: 10px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text3); margin-bottom: 4px; }
+  .detail-value { font-size: 12px; color: var(--text); line-height: 1.6; }
+  .detail-value code { font-family: "SF Mono", Menlo, monospace; font-size: 11px; color: var(--accent); background: rgba(167,139,250,0.1); padding: 1px 4px; border-radius: 3px; }
+
+  .quote-box { background: var(--surface); border-left: 3px solid var(--border); border-radius: 0 6px 6px 0; padding: 10px 12px; margin: 8px 0; font-size: 12px; color: var(--text2); line-height: 1.5; font-style: italic; }
+
+  .code-block { background: rgba(0,0,0,0.35); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; font-family: "SF Mono", Menlo, monospace; font-size: 11px; color: var(--text2); line-height: 1.5; margin: 8px 0; overflow-x: auto; white-space: pre; }
+
+  .fix-box { background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); border-radius: 8px; padding: 12px; margin-top: 10px; }
+  .fix-box .fix-label { font-size: 9px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+  .fix-box .fix-text { font-size: 12px; color: var(--text); line-height: 1.6; }
+  .fix-box .fix-text code { font-family: "SF Mono", Menlo, monospace; font-size: 11px; color: var(--accent); background: rgba(167,139,250,0.1); padding: 1px 4px; border-radius: 3px; }
+
+  .persona-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+  .persona-pill { font-size: 10px; background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.25); color: var(--accent); border-radius: 4px; padding: 2px 8px; }
+
+  /* Checked state */
+  .finding-card.checked { opacity: 0.45; }
+  .finding-card.checked .finding-title { text-decoration: line-through; color: var(--text2); }
+
+  /* Progress */
+  .progress-label { font-size: 10px; color: var(--text3); margin-bottom: 6px; }
+  .progress-bar-wrap { background: var(--border); border-radius: 4px; height: 4px; margin-bottom: 24px; }
+  .progress-bar-fill { background: var(--accent); border-radius: 4px; height: 4px; width: 0%; transition: width 0.3s; }
+
+  /* Legend */
+  .legend { display: flex; gap: 16px; font-size: 10px; color: var(--text2); margin-bottom: 20px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot-high { background: var(--high); }
+  .dot-med  { background: var(--medium); }
+  .dot-low  { background: var(--low); }
+  .dot-pos  { background: var(--pos); }
+
+  /* Priority table */
+  .priority-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  .priority-table th { text-align: left; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text3); padding: 6px 10px; border-bottom: 1px solid var(--border); }
+  .priority-table td { padding: 8px 10px; font-size: 12px; border-bottom: 1px solid rgba(46,46,54,0.5); vertical-align: top; }
+  .priority-table tr:last-child td { border-bottom: none; }
+  .priority-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .pnum { font-weight: 700; color: var(--text3); font-variant-numeric: tabular-nums; }
+  .effort-chip { display: inline-block; font-size: 10px; border-radius: 4px; padding: 1px 7px; }
+  .effort-vl  { background: rgba(74,222,128,0.15);  color: var(--pos); }
+  .effort-l   { background: rgba(167,139,250,0.15); color: var(--accent); }
+  .effort-m   { background: rgba(245,158,11,0.15);  color: var(--medium); }
+
+  /* Positive section */
+  .positive-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 8px; margin-top: 8px; }
+  .positive-card { background: var(--card); border: 1px solid rgba(74,222,128,0.2); border-radius: 10px; padding: 12px 14px; }
+  .positive-card .p-id { font-size: 10px; font-weight: 700; color: var(--pos); margin-bottom: 4px; }
+  .positive-card .p-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .positive-card .p-desc { font-size: 11px; color: var(--text2); line-height: 1.5; }
+
+  /* Regression table */
+  .reg-table { width: 100%; border-collapse: collapse; }
+  .reg-table th { text-align: left; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text3); padding: 6px 10px; border-bottom: 1px solid var(--border); }
+  .reg-table td { padding: 8px 10px; font-size: 12px; border-bottom: 1px solid rgba(46,46,54,0.5); vertical-align: top; }
+  .reg-table tr:last-child td { border-bottom: none; }
+  .status-ok { color: var(--pos); font-weight: 600; }
+  .status-partial { color: var(--medium); }
+
+  /* Intro */
+  .intro-note { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 24px; font-size: 12px; color: var(--text2); line-height: 1.6; }
+  .intro-note strong { color: var(--text); }
+</style>
+</head>
+<body>
+
+<h1>H.O.N. Simulation Findings</h1>
+<div class="subtitle">Pending sign-off before implementation</div>
+<div class="meta">Run against: simulation_guide.html Rev 2 &nbsp;·&nbsp; Data: hon_backup_2026-05-26_07-25.json (18 sessions) &nbsp;·&nbsp; Method: code reading + data analysis (Protocol 7 regression, SC-02 through SC-13, FC-01–FC-08, Protocol 8)</div>
+
+<div class="intro-note">
+  <strong>How to use this document:</strong> Each finding can be expanded for full detail and proposed fix. Check items off as you review them. The priority table at the bottom is a proposed implementation order — sign off on which items to proceed with, and in what order. Nothing in this document is implemented until you confirm.
+</div>
+
+<div class="summary-bar">
+  <div class="summary-chip chip-all"><div class="num" id="total-count">21</div><div class="lbl">Total Items</div></div>
+  <div class="summary-chip chip-high"><div class="num">4</div><div class="lbl">High</div></div>
+  <div class="summary-chip chip-med"><div class="num">8</div><div class="lbl">Medium</div></div>
+  <div class="summary-chip chip-low"><div class="num">3</div><div class="lbl">Low</div></div>
+  <div class="summary-chip chip-pos"><div class="num">6</div><div class="lbl">Positive</div></div>
+  <div class="summary-chip chip-all" style="margin-left:auto"><div class="num" id="reviewed-count">0</div><div class="lbl">Reviewed</div></div>
+</div>
+
+<div class="progress-label" id="progress-label">0 of 21 reviewed</div>
+<div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-bar"></div></div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot dot-high"></div> High — user-facing correctness or trust issue</div>
+  <div class="legend-item"><div class="legend-dot dot-med"></div> Medium — UX friction or coaching quality gap</div>
+  <div class="legend-item"><div class="legend-dot dot-low"></div> Low — copy, color, or preference-level</div>
+  <div class="legend-item"><div class="legend-dot dot-pos"></div> Positive — confirmed working, no fix needed</div>
+</div>
+
+<div class="filters">
+  <button class="filter-btn active" onclick="filter('all', this)">All (21)</button>
+  <button class="filter-btn" onclick="filter('high', this)">High (4)</button>
+  <button class="filter-btn" onclick="filter('medium', this)">Medium (8)</button>
+  <button class="filter-btn" onclick="filter('low', this)">Low (3)</button>
+  <button class="filter-btn" onclick="filter('positive', this)">Positive (6)</button>
+</div>
+
+
+<!-- ══════════════════════════ HIGH ══════════════════════════ -->
+<div class="section-header">High — Correctness &amp; Trust</div>
+
+<!-- H-01 -->
+<div class="finding-card" data-sev="high" id="card-h01">
+  <div class="finding-header" onclick="toggle('h01')">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed('h01',this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-high">High</div>
+    <div class="finding-id">H-01</div>
+    <div class="finding-title-col">
+      <div class="finding-title">Readiness coaching and HON return message directly contradict each other on gap days</div>
+      <div class="finding-meta">
+        <span class="tag">SC-04 Gap Return</span>
+        <span class="tag">ReadinessEngine.swift ~L292</span>
+        <span class="tag">HONMessageLibrary.swift ~L199</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="finding-body">
+    <div class="detail-row">
+      <div class="detail-label">What happens</div>
+      <div class="detail-value">When a user returns after a 7–14 day gap, two coaching outputs fire with no integration between them. Simultaneously on the same screen:</div>
+      <div class="quote-box">"Don't hold back today — this is the kind of day you make progress on."<br><span style="font-size:10px;color:var(--text3)">ReadinessEngine.narrative() at score ≥ 80</span></div>
+      <div class="quote-box">"Start at 70%, not hard. One solid session sets the trajectory."<br><span style="font-size:10px;color:var(--text3)">HONMessageLibrary.returnAfterLapse (gap &lt; 14 days)</span></div>
+      <div class="detail-value" style="margin-top:8px">These are not just different in tone — they are actionably contradictory. A user returning after an 8-day gap is told to work at full intensity on one part of the screen and at 70% on another. Additionally, the Readiness Factors list can simultaneously show a red "Been a while since your last session" factor alongside a high score and a "push hard" narrative — the factor says the gap is a problem but the coaching says it isn't.</div>
+    </div>
+    <hr>
+    <div class="detail-row">
+      <div class="detail-label">Persona impact</div>
+      <div class="persona-pills"><span class="persona-pill">P1 Returner — critical. Highest-stakes coaching moment.</span></div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">Add an <code>isReturnAfterGap(daysSinceLast:)</code> check in <code>ReadinessEngine.narrative()</code>. When <code>daysSinceLast >= 7</code>, override the coaching note to a return-appropriate register regardless of score:<br><br><em>"You've had time to recover — ease back in and build momentum. Intensity next session."</em><br><br>Also suppress or reframe the "Been a while" Factors entry when a positive return HON message is active — the same event shouldn't be flagged as negative in one place and celebrated in another.</div>
+    </div>
+  </div>
+</div>
+
+<!-- H-02 -->
+<div class="finding-card" data-sev="high" id="card-h02">
+  <div class="finding-header" onclick="toggle('h02')">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed('h02',this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-high">High</div>
+    <div class="finding-id">H-02</div>
+    <div class="finding-title-col">
+      <div class="finding-title">Two different Epley implementations produce different e1RM values for sets with reps &gt; 10</div>
+      <div class="finding-meta">
+        <span class="tag">SC-07 Cross-Tab Walk</span>
+        <span class="tag">ExerciseInsightsView.swift ~L358</span>
+        <span class="tag">Models.swift ~L253</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="finding-body">
+    <div class="detail-row">
+      <div class="detail-label">What happens</div>
+      <div class="detail-value">Two separate e1RM calculation functions exist in the codebase:</div>
+      <div class="code-block">// Models.swift — SetRecord.e1RM(weight:reps:)
+case 2...10: return epley(w, r)          // Epley formula
+case 11...20: return mayhew(w, r)         // Mayhew formula — different result
+
+// ExerciseInsightsView.swift ~L358
+private func epley(_ s: SetRecord, ...) -> Double {
+    return s.reps == 1 ? load : load * (1 + Double(s.reps) / 30.0)
+    // ↑ Epley for ALL rep counts — no Mayhew branch
+}</div>
+      <div class="detail-value">For reps ≤ 10: both produce identical values. For reps 11–20 (common: sets of 12, 15): they diverge. Example: 20 kg × 12 reps — Epley gives 28.0 kg, Mayhew gives ~27.0 kg. Progress views use the Mayhew path; ExerciseInsightDetailView's chart uses the local Epley path. The skeptic who spots 28.0 in one chart and 27.0 in another cannot know which is correct.</div>
+    </div>
+    <hr>
+    <div class="detail-row">
+      <div class="detail-label">Persona impact</div>
+      <div class="persona-pills"><span class="persona-pill">P2 Skeptic — trust-breaking. Numbers that don't match each other have no obvious winner.</span></div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">Delete the local <code>epley()</code> function in <code>ExerciseInsightsView.swift</code> and replace all calls with <code>SetRecord.e1RM(weight:reps:)</code> (or <code>effectiveE1RM(equipment:)</code> for equipment-aware variant). There should be exactly one e1RM calculation in the codebase. The <code>ExerciseInsightDetailView</code> data pipeline that constructs <code>dataPoints</code> should use <code>SetRecord.e1RM()</code> rather than its local function. Effort: low — one function deletion + reference update.</div>
+    </div>
+  </div>
+</div>
+
+<!-- H-03 -->
+<div class="finding-card" data-sev="high" id="card-h03">
+  <div class="finding-header" onclick="toggle('h03')">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed('h03',this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-high">High</div>
+    <div class="finding-id">H-03</div>
+    <div class="finding-title-col">
+      <div class="finding-title">e1RM term used in post-session celebration before it is ever explained</div>
+      <div class="finding-meta">
+        <span class="tag">SC-02 First Workout</span>
+        <span class="tag">SC-01 Onboarding</span>
+        <span class="tag">FirstWorkoutCelebrationSheet.swift ~L9</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="finding-body">
+    <div class="detail-row">
+      <div class="detail-label">What happens</div>
+      <div class="detail-value">Onboarding has three pages (goal selection, equipment selection, brief intro). None of them define e1RM, RPE, INOL, or PSI. After the user's very first session, <code>FirstWorkoutCelebrationSheet</code> fires and says:</div>
+      <div class="quote-box">"Come back tomorrow to start seeing your e1RM trend."</div>
+      <div class="detail-value">A P3 beginner reads this and sees a term that has no meaning to them. The celebration moment is diluted because the most forward-looking line contains an unexplained acronym. RPE compounds this: coaching output from <code>WorkoutNarrativeEngine</code> and <code>EmergentInsightEngine</code> references RPE in analytics context. The onboarding never surfaces it, so the first time a beginner sees "RPE 7" in an insight card it reads as noise.</div>
+    </div>
+    <hr>
+    <div class="detail-row">
+      <div class="detail-label">Persona impact</div>
+      <div class="persona-pills">
+        <span class="persona-pill">P3 Beginner — first impression corrupted by jargon</span>
+        <span class="persona-pill">P1 Returner — mildly affected</span>
+      </div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix (choose one)</div>
+      <div class="fix-text"><strong>Option A — Inline expansion (recommended):</strong> Replace "e1RM trend" in <code>FirstWorkoutCelebrationSheet</code> with "strength estimate (e1RM) trend." Add a parenthetical explanation of RPE the first time it appears in any coaching card — <em>"RPE 7 means 7 out of 10 effort — 3 more reps left in the tank."</em> No onboarding changes needed.<br><br><strong>Option B — Onboarding glossary page:</strong> Add a 4th onboarding page "Three numbers that matter" covering e1RM, RPE, and streaks. More upfront investment but users arrive informed. Onboarding goes from 3 to 4 pages.</div>
+    </div>
+  </div>
+</div>
+
+<!-- H-04 -->
+<div class="finding-card" data-sev="high" id="card-h04">
+  <div class="finding-header" onclick="toggle('h04')">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed('h04',this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-high">High</div>
+    <div class="finding-id">H-04</div>
+    <div class="finding-title-col">
+      <div class="finding-title">RPE never explained before users encounter it in coaching output outside the active workout</div>
+      <div class="finding-meta">
+        <span class="tag">SC-01 Onboarding</span>
+        <span class="tag">SC-02 First Workout</span>
+        <span class="tag">EmergentInsightEngine.swift</span>
+        <span class="tag">WorkoutNarrativeEngine.swift</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="finding-body">
+    <div class="detail-row">
+      <div class="detail-label">What happens</div>
+      <div class="detail-value">RPE (Rate of Perceived Exertion) appears in: the analytics explainer sheet, <code>EmergentInsightEngine</code> program calibration card, <code>ActiveWorkoutView</code> RPE info tooltip (opt-in, only visible during an active workout), and coaching narrative output. A P3 beginner who never opens the RPE tooltip will encounter "RPE" in coaching text with no definition. The tooltip is opt-in (info button) and only visible during an active workout — it doesn't help when RPE appears in EmergentInsights on the Home screen after a session. This is listed separately from H-03 because the fix path is different.</div>
+    </div>
+    <hr>
+    <div class="detail-row">
+      <div class="detail-label">Persona impact</div>
+      <div class="persona-pills">
+        <span class="persona-pill">P3 Beginner — moderate</span>
+        <span class="persona-pill">P1 Returner — low</span>
+      </div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">Add an inline <code>(?)</code> InfoButton next to any instance of "RPE" that appears outside the active workout screen — specifically: <code>EmergentInsightCard</code>, <code>PatternDetailView</code>, <code>ProgressDashboardViews</code>. The tapped sheet should show a 3-line definition: what the scale is (6–10 or 1–10), what "RPE 7" means in practice, and why it matters. This can reuse the existing <code>AnalyticsExplainerSheet</code> pattern already in the codebase.</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════ MEDIUM ══════════════════════════ -->
+<div class="section-header">Medium — UX &amp; Coaching Quality</div>
+
+<!-- M-01 -->
+<div class="finding-card" data-sev="medium" id="card-m01">
+  <div class="finding-header" onclick="toggle('m01')">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed('m01',this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-medium">Medium</div>
+    <div class="finding-id">M-01</div>
+    <div class="finding-title-col">
+      <div class="finding-title">HON notification fires same morning if workout completed before 8 AM</div>
+      <div class="finding-meta">
+        <span class="tag">FC-03</span>
+        <span class="tag">Protocol 7 Regression</span>
+        <span class="tag">HONMessageScheduler.swift ~L19</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="finding-body">
+    <div class="detail-row">
+      <div class="detail-label">What happens</div>
+      <div class="detail-value">The notification trigger is built without a <code>day</code> component:</div>
+      <div class="code-block">var comps        = DateComponents()
+comps.hour       = 8
+comps.minute     = 0
+// comps.day is never set
+let trigger      = UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)</div>
+      <div class="detail-value">With no <code>day</code> component, <code>UNCalendarNotificationTrigger</code> fires at the <em>next</em> occurrence of 08:00. For an early-morning user who finishes a session at 7:45 AM, the HON coaching notification fires 15 minutes later on the same morning — not the intended "next day motivation" behavior.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">Set <code>comps.day</code> to tomorrow's calendar day before creating the trigger, or use a time-interval trigger: <code>UNTimeIntervalNotificationTrigger(timeInterval: secondsUntil8AMTomorrow, repeats: false)</code>. Effort: very low — one date calculation added.</div>
+    </div>
+  </div>
+</div>
+
+<!-- M-02 -->
+<div class="finding-card" data-sev="medium" id="card-m02">
+  <div class="finding-header" onclick="toggle('m02')">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed('m02',this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-medium">Medium</div>
+    <div class="finding-id">M-02</div>
+    <div class="finding-title-col">
+      <div class="finding-title">4–6 day gap produces no acknowledgement — the WelcomeBackCard threshold is too high</div>
+      <div class="finding-meta">
+        <span class="tag">SC-04 Gap Return</span>
+        <span class="tag">HONHabitEngine.swift ~L166</span>
+        <span class="tag">HomeView.swift WelcomeBackCard ~L286</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="finding-body">
+    <div class="detail-row">
+      <div class="detail-label">What happens</div>
+      <div class="detail-value">Both the HONHabitEngine gap message threshold and the WelcomeBackCard threshold require 7+ days of inactivity to fire. A user who trains Monday, takes Tuesday–Saturday off (5 days), and returns Sunday sees nothing that acknowledges the gap. This is the most common real-world gap pattern. The app is silent when the user is most likely to feel mild uncertainty about returning.</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-label">Persona impact</div>
+      <div class="persona-pills"><span class="persona-pill">P1 Returner — the 4–6 day gap window is where most real gaps live</span></div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">Lower the <code>WelcomeBackCard</code> threshold to 4 days and add a separate "short gap" message pool to <code>HONMessageLibrary</code> for gaps of 4–6 days. These messages should be lighter in tone than the 7+ day messages — no mention of "break" or "days away," just a forward-looking welcome:<br><br><em>"Ready to pick up where you left off?"</em><br><br>The HONHabitEngine lapse threshold can stay at 7 days since that path produces more substantive coaching.</div>
+    </div>
+  </div>
+</div>
+
+<!-- M-03 -->
+<div class="finding-card" data-sev="medium" id="card-m03">
+  <div class="finding-header" onclick="toggle('m03')">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed('m03',this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-medium">Medium</div>
+    <div class="finding-id">M-03</div>
+    <div class="finding-title-col">
+      <div class="finding-title">Dumbbell per-hand convention not explained before first dumbbell set is logged</div>
+      <div class="finding-meta">
+        <span class="tag">FC-07</span>
+        <span class="tag">ActiveWorkoutView.swift ~L515</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="finding-body">
+    <div class="detail-row">
+      <div class="detail-label">What happens</div>
+      <div class="detail-value">The per-hand convention badge <em>("Enter per-hand weight — app doubles for bilateral total")</em> only renders once a dumbbell exercise is already on screen in an active workout. A user who selects Dumbbell Bench Press for the first time and immediately types "40" (their bilateral total) will log incorrect data before reading the badge. The badge appears after exercise selection, not before.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">Show the badge text as a subtitle in the <code>ExercisePicker</code> search results for dumbbell exercises — a small <em>"Enter per-hand weight"</em> annotation beneath the exercise name. Alternatively, add it to the ExercisePicker detail row for any <code>equipment == .dumbbell</code> exercise. This surfaces the convention at the selection moment, not the entry moment.</div>
+    </div>
+  </div>
+</div>
+
+<!-- M-04 -->
+<div class="finding-card" data-sev="medium" id="card-m04">
+  <div class="finding-header" onclick="toggle('m04')">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed('m04',this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-medium">Medium</div>
+    <div class="finding-id">M-04</div>
+    <div class="finding-title-col">
+      <div class="finding-title">STATE-0 empty state reads as a feature list, not an invitation</div>
+      <div class="finding-meta">
+        <span class="tag">SC-12 Empty State Audit</span>
+        <span class="tag">HomeView.swift ~L276</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="finding-body">
+    <div class="detail-row">
+      <div class="detail-label">What happens</div>
+      <div class="detail-value">The zero-session Home screen shows health tiles (all "—"), a Start Workout button, and a caption:</div>
+      <div class="quote-box">"Log your first session to unlock your Readiness score, strength tiers, and weekly insights."</div>
+      <div class="detail-value">This is a feature list. It tells you what you'll unlock but not what the experience of unlocking it feels like. It doesn't connect to the H.O.N. identity ("Habit Over Numbers"). It reads like a product spec, not an invitation.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">Replace the caption with two lines that lead with the feeling, not the features:<br><br><em>"Your first session starts the signal. Everything you see here — the score, the tiers, the coach — builds from what you log."</em><br><br>Keep it short. No bullet points.</div>
+    </div>
+  </div>
+</div>
+
+<!-- M-05 -->
+<div class="finding-card" data-sev="medium" id="card-m05">
+  <div class="finding-header" onclick="toggle('m05')">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed('m05',this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-medium">Medium</div>
+    <div class="finding-id">M-05</div>
+    <div class="finding-title-col">
+      <div class="finding-title">Volume bar chart Y-axis is hidden — no scale reference</div>
+      <div class="finding-meta">
+        <span class="tag">SC-07 Cross-Tab Walk</span>
+        <span class="tag">ProgressDashboardViews.swift ~L901</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="finding-body">
+    <div class="detail-row">
+      <div class="detail-label">What happens</div>
+      <div class="detail-value">The 8-week volume bar chart uses <code>.chartYAxis(.hidden)</code>. Users see relative bar heights but no absolute values. A skeptic who wants to know "did I do 2,000 or 5,000 kg-reps?" can't read that from the chart. The X-axis dates are set at <code>font(.system(size: 7))</code> — functionally unreadable at arm's length.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">Remove <code>.chartYAxis(.hidden)</code> and configure <code>AxisMarks</code> with 3–4 tick marks showing kg-rep values formatted as "2.0k" to keep labels compact. Increase X-axis date font from 7pt to 9pt.</div>
+    </div>
+  </div>
+</div>
+
+<!-- M-06 -->
+<div class="finding-card" data-sev="medium" id="card-m06">
+  <div class="finding-header" onclick="toggle('m06')">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed('m06',this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-medium">Medium</div>
+    <div class="finding-id">M-06</div>
+    <div class="finding-title-col">
+      <div class="finding-title">PSI metric has no tap-to-explain tooltip; INOL has one but PSI doesn't</div>
+      <div class="finding-meta">
+        <span class="tag">SC-07</span>
+        <span class="tag">Protocol 8</span>
+        <span class="tag">ExerciseInsightsView.swift (fiberLoad section)</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="finding-body">
+    <div class="detail-row">
+      <div class="detail-label">What happens</div>
+      <div class="detail-value">INOL has an <code>InfoButton</code> that opens <code>AnalyticsExplainerSheet</code> — confirmed in <code>ProgressDashboardViews.swift</code>. PSI (Personal Strength Index / Fiber Load) appears in <code>ExerciseInsightDetailView</code> and <code>PatternDetailView</code> without an equivalent explainer. PSI is the most opaque metric in the app — it combines intensity, reps, activation weight, and body weight. A P2 skeptic who sees "PSI: 47.3" and taps it expecting an explanation finds nothing.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">Add an <code>InfoButton(metric: .psi)</code> next to the PSI value display in <code>ExerciseInsightDetailView</code> (where <code>latestFiberLoad</code> is displayed) and in <code>PatternDetailView</code>'s PSI chart header. The <code>MetricInfoSheet</code> or <code>AnalyticsExplainerSheet</code> should include a PSI entry explaining: what it measures, the formula in plain language, and what a high vs. low value means.</div>
+    </div>
+  </div>
+</div>
+
+<!-- M-07 -->
+<div class="finding-card" data-sev="medium" id="card-m07">
+  <div class="finding-header" onclick="toggle('m07')">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed('m07',this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-medium">Medium</div>
+    <div class="finding-id">M-07</div>
+    <div class="finding-title-col">
+      <div class="finding-title">Development Tier improvement rate "+X%/wk" is unlabeled — % of what?</div>
+      <div class="finding-meta">
+        <span class="tag">SC-07</span>
+        <span class="tag">ProgressDashboardViews.swift ~L544</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="finding-body">
+    <div class="detail-row">
+      <div class="detail-label">What happens</div>
+      <div class="detail-value">The Development Tier muscle grid shows values like <em>"+1.2%/wk"</em> next to each muscle group. The card header says "Development Tier." Nowhere on the card is it explained that the percentage is the weekly improvement rate of e1RM — not volume, not reps, not some other metric. A skeptic reads "+1.2%/wk" and has to guess whether this is a good or bad number and what it's measuring.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">Add a subtitle beneath the card header: <em>"Weekly e1RM improvement rate — how fast each pattern is growing."</em> Alternatively, add an <code>InfoButton</code> to the card header. Effort: very low — one text addition.</div>
+    </div>
+  </div>
+</div>
+
+<!-- M-08 -->
+<div class="finding-card" data-sev="medium" id="card-m08">
+  <div class="finding-header" onclick="toggle('m08')">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed('m08',this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-medium">Medium</div>
+    <div class="finding-id">M-08</div>
+    <div class="finding-title-col">
+      <div class="finding-title">PR step chart has no Y-axis tick marks — scale is invisible</div>
+      <div class="finding-meta">
+        <span class="tag">SC-07</span>
+        <span class="tag">ProgressDashboardViews.swift ~L1093</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="finding-body">
+    <div class="detail-row">
+      <div class="detail-label">What happens</div>
+      <div class="detail-value">The PR history step chart labels the Y-axis only in the card header text "e1RM kg," not as actual chart axis marks. The chart itself has no <code>AxisMarks</code> configuration for the Y-axis. The scale is invisible — the step line is visual but not readable as absolute values.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">Add a <code>chartYAxis { AxisMarks(values: .automatic(desiredCount: 4)) { ... } }</code> block to the PR step chart. Match the format used in other charts in <code>ExerciseInsightDetailView</code> — kg labels, light color, trailing alignment.</div>
+    </div>
+  </div>
+</div>
+
+<!-- M-09 -->
+<div class="finding-card" data-sev="medium" id="card-m09">
+  <div class="finding-header" onclick="toggle('m09')">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed('m09',this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-medium">Medium</div>
+    <div class="finding-id">M-09</div>
+    <div class="finding-title-col">
+      <div class="finding-title">Zero-rep alert blocks without helping a user who genuinely failed a set</div>
+      <div class="finding-meta">
+        <span class="tag">SC-06</span>
+        <span class="tag">FC-01</span>
+        <span class="tag">ActiveWorkoutView.swift ~L783</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="finding-body">
+    <div class="detail-row">
+      <div class="detail-label">What happens</div>
+      <div class="detail-value">Alert text: <em>"No Reps Entered — Enter at least 1 rep before completing a set."</em> This is correct for the most common case (forgot to enter reps). But a user who attempted a set and genuinely got 0 reps (failed the first rep) has no path: the app blocks the completion and offers no alternative. The <code>toFailure</code> flag exists but doesn't help here. A real failed-first-rep set can't be logged.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">Add a second button to the alert: <em>"Log as Failed Set"</em> (alongside "Enter Reps"). Tapping it marks the set as completed with <code>reps = 0, toFailure = true</code> — already a known data pattern from the Machine Shoulder Press sessions in the backup. This allows genuine failed attempts to be logged without corrupting analytics (which already excludes <code>reps == 0</code> from e1RM calculations).</div>
+    </div>
+  </div>
+</div>
+
+<!-- M-10 -->
+<div class="finding-card" data-sev="medium" id="card-m10">
+  <div class="finding-header" onclick="toggle('m10')">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed('m10',this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-medium">Medium</div>
+    <div class="finding-id">M-10</div>
+    <div class="finding-title-col">
+      <div class="finding-title">~88% of HON coaching messages are generic — only two categories reference real user data</div>
+      <div class="finding-meta">
+        <span class="tag">Protocol 8 Coaching Tone Audit</span>
+        <span class="tag">HONMessageLibrary.swift</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="finding-body">
+    <div class="detail-row">
+      <div class="detail-label">What happens</div>
+      <div class="detail-value">Auditing all message pools — only two are data-specific:<br>
+      • <code>patternFlag</code>: references <code>dayName</code> and <code>pct</code> ✓<br>
+      • <code>rampDetection</code>: references <code>count</code> and <code>avg</code> ✓<br>
+      • All others (<code>sessionMilestone</code>, <code>weeklyCount</code>, <code>returnAfterLapse</code>, <code>driftDetection</code>, <code>deloadDetection</code>, <code>streakMilestone</code>, <code>specialMoment</code>): generic — could apply to any user.<br><br>
+      <code>specialMoment</code> is the most notable gap: messages like <em>"Something's different about today's session"</em> are supposed to fire when the app detects something notable, but none of them state what that something is. The <code>WorkoutNarrativeEngine</code> post-set messages ARE specific (exercise names, weights, target comparisons) — the contrast between narrative quality and HON messages will be noticed by P2 and P4.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix (in priority order)</div>
+      <div class="fix-text">1. <strong>specialMoment:</strong> Add the specific trigger reason. If the trigger is a PR: <em>"You just hit a personal record on [exercise]. That's the signal."</em> The <code>specialMoment</code> path should receive trigger context as a parameter.<br><br>2. <strong>driftDetection:</strong> Add the specific category: <em>"[Push] volume is down two weeks running. One session resets it."</em><br><br>3. <strong>returnAfterLapse:</strong> Add the last exercise logged: <em>"You're back. Last time you were here: [exercise]."</em></div>
+    </div>
+  </div>
+</div>
+
+<!-- M-11 -->
+<div class="finding-card" data-sev="medium" id="card-m11">
+  <div class="finding-header" onclick="toggle('m11')">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed('m11',this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-medium">Medium</div>
+    <div class="finding-id">M-11</div>
+    <div class="finding-title-col">
+      <div class="finding-title">Progress "Where Am I" section opens to 3 dense cards simultaneously — visual overload</div>
+      <div class="finding-meta">
+        <span class="tag">Protocol 8 Aesthetic</span>
+        <span class="tag">ProgressView.swift — Where Am I section</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="finding-body">
+    <div class="detail-row">
+      <div class="detail-label">What happens</div>
+      <div class="detail-value">The default expanded "Where Am I" section shows three cards simultaneously: MovementPatternRadarCard + muscleGridCard (side-by-side HStack), StandardLiftsCard (multiple tier bars), and optionally StrengthRetentionRingsCard. On a standard iPhone (375pt width), the side-by-side HStack produces two compact cards that are difficult to read. Three dense visual units on first open produces the impression of a dashboard designed for a wide screen compressed into a narrow one.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">Make the radar + muscle grid a single <code>ScrollView(.horizontal)</code> pair rather than a fixed HStack — users can swipe between them. Or: reorder so StandardLiftsCard appears first (tier names are immediately legible) and the radar is secondary. Opening "Where Am I" for the first time should surface one clear answer, not three competing visualizations.</div>
+    </div>
+  </div>
+</div>
+
+<!-- M-12 -->
+<div class="finding-card" data-sev="medium" id="card-m12">
+  <div class="finding-header" onclick="toggle('m12')">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed('m12',this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-medium">Medium</div>
+    <div class="finding-id">M-12</div>
+    <div class="finding-title-col">
+      <div class="finding-title">Feel selector sheet drag-to-dismiss is disabled but Skip button is not prominent enough</div>
+      <div class="finding-meta">
+        <span class="tag">FC-04</span>
+        <span class="tag">WorkoutTabView.swift ~L669</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="finding-body">
+    <div class="detail-row">
+      <div class="detail-label">What happens</div>
+      <div class="detail-value"><code>FeelSelectorSheet</code> uses <code>.interactiveDismissDisabled(true)</code> — the sheet does not respond to a swipe-down. Users who try the standard iOS dismiss gesture get no response and may think the app is frozen. The "Skip" button exists and functions correctly, but it's positioned as a secondary action (small, below the emoji row) when it is actually the most common path for users who find the feel prompt friction-heavy. Disabling an expected iOS gesture without a visible alternative feels like a broken interaction.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix (choose one)</div>
+      <div class="fix-text"><strong>Option A:</strong> Remove <code>.interactiveDismissDisabled(true)</code> and treat swipe-down as equivalent to tapping Skip.<br><br><strong>Option B:</strong> Keep the lock but move the Skip button to the top-right of the sheet header, matching standard iOS sheet dismiss placement, so it is discovered immediately.</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════ LOW ══════════════════════════ -->
+<div class="section-header">Low — Copy, Color &amp; Preference</div>
+
+<!-- L-01 -->
+<div class="finding-card" data-sev="low" id="card-l01">
+  <div class="finding-header" onclick="toggle('l01')">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed('l01',this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-low">Low</div>
+    <div class="finding-id">L-01</div>
+    <div class="finding-title-col">
+      <div class="finding-title">Short-lapse return messages anchor on the absence — mild backward pull against H.O.N. voice</div>
+      <div class="finding-meta">
+        <span class="tag">SC-04</span>
+        <span class="tag">HONMessageLibrary.swift ~L199</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="finding-body">
+    <div class="detail-row">
+      <div class="detail-label">What happens</div>
+      <div class="detail-value">All three &lt;14-day return messages lead with the gap duration: <em>"You're back. X days off…"</em>, <em>"Back after X days…"</em>, <em>"X-day break — now closed."</em> While non-punishing, they anchor on the absence. The H.O.N. philosophy favors forward-looking language. No message in the pool is purely forward-looking.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">Add one message to the &lt;14-day pool that makes no reference to the gap:<br><br><em>"Ready when you are. Pick up where you left off — the work you've done isn't going anywhere."</em></div>
+    </div>
+  </div>
+</div>
+
+<!-- L-02 -->
+<div class="finding-card" data-sev="low" id="card-l02">
+  <div class="finding-header" onclick="toggle('l02')">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed('l02',this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-low">Low</div>
+    <div class="finding-id">L-02</div>
+    <div class="finding-title-col">
+      <div class="finding-title">Dumbbell per-hand convention badge uses warning (amber) color for a helpful note</div>
+      <div class="finding-meta">
+        <span class="tag">SC-02</span>
+        <span class="tag">ActiveWorkoutView.swift ~L401</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="finding-body">
+    <div class="detail-row">
+      <div class="detail-label">What happens</div>
+      <div class="detail-value">The per-hand convention badge is styled in <code>HONTheme.warning</code> (amber/orange). Warning color on a UI convention note trains users to associate amber with errors. The badge is informational — it is not a warning. Using warning color for non-warning states dilutes the semantic meaning of the color.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">Change the badge foreground from <code>HONTheme.warning</code> to <code>HONTheme.accent</code> or <code>.secondary</code>. Reserve warning colors for states that require corrective action. One constant swap.</div>
+    </div>
+  </div>
+</div>
+
+<!-- L-03 -->
+<div class="finding-card" data-sev="low" id="card-l03">
+  <div class="finding-header" onclick="toggle('l03')">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed('l03',this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-low">Low</div>
+    <div class="finding-id">L-03</div>
+    <div class="finding-title-col">
+      <div class="finding-title">Drift detection message contains mild stakes-framing — "habits disappear"</div>
+      <div class="finding-meta">
+        <span class="tag">Protocol 8 Tone</span>
+        <span class="tag">HONMessageLibrary.swift ~L253</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="finding-body">
+    <div class="detail-row">
+      <div class="detail-label">What happens</div>
+      <div class="detail-value">Current copy:</div>
+      <div class="quote-box">"This is where habits either reset or disappear. One session makes the difference."</div>
+      <div class="detail-value">The word "disappear" introduces mild pressure framing. The H.O.N. voice is non-punishing and returns-oriented. A P1 Returner reading this during a quiet stretch may feel mild anxiety rather than invitation.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">Replace <em>"reset or disappear"</em> with <em>"reset or solidify."</em> One word change removes the stakes framing while preserving the directness and forward momentum of the message.</div>
+    </div>
+  </div>
+</div>
+
+<!-- L-04 hidden from filter — it's positive/preference level -->
+<div class="finding-card" data-sev="low" id="card-l04">
+  <div class="finding-header" onclick="toggle('l04')">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed('l04',this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-low">Low</div>
+    <div class="finding-id">L-04</div>
+    <div class="finding-title-col">
+      <div class="finding-title">SetCompletionFlash is a 1px line — may be under-rewarding at gym ambient light</div>
+      <div class="finding-meta">
+        <span class="tag">Protocol 8 Micro-interactions</span>
+        <span class="tag">CelebrationSystem.swift ~L669</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="finding-body">
+    <div class="detail-row">
+      <div class="detail-label">What happens</div>
+      <div class="detail-value">Set completion animation: a 1px amber line sweeps across the bottom of the row (0.32s), then fades out (0.38s). Total duration ~0.7s. This is physically subtle — a single pixel at the bottom of the row during a gym session (low attention, ambient light) may not register as feedback. The row background color change (positive/negative flash at line 853) is the more visible signal. The haptic on set completion is strong and may already be sufficient.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix (optional)</div>
+      <div class="fix-text">Consider increasing the flash line to 2px height and adding a slight scale pulse on the checkmark icon (scale 1.0 → 1.15 → 1.0, ~0.2s) to reinforce the completion moment. Or leave as-is — this is a preference-level decision. If it reads well in real gym conditions it doesn't need a change.</div>
+    </div>
+  </div>
+</div>
+
+<!-- L-05 -->
+<div class="finding-card" data-sev="low" id="card-l05">
+  <div class="finding-header" onclick="toggle('l05')">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed('l05',this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-low">Low</div>
+    <div class="finding-id">L-05</div>
+    <div class="finding-title-col">
+      <div class="finding-title">e1RM appears as a standalone label in StandardLiftsCard tier row without expansion</div>
+      <div class="finding-meta">
+        <span class="tag">SC-07</span>
+        <span class="tag">ProgressView.swift ~L559</span>
+      </div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="finding-body">
+    <div class="detail-row">
+      <div class="detail-label">What happens</div>
+      <div class="detail-value">The StandardLiftsCard LiftPairRow shows a small "e1RM" text label directly next to the number. The card header does show "e1RM ÷ bodyweight vs community benchmarks" — so context exists at the section level. But if a user taps directly into the tier row without reading the header, the standalone "e1RM" label has no expansion. Minor given the header context already present.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">Proposed Fix</div>
+      <div class="fix-text">Optional: expand the label from "e1RM" to "Est. 1RM" which is slightly more self-explanatory without requiring a tooltip. No functional fix required — this is informational context only.</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════ POSITIVE ══════════════════════════ -->
+<div class="section-header">Positive — Confirmed Working, No Fix Needed</div>
+
+<div class="positive-grid">
+  <div class="positive-card">
+    <div class="p-id">P-01</div>
+    <div class="p-title">Haptic feedback on set completion</div>
+    <div class="p-desc">Medium impact on complete, notification success on PR. Correct and well-tuned.</div>
+  </div>
+  <div class="positive-card">
+    <div class="p-id">P-02</div>
+    <div class="p-title">PR banner timing</div>
+    <div class="p-desc">Fires immediately and contextually within the complete tap action — not delayed. Correct.</div>
+  </div>
+  <div class="positive-card">
+    <div class="p-id">P-03 ✓ Regression Fixed</div>
+    <div class="p-title">Done keyboard button — single instance confirmed</div>
+    <div class="p-desc">On ActiveWorkoutView body level only — one button per keyboard instance. Prior multi-button bug confirmed resolved.</div>
+  </div>
+  <div class="positive-card">
+    <div class="p-id">P-04 ✓ Regression Fixed</div>
+    <div class="p-title">CSV and JSON export routing</div>
+    <div class="p-desc">Both correctly route through <code>exportItem</code> / <code>.sheet(item: $exportItem)</code>. No duplicate sheet modifier.</div>
+  </div>
+  <div class="positive-card">
+    <div class="p-id">P-05</div>
+    <div class="p-title">Session-1 HON messages</div>
+    <div class="p-desc">Well-calibrated — non-effusive, honest, H.O.N.-aligned. "The habit doesn't exist yet — but the decision does." is exactly the right note.</div>
+  </div>
+  <div class="positive-card">
+    <div class="p-id">P-06</div>
+    <div class="p-title">WorkoutNarrativeEngine personalization</div>
+    <div class="p-desc">Post-session coaching is highly specific — references actual exercise names, weights, target comparisons, and performance trajectories. Strongest personalization in the codebase.</div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════ REGRESSION ══════════════════════════ -->
+<div class="section-header" style="margin-top:32px">Regression Checks (Protocol 7)</div>
+
+<div class="finding-card" data-sev="all" id="card-reg">
+  <div class="finding-header" onclick="toggle('reg')">
+    <div class="check-col"><input type="checkbox" onchange="markReviewed('reg',this)" onclick="event.stopPropagation()"></div>
+    <div class="badge badge-positive">Reg</div>
+    <div class="finding-id">R-01–07</div>
+    <div class="finding-title-col">
+      <div class="finding-title">Protocol 7 Regression Results</div>
+      <div class="finding-meta"><span class="tag">7 checks · 3 confirmed · 4 need runtime</span></div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="finding-body">
+    <table class="reg-table">
+      <thead>
+        <tr><th>Check</th><th>Description</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>R-01</td><td>First session HON message fires correctly</td><td class="status-partial">Code path exists — needs runtime verify</td></tr>
+        <tr><td>R-02</td><td>Post-set coaching fires from WorkoutNarrativeEngine after set complete</td><td class="status-partial">Code path exists — needs runtime verify</td></tr>
+        <tr><td>R-03</td><td>Single Done keyboard button — not stacked</td><td class="status-ok">✓ CONFIRMED FIXED — toolbar on ActiveWorkoutView body only</td></tr>
+        <tr><td>R-04</td><td>Readiness score updates after session completes</td><td class="status-partial">Cannot verify without runtime</td></tr>
+        <tr><td>R-05</td><td>CSV export fires correctly</td><td class="status-ok">✓ CONFIRMED FIXED — routes through exportItem in SettingsView</td></tr>
+        <tr><td>R-06</td><td>JSON export fires correctly</td><td class="status-ok">✓ CONFIRMED FIXED — both exports route through exportItem</td></tr>
+        <tr><td>R-07</td><td>Notification does not fire during active session</td><td class="status-partial">Cannot verify without runtime</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════ PRIORITY TABLE ══════════════════════════ -->
+<div class="section-header" style="margin-top:32px">Implementation Priority — Sign Off</div>
+
+<div class="finding-card" data-sev="all" id="card-priority">
+  <div class="finding-header" onclick="toggle('priority')">
+    <div class="check-col"><input type="checkbox" style="display:none"></div>
+    <div class="badge" style="background:rgba(167,139,250,0.15);color:var(--accent)">Table</div>
+    <div class="finding-id"></div>
+    <div class="finding-title-col">
+      <div class="finding-title">Proposed implementation order (20 items)</div>
+      <div class="finding-meta">Nothing below is implemented until you sign off on which items to proceed with</div>
+    </div>
+    <div class="expand-icon">›</div>
+  </div>
+  <div class="finding-body">
+    <table class="priority-table">
+      <thead>
+        <tr><th>#</th><th>Finding</th><th>Description</th><th>Effort</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="pnum">1</td><td>H-01</td><td>Readiness/HON coaching contradiction on gap days — ReadinessEngine.narrative() + gap flag</td><td><span class="effort-chip effort-m">Medium</span></td></tr>
+        <tr><td class="pnum">2</td><td>H-02</td><td>Two epley implementations — delete local epley(), use SetRecord.e1RM() throughout</td><td><span class="effort-chip effort-l">Low</span></td></tr>
+        <tr><td class="pnum">3</td><td>H-03</td><td>e1RM not explained in first celebration — inline expansion in FirstWorkoutCelebrationSheet</td><td><span class="effort-chip effort-l">Low</span></td></tr>
+        <tr><td class="pnum">4</td><td>H-04</td><td>RPE not explained outside active workout — InfoButton in EmergentInsights/Progress</td><td><span class="effort-chip effort-l">Low</span></td></tr>
+        <tr><td class="pnum">5</td><td>M-01</td><td>Notification fires same morning — add tomorrow's date to DateComponents</td><td><span class="effort-chip effort-l">Low</span></td></tr>
+        <tr><td class="pnum">6</td><td>M-09</td><td>Zero-rep alert — add "Log as Failed Set" second button</td><td><span class="effort-chip effort-l">Low</span></td></tr>
+        <tr><td class="pnum">7</td><td>M-02</td><td>4–6 day gap silence — lower WelcomeBackCard threshold to 4 days + short-gap pool</td><td><span class="effort-chip effort-l">Low</span></td></tr>
+        <tr><td class="pnum">8</td><td>M-10</td><td>Generic HON messages — specialMoment + driftDetection data-specific strings</td><td><span class="effort-chip effort-m">Medium</span></td></tr>
+        <tr><td class="pnum">9</td><td>M-12</td><td>Feel sheet dismiss — remove interactiveDismissDisabled OR reposition Skip button</td><td><span class="effort-chip effort-l">Low</span></td></tr>
+        <tr><td class="pnum">10</td><td>M-05</td><td>Volume chart Y-axis — remove .chartYAxis(.hidden), add AxisMarks</td><td><span class="effort-chip effort-l">Low</span></td></tr>
+        <tr><td class="pnum">11</td><td>M-06</td><td>PSI tap-to-explain — add InfoButton + PSI entry in MetricInfoSheet</td><td><span class="effort-chip effort-l">Low</span></td></tr>
+        <tr><td class="pnum">12</td><td>M-07</td><td>Development Tier label — add subtitle "Weekly e1RM improvement rate"</td><td><span class="effort-chip effort-vl">Very Low</span></td></tr>
+        <tr><td class="pnum">13</td><td>M-08</td><td>PR step chart Y-axis — add chartYAxis AxisMarks block</td><td><span class="effort-chip effort-l">Low</span></td></tr>
+        <tr><td class="pnum">14</td><td>M-03</td><td>Dumbbell convention — surface per-hand note in ExercisePicker row</td><td><span class="effort-chip effort-m">Medium</span></td></tr>
+        <tr><td class="pnum">15</td><td>M-04</td><td>Empty state copy — replace feature list with feeling-first language</td><td><span class="effort-chip effort-vl">Very Low</span></td></tr>
+        <tr><td class="pnum">16</td><td>M-11</td><td>Progress "Where Am I" visual density — horizontal scroll or reorder cards</td><td><span class="effort-chip effort-m">Medium</span></td></tr>
+        <tr><td class="pnum">17</td><td>L-01</td><td>Add one forward-looking return message (no gap reference)</td><td><span class="effort-chip effort-vl">Very Low</span></td></tr>
+        <tr><td class="pnum">18</td><td>L-02</td><td>Dumbbell badge color — warning → accent</td><td><span class="effort-chip effort-vl">Very Low</span></td></tr>
+        <tr><td class="pnum">19</td><td>L-03</td><td>Drift message — "disappear" → "solidify"</td><td><span class="effort-chip effort-vl">Very Low</span></td></tr>
+        <tr><td class="pnum">20</td><td>L-04</td><td>SetCompletionFlash — consider 2px + checkmark pulse (optional)</td><td><span class="effort-chip effort-l">Low</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  const TOTAL = 21; // 4H + 12M (including all medium/low) + 3L + positive group + regression + priority = cards to review
+  // Actually counting the finding cards: h01 h02 h03 h04 m01 m02 m03 m04 m05 m06 m07 m08 m09 m10 m11 m12 l01 l02 l03 l04 l05 + reg + priority = 23
+  // Let's count checkboxes as the 21 findings + reg + priority = 23 total trackable
+  const CARD_TOTAL = 23;
+  let checked = 0;
+
+  function toggle(id) {
+    const card = document.getElementById('card-' + id);
+    card.classList.toggle('open');
+  }
+
+  function markReviewed(id, checkbox) {
+    const card = document.getElementById('card-' + id);
+    if (checkbox.checked) {
+      card.classList.add('checked');
+      checked++;
+    } else {
+      card.classList.remove('checked');
+      checked--;
+    }
+    document.getElementById('reviewed-count').textContent = checked;
+    document.getElementById('progress-label').textContent = checked + ' of ' + CARD_TOTAL + ' reviewed';
+    document.getElementById('progress-bar').style.width = (checked / CARD_TOTAL * 100) + '%';
+    document.getElementById('total-count').textContent = CARD_TOTAL;
+  }
+
+  function filter(type, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // Handle positive section — it's not in cards, skip it
+    document.querySelectorAll('.finding-card').forEach(card => {
+      if (type === 'all') { card.classList.remove('hidden'); return; }
+      const sev = card.dataset.sev;
+      // priority and reg always show
+      if (sev === 'all') { card.classList.remove('hidden'); return; }
+      card.classList.toggle('hidden', sev !== type);
+    });
+
+    // Handle positive grid visibility
+    const posGrid = document.querySelector('.positive-grid');
+    const posHeader = posGrid ? posGrid.previousElementSibling : null;
+    if (posGrid) {
+      const show = (type === 'all' || type === 'positive');
+      posGrid.style.display = show ? '' : 'none';
+      if (posHeader && posHeader.classList.contains('section-header')) {
+        posHeader.style.display = show ? '' : 'none';
+      }
+    }
+  }
+</script>
+</body>
+</html>

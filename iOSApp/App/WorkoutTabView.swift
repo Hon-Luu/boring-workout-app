@@ -15,6 +15,8 @@ struct WorkoutTabView: View {
     // Celebration queue
     @State private var celebrationQueue: [CelebrationKind] = []
     @State private var showCelebration = false
+    @State private var showShareSheet = false
+    @State private var shareText = ""
     @AppStorage("lastShownStreakMilestone") private var lastShownStreakMilestone: Int = 0
 
     // First-workout celebration — pending flag survives crash between save and display
@@ -132,9 +134,18 @@ struct WorkoutTabView: View {
                 if let kind = celebrationQueue.first {
                     CelebrationOverlay(kind: kind) {
                         celebrationQueue.removeFirst()
-                        if celebrationQueue.isEmpty { showCelebration = false }
+                        if celebrationQueue.isEmpty {
+                            showCelebration = false
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                                buildShareText()
+                                showShareSheet = true
+                            }
+                        }
                     }
                 }
+            }
+            .sheet(isPresented: $showShareSheet) {
+                WorkoutShareSheet(text: shareText)
             }
             // Trigger celebrations and habit intelligence when a new workout is saved
             .onChange(of: store.workoutLog.first?.id) { _, newId in
@@ -145,6 +156,17 @@ struct WorkoutTabView: View {
                                             cardioLog: store.cardioLog, generalLog: store.generalLog)
             }
         }
+    }
+
+    private func buildShareText() {
+        guard let entry = store.workoutLog.first else { return }
+        let sets    = entry.totalSets
+        let vol     = Int(entry.totalVolume)
+        let dur     = entry.formattedDuration
+        let prs     = store.newPRs.prefix(2).map(\.exerciseName).joined(separator: ", ")
+        var text    = "Logged \(sets) sets · \(vol) kg total volume · \(dur) — tracked with H.O.N."
+        if !prs.isEmpty { text = "🏆 PR on \(prs) — " + text }
+        shareText = text
     }
 
     private func buildCelebrationQueue(entry: WorkoutLogEntry) {
@@ -221,6 +243,7 @@ private struct EmptyWorkoutView: View {
     let onStartCustom: () -> Void
     let onManageRoutines: () -> Void
     @State private var showCircuits = false
+    @State private var showRestOrInjury = false
 
     private static let dayFormatter: DateFormatter = {
         let f = DateFormatter(); f.dateFormat = "EEEE"; return f
@@ -261,6 +284,23 @@ private struct EmptyWorkoutView: View {
                     .background(store.routines.isEmpty ? HONTheme.accent : HONTheme.accent.opacity(0.12),
                                 in: RoundedRectangle(cornerRadius: 14))
                     .foregroundStyle(store.routines.isEmpty ? HONTheme.textPrimary : HONTheme.accent)
+                }
+
+                // Rest / injury button
+                Button(action: { showRestOrInjury = true }) {
+                    HStack {
+                        Image(systemName: "bandage.fill")
+                        Text("Log Rest or Injury")
+                            .fontWeight(.semibold)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(HONTheme.negative.opacity(0.10), in: RoundedRectangle(cornerRadius: 14))
+                    .foregroundStyle(HONTheme.negative)
+                }
+                .sheet(isPresented: $showRestOrInjury) {
+                    RestOrInjurySheet()
+                        .environment(store)
                 }
 
                 // Circuits button
@@ -627,6 +667,7 @@ private struct SessionExerciseRow: View {
 struct FeelSelectorSheet: View {
     @Environment(\.dismiss) private var dismiss
     let onFinish: (FeelRating?) -> Void
+    @State private var hasFinished = false
 
     var body: some View {
         VStack(spacing: 20) {
@@ -637,6 +678,7 @@ struct FeelSelectorSheet: View {
             HStack(spacing: 8) {
                 ForEach(FeelRating.allCases, id: \.self) { feel in
                     Button {
+                        hasFinished = true
                         onFinish(feel)
                         dismiss()
                     } label: {
@@ -657,6 +699,7 @@ struct FeelSelectorSheet: View {
             .padding(.horizontal, 16)
 
             Button("Skip") {
+                hasFinished = true
                 onFinish(nil)
                 dismiss()
             }
@@ -666,6 +709,193 @@ struct FeelSelectorSheet: View {
         }
         .presentationDetents([.height(220)])
         .presentationDragIndicator(.visible)
-        .interactiveDismissDisabled(true)
+        .onDisappear {
+            if !hasFinished { onFinish(nil) }
+        }
+    }
+}
+
+// MARK: - Rest or Injury Sheet
+
+struct RestOrInjurySheet: View {
+    @Environment(SeedStore.self) private var store
+    @Environment(\.dismiss) private var dismiss
+    @State private var selectedMode: RestOrInjuryMode? = nil
+    @State private var note: String = ""
+    @State private var logged = false
+
+    enum RestOrInjuryMode: String, CaseIterable {
+        case rest    = "Rest Day"
+        case injury  = "Injury / Pain"
+        case illness = "Illness"
+        case travel  = "Travel / Life"
+
+        var icon: String {
+            switch self {
+            case .rest:    return "moon.zzz.fill"
+            case .injury:  return "bandage.fill"
+            case .illness: return "cross.case.fill"
+            case .travel:  return "airplane.departure"
+            }
+        }
+        var color: Color {
+            switch self {
+            case .rest:    return .blue
+            case .injury:  return HONTheme.negative
+            case .illness: return HONTheme.warning
+            case .travel:  return HONTheme.accent
+            }
+        }
+        var note: String {
+            switch self {
+            case .rest:    return "Planned rest day logged. The readiness score won't count this as a training gap."
+            case .injury:  return "Injury logged. Rest — connective tissue adapts slower than muscle. Return gradually."
+            case .illness: return "Illness logged. Your immune system is doing the work right now. This is rest, not a gap."
+            case .travel:  return "Life happens. No penalty. Come back when you can."
+            }
+        }
+    }
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 20) {
+                if logged {
+                    VStack(spacing: 16) {
+                        Image(systemName: selectedMode?.icon ?? "checkmark.circle.fill")
+                            .font(.system(size: 48))
+                            .foregroundStyle(selectedMode?.color ?? HONTheme.positive)
+                        Text("Logged")
+                            .font(.title2.bold())
+                        Text(selectedMode?.note ?? "Logged.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 24)
+                    }
+                    .padding(.top, 32)
+                    Spacer()
+                    Button("Done") { dismiss() }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(HONTheme.accent, in: RoundedRectangle(cornerRadius: 14))
+                        .foregroundStyle(HONTheme.textPrimary)
+                        .fontWeight(.semibold)
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 32)
+                } else {
+                    Text("What's keeping you out today?")
+                        .font(.headline)
+                        .padding(.top, 8)
+
+                    VStack(spacing: 10) {
+                        ForEach(RestOrInjuryMode.allCases, id: \.self) { mode in
+                            Button {
+                                selectedMode = mode
+                            } label: {
+                                HStack(spacing: 14) {
+                                    Image(systemName: mode.icon)
+                                        .font(.system(size: 18))
+                                        .foregroundStyle(mode.color)
+                                        .frame(width: 28)
+                                    Text(mode.rawValue)
+                                        .font(.subheadline.bold())
+                                    Spacer()
+                                    if selectedMode == mode {
+                                        Image(systemName: "checkmark")
+                                            .font(.system(size: 13, weight: .bold))
+                                            .foregroundStyle(mode.color)
+                                    }
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 14)
+                                .background(
+                                    selectedMode == mode ? mode.color.opacity(0.12) : Color.secondary.opacity(0.07),
+                                    in: RoundedRectangle(cornerRadius: 12)
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .strokeBorder(selectedMode == mode ? mode.color : Color.clear, lineWidth: 1.5)
+                                )
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.horizontal, 24)
+
+                    Spacer()
+
+                    Button {
+                        guard let mode = selectedMode else { return }
+                        if mode == .injury || mode == .illness {
+                            store.logInjuryDay()
+                        } else {
+                            store.logRestDay()
+                        }
+                        withAnimation { logged = true }
+                    } label: {
+                        Text(selectedMode == nil ? "Select a reason above" : "Log \(selectedMode!.rawValue)")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(selectedMode == nil ? Color.secondary.opacity(0.12) : HONTheme.accent, in: RoundedRectangle(cornerRadius: 14))
+                            .foregroundStyle(selectedMode == nil ? Color.secondary : HONTheme.textPrimary)
+                            .fontWeight(.semibold)
+                    }
+                    .disabled(selectedMode == nil)
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 32)
+                }
+            }
+            .navigationTitle("Log Absence")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
+        }
+        .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
+    }
+}
+
+// MARK: - Workout Share Sheet
+
+struct WorkoutShareSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let text: String
+
+    var body: some View {
+        VStack(spacing: 24) {
+            Text("Share Your Workout")
+                .font(.title3.bold())
+                .padding(.top, 28)
+
+            Text(text)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
+
+            HStack(spacing: 16) {
+                ShareLink(item: text) {
+                    Label("Share", systemImage: "square.and.arrow.up")
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(HONTheme.accent, in: RoundedRectangle(cornerRadius: 14))
+                        .foregroundStyle(HONTheme.textPrimary)
+                        .fontWeight(.semibold)
+                }
+
+                Button("Skip") { dismiss() }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(Color.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 14))
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 32)
+        }
+        .presentationDetents([.height(260)])
+        .presentationDragIndicator(.visible)
     }
 }

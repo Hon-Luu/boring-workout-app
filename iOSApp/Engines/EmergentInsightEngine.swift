@@ -23,7 +23,7 @@ enum EmergentInsightEngine {
             trueAdaptationState(analytics: analyticsResult, log: log),
             programCalibration(log: log),
             netRecoveryCapacity(log: log, sleepHours: sleepHours),
-            prAttemptQuality(analytics: analyticsResult, log: log),
+            prAttemptQuality(analytics: analyticsResult, log: log, sleepHours: sleepHours),
             imbalanceTrajectory(analytics: analyticsResult),
             feelArchetype(log: log),
             loadTolerance(log: log),
@@ -41,6 +41,43 @@ enum EmergentInsightEngine {
                 analyticsResult: analyticsResult
             )
         }
+
+        // CON-03: TAS == False Gains + PR == Prime Window → downgrade PR to Patient Window
+        if let tasIdx = insights.firstIndex(where: { $0.title == "True Adaptation State" }),
+           insights[tasIdx].stateName == TrueAdaptationState.falseGains.rawValue.uppercased(),
+           let prIdx = insights.firstIndex(where: { $0.title == "PR Attempt Quality" }),
+           insights[prIdx].stateName == PRAttemptQuality.primeWindow.rawValue.uppercased() {
+            let old = insights[prIdx]
+            insights[prIdx] = EmergentInsight(
+                title: old.title,
+                inputsLabel: old.inputsLabel,
+                stateName: PRAttemptQuality.patientWindow.rawValue.uppercased(),
+                stateColor: PRAttemptQuality.patientWindow.color,
+                implication: "Physiology and feel are aligned, but recent gains may reflect freshness more than structural adaptation. A PR attempt is reasonable — just know the next loaded week will reveal whether it's real.",
+                dataPoint: old.dataPoint,
+                severity: PRAttemptQuality.patientWindow.severity,
+                dataAvailable: old.dataAvailable
+            )
+        }
+
+        // CON-08: Net Recovery == Compounded Deficit + MBA == Aligned Peak → downgrade MBA to Suppressed
+        if let nrcIdx = insights.firstIndex(where: { $0.title == "Net Recovery Capacity" }),
+           insights[nrcIdx].stateName == NetRecoveryCapacity.compoundedDeficit.rawValue.uppercased(),
+           let mbaIdx = insights.firstIndex(where: { $0.title == "Mind-Body Alignment" }),
+           insights[mbaIdx].stateName == MindBodyAlignment.alignedPeak.rawValue.uppercased() {
+            let old = insights[mbaIdx]
+            insights[mbaIdx] = EmergentInsight(
+                title: old.title,
+                inputsLabel: old.inputsLabel,
+                stateName: MindBodyAlignment.suppressed.rawValue.uppercased(),
+                stateColor: MindBodyAlignment.suppressed.color,
+                implication: "Your motivation and feel are high, but recovery metrics say otherwise — sleep debt and training load are compounding. Treat today as a moderate session, not a peak attempt.",
+                dataPoint: old.dataPoint,
+                severity: MindBodyAlignment.suppressed.severity,
+                dataAvailable: old.dataAvailable
+            )
+        }
+
         return insights
     }
 
@@ -49,7 +86,9 @@ enum EmergentInsightEngine {
     private static func mindBodyAlignment(log: [WorkoutLogEntry], hrv: Double?) -> EmergentInsight {
         let recentFeel = log.prefix(5).compactMap(\.feelRating)
         guard !recentFeel.isEmpty else {
-            return placeholder(title: "Mind-Body Alignment", inputs: "HRV × Feel Rating")
+            let feelSessions = log.filter { $0.feelRating != nil }.count
+            return placeholder(title: "Mind-Body Alignment", inputs: "HRV × Feel Rating",
+                               sessionsHave: feelSessions, sessionsNeed: 1)
         }
 
         let feelScore = recentFeel.prefix(3).map { feelNumeric($0) }.reduce(0, +)
@@ -88,7 +127,8 @@ enum EmergentInsightEngine {
 
     private static func trueAdaptationState(analytics: AnalyticsResult, log: [WorkoutLogEntry]) -> EmergentInsight {
         guard let top = analytics.exerciseAnalytics.first(where: { $0.hasEnoughData }) else {
-            return placeholder(title: "True Adaptation State", inputs: "Strength Velocity × Training Load")
+            return placeholder(title: "True Adaptation State", inputs: "Strength Velocity × Training Load",
+                               sessionsHave: log.count, sessionsNeed: 5)
         }
 
         let velocityUp  = top.slopePerWeek > 0.3
@@ -125,10 +165,12 @@ enum EmergentInsightEngine {
         let recentEntries = Array(log.prefix(10))
         let sets = recentEntries.flatMap { $0.exercises.flatMap(\.completedSets) }
         guard sets.count >= 10 else {
-            return placeholder(title: "Program Calibration", inputs: "Set Success Rate × RPE")
+            return placeholder(title: "Program Calibration", inputs: "Set Success Rate × RPE",
+                               sessionsHave: sets.count, sessionsNeed: 10)
         }
 
-        let withTargets = sets.filter { $0.targetReps > 0 }
+        // CON-13: exclude drop sets from success rate (dropWeight != nil means it's a drop set record)
+        let withTargets = sets.filter { $0.targetReps > 0 && $0.dropWeight == nil }
         let successRate = withTargets.isEmpty ? 0.75
             : Double(withTargets.filter { $0.repOutcome != .missed }.count) / Double(withTargets.count)
 
@@ -143,6 +185,29 @@ enum EmergentInsightEngine {
             case (false, true):  return .tooHeavy
             }
         }()
+
+        // CON-07: suppress SANDBAGGING for new or returning users (< 5 sessions or > 14-day gap)
+        if state == .sandbagging {
+            let isRampBack: Bool = {
+                if log.count < 5 { return true }
+                let sorted = log.sorted { $0.startedAt > $1.startedAt }
+                guard sorted.count >= 2 else { return false }
+                let gap = Calendar.current.dateComponents([.day], from: sorted[1].startedAt, to: sorted[0].startedAt).day ?? 0
+                return gap > 14
+            }()
+            if isRampBack {
+                return EmergentInsight(
+                    title: "Program Calibration",
+                    inputsLabel: "Set Success Rate × RPE",
+                    stateName: "RECALIBRATING",
+                    stateColor: HONTheme.accent,
+                    implication: "You're easing back in — these lighter sessions are intentional. Once consistent frequency is re-established, weights will self-correct.",
+                    dataPoint: String(format: "Success %.0f%% · Avg RPE %.1f (ramp-back phase)", successRate * 100, avgRPE),
+                    severity: .neutral,
+                    dataAvailable: true
+                )
+            }
+        }
 
         // Find the exercise that most strongly triggered this state
         struct ExerciseSummary {
@@ -242,7 +307,7 @@ enum EmergentInsightEngine {
 
     // MARK: - 5. PR Attempt Quality  (Feel Momentum × TSB × Velocity)
 
-    private static func prAttemptQuality(analytics: AnalyticsResult, log: [WorkoutLogEntry]) -> EmergentInsight {
+    private static func prAttemptQuality(analytics: AnalyticsResult, log: [WorkoutLogEntry], sleepHours: Double?) -> EmergentInsight {
         guard let top = analytics.exerciseAnalytics.first(where: { $0.hasEnoughData }) else {
             return placeholder(title: "PR Attempt Quality", inputs: "Feel Momentum × Recovery × Velocity")
         }
@@ -254,10 +319,10 @@ enum EmergentInsightEngine {
         let feelMomentumUp: Bool = {
             let scores = recentFeel.prefix(3).map { feelNumericInt($0) }
             guard scores.count >= 2 else { return false }
-            return scores[0] >= scores[1]  // most recent ≥ previous
+            return scores[0] >= scores[1]
         }()
 
-        let state: PRAttemptQuality = {
+        let rawState: PRAttemptQuality = {
             if !velocityPositive                       { return .notReady }
             if tsbPositive  && feelMomentumUp          { return .primeWindow }
             if tsbPositive  && !feelMomentumUp         { return .wastedWindow }
@@ -265,13 +330,37 @@ enum EmergentInsightEngine {
             return .patientWindow
         }()
 
+        // CON-09: sleep gate — sub-6.5h sleep disqualifies prime window
+        let sleepGated = rawState == .primeWindow && (sleepHours ?? 8.0) < 6.5
+        let state = sleepGated ? PRAttemptQuality.patientWindow : rawState
+
+        // CON-04: soften Fool's Gold when velocity is confirmed positive
+        // CON-09: custom implication when sleep-gated from prime
+        let implication: String = {
+            if sleepGated {
+                return "Conditions are close to ideal but last night's sleep wasn't quite there. The window is 1–2 days away — prioritise sleep tonight."
+            }
+            if state == .foolsGold {
+                return "Feel and velocity are both positive, but your body is carrying training fatigue. The progress from recent sessions is real — let it consolidate over 3–5 days, then attempt."
+            }
+            return state.implication
+        }()
+
+        let atl = acuteLoad(log)
+        let ctl = chronicLoad(log)
+        let tsbDelta = ctl - atl
+        let sleepStr = sleepHours.map { String(format: " · sleep %.1fh", $0) } ?? ""
+        let velSign = top.slopePerWeek >= 0 ? "+" : ""
         return EmergentInsight(
             title: "PR Attempt Quality",
             inputsLabel: "Feel Momentum × TSB × Velocity",
             stateName: state.rawValue.uppercased(),
             stateColor: state.color,
-            implication: state.implication,
-            dataPoint: "\(top.exercise.name) · TSB \(tsbPositive ? "+" : "−") · feel \(feelMomentumUp ? "↑" : "↓")",
+            implication: implication,
+            dataPoint: String(format: "%@ · vel %@%.1f kg/wk · TSB %@%.0f · feel %@\(sleepStr)",
+                top.exercise.name, velSign, top.slopePerWeek,
+                tsbDelta >= 0 ? "+" : "−", abs(tsbDelta),
+                feelMomentumUp ? "↑" : "↓"),
             severity: state.severity,
             dataAvailable: true
         )
@@ -821,17 +910,23 @@ enum EmergentInsightEngine {
 
     // MARK: - Shared helpers
 
-    private static func placeholder(title: String, inputs: String) -> EmergentInsight {
-        EmergentInsight(
+    private static func placeholder(title: String, inputs: String, sessionsHave: Int = 0, sessionsNeed: Int = 10) -> EmergentInsight {
+        let remaining = max(0, sessionsNeed - sessionsHave)
+        let estimate = remaining == 0
+            ? "Almost ready — log a session with feel data."
+            : "\(remaining) more session\(remaining == 1 ? "" : "s") needed (have \(sessionsHave) / need \(sessionsNeed))."
+        var insight = EmergentInsight(
             title: title,
             inputsLabel: inputs,
             stateName: "LEARNING",
             stateColor: .secondary,
             implication: "Log more sessions with feel ratings to derive this insight.",
-            dataPoint: "Needs 5–10 sessions with feel data.",
+            dataPoint: estimate,
             severity: .neutral,
             dataAvailable: false
         )
+        insight.sessionsRemaining = remaining
+        return insight
     }
 
     private static func noDataInsight(title: String, inputs: String, reason: String) -> EmergentInsight {

@@ -142,8 +142,8 @@ struct SettingsView: View {
                 Section {
                     optionalDoubleRow("Body Fat %", value: profile.bodyFatPercent,
                                       placeholder: "e.g. 18", range: 3...60)
-                    optionalDoubleRow("Muscle Mass %", value: profile.muscleMassPercent,
-                                      placeholder: "e.g. 40", range: 10...65)
+                    optionalDoubleRow("Lean Body Mass %", value: profile.muscleMassPercent,
+                                      placeholder: "e.g. 75", range: 50...90)
                     optionalDoubleRow("Body Water %", value: profile.waterPercent,
                                       placeholder: "e.g. 55", range: 20...80)
                     optionalDoubleRow("Bone Mass (kg)", value: profile.boneMassKg,
@@ -555,10 +555,10 @@ struct SettingsView: View {
         for pt in health.restingHRHistory { rhrByDay[dayKey(pt.date)] = pt.value }
 
         var rows: [String] = []
-        rows.append("Date,Type,Exercise,Set,Weight_kg,Reps,e1RM_kg,RPE,Completed,Feel,ReadinessBefore,Duration_min,Notes,Sleep_hrs,HRV_ms,RestingHR_bpm")
+        rows.append("Date,Type,Exercise,Set,Weight_kg,Reps,e1RM_kg,RPE,ToFailure,Feel,ReadinessBefore,Duration_min,Notes,Sleep_hrs,HRV_ms,RestingHR_bpm")
         let fmt = ISO8601DateFormatter()
 
-        // Strength sessions
+        // Strength sessions — only completed sets
         for entry in store.workoutLog.sorted(by: { $0.startedAt < $1.startedAt }) {
             let d   = fmt.string(from: entry.startedAt)
             let key = dayKey(entry.startedAt)
@@ -568,11 +568,13 @@ struct SettingsView: View {
             let hrv   = hrvByDay[key].map   { String(format: "%.0f", $0) } ?? ""
             let rhr   = rhrByDay[key].map   { String(format: "%.0f", $0) } ?? ""
             for we in entry.exercises {
-                for (i, s) in we.sets.enumerated() {
+                let name = we.exercise.name.replacingOccurrences(of: ",", with: ";")
+                let completedSets = we.sets.filter(\.isCompleted)
+                for (i, s) in completedSets.enumerated() {
                     let e1rm = (s.weight > 0 && s.reps > 0) ? String(format: "%.0f", SetRecord.e1RM(weight: s.weight, reps: s.reps)) : ""
                     let rpe  = s.rpe.map { String(format: "%.1f", $0) } ?? ""
-                    let name = we.exercise.name.replacingOccurrences(of: ",", with: ";")
-                    rows.append("\(d),Strength,\"\(name)\",\(i+1),\(String(format:"%.2f",s.weight)),\(s.reps),\(e1rm),\(rpe),\(s.isCompleted ? 1 : 0),\(feel),\(readiness),,,\(sleep),\(hrv),\(rhr)")
+                    let fail = s.toFailure ? 1 : 0
+                    rows.append("\(d),Strength,\"\(name)\",\(i+1),\(String(format:"%.2f",s.weight)),\(s.reps),\(e1rm),\(rpe),\(fail),\(feel),\(readiness),,,\(sleep),\(hrv),\(rhr)")
                 }
             }
         }

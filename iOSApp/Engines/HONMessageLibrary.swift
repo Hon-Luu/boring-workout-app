@@ -13,6 +13,8 @@ enum HONMessageLibrary {
         var confidence: Double = 0
         var rollingAvg: Double = 0
         var streakDays: Int = 0
+        var lastExerciseName: String = ""    // M-10: exercise name for returnAfterLapse
+        var driftCategoryName: String = ""   // M-10: movement pattern for driftDetection
     }
 
     // MARK: - Dispatch
@@ -28,10 +30,10 @@ enum HONMessageLibrary {
         case .sessionMilestone:  return sessionMilestone(n: context.totalSessions, seed: seed)
         case .weeklyCount:       return weeklyCount(count: context.weeklyCount, seed: seed)
         case .consecutiveWeeks:  return consecutiveWeeks(n: context.consecutiveWeeks, seed: seed)
-        case .returnAfterLapse:  return returnAfterLapse(daysGone: context.daysGone, seed: seed)
+        case .returnAfterLapse:  return returnAfterLapse(daysGone: context.daysGone, lastExerciseName: context.lastExerciseName, seed: seed)
         case .patternFlag:       return patternFlag(dayName: context.dayName, confidence: context.confidence, seed: seed)
         case .rampDetection:     return rampDetection(count: context.weeklyCount, avg: context.rollingAvg, seed: seed)
-        case .driftDetection:    return driftDetection(seed: seed)
+        case .driftDetection:    return driftDetection(categoryName: context.driftCategoryName, seed: seed)
         case .deloadDetection:   return deloadDetection(userType: userType, seed: seed)
         case .streakMilestone:   return streakMilestone(days: context.streakDays, seed: seed)
         case .specialMoment:     return specialMoment(seed: seed)
@@ -193,25 +195,27 @@ enum HONMessageLibrary {
 
     // MARK: - Return After Lapse
 
-    private static func returnAfterLapse(daysGone: Int, seed: Int) -> (String, String) {
+    private static func returnAfterLapse(daysGone: Int, lastExerciseName: String, seed: Int) -> (String, String) {
         let weeks = max(1, daysGone / 7)
+        let exerciseRef = lastExerciseName.isEmpty ? "your last session" : lastExerciseName
         if daysGone < 14 {
             let pool = [
                 "You're back. \(daysGone) days off, and you chose to return. That's the skill.",
                 "Back after \(daysGone) days. The gym didn't go anywhere. Neither did you.",
-                "\(daysGone)-day break — now closed. The habit knows the way back."
+                "\(daysGone)-day break — now closed. The habit knows the way back.",
+                "Ready when you are. Pick up where you left off — \(exerciseRef) is a good place to start.",
             ]
             return (pool[seed % pool.count], "arrow.counterclockwise")
         } else if daysGone < 30 {
             let pool = [
-                "\(weeks) weeks away. Coming back is harder than it looks — you did it anyway. Start at 70% this week; strength returns faster than tendons.",
+                "\(weeks) weeks away. Coming back is harder than it looks — you did it anyway. Start at 70% on \(exerciseRef); strength returns faster than tendons.",
                 "Back after \(weeks) weeks. Treat this as a deload return: lighter weights, full movement, 2–3 sessions before pushing hard.",
                 "Life interrupted. You un-paused it. Ease in this first week — your muscles remember, your connective tissue needs a session or two."
             ]
             return (pool[seed % pool.count], "arrow.counterclockwise")
         } else if daysGone < 90 {
             let pool = [
-                "\(weeks) weeks away. The muscle memory is still there — treat this week as a deload and rebuild. 60–70% intensity, then ramp.",
+                "\(weeks) weeks away. The muscle memory is still there — treat this week as a deload and rebuild. Start \(exerciseRef) at 60–70%, then ramp.",
                 "A month gone. Most comebacks never happen. Yours did. First week: reduce weight 20–30%, prioritize form, then push next week.",
                 "Back after \(weeks) weeks. Connective tissue adapts slower than muscle — a light first week prevents the injury that sidelines you again."
             ]
@@ -220,7 +224,7 @@ enum HONMessageLibrary {
             let pool = [
                 "It's been \(weeks) weeks. Treat the next two weeks as a full deload-ramp: week 1 at 50%, week 2 at 70%, then back to normal.",
                 "Back after \(weeks) weeks. This is a new foundation phase — start light, log consistently, and let the body remember the pattern.",
-                "\(weeks) weeks between sessions. Start with bodyweight or 50% loads this week. The strength is still in there — unearth it carefully."
+                "\(weeks) weeks between sessions. Start \(exerciseRef) at bodyweight or 50% loads this week. The strength is still in there — unearth it carefully."
             ]
             return (pool[seed % pool.count], "figure.walk")
         }
@@ -244,18 +248,19 @@ enum HONMessageLibrary {
         let pool = [
             "\(count) sessions this week — well above your \(String(format: "%.1f", avg)) average. High-volume weeks are great; recovery keeps pace with them.",
             "Ramping up: \(count) this week vs your \(String(format: "%.1f", avg)) average. The effort is there — protect the sleep.",
-            "Big week with \(count) sessions. Your baseline is \(String(format: "%.1f", avg)). Follow this with a normal week, not another surge."
+            "Big week with \(count) sessions. Your baseline is \(String(format: "%.1f", avg)). Follow this with a normal-frequency week — increasing loads is still fine, just don't add sessions on top of this volume."
         ]
         return (pool[seed % pool.count], "flame.fill")
     }
 
     // MARK: - Drift Detection
 
-    private static func driftDetection(seed: Int) -> (String, String) {
+    private static func driftDetection(categoryName: String, seed: Int) -> (String, String) {
+        let catRef = categoryName.isEmpty ? "your sessions" : "\(categoryName) sessions"
         let pool = [
-            "Volume is down the last two weeks. Schedules shift — one session resets the direction.",
-            "Fewer sessions than your usual pace lately. The habit isn't gone — it's waiting.",
-            "Two quieter weeks in a row. This is where habits either reset or disappear. One session makes the difference."
+            "\(catRef.prefix(1).uppercased() + catRef.dropFirst()) are down the last two weeks. Schedules shift — one session resets the direction.",
+            "Fewer \(catRef) than your usual pace lately. The habit isn't gone — it's waiting.",
+            "Two quieter weeks in a row. This is where habits either reset or solidify. One \(categoryName.isEmpty ? "session" : categoryName.lowercased() + " session") makes the difference."
         ]
         return (pool[seed % pool.count], "arrow.down.circle")
     }
@@ -273,7 +278,7 @@ enum HONMessageLibrary {
             return (pool[seed % pool.count], "zzz")
         case .typeA:
             let pool = [
-                "Light week by the numbers — intentional or not, the body needed it. Show up next week.",
+                "Lighter week this time. You're recovered and ready — if this was planned, great. If not, next week is a good opportunity to build back.",
                 "Lower volume than your recent average. Good. Deloads are part of the plan.",
                 "Easy week logged. Recovery is training. Come back ready next week."
             ]

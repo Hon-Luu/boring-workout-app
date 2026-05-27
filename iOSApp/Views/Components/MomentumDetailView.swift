@@ -45,9 +45,21 @@ struct MomentumDetailView: View {
 
     private var stalledRows: [ExerciseMomentumRow] { exerciseRows.filter { $0.isPlateau } }
 
-    // PSI history for chart
+    // PSI history — grouped into weekly averages to eliminate per-session zigzag
     private var psiPoints: [(date: Date, psi: Double)] {
-        strength.psiHistory.map { ($0.date, $0.rawFiberLoad) }
+        let raw = strength.psiHistory.map { ($0.date, $0.rawFiberLoad) }
+        guard raw.count >= 2 else { return raw }
+        let cal = Calendar.current
+        var grouped: [DateComponents: [(Date, Double)]] = [:]
+        for (date, val) in raw {
+            let key = cal.dateComponents([.yearForWeekOfYear, .weekOfYear], from: date)
+            grouped[key, default: []].append((date, val))
+        }
+        return grouped.values.map { pts in
+            let mid = pts[pts.count / 2].0
+            let avg = pts.map(\.1).reduce(0, +) / Double(pts.count)
+            return (date: mid, psi: avg)
+        }.sorted { $0.date < $1.date }
     }
 
     // OLS trend line over psiPoints

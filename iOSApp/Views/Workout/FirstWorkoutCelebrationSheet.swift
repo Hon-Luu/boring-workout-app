@@ -6,7 +6,7 @@ struct FirstWorkoutCelebrationSheet: View {
     @State private var showHONSheet = false
 
     private let milestones: [(String, String)] = [
-        ("Come back tomorrow to start seeing your e1RM trend", "chart.line.uptrend.xyaxis"),
+        ("Come back tomorrow to start seeing your estimated 1-rep max (e1RM) trend", "chart.line.uptrend.xyaxis"),
         ("After 3 sessions, your strength tier unlocks", "shield.lefthalf.filled"),
         ("After 10 sessions, readiness confidence rises to High", "brain.head.profile")
     ]

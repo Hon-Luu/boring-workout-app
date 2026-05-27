@@ -8,15 +8,15 @@ struct ProgressView: View {
     @Environment(HealthKitService.self) private var health
     @State private var showHealthTrends  = false
     @State private var whereExpanded     = true
-    @State private var strongerExpanded  = false
-    @State private var howExpanded       = false
-    @State private var cardioExpanded    = false
-    @State private var whatExpanded      = false
-    @State private var insightsExpanded  = false
+    @State private var strongerExpanded  = true
+    @State private var howExpanded       = true
+    @State private var cardioExpanded    = true
+    @State private var whatExpanded      = true
+    @State private var insightsExpanded  = true
 
     private var log: [WorkoutLogEntry] { store.workoutLog }
 
-    private var insights: [EmergentInsight] {
+    private var allInsights: [EmergentInsight] {
         EmergentInsightEngine.compute(
             log: log,
             analyticsResult: store.analyticsCache,
@@ -28,6 +28,11 @@ struct ProgressView: View {
             restDays: store.restDays,
             weightHistory: store.userProfile.weightHistory
         )
+    }
+
+    // Only surface insights that are live or exactly 1 session away
+    private var insights: [EmergentInsight] {
+        allInsights.filter { $0.dataAvailable || $0.sessionsRemaining <= 1 }
     }
 
     var body: some View {
@@ -49,6 +54,15 @@ struct ProgressView: View {
 
                         ArchetypeTopBadge(log: log)
 
+                        // Progressive overload intelligence: hero position per review board
+                        CollapsibleDashSection(
+                            title: "Am I Getting Stronger",
+                            icon: "chart.line.uptrend.xyaxis",
+                            isExpanded: $strongerExpanded
+                        ) {
+                            StrongerSectionContent(exerciseAnalytics: store.analyticsCache.exerciseAnalytics)
+                        }
+
                         CollapsibleDashSection(
                             title: "Where Am I",
                             icon: "mappin.circle.fill",
@@ -59,14 +73,6 @@ struct ProgressView: View {
                                 analytics:     store.analyticsCache,
                                 bodyWeightKg:  store.userProfile.bodyWeightKg
                             )
-                        }
-
-                        CollapsibleDashSection(
-                            title: "Am I Getting Stronger",
-                            icon: "chart.line.uptrend.xyaxis",
-                            isExpanded: $strongerExpanded
-                        ) {
-                            StrongerSectionContent(exerciseAnalytics: store.analyticsCache.exerciseAnalytics)
                         }
 
                         CollapsibleDashSection(
@@ -108,12 +114,14 @@ struct ProgressView: View {
                             )
                         }
 
-                        CollapsibleDashSection(
-                            title: "Emergent Insights",
-                            icon: "sparkles",
-                            isExpanded: $insightsExpanded
-                        ) {
-                            InsightsSectionContent(insights: insights)
+                        if !insights.isEmpty {
+                            CollapsibleDashSection(
+                                title: "Emergent Insights",
+                                icon: "sparkles",
+                                isExpanded: $insightsExpanded
+                            ) {
+                                InsightsSectionContent(insights: insights)
+                            }
                         }
                     }
                 }
@@ -556,7 +564,7 @@ private struct LiftPairRow: View {
                         Text("·")
                             .foregroundStyle(.tertiary)
                             .font(.system(size: 10))
-                        Text("e1RM")
+                        Text("Est. 1RM")
                             .font(.system(size: 10))
                             .foregroundStyle(.tertiary)
                         Text(String(format: "%.0f kg", e1rm))
@@ -894,12 +902,23 @@ private struct WeeklyProgressCard: View {
                     .chartXAxis {
                         AxisMarks(values: .automatic) { _ in
                             AxisValueLabel()
-                                .font(.system(size: 7))
+                                .font(.system(size: 9))
                                 .foregroundStyle(Color.secondary)
                         }
                     }
-                    .chartYAxis(.hidden)
-                    .expandingFrame(normal: 72, expanded: 200)
+                    .chartYAxis {
+                        AxisMarks(values: .automatic(desiredCount: 4)) { value in
+                            AxisGridLine().foregroundStyle(Color.secondary.opacity(0.15))
+                            AxisValueLabel {
+                                if let v = value.as(Double.self) {
+                                    Text(v >= 1000 ? String(format: "%.1fk", v / 1000) : String(format: "%.0f", v))
+                                        .font(.system(size: 8))
+                                        .foregroundStyle(Color.secondary)
+                                }
+                            }
+                        }
+                    }
+                    .expandingFrame(normal: 80, expanded: 200)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 10)
                     .background(AppTheme.cardBG, in: RoundedRectangle(cornerRadius: 12))

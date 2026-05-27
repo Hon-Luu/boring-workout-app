@@ -11,8 +11,9 @@ struct OnboardingView: View {
     @State private var bodyWeightInput: String = ""
     @State private var ageInput:        String = ""
     @AppStorage("trainingLocation") private var trainingLocation: String = "gym"
+    @AppStorage("trainingGoal") private var trainingGoal: String = ""
 
-    private let totalPages = 3
+    private let totalPages = 4
 
     var body: some View {
         ZStack {
@@ -29,6 +30,7 @@ struct OnboardingView: View {
                     switch page {
                     case 0:  pageWelcome
                     case 1:  pageBaseline
+                    case 2:  pageGoal
                     default: pageReady
                     }
                 }
@@ -43,10 +45,14 @@ struct OnboardingView: View {
                 VStack(spacing: 14) {
                     ctaButton
 
-                    if page == 1 {
+                    if page == 1 || page == 2 {
                         Button("Skip for now") {
-                            NotificationScheduler.requestPermission()
-                            onComplete()
+                            if page == 1 {
+                                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) { page += 1 }
+                            } else {
+                                NotificationScheduler.requestPermission()
+                                onComplete()
+                            }
                         }
                         .font(.custom("DMSans-Regular", size: 13))
                         .foregroundStyle(HONTheme.accent.opacity(0.7))
@@ -222,7 +228,67 @@ struct OnboardingView: View {
         }
     }
 
-    // MARK: - Page 2: Ready
+    // MARK: - Page 2: Training Goal
+
+    private var pageGoal: some View {
+        VStack(spacing: 32) {
+            VStack(spacing: 10) {
+                Text("Your Goal")
+                    .font(.custom("CormorantGaramond-Light", size: 40))
+                    .foregroundStyle(HONTheme.textPrimary)
+
+                Text("This shapes how H.O.N. reads your training — you can change it anytime in Settings.")
+                    .font(.custom("DMSans-Regular", size: 14))
+                    .foregroundStyle(HONTheme.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(3)
+                    .padding(.horizontal, 8)
+            }
+
+            VStack(spacing: 10) {
+                ForEach([
+                    ("strength",    "Get Stronger",         "figure.strengthtraining.traditional"),
+                    ("muscle",      "Build Muscle",         "flame.fill"),
+                    ("endurance",   "Improve Endurance",    "bolt.heart.fill"),
+                    ("weight_loss", "Lose Weight",          "scalemass.fill"),
+                    ("fitness",     "General Fitness",      "figure.run"),
+                    ("performance", "Athletic Performance", "trophy.fill"),
+                ], id: \.0) { goal in
+                    Button { trainingGoal = goal.0 } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: goal.2)
+                                .font(.system(size: 16))
+                                .frame(width: 22)
+                            Text(goal.1)
+                                .font(.custom("DMSans-Medium", size: 15))
+                            Spacer()
+                            if trainingGoal == goal.0 {
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 13, weight: .bold))
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 14)
+                        .background(
+                            trainingGoal == goal.0
+                                ? HONTheme.accent.opacity(0.18)
+                                : HONTheme.textSecondary.opacity(0.07),
+                            in: RoundedRectangle(cornerRadius: 12)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .strokeBorder(trainingGoal == goal.0 ? HONTheme.accent : Color.clear, lineWidth: 1.5)
+                        )
+                        .foregroundStyle(trainingGoal == goal.0 ? HONTheme.accent : HONTheme.textSecondary)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 32)
+        }
+    }
+
+    // MARK: - Page 3: Ready
 
     private var pageReady: some View {
         VStack(spacing: 28) {

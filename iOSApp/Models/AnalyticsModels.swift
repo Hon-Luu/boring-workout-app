@@ -760,6 +760,7 @@ struct EmergentInsight: Identifiable {
     let dataPoint: String     // brief factual line supporting the state
     let severity: Severity
     let dataAvailable: Bool
+    var sessionsRemaining: Int = 0  // 0 = data available; >0 = sessions still needed
 
     enum Severity { case positive, neutral, warning, alert }
 
