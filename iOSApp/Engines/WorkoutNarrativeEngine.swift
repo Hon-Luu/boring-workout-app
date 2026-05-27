@@ -40,6 +40,7 @@ private struct ExerciseAnalysis {
     let isImprovingUnder: Bool   // improving trend while under target — Rec 2
     let needsDeload: Bool        // two consecutive sessions < 65% — Rec 3
     let stuckSessionCount: Int   // consecutive sessions at same weight where !allSetsHitTarget
+    let lastSessionAvgReps: Int? // avg reps in most recent prior session; nil when no history
 
     enum RepOutcome {
         case underSignificant, underSlight, onTarget, overTarget
@@ -137,6 +138,26 @@ private struct ExerciseAnalysis {
     }
 }
 
+// MARK: - Narrative format
+
+private enum NarrativeFormat: CaseIterable {
+    /// Standard: frame → reps → weight → trend → next → connective (existing behavior)
+    case standard
+    /// Prescription-led: recommendation first, evidence second
+    case prescriptionLed
+    /// Sparse: single most informative sentence only
+    case sparse
+    /// Comparison-led: delta vs last session as the opener
+    case comparisonLed
+
+    static func select(for workout: WorkoutLogEntry) -> NarrativeFormat {
+        // Deterministic per session (hourly bucket), cycles through all 4 formats so
+        // the user sees a structurally different narrative every ~4 workouts.
+        let hourBucket = Int(workout.startedAt.timeIntervalSince1970 / 3600)
+        return NarrativeFormat.allCases[hourBucket % NarrativeFormat.allCases.count]
+    }
+}
+
 // MARK: - Engine
 
 enum WorkoutNarrativeEngine {
@@ -161,9 +182,11 @@ enum WorkoutNarrativeEngine {
 
         guard !analyses.isEmpty else { return "" }
 
+        let format = NarrativeFormat.select(for: workout)
         var text = analyses.count == 1
-            ? assembleSingle(analyses[0], bank: bank, workout: workout, profile: profile, isMindBodyOverconfident: isMindBodyOverconfident)
-            : assembleMulti(analyses, bank: bank, isMindBodyOverconfident: isMindBodyOverconfident)
+            ? assembleSingle(analyses[0], bank: bank, workout: workout, profile: profile,
+                             isMindBodyOverconfident: isMindBodyOverconfident, format: format)
+            : assembleMulti(analyses, bank: bank, isMindBodyOverconfident: isMindBodyOverconfident, format: format)
 
         // Append best-day observation as a final sentence when it's applicable
         if let bestDay = bestDayObservation(workout: workout, profile: profile) {
@@ -367,6 +390,11 @@ enum WorkoutNarrativeEngine {
         let isPullExercise = we.exercise.movementPattern == .horizontalPull
             || we.exercise.movementPattern == .verticalPull
 
+        let lastSessionAvgReps: Int? = exerciseHistory.first.map { session in
+            guard !session.sets.isEmpty else { return 0 }
+            return Int((Double(session.sets.reduce(0) { $0 + $1.reps }) / Double(session.sets.count)).rounded())
+        }
+
         return ExerciseAnalysis(
             exerciseId: we.exercise.id,
             name: we.exercise.name,
@@ -387,6 +415,7 @@ enum WorkoutNarrativeEngine {
             isImprovingUnder: isImprovingUnder,
             needsDeload: needsDeload,
             stuckSessionCount: stuckSessionCount,
+            lastSessionAvgReps: lastSessionAvgReps,
             isPullExercise: isPullExercise
         )
     }
@@ -395,82 +424,156 @@ enum WorkoutNarrativeEngine {
 
     private static func assembleSingle(_ a: ExerciseAnalysis, bank: PhraseBank,
                                         workout: WorkoutLogEntry, profile: UserCoachProfile,
-                                        isMindBodyOverconfident: Bool = false) -> String {
+                                        isMindBodyOverconfident: Bool = false,
+                                        format: NarrativeFormat = .standard) -> String {
         // CON-06: Neural Overload is counterproductive when physiology is overconfident (HRV low, feel high)
         let effectiveWhatsNextKey = (a.whatsNextKey == "Stuck — Neural Overload" && isMindBodyOverconfident)
-            ? "Stuck — Rest & Microload"
-            : a.whatsNextKey
+            ? "Stuck — Rest & Microload" : a.whatsNextKey
+        let nextKeyBase = "\(effectiveWhatsNextKey)|Single"
 
+        // ── Sparse: single highest-priority sentence ───────────────────────
+        if format == .sparse {
+            if a.needsDeload {
+                return "\(a.name) has hit a wall — dropping to \(a.nextWeightKg.weightFormatted) kg to rebuild."
+            }
+            if a.readyToProgress {
+                return "\(a.name) is ready for \(a.nextWeightKg.weightFormatted) kg — all sets completed cleanly."
+            }
+            if a.stuckSessionCount >= 3 {
+                let n = a.stuckSessionCount + 1
+                return "\(a.name) has been at \(a.weightKg.weightFormatted) kg for \(n) sessions without breaking through."
+            }
+            if a.trendKey == "Improving" {
+                return "\(a.name) is trending up — reps have climbed over the past few sessions."
+            }
+            if a.trendKey == "Declining" {
+                return "\(a.name) is slipping — reps have been falling session to session."
+            }
+            if let p = pick(bank.whats_next[nextKeyBase] ?? [], exerciseId: a.exerciseId, category: "next") {
+                return fill(p.phrase, a)
+            }
+            // Sparse falls through to standard when no clear signal
+        }
+
+        // ── Comparison-led: delta vs last session as opener ────────────────
+        // Skip for first-time or long-gap sessions where the comparison is stale/missing
+        if format == .comparisonLed && a.historyKey != "Long Gap" {
+            var parts: [String] = []
+            if let lastReps = a.lastSessionAvgReps {
+                let delta = a.avgActualReps - lastReps
+                if delta > 0 {
+                    let s = delta == 1 ? "" : "s"
+                    parts.append("\(a.name): \(delta) more rep\(s) than last session at \(a.weightKg.weightFormatted) kg.")
+                } else if delta < 0 {
+                    let d = abs(delta)
+                    let s = d == 1 ? "" : "s"
+                    parts.append("\(a.name): \(d) fewer rep\(s) than last session.")
+                } else {
+                    parts.append("\(a.name): same rep count as last session at \(a.weightKg.weightFormatted) kg — consistent.")
+                }
+            } else {
+                let repsKey = "\(a.repOutcome.repsKey)|Single Exercise"
+                if let p = pick(bank.reps[repsKey] ?? [], exerciseId: a.exerciseId, category: "reps") {
+                    parts.append(fill(p.phrase, a))
+                }
+            }
+            if a.trendKey != "Omitted", let p = pick(bank.trend[a.trendKey] ?? [], exerciseId: a.exerciseId, category: "trend") {
+                parts.append(fill(p.phrase, a))
+            }
+            if let p = pick(bank.whats_next[nextKeyBase] ?? [], exerciseId: a.exerciseId, category: "next") {
+                parts.append(fill(p.phrase, a))
+            }
+            if !parts.isEmpty { return parts.prefix(3).joined(separator: " ") }
+            // Falls through to standard when empty
+        }
+
+        // ── Prescription-led: recommendation first, evidence second ─────────
+        if format == .prescriptionLed {
+            var parts: [String] = []
+            if let p = pick(bank.whats_next[nextKeyBase] ?? [], exerciseId: a.exerciseId, category: "next") {
+                parts.append(fill(p.phrase, a))
+            }
+            // Brief programmatic evidence — avoids echoing the same slot from the bank
+            let shortfall = a.avgTargetReps - a.avgActualReps
+            let evidence: String
+            if a.readyToProgress {
+                evidence = "All \(a.avgTargetReps) reps completed across every set."
+            } else if a.isUnder && shortfall > 0 {
+                let s = shortfall == 1 ? "" : "s"
+                evidence = "\(shortfall) rep\(s) short of target — keep building."
+            } else if a.repOutcome == .overTarget {
+                evidence = "Hit \(a.avgActualReps) vs a target of \(a.avgTargetReps) — well over."
+            } else {
+                evidence = "Rep count landed on target at \(a.weightKg.weightFormatted) kg."
+            }
+            parts.append(evidence)
+            if let add = profileAddendum(a: a, workout: workout, profile: profile) {
+                parts.append(add)
+            } else if let p = pick(bank.connective[a.connectiveKey] ?? [], exerciseId: a.exerciseId, category: "conn") {
+                parts.append(fill(p.phrase, a))
+            }
+            if !parts.isEmpty { return parts.prefix(3).joined(separator: " ") }
+            // Falls through to standard when empty
+        }
+
+        // ── Standard (default + fallback for other formats) ─────────────────
         // Combo template key: "{rep}|{weight}|{trend}|{history}"
         let trendCombo = a.trendKey == "Omitted" ? "Omitted" : a.trendKey.replacingOccurrences(of: " Target", with: "")
-        let histCombo  = a.historyKey
-        let comboKey   = "\(a.repOutcome.comboKey)|\(a.weightState.comboKey)|\(trendCombo)|\(histCombo)"
+        let comboKey   = "\(a.repOutcome.comboKey)|\(a.weightState.comboKey)|\(trendCombo)|\(a.historyKey)"
 
         if let phrases = bank.combos[comboKey], !phrases.isEmpty,
            let chosen = pick(phrases, exerciseId: a.exerciseId, category: "combo") {
             return fill(chosen.phrase, a)
         }
 
-        // Component assembly
         var parts: [String] = []
 
-        // Frame (single)
         let frameKey = a.isUnder ? "All Missed — Single Exercise" : "All Hit — Single Exercise"
-        if let framePhrase = pick(bank.frames[frameKey] ?? [], exerciseId: a.exerciseId, category: "frame") {
-            parts.append(fill(framePhrase.phrase, a))
+        if let p = pick(bank.frames[frameKey] ?? [], exerciseId: a.exerciseId, category: "frame") {
+            parts.append(fill(p.phrase, a))
         }
 
-        // What happened
         let repsKey = "\(a.repOutcome.repsKey)|Single Exercise"
-        if let repsPhrase = pick(bank.reps[repsKey] ?? [], exerciseId: a.exerciseId, category: "reps") {
-            parts.append(fill(repsPhrase.phrase, a))
+        if let p = pick(bank.reps[repsKey] ?? [], exerciseId: a.exerciseId, category: "reps") {
+            parts.append(fill(p.phrase, a))
         }
 
-        // Drop set modifier — takes weight slot when a drop set was completed
         if a.hasCompletedDropSet {
-            if let dsPhrase = pick(bank.weight["Drop Set — Completed"] ?? [], exerciseId: a.exerciseId, category: "drop") {
-                parts.append(fill(dsPhrase.phrase, a))
+            if let p = pick(bank.weight["Drop Set — Completed"] ?? [], exerciseId: a.exerciseId, category: "drop") {
+                parts.append(fill(p.phrase, a))
             }
         } else if a.weightState != .held {
-            if let wPhrase = pick(bank.weight[a.weightState.weightBankKey] ?? [], exerciseId: a.exerciseId, category: "weight") {
-                parts.append(fill(wPhrase.phrase, a))
+            if let p = pick(bank.weight[a.weightState.weightBankKey] ?? [], exerciseId: a.exerciseId, category: "weight") {
+                parts.append(fill(p.phrase, a))
             }
         }
 
-        // To-failure modifier — replaces trend when sets were trained to failure
         if a.isToFailure {
-            if let failPhrase = pick(bank.connective["To Failure"] ?? [], exerciseId: a.exerciseId, category: "failure") {
-                parts.append(fill(failPhrase.phrase, a))
+            if let p = pick(bank.connective["To Failure"] ?? [], exerciseId: a.exerciseId, category: "failure") {
+                parts.append(fill(p.phrase, a))
             }
-        } else if a.trendKey != "Omitted", let tPhrase = pick(bank.trend[a.trendKey] ?? [], exerciseId: a.exerciseId, category: "trend") {
-            parts.append(fill(tPhrase.phrase, a))
+        } else if a.trendKey != "Omitted", let p = pick(bank.trend[a.trendKey] ?? [], exerciseId: a.exerciseId, category: "trend") {
+            parts.append(fill(p.phrase, a))
         }
 
-        // History context — added when returning after a gap (was previously unused in component path)
-        if a.historyKey != "Normal", let hPhrase = pick(bank.history[a.historyKey] ?? [], exerciseId: a.exerciseId, category: "hist") {
-            parts.insert(fill(hPhrase.phrase, a), at: 0)
+        if a.historyKey != "Normal", let p = pick(bank.history[a.historyKey] ?? [], exerciseId: a.exerciseId, category: "hist") {
+            parts.insert(fill(p.phrase, a), at: 0)
         }
 
-        // What's next (using effective key — may be overridden by CON-06)
-        let nextKey = "\(effectiveWhatsNextKey)|Single"
-        if let nextPhrase = pick(bank.whats_next[nextKey] ?? [], exerciseId: a.exerciseId, category: "next") {
-            parts.append(fill(nextPhrase.phrase, a))
+        if let p = pick(bank.whats_next[nextKeyBase] ?? [], exerciseId: a.exerciseId, category: "next") {
+            parts.append(fill(p.phrase, a))
         }
 
-        // CON-12: pull exercise deload — add bridging note about quality reps over heavy attempts
         if a.needsDeload && a.isPullExercise {
             parts.append("Dropping the weight lets you hit more quality reps — volume through clean reps beats failed attempts at heavy weight.")
         }
 
-        // Profile-cited addendum replaces the generic connective when a personal pattern applies.
         if let addendum = profileAddendum(a: a, workout: workout, profile: profile) {
             parts.append(addendum)
-        } else if let connPhrase = pick(bank.connective[a.connectiveKey] ?? [],
-                                        exerciseId: a.exerciseId, category: "conn") {
-            parts.append(fill(connPhrase.phrase, a))
+        } else if let p = pick(bank.connective[a.connectiveKey] ?? [], exerciseId: a.exerciseId, category: "conn") {
+            parts.append(fill(p.phrase, a))
         }
 
-        // Trim to 4 sentences max (extra room for profile sentence)
         return parts.prefix(4).joined(separator: " ")
     }
 
@@ -518,55 +621,113 @@ enum WorkoutNarrativeEngine {
     // MARK: - Multi exercise narrative
 
     private static func assembleMulti(_ analyses: [ExerciseAnalysis], bank: PhraseBank,
-                                       isMindBodyOverconfident: Bool = false) -> String {
+                                       isMindBodyOverconfident: Bool = false,
+                                       format: NarrativeFormat = .standard) -> String {
         let hitCount    = analyses.filter { $0.isReady }.count
         let missedCount = analyses.filter { $0.isUnder }.count
         let total       = analyses.count
 
-        // Session frame
         let frameType: String
-        if hitCount == total                                { frameType = "All Hit — Multiple Exercises" }
-        else if missedCount == total                        { frameType = "All Missed — Multiple Exercises" }
-        else if hitCount > missedCount                      { frameType = "Mixed — Majority Hit" }
-        else if missedCount > hitCount                      { frameType = "Mixed — Majority Missed" }
-        else                                                { frameType = "Mixed — Exactly Half" }
+        if hitCount == total         { frameType = "All Hit — Multiple Exercises" }
+        else if missedCount == total { frameType = "All Missed — Multiple Exercises" }
+        else if hitCount > missedCount { frameType = "Mixed — Majority Hit" }
+        else if missedCount > hitCount { frameType = "Mixed — Majority Missed" }
+        else                         { frameType = "Mixed — Exactly Half" }
 
         let anchorId = analyses.first?.exerciseId ?? UUID()
-        var parts: [String] = []
+        let lead = mostCritical(analyses)
+        let leadNextKey = (lead.whatsNextKey == "Stuck — Neural Overload" && isMindBodyOverconfident)
+            ? "Stuck — Rest & Microload" : lead.whatsNextKey
+        let nextKeyBase = "\(leadNextKey)|Single"
 
-        if let framePhrase = pick(bank.frames[frameType] ?? [], exerciseId: anchorId, category: "frame") {
-            parts.append(fill(framePhrase.phrase, analyses.first!, second: analyses.dropFirst().first))
+        // ── Sparse: frame + most critical action ────────────────────────────
+        if format == .sparse {
+            var parts: [String] = []
+            if let p = pick(bank.frames[frameType] ?? [], exerciseId: anchorId, category: "frame") {
+                parts.append(fill(p.phrase, analyses.first!, second: analyses.dropFirst().first))
+            }
+            if let p = pick(bank.whats_next[nextKeyBase] ?? [], exerciseId: lead.exerciseId, category: "next") {
+                parts.append(fill(p.phrase, lead))
+            }
+            return parts.prefix(2).joined(separator: " ")
         }
 
-        // Rep description — pick scope and representative exercises
-        let scope: String
-        let notableExercises = mostNotable(analyses)  // max 3
+        // ── Prescription-led: what's changing next session, then context ─────
+        if format == .prescriptionLed {
+            let progressing = analyses.filter { $0.readyToProgress && !$0.needsDeload }
+            let deloading   = analyses.filter { $0.needsDeload }
+            var parts: [String] = []
+            if !progressing.isEmpty {
+                let names = progressing.prefix(2).map(\.name).joined(separator: " and ")
+                let verb  = progressing.count == 1 ? "goes" : "go"
+                parts.append("\(names) \(verb) up next session.")
+            }
+            for d in deloading.prefix(2) {
+                parts.append("\(d.name) drops to \(d.nextWeightKg.weightFormatted) kg — needs a reset.")
+            }
+            if parts.isEmpty {
+                if let p = pick(bank.frames[frameType] ?? [], exerciseId: anchorId, category: "frame") {
+                    parts.append(fill(p.phrase, analyses.first!, second: analyses.dropFirst().first))
+                }
+            }
+            if let p = pick(bank.whats_next[nextKeyBase] ?? [], exerciseId: lead.exerciseId, category: "next") {
+                parts.append(fill(p.phrase, lead))
+            }
+            return parts.prefix(3).joined(separator: " ")
+        }
+
+        // ── Comparison-led: exercises up/down vs last session ────────────────
+        if format == .comparisonLed {
+            let improved = analyses.filter { $0.lastSessionAvgReps != nil && $0.avgActualReps > ($0.lastSessionAvgReps ?? 0) }
+            let declined = analyses.filter { $0.lastSessionAvgReps != nil && $0.avgActualReps < ($0.lastSessionAvgReps ?? 0) }
+            if !improved.isEmpty || !declined.isEmpty {
+                var parts: [String] = []
+                if improved.count > 0 && declined.count == 0 {
+                    let s = improved.count == 1 ? "" : "s"
+                    let prefix = improved.count == total ? "All" : "\(improved.count)"
+                    parts.append("\(prefix) exercise\(s) improved on last session.")
+                } else if declined.count > 0 && improved.count == 0 {
+                    let s = declined.count == 1 ? "" : "s"
+                    let prefix = declined.count == total ? "All" : "\(declined.count)"
+                    parts.append("\(prefix) exercise\(s) came in below last session.")
+                } else {
+                    let upS = improved.count == 1 ? "" : "s"
+                    let dnS = declined.count == 1 ? "" : "s"
+                    parts.append("\(improved.count) exercise\(upS) up, \(declined.count)\(dnS.isEmpty ? "" : " exercise\(dnS)") down vs last session.")
+                }
+                if let p = pick(bank.whats_next[nextKeyBase] ?? [], exerciseId: lead.exerciseId, category: "next") {
+                    parts.append(fill(p.phrase, lead))
+                }
+                return parts.prefix(2).joined(separator: " ")
+            }
+            // Falls through to standard when no comparison data
+        }
+
+        // ── Standard ─────────────────────────────────────────────────────────
+        var parts: [String] = []
+
+        if let p = pick(bank.frames[frameType] ?? [], exerciseId: anchorId, category: "frame") {
+            parts.append(fill(p.phrase, analyses.first!, second: analyses.dropFirst().first))
+        }
+
+        let notableExercises = mostNotable(analyses)
         let repOutcomeForScope = dominantOutcome(analyses)
         let repsKey: String
-
         if total >= 4 {
-            scope = "4+ Exercises"
-            repsKey = "\(repOutcomeForScope.repsKey)|\(scope)"
+            repsKey = "\(repOutcomeForScope.repsKey)|4+ Exercises"
         } else {
             let allSame = analyses.allSatisfy { $0.repOutcome.comboKey == analyses[0].repOutcome.comboKey }
-            scope = allSame ? "2–3 Same Outcome" : "2–3 Mixed"
+            let scope   = allSame ? "2–3 Same Outcome" : "2–3 Mixed"
             let outcomeKey = allSame ? repOutcomeForScope : dominantMissed(analyses) ?? repOutcomeForScope
             repsKey = "\(outcomeKey.repsKey)|\(scope)"
         }
 
-        if let repsPhrase = pick(bank.reps[repsKey] ?? [], exerciseId: anchorId, category: "reps") {
-            let filled = fillMulti(repsPhrase.phrase, notableExercises)
-            parts.append(filled)
+        if let p = pick(bank.reps[repsKey] ?? [], exerciseId: anchorId, category: "reps") {
+            parts.append(fillMulti(p.phrase, notableExercises))
         }
 
-        // What's next — most critical action (CON-06: override Neural Overload when overconfident)
-        let lead = mostCritical(analyses)
-        let leadNextKey = (lead.whatsNextKey == "Stuck — Neural Overload" && isMindBodyOverconfident)
-            ? "Stuck — Rest & Microload"
-            : lead.whatsNextKey
-        let nextKey = "\(leadNextKey)|Single"
-        if let nextPhrase = pick(bank.whats_next[nextKey] ?? [], exerciseId: lead.exerciseId, category: "next") {
-            parts.append(fill(nextPhrase.phrase, lead))
+        if let p = pick(bank.whats_next[nextKeyBase] ?? [], exerciseId: lead.exerciseId, category: "next") {
+            parts.append(fill(p.phrase, lead))
         }
 
         return parts.prefix(3).joined(separator: " ")
