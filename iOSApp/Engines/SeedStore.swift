@@ -28,6 +28,7 @@ struct HomeCache {
         sleepHours: Double? = nil,
         restingHR: Double? = nil,
         hrv: Double? = nil,
+        hrvBaseline: Double? = nil,
         scoreHistory: [String: Int] = [:]
     ) -> HomeCache {
         let weekday = Calendar.current.component(.weekday, from: Date())
@@ -39,7 +40,7 @@ struct HomeCache {
         for id in todayIds { notes[id] = WorkoutFeedbackEngine.exerciseNote(for: id, in: log) }
         return HomeCache(
             progressTrend: WorkoutFeedbackEngine.progressTrend(log: log),
-            readiness: ReadinessEngine.compute(log: log, cardioLog: cardioLog, generalLog: generalLog, stepsToday: stepsToday, sleepHours: sleepHours, restingHR: restingHR, hrv: hrv, scoreHistory: scoreHistory),
+            readiness: ReadinessEngine.compute(log: log, cardioLog: cardioLog, generalLog: generalLog, stepsToday: stepsToday, sleepHours: sleepHours, restingHR: restingHR, hrv: hrv, hrvBaseline: hrvBaseline, scoreHistory: scoreHistory),
             todayHints: hints,
             exerciseNotes: notes
         )
@@ -109,6 +110,9 @@ class SeedStore {
     /// "yyyy-MM-dd" → readiness score. Stored once per day by refreshAnalytics().
     /// This is the source of truth for the 14-day readiness trend chart.
     var readinessScoreHistory: [String: Int] = [:]
+    /// "yyyy-MM-dd" → HRV reading (ms). Stamped by refreshAnalytics() when HealthKit HRV is available.
+    /// Used to compute a personal baseline for ReadinessEngine's personalized HRV thresholds.
+    var hrvHistory: [String: Double] = [:]
     var userProfile: UserProfile = UserProfile() {
         didSet {
             guard isLoaded else { return }   // suppress during background load
@@ -750,11 +754,12 @@ class SeedStore {
     private let recentExercisesKey      = "recentExercises_v1"
     private let activeWorkoutKey        = "activeWorkout_v1"
     private let readinessHistoryKey     = "readinessScoreHistory_v1"
+    private let hrvHistoryKey           = "hrvHistory_v1"
 
     /// Keys that participate in iCloud sync (subset — excludes ephemeral keys).
     private var iCloudSyncKeys: [String] {
         [logKey, prKey, templatesKey, userProfileKey,
-         cardioLogKey, generalLogKey, restDaysKey, readinessHistoryKey]
+         cardioLogKey, generalLogKey, restDaysKey, readinessHistoryKey, hrvHistoryKey]
     }
 
     private static let dateKeyFormatter: DateFormatter = {
@@ -881,13 +886,35 @@ class SeedStore {
         }
     }
 
+    private func saveHRVHistory() {
+        let hist = hrvHistory
+        let key  = hrvHistoryKey
+        DispatchQueue.global(qos: .background).async {
+            if let data = try? JSONEncoder().encode(hist) {
+                iCloudSync.shared.persist(data, forKey: key)
+            }
+        }
+    }
+
+    /// Returns the median HRV from stored daily readings.
+    /// Returns nil during the calibration period (fewer than 7 readings — less than one week of data).
+    func computeHRVBaseline() -> Double? {
+        guard hrvHistory.count >= 7 else { return nil }
+        let sorted = hrvHistory.values.sorted()
+        let mid = sorted.count / 2
+        return sorted.count % 2 == 0
+            ? (sorted[mid - 1] + sorted[mid]) / 2.0
+            : sorted[mid]
+    }
+
     private init() {
         // Capture keys as locals so the background closure never touches @Observable properties
         let lk = logKey, pk = prKey, tk = templatesKey, upk = userProfileKey, sk = seedKey
         let ck = cardioCircuitsKey, clk = cardioLogKey, glk = generalLogKey
         let rdk = restDaysKey, rek = recentExercisesKey
         let awk = activeWorkoutKey
-        let rhk = readinessHistoryKey
+        let rhk      = readinessHistoryKey
+        let hrvHistKey = hrvHistoryKey
         let syncKeys = iCloudSyncKeys
         let exs = exercises   // `let` — safe to read from any thread
 
@@ -907,6 +934,7 @@ class SeedStore {
             var recentIds    = [UUID]()
             var savedActiveWorkout: WorkoutLogEntry? = nil
             var readinessHist = [String: Int]()
+            var hrvHist       = [String: Double]()
 
             if let d = UserDefaults.standard.data(forKey: lk),
                let v = try? JSONDecoder().decode([WorkoutLogEntry].self, from: d)         { log       = v }
@@ -930,6 +958,8 @@ class SeedStore {
                let v = try? JSONDecoder().decode(WorkoutLogEntry.self, from: d)           { savedActiveWorkout = v }
             if let d = UserDefaults.standard.data(forKey: rhk),
                let v = try? JSONDecoder().decode([String: Int].self, from: d)             { readinessHist = v }
+            if let d = UserDefaults.standard.data(forKey: hrvHistKey),
+               let v = try? JSONDecoder().decode([String: Double].self, from: d)          { hrvHist = v }
 
             let needsSeed = !UserDefaults.standard.bool(forKey: sk)
             if needsSeed {
@@ -980,6 +1010,7 @@ class SeedStore {
                 restDays               = rDays
                 recentExerciseIds      = recentIds
                 readinessScoreHistory  = readinessHist
+                hrvHistory             = hrvHist
                 // Restore an in-progress workout if the app was killed mid-session
                 if !needsSeed, let recovered = savedActiveWorkout {
                     activeWorkout = recovered
@@ -1022,11 +1053,12 @@ class SeedStore {
         let rhrCopy      = restingHRForReadiness
         let hrvCopy      = hrvForReadiness
         let histCopy     = readinessScoreHistory
+        let baselineCopy = computeHRVBaseline()
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             let (lpCache, histCache) = HomeCache.buildExerciseCaches(log: log)
             let result = StrengthAnalyticsEngine.compute(log: log, exercises: exs, userProfile: profile)
-            let home   = HomeCache.build(log: log, exercises: exs, routines: routinesCopy, cardioLog: cLogCopy, generalLog: gLogCopy, stepsToday: stepsCopy, sleepHours: sleepCopy, restingHR: rhrCopy, hrv: hrvCopy, scoreHistory: histCopy)
-            let todayKey  = Self.dateKeyFormatter.string(from: Date())
+            let home   = HomeCache.build(log: log, exercises: exs, routines: routinesCopy, cardioLog: cLogCopy, generalLog: gLogCopy, stepsToday: stepsCopy, sleepHours: sleepCopy, restingHR: rhrCopy, hrv: hrvCopy, hrvBaseline: baselineCopy, scoreHistory: histCopy)
+            let todayKey   = Self.dateKeyFormatter.string(from: Date())
             let todayScore = home.readiness.score
             DispatchQueue.main.async {
                 guard self?.analyticsPendingToken == token else { return }
@@ -1034,9 +1066,14 @@ class SeedStore {
                 self?.homeCache            = home
                 self?.lastPerformanceCache = lpCache
                 self?.exerciseHistoryCache = histCache
-                // Stamp today's real score for future trend chart rendering
+                // Stamp today's real readiness score for the 14-day trend chart
                 self?.readinessScoreHistory[todayKey] = todayScore
                 self?.saveReadinessHistory()
+                // Stamp today's HRV reading for personal baseline calibration
+                if let hrv = hrvCopy {
+                    self?.hrvHistory[todayKey] = hrv
+                    self?.saveHRVHistory()
+                }
             }
         }
     }

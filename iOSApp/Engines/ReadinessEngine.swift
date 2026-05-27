@@ -54,6 +54,7 @@ struct ReadinessEngine {
         sleepHours: Double? = nil,
         restingHR: Double? = nil,
         hrv: Double? = nil,
+        hrvBaseline: Double? = nil,          // user's 30-day personal HRV median; nil during calibration
         scoreHistory: [String: Int] = [:]   // "yyyy-MM-dd" → stored score; used for real trend data
     ) -> ReadinessState {
         let calendar = Calendar.current
@@ -186,6 +187,14 @@ struct ReadinessEngine {
             else             { score -= 6 }  // elevated — fatigue or illness signal
         }
 
+        // HRV factor — personalized vs personal baseline when available, else population thresholds
+        if let hrv {
+            let lowHRV  = hrvBaseline.map { $0 * 0.88 } ?? 55.0
+            let goodHRV = hrvBaseline.map { $0 * 1.02 } ?? 70.0
+            if hrv < lowHRV       { score -= 5 }
+            else if hrv >= goodHRV { score += 4 }
+        }
+
         // Volume spike penalty — if last session was high-volume, penalize next-day readiness
         if let lastSession = log.sorted(by: { $0.startedAt > $1.startedAt }).first {
             let sessionVolume = lastSession.totalVolume
@@ -248,13 +257,13 @@ struct ReadinessEngine {
         }()
 
         // --- Narrative ---
-        let (headline, subtitle, coachingNote) = narrative(score: score, delta: delta, daysSinceLast: daysSinceLast, freq: recentAll, isGapReturn: isGapReturn, hrv: hrv, recentFeelLow: recentFeelLow)
+        let (headline, subtitle, coachingNote) = narrative(score: score, delta: delta, daysSinceLast: daysSinceLast, freq: recentAll, isGapReturn: isGapReturn, hrv: hrv, hrvBaseline: hrvBaseline, recentFeelLow: recentFeelLow)
 
         // --- Trend (14 days) ---
         let trend = buildTrend(log: log, cardioLog: cardioLog, generalLog: generalLog, calendar: calendar, today: today, todayScore: Double(score), scoreHistory: scoreHistory)
 
         // --- Factors ---
-        let factors = buildFactors(daysSinceLast: daysSinceLast, freq: recentAll, volRatio: prior7 > 0 ? vol7 / prior7 : 1.0, log: log, cardioCount: recentCardio.count, generalCount: recentGeneral.count, stepsToday: stepsToday, sleepHours: sleepHours, restingHR: restingHR, avgReadinessBefore: avgReadinessBefore)
+        let factors = buildFactors(daysSinceLast: daysSinceLast, freq: recentAll, volRatio: prior7 > 0 ? vol7 / prior7 : 1.0, log: log, cardioCount: recentCardio.count, generalCount: recentGeneral.count, stepsToday: stepsToday, sleepHours: sleepHours, restingHR: restingHR, hrv: hrv, hrvBaseline: hrvBaseline, avgReadinessBefore: avgReadinessBefore)
 
         return ReadinessState(
             score: score,
@@ -312,9 +321,16 @@ struct ReadinessEngine {
     }
 
     private static func narrative(score: Int, delta: Int, daysSinceLast: Int, freq: Int,
-                                   isGapReturn: Bool = false, hrv: Double? = nil, recentFeelLow: Bool = false)
+                                   isGapReturn: Bool = false, hrv: Double? = nil,
+                                   hrvBaseline: Double? = nil,
+                                   recentFeelLow: Bool = false)
         -> (headline: String, subtitle: String, coachingNote: String)
     {
+        // Personalized HRV thresholds: use personal baseline if available (≥7 readings),
+        // else fall back to population norms (55 ms suppressed / 65 ms normal).
+        let lowHRVThreshold  = hrvBaseline.map { $0 * 0.88 } ?? 55.0
+        let highHRVThreshold = hrvBaseline.map { $0 * 0.95 } ?? 65.0
+
         // Gap-return override — alignment with HON returnAfterLapse messaging (H-01/CON-02)
         if isGapReturn {
             return (
@@ -327,7 +343,7 @@ struct ReadinessEngine {
         switch score {
         case 80...:
             // CON-01: HRV suppressed despite high score — temper the "go hard" recommendation
-            if let hrv, hrv < 55 {
+            if let hrv, hrv < lowHRVThreshold {
                 return (
                     "Good momentum right now.",
                     "Watch the HRV today.",
@@ -341,7 +357,7 @@ struct ReadinessEngine {
             )
         case 65..<80:
             // CON-11: HRV says recovered but feel is low — acknowledge subjective-physiological gap
-            if let hrv, hrv >= 65, recentFeelLow {
+            if let hrv, hrv >= highHRVThreshold, recentFeelLow {
                 return (
                     "Physically ready, mentally not quite there.",
                     "HRV says go — feel says otherwise.",
@@ -445,6 +461,8 @@ struct ReadinessEngine {
         stepsToday: Int? = nil,
         sleepHours: Double? = nil,
         restingHR: Double? = nil,
+        hrv: Double? = nil,
+        hrvBaseline: Double? = nil,
         avgReadinessBefore: Double? = nil
     ) -> [ReadinessState.Factor] {
         var factors: [ReadinessState.Factor] = []
@@ -497,6 +515,18 @@ struct ReadinessEngine {
                 factors.append(.init(text: String(format: "%.1f hours sleep — solid night", sleep), isPositive: true))
             } else if sleep < 7.0 {
                 factors.append(.init(text: String(format: "%.1f hours sleep — aim for 7–9 h for full recovery", sleep), isPositive: false))
+            }
+        }
+
+        // HRV factor — personalized label when baseline is available
+        if let hrv {
+            let lowHRV    = hrvBaseline.map { $0 * 0.88 } ?? 55.0
+            let normalHRV = hrvBaseline.map { $0 * 0.95 } ?? 65.0
+            let baseTag   = hrvBaseline.map { " (your avg: \(Int($0)) ms)" } ?? ""
+            if hrv < lowHRV {
+                factors.append(.init(text: String(format: "HRV %.0f ms — below your normal range\(baseTag)", hrv), isPositive: false))
+            } else if hrv >= normalHRV {
+                factors.append(.init(text: String(format: "HRV %.0f ms — within your normal range\(baseTag)", hrv), isPositive: true))
             }
         }
 
