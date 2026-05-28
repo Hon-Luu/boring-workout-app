@@ -524,27 +524,35 @@
       <span class="badge badge-open" id="status-B-006">Open</span>
     </div>
   </div>
-  <div class="issue-title">RPE: numeric scale is confusing; should use words; should only appear on the last set</div>
+  <div class="issue-title">RPE: numeric scale is confusing; should use words; last set complete button should be the RPE selector (one tap for both)</div>
 
   <div class="section-label">What the User Saw</div>
   <div class="section-text">
-    The RPE row shows a horizontal scroll of numeric chips: 6 · 6.5 · 7 · 7.5 · 8 · 8.5 · 9 · 9.5 · 10. Most users don't know what RPE means numerically. Worse, the row appears after every single set — asking for effort rating 3–4 times per exercise. The user also does not want to be required to log a set AND then separately log an RPE.
+    The RPE row shows a horizontal scroll of numeric chips: 6 · 6.5 · 7 · 7.5 · 8 · 8.5 · 9 · 9.5 · 10. Most users don't know what RPE means numerically. The row appears after every single set — asking for effort rating 3–4 times per exercise. The user does not want to log a set AND then separately log an RPE as two distinct actions.
   </div>
 
   <div class="section-label">Root Cause</div>
   <div class="section-text">
-    <span class="code">RPERow</span> uses a numeric scale from 6.0 to 10.0 in 0.5 steps (9 chips + clear). It is rendered as part of every completed set row with no logic to suppress it on non-final sets. There is no "last set" detection — the engine doesn't know how many sets remain.
+    <span class="code">RPERow</span> uses a numeric scale from 6.0 to 10.0 in 0.5 steps (9 chips + clear). It is rendered as part of every completed set row with no logic to suppress it on non-final sets. Completing a set and rating effort are treated as two independent actions with no connection between them.
   </div>
 
-  <div class="section-label">Proposed Solution</div>
+  <div class="section-label">Proposed Solution — One Tap for Both</div>
+  <div class="section-text" style="margin-bottom:8px;">
+    For sets 1 through N-1: normal circle checkmark, completes set only, no RPE prompt.<br><br>
+    For the <strong>last set</strong> (all prior sets completed, this one is not): replace the checkmark with 4 inline word chips:
+  </div>
+  <div style="font-family: 'SF Mono', monospace; font-size: 12px; color: var(--amber); background: rgba(245,158,11,0.08); padding: 10px 14px; border-radius: 8px; margin-bottom: 12px;">
+    [ Easy ]&nbsp;&nbsp;[ Hard ]&nbsp;&nbsp;[ Very Hard ]&nbsp;&nbsp;[ Max ]&nbsp;&nbsp;&nbsp;✓ skip
+  </div>
   <ul class="solution-list">
-    <li>Replace numeric chips with 4 word labels: <strong>Easy</strong> (6–7) · <strong>Hard</strong> (7.5–8) · <strong>Very Hard</strong> (8.5–9) · <strong>Max</strong> (9.5–10) — each maps to a midpoint RPE value stored internally</li>
-    <li>Show the RPE prompt only after the final completed set: when <span class="code">completedSets.count == targetSets</span>, or when the user manually marks the last set</li>
-    <li>Surface as a brief animated inline prompt after the checkmark tap: "How'd that feel?" with the 4 word chips — one tap, then it disappears</li>
-    <li>Do not block set logging on RPE entry — it is always optional and skippable</li>
-    <li>Log the word label as a descriptive string but store the mapped RPE Double for analytics compatibility</li>
+    <li>Tapping any chip calls <span class="code">completeSet()</span> + <span class="code">updateRPE()</span> atomically — one tap, both logged</li>
+    <li>The ✓ skip button does a plain complete with no RPE for users who don't want to rate</li>
+    <li>Last set detection: <span class="code">isLastSet = setIndex == sets.count - 1 && !record.isCompleted && allPreviousSetsCompleted</span> — pass as <span class="code">Bool</span> parameter into <span class="code">SetRow</span></li>
+    <li>Word → RPE mapping stored internally: Easy → 6.5 · Hard → 8.0 · Very Hard → 9.0 · Max → 10.0 — no changes to the data model or analytics pipeline</li>
+    <li>Remove <span class="code">RPERow</span> from completed set rows entirely — it only ever needs to appear once, on the last set, as part of the complete action</li>
+    <li>Apply the same pattern in <span class="code">GuidedWorkoutSessionView</span> for guided sessions</li>
   </ul>
-  <div class="file-ref">iOSApp/Views/Workout/ActiveWorkoutView.swift · RPERow ~L1109 · SetRow ~L667</div>
+  <div class="file-ref">iOSApp/Views/Workout/ActiveWorkoutView.swift · SetRow ~L667 · RPERow ~L1109 · ExerciseCard ~L343</div>
 </div>
 
 <!-- B-007 -->
