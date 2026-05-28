@@ -226,7 +226,10 @@ struct GuidedWorkoutSessionView: View {
 
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
 
-        var set = SetRecord(weight: weight, reps: reps)
+        let ge = exercises[currentExerciseIndex]
+        var set = SetRecord(weight: weight, reps: reps,
+                            targetWeight: ge.targetWeight > 0 ? ge.targetWeight : weight,
+                            targetReps: ge.targetReps)
         set.isCompleted  = true
         set.completedAt  = Date()
         exercises[currentExerciseIndex].completedSets.append(set)
@@ -350,6 +353,13 @@ private struct CurrentExerciseCard: View {
                     minimum: 1,
                     isInteger: true
                 )
+            }
+
+            // V-003: cold-start weight placeholder when no history weight is available
+            if guidedExercise.targetWeight == 0 && lastSets.isEmpty {
+                Text("Start light")
+                    .font(.caption)
+                    .foregroundStyle(HONTheme.accent.opacity(0.8))
             }
 
             // Completed sets mini display

@@ -163,7 +163,10 @@ private enum NarrativeFormat: CaseIterable {
 enum WorkoutNarrativeEngine {
 
     static func generate(workout: WorkoutLogEntry, history: [WorkoutLogEntry],
-                          isMindBodyOverconfident: Bool = false) -> String {
+                          isMindBodyOverconfident: Bool = false,
+                          feelRating: FeelRating? = nil,
+                          streakDays: Int = 0,
+                          isComeback: Bool = false) -> String {
         guard let bank = loadBank() else { return legacyFallback(workout: workout, history: history) }
         let cal = Calendar.current
         let profile = UserCoachProfileEngine.load()
@@ -183,10 +186,26 @@ enum WorkoutNarrativeEngine {
         guard !analyses.isEmpty else { return "" }
 
         let format = NarrativeFormat.select(for: workout)
+        // Use the feel from the workout record if not explicitly provided
+        let effectiveFeel = feelRating ?? workout.feelRating
         var text = analyses.count == 1
             ? assembleSingle(analyses[0], bank: bank, workout: workout, profile: profile,
                              isMindBodyOverconfident: isMindBodyOverconfident, format: format)
-            : assembleMulti(analyses, bank: bank, isMindBodyOverconfident: isMindBodyOverconfident, format: format)
+            : assembleMulti(analyses, bank: bank, isMindBodyOverconfident: isMindBodyOverconfident,
+                            format: format, feelRating: effectiveFeel,
+                            streakDays: streakDays, isComeback: isComeback)
+
+        // For single-exercise sessions, append feel closing (except .normal)
+        if analyses.count == 1, let feel = effectiveFeel, feel != .normal {
+            text += " \(feelClosingSentence(feel))"
+        }
+
+        // Streak and comeback context (N-001) — prepend before trimming
+        if let milestone = streakMilestoneSentence(streakDays: streakDays) {
+            text = milestone + " " + text
+        } else if isComeback {
+            text = comebackSentence() + " " + text
+        }
 
         // Append best-day observation as a final sentence when it's applicable
         if let bestDay = bestDayObservation(workout: workout, profile: profile) {
@@ -194,6 +213,39 @@ enum WorkoutNarrativeEngine {
         }
 
         return String(text.prefix(420))
+    }
+
+    private static func feelClosingSentence(_ feel: FeelRating) -> String {
+        switch feel {
+        case .strong, .easy:
+            let opts = ["That felt right. Build on it.",
+                        "When it flows like this, trust it.",
+                        "Good energy today. Keep that standard."]
+            return opts[Int.random(in: 0..<opts.count)]
+        case .normal:
+            return "Solid work regardless of how it felt."
+        case .tired:
+            return "Earned. Recovery matters — prioritise sleep and protein today."
+        case .brutal:
+            return "Session felt brutal — recovery nutrition in the next 90 minutes matters."
+        }
+    }
+
+    private static func streakMilestoneSentence(streakDays: Int) -> String? {
+        switch streakDays {
+        case 7:   return "A full week of sessions."
+        case 14:  return "Two weeks consistent."
+        case 30:  return "30 sessions. Consistency is compounding."
+        case 60:  return "60 days — this is your identity now."
+        case 100: return "100. You're the kind of person who shows up."
+        default:  return nil
+        }
+    }
+
+    private static func comebackSentence() -> String {
+        let opts = ["Back after a break — the work restarts here.",
+                    "Comeback session. Every return counts."]
+        return opts[Int.random(in: 0..<opts.count)]
     }
 
     private static func bestDayObservation(workout: WorkoutLogEntry, profile: UserCoachProfile) -> String? {
@@ -490,8 +542,10 @@ enum WorkoutNarrativeEngine {
         // ── Prescription-led: recommendation first, evidence second ─────────
         if format == .prescriptionLed {
             var parts: [String] = []
+            // N-003: prepend a reflection bridge before the prescription sentence
+            let bridge = reflectionBridges[Int.random(in: 0..<reflectionBridges.count)]
             if let p = pick(bank.whats_next[nextKeyBase] ?? [], exerciseId: a.exerciseId, category: "next") {
-                parts.append(fill(p.phrase, a))
+                parts.append(bridge + " " + fill(p.phrase, a))
             }
             // Brief programmatic evidence — avoids echoing the same slot from the bank
             let shortfall = a.avgTargetReps - a.avgActualReps
@@ -557,7 +611,12 @@ enum WorkoutNarrativeEngine {
         }
 
         if a.historyKey != "Normal", let p = pick(bank.history[a.historyKey] ?? [], exerciseId: a.exerciseId, category: "hist") {
-            parts.insert(fill(p.phrase, a), at: 0)
+            let histPhrase = fill(p.phrase, a)
+            // B-008a: ensure gap phrases reference the specific exercise, not just general training
+            let exerciseSpecific = histPhrase.localizedCaseInsensitiveContains(a.name)
+                ? histPhrase
+                : "\(a.name): \(histPhrase)"
+            parts.insert(exerciseSpecific, at: 0)
         }
 
         if let p = pick(bank.whats_next[nextKeyBase] ?? [], exerciseId: a.exerciseId, category: "next") {
@@ -620,9 +679,19 @@ enum WorkoutNarrativeEngine {
 
     // MARK: - Multi exercise narrative
 
+    private static let reflectionBridges = [
+        "Solid work.", "That session counted.", "Clean execution.",
+        "Good effort today.", "The work was done.", "Earned.",
+        "Strong output.", "Well executed.", "That's the standard.",
+        "Consistent."
+    ]
+
     private static func assembleMulti(_ analyses: [ExerciseAnalysis], bank: PhraseBank,
                                        isMindBodyOverconfident: Bool = false,
-                                       format: NarrativeFormat = .standard) -> String {
+                                       format: NarrativeFormat = .standard,
+                                       feelRating: FeelRating? = nil,
+                                       streakDays: Int = 0,
+                                       isComeback: Bool = false) -> String {
         let hitCount    = analyses.filter { $0.isReady }.count
         let missedCount = analyses.filter { $0.isUnder }.count
         let total       = analyses.count
@@ -657,10 +726,12 @@ enum WorkoutNarrativeEngine {
             let progressing = analyses.filter { $0.readyToProgress && !$0.needsDeload }
             let deloading   = analyses.filter { $0.needsDeload }
             var parts: [String] = []
+            // N-003: prepend reflection bridge
+            let bridge = reflectionBridges[Int.random(in: 0..<reflectionBridges.count)]
             if !progressing.isEmpty {
                 let names = progressing.prefix(2).map(\.name).joined(separator: " and ")
                 let verb  = progressing.count == 1 ? "goes" : "go"
-                parts.append("\(names) \(verb) up next session.")
+                parts.append("\(bridge) \(names) \(verb) up next session.")
             }
             for d in deloading.prefix(2) {
                 parts.append("\(d.name) drops to \(d.nextWeightKg.weightFormatted) kg — needs a reset.")
@@ -728,6 +799,14 @@ enum WorkoutNarrativeEngine {
 
         if let p = pick(bank.whats_next[nextKeyBase] ?? [], exerciseId: lead.exerciseId, category: "next") {
             parts.append(fill(p.phrase, lead))
+        }
+
+        // N-005: feel-responsive closing sentence for multi-exercise sessions
+        if let feel = feelRating {
+            let closing = feelClosingSentence(feel)
+            if feel != .normal || analyses.count >= 2 {
+                parts.append(closing)
+            }
         }
 
         return parts.prefix(3).joined(separator: " ")

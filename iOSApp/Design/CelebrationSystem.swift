@@ -203,13 +203,13 @@ struct SessionCelebrationView: View {
         }
         let n = min(max(sessionDays.count, 1), 7)
         let pool = [
-            "First one in. Come back and the habit begins.",
-            "Two sessions this week. The pattern is forming.",
-            "Three sessions in. The habit is forming.",
-            "Four sessions. Well ahead of the curve.",
+            "You chose this today.",
+            "Twice this week. That's someone who trains.",
+            "Three times. That's a person who shows up.",
+            "Four times this week. The habit is real.",
             "Five sessions. This is consistency.",
             "Six sessions. Remarkable week.",
-            "Seven for seven. A perfect week."
+            "Seven for seven. You're building something that lasts."
         ]
         return pool[n - 1]
     }
@@ -540,9 +540,9 @@ private struct StreakCelebrationView: View {
 
     private var feedbackText: String {
         switch days {
-        case 7:   return "Seven days. The habit is becoming automatic."
-        case 30:  return "Thirty days. This is who you are now."
-        case 100: return "A hundred days.\nMost people quit before they reach this."
+        case 7:   return "You're building something."
+        case 30:  return "This is who you are now."
+        case 100: return "100 days. You're the kind of person who shows up."
         default:  return "\(days) days. Keep showing up."
         }
     }

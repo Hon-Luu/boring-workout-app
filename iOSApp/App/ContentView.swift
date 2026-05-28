@@ -61,7 +61,7 @@ struct ContentView: View {
                 .tag(1)
 
             ProgressView()
-                .tabItem { Label("Progress", systemImage: "chart.line.uptrend.xyaxis") }
+                .tabItem { Label("Advanced", systemImage: "chart.line.uptrend.xyaxis") }
                 .tag(2)
 
             ExerciseInsightsView(goToSettings: { selectedTab = 5 })

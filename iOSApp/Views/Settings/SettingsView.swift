@@ -143,7 +143,8 @@ struct SettingsView: View {
                     optionalDoubleRow("Body Fat %", value: profile.bodyFatPercent,
                                       placeholder: "e.g. 18", range: 3...60)
                     optionalDoubleRow("Lean Body Mass %", value: profile.muscleMassPercent,
-                                      placeholder: "e.g. 75", range: 50...90)
+                                      placeholder: "e.g. 75", range: 50...90,
+                                      hint: "(skeletal muscle is ~40-45% of body weight)")
                     optionalDoubleRow("Body Water %", value: profile.waterPercent,
                                       placeholder: "e.g. 55", range: 20...80)
                     optionalDoubleRow("Bone Mass (kg)", value: profile.boneMassKg,
@@ -449,16 +450,24 @@ struct SettingsView: View {
         _ label: String,
         value: Binding<Double?>,
         placeholder: String,
-        range: ClosedRange<Double>
+        range: ClosedRange<Double>,
+        hint: String? = nil
     ) -> some View {
-        HStack {
-            Text(label)
-            Spacer()
-            TextField(placeholder, value: value, format: .number)
-                .multilineTextAlignment(.trailing)
-                .foregroundStyle(.secondary)
-                .keyboardType(.decimalPad)
-                .frame(width: 90)
+        VStack(alignment: .leading, spacing: 2) {
+            HStack {
+                Text(label)
+                Spacer()
+                TextField(placeholder, value: value, format: .number)
+                    .multilineTextAlignment(.trailing)
+                    .foregroundStyle(.secondary)
+                    .keyboardType(.decimalPad)
+                    .frame(width: 90)
+            }
+            if let hint {
+                Text(hint)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 

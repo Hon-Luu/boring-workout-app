@@ -526,9 +526,14 @@ private struct ExerciseCard: View {
                 if let v = Double(raw), v > 0 { onUpdateSet(setIndex, toKg(v), set.reps) }
             },
             onWeightStep: { delta in
-                let step = useKg ? delta : delta * Self.lbsPerKg
                 let cur = Double(editingWeight[setIndex] ?? toDisplay(set.weight).weightFormatted) ?? toDisplay(set.weight)
-                let next = max(0, cur + step)
+                let next: Double
+                if useKg {
+                    next = max(0, cur + delta)
+                } else {
+                    // Round to nearest 0.5 lbs to prevent floating-point drift
+                    next = max(0, (round((cur + delta) * 2) / 2))
+                }
                 editingWeight[setIndex] = next.weightFormatted
                 onUpdateSet(setIndex, toKg(next), set.reps)
             },
@@ -1283,8 +1288,8 @@ private struct RepsFractionField: View {
             // Target: either a number field or "F" pill
             if toFailure {
                 Button(action: onToggleFailure) {
-                    Text("FAIL")
-                        .font(.system(size: 9, weight: .black))
+                    Text("∞")
+                        .font(.system(size: 11, weight: .bold))
                         .foregroundStyle(HONTheme.textPrimary)
                         .padding(.horizontal, 5).padding(.vertical, 3)
                         .background(HONTheme.negative, in: RoundedRectangle(cornerRadius: 4))
@@ -1454,6 +1459,7 @@ private struct WorkoutFeelBar: View {
             .foregroundStyle(.secondary)
         }
         .padding(.vertical, 10)
+        .padding(.bottom, 8)
         .background(.regularMaterial)
     }
 }

@@ -2255,6 +2255,8 @@ private struct ReadinessCoachCard: View {
     var sleepHours: Double?
     var restingHR: Double?
     var hrv: Double?
+    var isHRVCalibrating: Bool = false
+    @AppStorage("hrvCalibrationComplete") private var hrvCalibrationComplete: Bool = false
 
     private var recoveryScore: Int? {
         let sleepScore: Int? = sleepHours.map { h -> Int in
@@ -2327,6 +2329,21 @@ private struct ReadinessCoachCard: View {
                          : "Connect Apple Health to include sleep in your score.")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
+                }
+            }
+            // H-003: HRV calibration note — show once while baseline is building
+            if isHRVCalibrating && hrv != nil && !hrvCalibrationComplete {
+                HStack(spacing: 4) {
+                    Image(systemName: "waveform.path.ecg")
+                        .font(.system(size: 10))
+                        .foregroundStyle(HONTheme.accent.opacity(0.8))
+                    Text("HRV baseline calibrating — scores improve after ~7 sessions with Apple Health.")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+                .onAppear {
+                    // Mark complete once we've shown it enough times (after 7+ HRV readings)
+                    if !isHRVCalibrating { hrvCalibrationComplete = true }
                 }
             }
         }

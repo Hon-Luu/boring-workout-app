@@ -10,6 +10,8 @@ struct HomeCache {
     let readiness: ReadinessState
     let todayHints: [UUID: ExerciseTodayHint]
     let exerciseNotes: [UUID: String]
+    /// Completed sets per body region this calendar week (Mon–Sun).
+    var weeklyVolume: [BodyRegion: Int] = [:]
 
     static let empty = HomeCache(
         progressTrend: [],
@@ -31,19 +33,41 @@ struct HomeCache {
         hrvBaseline: Double? = nil,
         scoreHistory: [String: Int] = [:]
     ) -> HomeCache {
-        let weekday = Calendar.current.component(.weekday, from: Date())
+        let cal = Calendar.current
+        let weekday = cal.component(.weekday, from: Date())
         let todayIds: [UUID] = routines.flatMap { r in
             r.exercises.filter { $0.assignedDays.contains(weekday) }.map(\.exercise.id)
         }
         let hints = WorkoutFeedbackEngine.todayHints(for: todayIds, in: log)
         var notes: [UUID: String] = [:]
         for id in todayIds { notes[id] = WorkoutFeedbackEngine.exerciseNote(for: id, in: log) }
-        return HomeCache(
+
+        // V-001: weekly volume per body region
+        // Find Monday of this week
+        let today = cal.startOfDay(for: Date())
+        let weekdayComponent = cal.component(.weekday, from: today)
+        // weekday: 1=Sun, 2=Mon ... 7=Sat. Days since Monday:
+        let daysSinceMonday = (weekdayComponent + 5) % 7   // Sun→6, Mon→0, Tue→1 …
+        let monday = cal.date(byAdding: .day, value: -daysSinceMonday, to: today) ?? today
+        var weeklyVol: [BodyRegion: Int] = [:]
+        for entry in log {
+            let entryDay = cal.startOfDay(for: entry.startedAt)
+            guard entryDay >= monday else { continue }
+            for we in entry.exercises {
+                let count = we.completedSets.count
+                guard count > 0 else { continue }
+                weeklyVol[we.exercise.bodyRegion, default: 0] += count
+            }
+        }
+
+        var cache = HomeCache(
             progressTrend: WorkoutFeedbackEngine.progressTrend(log: log),
             readiness: ReadinessEngine.compute(log: log, cardioLog: cardioLog, generalLog: generalLog, stepsToday: stepsToday, sleepHours: sleepHours, restingHR: restingHR, hrv: hrv, hrvBaseline: hrvBaseline, scoreHistory: scoreHistory),
             todayHints: hints,
             exerciseNotes: notes
         )
+        cache.weeklyVolume = weeklyVol
+        return cache
     }
 
     /// Single O(n_log) pass: builds both last-performance and full history caches.
@@ -113,6 +137,8 @@ class SeedStore {
     /// "yyyy-MM-dd" → HRV reading (ms). Stamped by refreshAnalytics() when HealthKit HRV is available.
     /// Used to compute a personal baseline for ReadinessEngine's personalized HRV thresholds.
     var hrvHistory: [String: Double] = [:]
+    /// H-003: True when fewer than 7 HRV readings have been stored — baseline is still calibrating.
+    var isHRVCalibrating: Bool { hrvHistory.count < 7 }
     var userProfile: UserProfile = UserProfile() {
         didSet {
             guard isLoaded else { return }   // suppress during background load
@@ -317,6 +343,10 @@ class SeedStore {
     }
 
     private func computeWeightSuggestions(for workout: WorkoutLogEntry) -> [WeightSuggestion] {
+        let readinessScore = homeCache.readiness.score
+        // Skip all suggestions when readiness is too low
+        guard readinessScore >= 60 else { return [] }
+
         var suggestions: [WeightSuggestion] = []
         for we in workout.exercises {
             let last = lastPerformance(for: we.exercise)
@@ -331,8 +361,12 @@ class SeedStore {
 
             let increment       = we.exercise.isCompound ? 2.5 : 1.25
             let suggestedWeight = currentWeight + increment
-            let reason          = pct > 1.10 ? "Exceeded target reps last session"
+            let baseReason      = pct > 1.10 ? "Exceeded target reps last session"
                                              : "Hit all reps last session"
+            // When readiness is borderline (60–72), note that the increase is optional
+            let reason = readinessScore <= 72
+                ? "\(baseReason) · Optional — readiness is moderate today"
+                : baseReason
 
             suggestions.append(WeightSuggestion(
                 id: UUID(),

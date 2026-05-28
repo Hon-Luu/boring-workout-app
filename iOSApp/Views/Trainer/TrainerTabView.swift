@@ -11,6 +11,26 @@ struct TrainerTabView: View {
     @State private var selectedPlan: GuidedWorkoutPlan? = nil
     @State private var showPlanPreview = false
     @State private var showLiveSession = false
+    @State private var strongestDayDismissed = false
+
+    /// Returns true when today is the user's strongest day of the week and readiness is sufficient.
+    private var showStrongestDayCallout: Bool {
+        guard !strongestDayDismissed, readiness.score >= 65 else { return false }
+        let cal = Calendar.current
+        let weekday = cal.component(.weekday, from: Date()) // 1=Sun…7=Sat
+        let dayNames = ["", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+        let todayName = (dayNames[safe: weekday] ?? "").uppercased()
+        // Look for an insight whose stateName starts with today's day name and ends with DOMINANT
+        let insights = EmergentInsightEngine.compute(
+            log: store.workoutLog,
+            analyticsResult: store.analyticsCache,
+            hrv: nil, sleepHours: nil
+        )
+        return insights.contains { $0.title == "Your Strongest Day"
+            && $0.dataAvailable
+            && $0.stateName.hasPrefix(todayName)
+            && $0.stateName.hasSuffix("DOMINANT") }
+    }
 
     var body: some View {
         NavigationStack {
@@ -20,6 +40,15 @@ struct TrainerTabView: View {
                     // Mini readiness card
                     MiniReadinessCard(readiness: readiness)
                         .padding(.top, 4)
+
+                    // Strongest-day callout (T-013)
+                    if showStrongestDayCallout {
+                        Text("Your strongest day of the week. Go for it.")
+                            .font(.subheadline.bold())
+                            .foregroundStyle(HONTheme.positive)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 4)
+                    }
 
                     // Today's plan header
                     VStack(alignment: .leading, spacing: 4) {
@@ -36,6 +65,7 @@ struct TrainerTabView: View {
                         onStart: { plan in
                             selectedPlan = plan
                             showPlanPreview = true
+                            strongestDayDismissed = true
                         },
                         onSkip: {}
                     )
@@ -88,43 +118,73 @@ struct TrainerTabView: View {
 
 private struct MiniReadinessCard: View {
     let readiness: ReadinessState
+    @State private var expanded = false
 
     var body: some View {
-        HStack(spacing: 16) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Readiness")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    Text(readiness.confidence == .low ? "~\(readiness.score)" : "\(readiness.score)")
-                        .font(.system(size: 32, weight: .bold, design: .rounded))
-                    Text("/ 100")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
+        VStack(alignment: .leading, spacing: 0) {
+            Button {
+                withAnimation(.spring(response: 0.3)) { expanded.toggle() }
+            } label: {
+                HStack(spacing: 16) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Readiness")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        HStack(alignment: .firstTextBaseline, spacing: 4) {
+                            Text(readiness.confidence == .low ? "~\(readiness.score)" : "\(readiness.score)")
+                                .font(.system(size: 32, weight: .bold, design: .rounded))
+                            Text("/ 100")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
 
-            Divider().frame(height: 40)
+                    Divider().frame(height: 40)
 
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 6) {
-                    Text("Confidence:")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Text(readiness.confidence.rawValue)
-                        .font(.caption.bold())
-                        .foregroundStyle(readiness.confidence.color)
-                }
-                HStack(spacing: 4) {
-                    Image(systemName: readiness.deltaFromBaseline >= 0 ? "arrow.up" : "arrow.down")
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack(spacing: 6) {
+                            Text("Confidence:")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Text(readiness.confidence.rawValue)
+                                .font(.caption.bold())
+                                .foregroundStyle(readiness.confidence.color)
+                        }
+                        HStack(spacing: 4) {
+                            Image(systemName: readiness.deltaFromBaseline >= 0 ? "arrow.up" : "arrow.down")
+                                .font(.caption2.bold())
+                            Text("\(abs(readiness.deltaFromBaseline)) vs 30-day avg")
+                                .font(.caption)
+                        }
+                        .foregroundStyle(readiness.deltaFromBaseline >= 0 ? HONTheme.positive : HONTheme.warning)
+                    }
+
+                    Spacer()
+
+                    Image(systemName: expanded ? "chevron.up" : "chevron.down")
                         .font(.caption2.bold())
-                    Text("\(abs(readiness.deltaFromBaseline)) vs 30-day avg")
-                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
-                .foregroundStyle(readiness.deltaFromBaseline >= 0 ? HONTheme.positive : HONTheme.warning)
             }
+            .buttonStyle(.plain)
 
-            Spacer()
+            if expanded && !readiness.factors.isEmpty {
+                Divider().padding(.top, 12)
+                VStack(alignment: .leading, spacing: 6) {
+                    ForEach(readiness.factors) { factor in
+                        HStack(spacing: 6) {
+                            Circle()
+                                .fill(factor.isPositive ? HONTheme.positive : HONTheme.warning)
+                                .frame(width: 5, height: 5)
+                            Text(factor.text)
+                                .font(.caption)
+                                .foregroundStyle(factor.isPositive ? HONTheme.positive : HONTheme.warning)
+                        }
+                    }
+                }
+                .padding(.top, 10)
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
         }
         .padding(16)
         .background(AppTheme.cardBG, in: RoundedRectangle(cornerRadius: 14))
