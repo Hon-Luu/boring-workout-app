@@ -1845,7 +1845,7 @@
       <span class="badge badge-open" id="status-UX-001">Open</span>
     </div>
   </div>
-  <div class="issue-title">Progress page — earn-your-place chart reduction, 6-category structure, and contextual inline signals (no separate "alerts" section)</div>
+  <div class="issue-title">Progress page — earn-your-place chart reduction, 5 question-named categories with tight scope, and contextual inline signals (no separate "alerts" section)</div>
 
   <div class="section-label">Problem</div>
   <div class="section-text">
@@ -1882,27 +1882,27 @@
     <li><strong>Stalled lifts as a standalone list</strong> — replaced by inline amber treatment on the lift's own trend line</li>
   </ul>
 
-  <div class="section-label">6-Category Page Structure</div>
-  <div class="section-text">Each category answers a distinct user question. Signals appear inside the section where the relevant metric lives — never in a separate alerts bucket.</div>
+  <div class="section-label">5 Question-Named Categories — Definitions and Scope Guards</div>
+  <div class="section-text">Every category is named as the question a user would ask when they open Progress. Names are intentionally narrow — each one has an explicit scope guard to prevent future chart additions drifting in. Ordering on the page is fixed except where context-aware reordering applies (see note below).</div>
   <ul class="solution-list">
-    <li><strong>Am I getting stronger?</strong> — e1RM trend lines (top 3–5 lifts). Plateau signals inline. PR strip pinned here or at top.</li>
-    <li><strong>Where am I?</strong> — One strength benchmark card per major lift: tier (Beginner / Intermediate / Advanced) + bodyweight ratio from StrengthScoreEngine. Text-first. Tier advancement surfaced as a positive callout inline. No composite score, no tier grid.</li>
-    <li><strong>How do I train?</strong> — Sessions consistency strip + 4-week bars. Pattern balance donut (collapsed). Gap and imbalance signals inline.</li>
-    <li><strong>Cardio</strong> — Conditional: entire section hidden if no cardio data in log. If shown: single metric (session count trend OR VO2 sparkline, not both). No empty-state placeholder when hidden.</li>
-    <li><strong>Recovery</strong> — 30-day readiness sparkline only. Distinct from Home (which shows today's readiness); Progress shows the trend. Decline signal inline on the sparkline.</li>
-    <li><strong>Emerging signals</strong> — REMOVED as a section. All signals are distributed contextually into the five sections above.</li>
+    <li><strong>"Am I getting stronger?"</strong> — scope: e1RM trend lines (top 3–5 lifts) + PR strip. Only content that directly answers "is my strength going up?" belongs here. Plateau signals inline on the relevant line. <em>Scope guard: if a proposed addition does not show strength trajectory, it goes elsewhere.</em></li>
+    <li><strong>"How strong am I?"</strong> — renamed from "Where am I?" to eliminate ambiguity. Scope: one strength benchmark card per major lift — tier (Beginner / Intermediate / Advanced) and bodyweight ratio from StrengthScoreEngine. Text-first, no charts. Answers "how strong am I relative to a meaningful standard?" — not "how am I progressing?" (that's above) and not "how do I train?" (that's below). <em>Scope guard: composite score, development tier grid, INOL, fitness age, and any other synthetic metric are permanently excluded from this section. This is the category most likely to attract complexity; the name and this note are the first line of defense.</em></li>
+    <li><strong>"How do I train?"</strong> — scope: sessions consistency strip + 4-week volume bars + pattern balance donut (collapsed by default). Answers questions about frequency, volume, and movement distribution. Gap, volume-spike, and pattern-imbalance signals inline.</li>
+    <li><strong>"Am I doing cardio?"</strong> — renamed from "Cardio" to match question format and make conditional absence intentional. Scope: single metric — session count trend OR VO2 sparkline, not both. Entire section hidden when <span class="code">workoutLog</span> contains no cardio entries. No empty-state placeholder. When section is absent, users who don't do cardio never see a gap; users who start logging cardio see it appear naturally.</li>
+    <li><strong>"How am I recovering?"</strong> — renamed from "Recovery" to match question format. Scope: 30-day readiness sparkline only. Distinct from Home (today's readiness score); Progress shows the trend over time — a different question, not a duplicate. Decline signal inline on the sparkline.</li>
   </ul>
+  <div class="section-text"><strong>Note on ordering:</strong> Default order is as listed above. Recovery is section 5, but users returning from a hard week or a long gap may benefit from seeing recovery first. A context-aware reorder rule is a future enhancement (not in scope for initial implementation): if the user's last session was within 24 hours AND readiness is below baseline, surface "How am I recovering?" as section 2. Implement only after baseline layout ships and user testing validates the need.</div>
 
   <div class="section-label">Contextual Inline Signals — Full Map</div>
   <div class="section-text">Every signal appears inside the section containing the relevant metric. No taps required to see a signal — it is visible on the main page in context.</div>
   <ul class="solution-list">
     <li><strong>Exercise plateaued (4+ weeks, slope &lt; 0.5 kg/wk, ≥3 sessions)</strong> — source: <span class="code">StrengthAnalyticsEngine.isPlateau</span> — treatment: that lift's trend line renders amber + dashed; one-liner below: "Squat · 4-week plateau" — section: Am I getting stronger?</li>
     <li><strong>PR set this session or this week</strong> — source: log analysis — treatment: green pip on trend line at that date; entry added to PR strip — section: Am I getting stronger?</li>
-    <li><strong>Tier advancement</strong> — source: <span class="code">StrengthScoreEngine</span> tier delta — treatment: positive text callout on benchmark card: "You crossed into Intermediate on your deadlift" — section: Where am I?</li>
+    <li><strong>Tier advancement</strong> — source: <span class="code">StrengthScoreEngine</span> tier delta — treatment: positive text callout on benchmark card: "You crossed into Intermediate on your deadlift" — section: How strong am I?</li>
     <li><strong>Training gap ≥7 days</strong> — source: <span class="code">HONHabitEngine</span> / log — treatment: gap visible as whitespace on consistency strip; no additional label needed — section: How do I train?</li>
     <li><strong>Volume spike (potential overreach)</strong> — source: <span class="code">ReadinessEngine</span> volumeSpike modifier — treatment: amber marker on that week's bar in consistency strip — section: How do I train?</li>
     <li><strong>Pattern underserved (&lt;2 sets for a movement, 10+ days)</strong> — source: log scan — treatment: that donut slice dims + amber dot; "No hinge work in 11 days" text below donut — section: How do I train?</li>
-    <li><strong>Recovery trend declining (3+ consecutive below-baseline readiness)</strong> — source: <span class="code">ReadinessEngine</span> output — treatment: sparkline renders in amber; "Recovery trending down" label below — section: Recovery</li>
+    <li><strong>Recovery trend declining (3+ consecutive below-baseline readiness)</strong> — source: <span class="code">ReadinessEngine</span> output — treatment: sparkline renders in amber; "Recovery trending down" label below — section: How am I recovering?</li>
     <li><strong>Coach note (urgent threshold only)</strong> — source: highest-priority signal across all categories — treatment: single sentence at top of page, only when signal meets urgency threshold (≥6-week plateau / ≥3-week pattern gap / 5+ declining readiness days); absent otherwise — section: top of page</li>
   </ul>
 
@@ -1919,7 +1919,7 @@
   <ul class="solution-list">
     <li><strong>Lift trend line tap</strong> → lift detail sheet: full e1RM history (longer window), fatigue-adjusted overlay, StrengthRetentionRings, raw set log, plateau status in text, suggested next target. Cut charts live here — appropriate complexity at user-initiated depth.</li>
     <li><strong>PR strip tap</strong> → that session's full workout log (read-only recap)</li>
-    <li><strong>Benchmark card tap (Where am I?)</strong> → tier progression bar (Beginner → Intermediate → Advanced), bodyweight ratio that defines each tier, 90-day trajectory. Text-first, no chart.</li>
+    <li><strong>Benchmark card tap (How strong am I?)</strong> → tier progression bar (Beginner → Intermediate → Advanced), bodyweight ratio that defines each tier, 90-day trajectory. Text-first, no chart.</li>
     <li><strong>Consistency strip day tap</strong> → that session's workout log</li>
     <li><strong>Pattern balance donut tap</strong> → expands to list: "Push: 14 sets · Pull: 9 sets · Hinge: 6 sets · Squat: 4 sets · Carry: 0 sets." with exercises under each. Underserved pattern gets amber dot.</li>
     <li><strong>Recovery sparkline tap</strong> → 90-day readiness trend + ReadinessEngine factors for any tapped day ("This day: sleep 5h, 2 consecutive sessions, volume spike")</li>
@@ -1929,7 +1929,7 @@
 
   <div class="section-label">Acceptance Criteria</div>
   <ul class="solution-list">
-    <li>Progress page has exactly 5 visible sections (Am I getting stronger / Where am I / How do I train / Cardio if data / Recovery) — no "Emerging signals" section exists</li>
+    <li>Progress page has exactly 5 question-named sections (Am I getting stronger / How strong am I / How do I train / Am I doing cardio [if data] / How am I recovering) — no "Emerging signals" section exists</li>
     <li>No dedicated stalled lifts list component — plateau communicated by amber dashed line on the relevant trend line</li>
     <li>Coach note at top is absent when no signal meets urgency threshold; renders as a single sentence when it does appear</li>
     <li>Cardio section is entirely hidden (no placeholder) when <span class="code">workoutLog</span> contains no cardio entries</li>
