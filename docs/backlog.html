@@ -1833,6 +1833,145 @@
 </div>
 
 <!-- ─────────────────────────────────────────── -->
+<div class="section-heading">UX · Information Architecture</div>
+
+<!-- UX-001 -->
+<div class="issue" data-id="UX-001" data-priority="p1" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">UX-001</span>
+      <span class="badge badge-p1">P1</span>
+      <span class="badge badge-open" id="status-UX-001">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">Progress page has too many charts — restructure around three questions using an earn-your-place framework</div>
+
+  <div class="section-label">Problem</div>
+  <div class="section-text">
+    The Progress page renders 15+ chart components including Composite Strength Score, INOL cards (Training Load + Calendar), OverloadScoreboard, SessionDensity, WorkoutDuration histogram, VolumeHeatmap, FeelVolume scatter, FitnessMetrics / VO2, Development Tier Grid 2×3, SSFiber PCSA, fatigue-adjusted e1RM overlay, and StrengthRetentionRings. Most fail the earn-your-place test: they do not change a user's next decision, reveal a non-obvious pattern, or surface anything actionable. The result is visual noise that buries the 20% of charts that actually matter. Recurring user feedback: "too many charts."
+  </div>
+
+  <div class="section-label">Earn-Your-Place Test (applied to every chart)</div>
+  <div class="section-text">A chart earns its place only if it passes at least one of: (1) changes what I do next, (2) reveals a pattern I couldn't see otherwise, (3) gives me a number I can act on. Decorative, confirmatory, or duplicative charts are cut.</div>
+
+  <div class="section-label">6 Survivors — Main Page</div>
+  <ul class="solution-list">
+    <li><strong>Top lifts e1RM trend</strong> — simple line per primary lift. No fatigue adjustment, no overlay. Answers "Am I getting stronger?"</li>
+    <li><strong>Sessions consistency strip + 4-week bars</strong> — answers "Am I showing up?"</li>
+    <li><strong>Stalled lifts — as a LIST, not a chart</strong> — plain text list of exercises flagged by StrengthAnalyticsEngine (slope &lt; 0.5 kg/wk over 4 wks). A list is more scannable and more actionable than a grid visual. Answers "What needs attention?"</li>
+    <li><strong>Pattern balance simplified donut</strong> — push / pull / hinge / squat / carry. One render, no sub-charts. Answers "Am I balanced?"</li>
+    <li><strong>PR timeline</strong> — horizontal strip of recent PRs. Celebrates wins, anchors identity motivation. Answers "What have I achieved?"</li>
+    <li><strong>One attention flag</strong> — plain text, highest-priority insight from EmergentInsightEngine. "You haven't trained legs in 12 days." One item only. Answers "Anything urgent?"</li>
+  </ul>
+
+  <div class="section-label">Cuts</div>
+  <ul class="solution-list">
+    <li><strong>Composite strength score as hero</strong> — single number hides all signal; users don't understand the formula; not actionable</li>
+    <li><strong>INOL (TrainingLoadCard + INOLCalendarCard)</strong> — training load metric unfamiliar to 95% of users; not actionable without context</li>
+    <li><strong>OverloadScoreboardCard</strong> — duplicates e1RM trend information</li>
+    <li><strong>SessionDensityCard</strong> — interesting but doesn't change next session behavior</li>
+    <li><strong>WorkoutDurationCard (histogram)</strong> — vanity metric; no decision changes</li>
+    <li><strong>VolumeHeatmapCard</strong> — weekly volume already in consistency strip; heatmap adds noise</li>
+    <li><strong>FeelVolumeCard (scatter)</strong> — scatter charts require statistical literacy; most users misread; not actionable</li>
+    <li><strong>FitnessMetricsCard (VO2)</strong> — estimated VO2 from Apple Watch has ±15% error; not reliable enough to surface</li>
+    <li><strong>Development Tier Grid 2×3</strong> — categorical tiers without clear progression path; not actionable</li>
+    <li><strong>SSFiberCard / PCSA</strong> — theoretical muscle architecture metric; no user decision flows from it</li>
+    <li><strong>Fatigue-adjusted e1RM overlay</strong> — adds complexity to the one chart users understand; move to drill-down only</li>
+    <li><strong>StrengthRetentionRings</strong> — move to drill-down only when user taps a specific lift</li>
+  </ul>
+
+  <div class="section-label">Page Structure</div>
+  <ul class="solution-list">
+    <li>Section 1 — <strong>"Are you stronger?"</strong> → e1RM trend lines for top 3–5 lifts</li>
+    <li>Section 2 — <strong>"Are you consistent?"</strong> → sessions strip + 4-week volume bars</li>
+    <li>Section 3 — <strong>"Anything to flag?"</strong> → stalled lifts list + one attention flag</li>
+    <li>Section 4 — <strong>"Pattern balance"</strong> → simplified donut, collapsed by default, tap to expand</li>
+    <li>PR strip — pinned at top or bottom; always visible; provides positive reinforcement before analytics</li>
+  </ul>
+
+  <div class="section-label">Drill-Down Behavior</div>
+  <ul class="solution-list">
+    <li>Tapping any lift in the e1RM trend → full lift history sheet (e1RM history, fatigue-adjusted overlay, retention rings, raw set log)</li>
+    <li>Tapping the attention flag → expanded detail sheet with full context and suggested action</li>
+    <li>Tapping a stalled lift → lift drill-down sheet pre-filtered to that exercise</li>
+  </ul>
+
+  <div class="section-label">Acceptance Criteria</div>
+  <ul class="solution-list">
+    <li>Progress page renders exactly 4 sections + PR strip; no other chart components visible on main scroll</li>
+    <li>Stalled lifts rendered as <span class="code">List</span> or <span class="code">VStack</span> of <span class="code">Text</span> rows, not as a chart view</li>
+    <li>Pattern balance section is collapsed by default with a "show" chevron</li>
+    <li>All cut chart components are removed from the Progress page view (may remain as drill-down sheets)</li>
+    <li>Drill-down sheets accessible via tap; back navigation returns to correct scroll position</li>
+    <li>No regression in StrengthLabView — cut charts from Progress only, not from Strength Lab if they belong there</li>
+  </ul>
+  <div class="file-ref">iOSApp/Views/Progress/ProgressView.swift · all chart subviews in iOSApp/Views/Progress/ · iOSApp/Engines/StrengthAnalyticsEngine.swift (stalled lifts source) · iOSApp/Engines/EmergentInsightEngine.swift (attention flag source)</div>
+</div>
+
+<!-- UX-002 -->
+<div class="issue" data-id="UX-002" data-priority="p2" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">UX-002</span>
+      <span class="badge badge-p2">P2</span>
+      <span class="badge badge-open" id="status-UX-002">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">User-selectable charts: goal-based filtering preferred over a chart checkbox picker</div>
+
+  <div class="section-label">Problem</div>
+  <div class="section-text">
+    Once UX-001 lands, users may still want some degree of personalization over which charts they see. A naive implementation — a Settings page with checkboxes for each chart — has predictable failure modes: users pick familiar charts (not better ones), miss the charts they'd actually benefit from, and most never visit Settings at all. The better approach is goal-based filtering at onboarding, where the goal selection automatically surfaces the most relevant chart set.
+  </div>
+
+  <div class="section-label">Why Chart Checkboxes Don't Work</div>
+  <ul class="solution-list">
+    <li><strong>Familiarity bias</strong> — users select charts they already understand, not charts that would help them most</li>
+    <li><strong>Discovery failure</strong> — the best chart for a user's situation may be one they've never seen; a picker hides it</li>
+    <li><strong>Configuration tax</strong> — fewer than 10% of users visit Settings for feature configuration; most tolerate defaults forever</li>
+    <li><strong>Maintenance burden</strong> — every new chart needs picker integration; cuts require picker cleanup</li>
+  </ul>
+
+  <div class="section-label">Preferred Approach: Goal-Based Filtering</div>
+  <ul class="solution-list">
+    <li>During onboarding (or Settings → Goals), user selects one: <strong>Getting Stronger</strong> / <strong>Staying Consistent</strong> / <strong>Body Composition</strong> / <strong>All</strong></li>
+    <li><em>Getting Stronger</em> → surfaces e1RM trend, stalled lifts, PR timeline, pattern balance. Hides consistency-focused views.</li>
+    <li><em>Staying Consistent</em> → surfaces sessions strip, streak, feel trend, pattern balance. Reduces strength analytics prominence.</li>
+    <li><em>Body Composition</em> → surfaces volume bars, pattern balance, muscle group coverage. Hides e1RM-heavy views.</li>
+    <li><em>All</em> → full default layout from UX-001.</li>
+    <li>Goal is already present in <span class="code">UserProfile.goal</span> — use it.</li>
+  </ul>
+
+  <div class="section-label">Supplementary Mechanisms (lower priority, build after goal filtering)</div>
+  <ul class="solution-list">
+    <li><strong>One pin</strong> — user can pin a single chart to the top of the Progress page. Tap-and-hold or a pin icon in drill-down. Limit: 1 pinned chart only.</li>
+    <li><strong>Usage-based float</strong> — charts tapped more than 3× in the last 30 days float up one position; charts never expanded in 30 days sink to bottom. Purely passive; no UI needed beyond the re-ordering effect.</li>
+  </ul>
+
+  <div class="section-label">If a Chart Picker Is Built Anyway</div>
+  <ul class="solution-list">
+    <li>Organize by question answered, not by chart type: "Strength progress", "Consistency", "Pattern &amp; balance", "Effort signals", "Body &amp; health"</li>
+    <li>Show thumbnail previews (mini chart renders) in the picker so users understand what they're choosing</li>
+    <li>First two charts in each category on by default; maximum 3 selections per category (prevents overload)</li>
+    <li>A "Suggested for your goal" section auto-checks the goal-appropriate defaults</li>
+    <li>Implement only after goal-based filtering ships and only if user research shows demand</li>
+  </ul>
+
+  <div class="section-label">Acceptance Criteria</div>
+  <ul class="solution-list">
+    <li>Progress page chart set changes based on <span class="code">UserProfile.goal</span> (or equivalent onboarding answer)</li>
+    <li>Goal selection reachable from Settings → Goals; change takes effect immediately on next Progress page render</li>
+    <li>Each goal maps to a documented, named chart set (not arbitrary — matches the definitions in Requirements above)</li>
+    <li>One-pin mechanism: user can pin exactly one chart; pin persists in <span class="code">@AppStorage</span></li>
+    <li>Usage-based float: <span class="code">chartTapCount: [String: Int]</span> and <span class="code">chartLastTapped: [String: Date]</span> tracked in <span class="code">SeedStore</span> or UserDefaults; sort order applied on Progress page render</li>
+    <li>If goal is not set, default to "All" — no crash, no empty state</li>
+  </ul>
+  <div class="file-ref">iOSApp/Views/Progress/ProgressView.swift · iOSApp/Models/Models.swift (UserProfile.goal) · iOSApp/Views/Settings/SettingsView.swift · iOSApp/Engines/SeedStore.swift</div>
+</div>
+
+<!-- ─────────────────────────────────────────── -->
 <div class="tally">
   <h3>Quick Reference</h3>
   <div class="tally-grid" id="tally-grid">
@@ -1846,6 +1985,7 @@
     <div class="tally-item">Narrative <span id="count-narrative">—</span></div>
     <div class="tally-item">Volume/Science <span id="count-volume">—</span></div>
     <div class="tally-item">HealthKit/HRV <span id="count-hrv">—</span></div>
+    <div class="tally-item">UX · Info Arch <span id="count-ux">—</span></div>
   </div>
 </div>
 
@@ -1922,6 +2062,7 @@ function updateStats() {
   document.getElementById('count-narrative').textContent= document.querySelectorAll('[data-id^="N-"]').length;
   document.getElementById('count-volume').textContent   = document.querySelectorAll('[data-id^="V-"]').length;
   document.getElementById('count-hrv').textContent      = document.querySelectorAll('[data-id^="H-"]').length;
+  document.getElementById('count-ux').textContent       = document.querySelectorAll('[data-id^="UX-"]').length;
 }
 
 // ── Filter buttons ──────────────────────────────────────────────────────────
