@@ -60,21 +60,25 @@ struct ContentView: View {
                 .tabItem { Label("Workout", systemImage: "dumbbell.fill") }
                 .tag(1)
 
-            ProgressView()
-                .tabItem { Label("Advanced", systemImage: "chart.line.uptrend.xyaxis") }
+            SimpleProgressView()
+                .tabItem { Label("Progress", systemImage: "chart.line.uptrend.xyaxis") }
                 .tag(2)
 
-            ExerciseInsightsView(goToSettings: { selectedTab = 5 })
-                .tabItem { Label("Insights", systemImage: "chart.dots.scatter") }
+            ProgressView()
+                .tabItem { Label("Advanced", systemImage: "waveform.path.ecg") }
                 .tag(3)
+
+            ExerciseInsightsView(goToSettings: { selectedTab = 6 })
+                .tabItem { Label("Insights", systemImage: "chart.dots.scatter") }
+                .tag(4)
 
             TrainerTabView()
                 .tabItem { Label("Trainer", systemImage: "figure.strengthtraining.traditional") }
-                .tag(4)
+                .tag(5)
 
             SettingsView()
                 .tabItem { Label("Settings", systemImage: "gearshape.fill") }
-                .tag(5)
+                .tag(6)
         }
         .tint(HONTheme.accent)
         .preferredColorScheme(prefersDarkMode ? .dark : .light)
