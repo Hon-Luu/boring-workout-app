@@ -881,6 +881,514 @@
 </div>
 
 <!-- ─────────────────────────────────────────── -->
+<div class="separator"></div>
+<div class="section-heading">Trainer Tab · Gaps &amp; Intelligence Layer</div>
+
+<!-- T-001 -->
+<div class="issue" data-id="T-001" data-priority="p1" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">T-001</span>
+      <span class="badge badge-p1">P1</span>
+      <span class="badge badge-confirmed">Confirmed</span>
+      <span class="badge badge-open" id="status-T-001">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">Recovery plan is hardcoded to [core, arms, shoulders] — never adapts to the user</div>
+
+  <div class="section-label">Current Behaviour</div>
+  <div class="section-text">
+    <span class="code">makeRecoveryPlan()</span> always targets <span class="code">[.core, .arms, .shoulders]</span> with isolation-only exercises at light intensity, estimating 25 minutes. A user who trains arms daily and hasn't touched legs in two weeks receives the same arms-focused recovery plan as everyone else.
+  </div>
+
+  <div class="section-label">Requirements</div>
+  <ul class="solution-list">
+    <li>Recovery focus should target the regions with the longest rest since last session: <span class="code">BodyRegion.allCases.sorted { daysSince($0) > daysSince($1) }.prefix(2)</span></li>
+    <li>If any region has been untouched for ≥5 days, it qualifies as a recovery target regardless of intensity</li>
+    <li>Recovery plan must always cap at light intensity and isolation-only exercises — those constraints stay</li>
+    <li>Estimated duration should reflect actual exercise count: <span class="code">exercises.count × 6 min</span> (isolation + short rest)</li>
+    <li>Title should reflect actual focus: "Active Recovery — Core &amp; Legs" not a generic label</li>
+  </ul>
+
+  <div class="section-label">Acceptance Criteria</div>
+  <ul class="solution-list">
+    <li>User who trained chest/shoulders yesterday and hasn't done legs in 6 days → recovery plan targets legs + core</li>
+    <li>User with balanced recent training → recovery plan defaults to core + arms (current behaviour preserved as fallback)</li>
+    <li>Recovery plan never contains compound barbell movements</li>
+  </ul>
+  <div class="file-ref">iOSApp/Engines/WorkoutPlanEngine.swift · makeRecoveryPlan() ~L85</div>
+</div>
+
+<!-- T-002 -->
+<div class="issue" data-id="T-002" data-priority="p1" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">T-002</span>
+      <span class="badge badge-p1">P1</span>
+      <span class="badge badge-confirmed">Confirmed</span>
+      <span class="badge badge-open" id="status-T-002">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">Coach note is 3 hardcoded strings — no exercise-specific or user-specific context</div>
+
+  <div class="section-label">Current Behaviour</div>
+  <div class="section-text">
+    <span class="code">WorkoutPlanEngine.coachNote(intensity:)</span> returns one of exactly three strings based purely on intensity band. "Don't hold back today." / "Get your work in." / "Rest is training too." The same user sees the same note every heavy session indefinitely.
+  </div>
+
+  <div class="section-label">Requirements</div>
+  <ul class="solution-list">
+    <li>Coach note must reference at least one data-derived fact from the session context: readiness delta, a plateau exercise, a progressing lift, or a pattern imbalance</li>
+    <li>Note is composed from up to 3 sentence slots: (1) readiness context, (2) key lift of the day, (3) a watch-out or encouragement</li>
+    <li>Slot 1 sources: <span class="code">ReadinessState.factors</span> — pick the highest-magnitude factor (positive or negative) and render it in plain language</li>
+    <li>Slot 2 sources: <span class="code">ExerciseAnalytics.slopePerWeek</span> for the top exercise in today's plan — if progressing, name it; if plateaued, flag it</li>
+    <li>Slot 3 sources: pattern imbalance from <span class="code">AnalyticsResult.categoryAnalytics</span> or consecutiveActive days from readiness engine</li>
+    <li>Total note length: 1–3 sentences, max 180 characters</li>
+    <li>Falls back to current 3-string behaviour if analytics data is unavailable (new user, no history)</li>
+  </ul>
+
+  <div class="section-label">Acceptance Criteria</div>
+  <ul class="solution-list">
+    <li>Two consecutive heavy sessions produce different coach notes if readiness factors differ</li>
+    <li>A plateaued exercise in today's plan causes the note to mention it</li>
+    <li>A user with 6.0h sleep last night gets a note referencing recovery, not "don't hold back"</li>
+  </ul>
+  <div class="file-ref">iOSApp/Engines/WorkoutPlanEngine.swift · coachNote() · ReadinessEngine.swift · buildFactors() ~L368 · StrengthAnalyticsEngine.swift · ExerciseAnalytics</div>
+</div>
+
+<!-- T-003 -->
+<div class="issue" data-id="T-003" data-priority="p1" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">T-003</span>
+      <span class="badge badge-p1">P1</span>
+      <span class="badge badge-confirmed">Confirmed</span>
+      <span class="badge badge-open" id="status-T-003">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">"Why this plan" brief missing from GuidedWorkoutPlanView — no reasoning shown to the user</div>
+
+  <div class="section-label">Current Behaviour</div>
+  <div class="section-text">
+    <span class="code">GuidedWorkoutPlanView</span> shows the plan title, exercise list with sets × reps × weight, and a Start button. No explanation of why this split was chosen, why these exercises, why this intensity. Users who trust the plan can't verify it; users who don't trust it have no basis to decide.
+  </div>
+
+  <div class="section-label">Requirements</div>
+  <ul class="solution-list">
+    <li>Add a collapsible "Why this plan" section to <span class="code">GuidedWorkoutPlanView</span>, collapsed by default</li>
+    <li>Section contains up to 4 bullet lines, each sourced from a specific data point:</li>
+    <li>&nbsp;&nbsp;• Split rationale: "Back + biceps — chest was trained 1 day ago, back is 4 days fresh" (from <span class="code">recentlyTrainedRegions</span> + days calculation)</li>
+    <li>&nbsp;&nbsp;• Intensity rationale: "Heavy — readiness 78, above the 77 threshold" (from <span class="code">intensityForScore</span> + actual score)</li>
+    <li>&nbsp;&nbsp;• Key lift: "Deadlift is your fastest-improving pull movement (+1.8 kg/wk)" (from <span class="code">slopePerWeek</span>)</li>
+    <li>&nbsp;&nbsp;• Watch-out (if applicable): "Overhead press stalled — swapped to landmine press" (from <span class="code">isPlateau</span>)</li>
+    <li>Lines are only shown when data is available — section is hidden entirely for new users with no history</li>
+    <li>Each line is one sentence, plain language, no jargon</li>
+    <li>Collapse/expand state persists per session via <span class="code">@State</span> (does not need to persist to disk)</li>
+  </ul>
+
+  <div class="section-label">Acceptance Criteria</div>
+  <ul class="solution-list">
+    <li>Tapping "Why this plan" expands 2–4 bullet lines specific to that plan, not generic copy</li>
+    <li>Changing which plan is selected (primary vs alternate) shows different reasoning</li>
+    <li>Section does not appear for users with fewer than 3 sessions logged</li>
+  </ul>
+  <div class="file-ref">iOSApp/Features/GuidedWorkout/GuidedTrainerExperience.swift · GuidedWorkoutPlanView ~L1</div>
+</div>
+
+<!-- T-004 -->
+<div class="issue" data-id="T-004" data-priority="p1" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">T-004</span>
+      <span class="badge badge-p1">P1</span>
+      <span class="badge badge-confirmed">Confirmed</span>
+      <span class="badge badge-open" id="status-T-004">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">WorkoutNarrativeEngine not called in guided sessions — zero post-set coaching</div>
+
+  <div class="section-label">Current Behaviour</div>
+  <div class="section-text">
+    <span class="code">GuidedWorkoutSessionView.logCurrentSet()</span> appends to <span class="code">completedSets</span> and advances state. It never calls <span class="code">WorkoutNarrativeEngine</span>. The free-form workout (ActiveWorkoutView) does generate coaching text; the Trainer's own guided session — the most structured environment — produces none.
+  </div>
+
+  <div class="section-label">Requirements</div>
+  <ul class="solution-list">
+    <li>After completing the final set of each exercise in a guided session, generate a narrative phrase using <span class="code">WorkoutNarrativeEngine.generateNarrative(workout:exercises:store:)</span></li>
+    <li>Display the phrase as a brief inline text below the exercise card, fading out after 4 seconds</li>
+    <li>Narrative is generated on a background thread; if it takes &gt;300ms to compute, show nothing rather than block UI</li>
+    <li>Depends on A-003 (targetWeight and targetReps written to SetRecord on save) — this item must ship after A-003</li>
+    <li>Use the same <span class="code">@State private var narrativeText: String?</span> + <span class="code">DispatchQueue.main.asyncAfter</span> pattern used elsewhere in the codebase</li>
+  </ul>
+
+  <div class="section-label">Acceptance Criteria</div>
+  <ul class="solution-list">
+    <li>Completing all sets of bench press in a guided session produces a coaching phrase referencing bench press</li>
+    <li>Coaching phrase varies between sessions (phrase bank rotation works)</li>
+    <li>No coaching phrase appears mid-exercise (only after the last set)</li>
+    <li>Performance of the guided session UI is not degraded — narrative computation does not block the rest timer or UI state</li>
+  </ul>
+  <div class="file-ref">iOSApp/Features/GuidedWorkout/GuidedTrainerExperience.swift · logCurrentSet() · iOSApp/Engines/WorkoutNarrativeEngine.swift</div>
+</div>
+
+<!-- T-005 -->
+<div class="issue" data-id="T-005" data-priority="p0" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">T-005</span>
+      <span class="badge badge-p0">P0</span>
+      <span class="badge badge-confirmed">Confirmed</span>
+      <span class="badge badge-open" id="status-T-005">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">Pattern balance computed but ignored — push:pull imbalance never corrects plan split selection</div>
+
+  <div class="section-label">Current Behaviour</div>
+  <div class="section-text">
+    <span class="code">StrengthAnalyticsEngine</span> computes <span class="code">categoryAnalytics: [CategoryAnalytics]</span> including volume and improvement rates per movement pattern (push, pull, hinge, squat, carry). <span class="code">WorkoutPlanEngine</span> never reads this. A user at 2.5:1 push:pull ratio will receive additional push plans from the Trainer indefinitely because the split selection uses only region freshness, not pattern balance.
+  </div>
+
+  <div class="section-label">Requirements</div>
+  <ul class="solution-list">
+    <li>Add <span class="code">analyticsResult: AnalyticsResult?</span> parameter to <span class="code">WorkoutPlanEngine.generatePlans()</span></li>
+    <li>Compute push:pull ratio from <span class="code">categoryAnalytics</span>: sum volume for push patterns / sum volume for pull patterns over last 4 weeks</li>
+    <li>If push:pull ratio &gt; 1.6, force pull-dominant split for primary plan regardless of freshness calculation</li>
+    <li>If push:pull ratio &lt; 0.7, force push-dominant split</li>
+    <li>Ratio within 0.7–1.6 = use existing freshness-based selection</li>
+    <li>The forced split overrides <span class="code">primarySplit(fresh:stale:)</span> but does not override readiness → intensity mapping</li>
+    <li>When analytics is nil (new user), fall back to existing behaviour with no change</li>
+    <li>Log the routing decision as a string for use in T-003 (Why this plan brief)</li>
+  </ul>
+
+  <div class="section-label">Acceptance Criteria</div>
+  <ul class="solution-list">
+    <li>A user with push:pull = 2.2:1 receives a pull-focused primary plan even if push regions are fresher</li>
+    <li>The "Why this plan" section (T-003) displays "Pull emphasis — your push:pull ratio is 2.2:1" for that plan</li>
+    <li>New users with no analytics data see no change in behaviour</li>
+  </ul>
+  <div class="file-ref">iOSApp/Engines/WorkoutPlanEngine.swift · generatePlans() · primarySplit() · iOSApp/Engines/StrengthAnalyticsEngine.swift · categoryAnalytics</div>
+</div>
+
+<!-- T-006 -->
+<div class="issue" data-id="T-006" data-priority="p1" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">T-006</span>
+      <span class="badge badge-p1">P1</span>
+      <span class="badge badge-confirmed">Confirmed</span>
+      <span class="badge badge-open" id="status-T-006">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">Stall detection computed but ignored — plateaued exercises prescribed indefinitely</div>
+
+  <div class="section-label">Current Behaviour</div>
+  <div class="section-text">
+    <span class="code">ExerciseAnalytics.isPlateau</span> is <span class="code">true</span> when OLS slope &lt; 0.5 kg/week over 4 weeks with ≥ 3 sessions logged. <span class="code">WorkoutPlanEngine.makePlan()</span> uses <span class="code">randomElement()</span> on the exercise pool — it never reads <span class="code">isPlateau</span>. A stalled exercise is equally likely to be prescribed as a progressing one.
+  </div>
+
+  <div class="section-label">Requirements</div>
+  <ul class="solution-list">
+    <li>In <span class="code">makePlan()</span>, for each region, check if the top-scored compound exercise has <span class="code">isPlateau == true</span> in the analyticsResult</li>
+    <li>If plateaued, select an alternative exercise in the same region and movement pattern instead</li>
+    <li>Alternative selection: filter the pool by same <span class="code">MovementPattern</span>, exclude the plateaued exercise, then score by <span class="code">slopePerWeek</span> (highest slope wins) or <span class="code">randomElement()</span> if no history exists</li>
+    <li>If no alternative exists in the same pattern, use the plateaued exercise but flag it in the plan's metadata for T-003 display</li>
+    <li>Plateau swap only applies to compounds — isolation exercises are not swapped on plateau (volume variation is sufficient)</li>
+    <li>Requires T-005 analytics parameter to be added to <span class="code">generatePlans()</span> first</li>
+  </ul>
+
+  <div class="section-label">Acceptance Criteria</div>
+  <ul class="solution-list">
+    <li>Exercise with <span class="code">isPlateau = true</span> for 4+ sessions does not appear as the primary compound in that session's plan</li>
+    <li>The replaced exercise is in the same body region and movement pattern</li>
+    <li>The "Why this plan" brief shows "[Exercise] swapped — stalled for X sessions"</li>
+    <li>If the user manually swaps back via <span class="code">ExerciseSwapperView</span>, their choice is respected (user override wins)</li>
+  </ul>
+  <div class="file-ref">iOSApp/Engines/WorkoutPlanEngine.swift · makePlan() · iOSApp/Engines/StrengthAnalyticsEngine.swift · ExerciseAnalytics.isPlateau</div>
+</div>
+
+<!-- T-007 -->
+<div class="issue" data-id="T-007" data-priority="p2" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">T-007</span>
+      <span class="badge badge-p2">P2</span>
+      <span class="badge badge-confirmed">Confirmed</span>
+      <span class="badge badge-open" id="status-T-007">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">Alternate plan intensity hardcoded to moderate — not derived from readiness or goal</div>
+
+  <div class="section-label">Current Behaviour</div>
+  <div class="section-text">
+    In <span class="code">generatePlans()</span>: <span class="code">let alternate = makePlan(..., intensity: .moderate)</span>. Always moderate, regardless of context. If readiness is 90, the alternate is still moderate. The alternate exists to offer a different split — not necessarily a different intensity.
+  </div>
+
+  <div class="section-label">Requirements</div>
+  <ul class="solution-list">
+    <li>Alternate plan intensity = one band below primary, with a floor of light: <span class="code">min(primaryIntensity - 1, .moderate)</span></li>
+    <li>If primary is already light (readiness &lt; 55), alternate = light with a different split (not a different intensity)</li>
+    <li>IntensityBadge on the alternate card must reflect the actual computed intensity</li>
+    <li>Estimated minutes for alternate should scale with intensity: heavy ~55min, moderate ~45min, light ~35min (adjust existing hardcoded values)</li>
+  </ul>
+  <div class="file-ref">iOSApp/Engines/WorkoutPlanEngine.swift · generatePlans() ~L20</div>
+</div>
+
+<!-- T-008 -->
+<div class="issue" data-id="T-008" data-priority="p2" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">T-008</span>
+      <span class="badge badge-p2">P2</span>
+      <span class="badge badge-open" id="status-T-008">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">No time budget — plans do not adapt to available session time</div>
+
+  <div class="section-label">Description</div>
+  <div class="section-text">
+    Every plan prescribes the same exercise count regardless of whether the user has 25 minutes or 75 minutes. Users with short time windows get plans they cannot finish, leading to incomplete sessions which produces negative inference signals (see B-008b).
+  </div>
+
+  <div class="section-label">Requirements</div>
+  <ul class="solution-list">
+    <li>Add a time budget selector to <span class="code">TrainerTabView</span>: Quick (≤35 min) · Standard (45–55 min) · Full (60+ min). Defaults to Standard. Persists via <span class="code">@AppStorage("trainerTimeBudget")</span></li>
+    <li>Pass time budget into <span class="code">generatePlans()</span> as <span class="code">timeBudgetMinutes: Int</span></li>
+    <li>Exercise count in <span class="code">makePlan()</span> is derived from time budget: Quick = 3–4 exercises, Standard = 5–6 (current), Full = 7–8</li>
+    <li>Quick sessions prioritise compounds only — no isolation work</li>
+    <li>The estimated minutes shown on each card must reflect the actual exercise count after time-budget trimming</li>
+  </ul>
+
+  <div class="section-label">Acceptance Criteria</div>
+  <ul class="solution-list">
+    <li>Selecting "Quick" reduces the primary plan to 3–4 compound exercises with no isolation</li>
+    <li>Card shows updated duration matching the trimmed plan</li>
+    <li>Time budget setting survives app restart</li>
+  </ul>
+  <div class="file-ref">iOSApp/Views/Trainer/TrainerTabView.swift · iOSApp/Engines/WorkoutPlanEngine.swift · makePlan()</div>
+</div>
+
+<!-- T-009 -->
+<div class="issue" data-id="T-009" data-priority="p1" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">T-009</span>
+      <span class="badge badge-p1">P1</span>
+      <span class="badge badge-open" id="status-T-009">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">No equipment profile — Trainer can prescribe exercises requiring unavailable equipment</div>
+
+  <div class="section-label">Description</div>
+  <div class="section-text">
+    <span class="code">generatePlans()</span> filters exercises only by body region. A user training at home with dumbbells can receive a barbell squat as the primary compound. <span class="code">Equipment</span> is a field on every <span class="code">Exercise</span> but is never used as a filter in plan generation.
+  </div>
+
+  <div class="section-label">Requirements</div>
+  <ul class="solution-list">
+    <li>Add <span class="code">availableEquipment: Set&lt;Equipment&gt;</span> to <span class="code">UserProfile</span>. Default value: all equipment types (current behaviour preserved)</li>
+    <li>Add an equipment selector to the Settings screen — multi-select list of all <span class="code">Equipment</span> cases</li>
+    <li>In <span class="code">makePlan()</span>, filter the exercise pool: <span class="code">pool = allExercises.filter { availableEquipment.contains($0.equipment) }</span></li>
+    <li>If the filtered pool produces fewer than 2 exercises for a region, fall back to bodyweight exercises for that region before falling back to the full unfiltered pool</li>
+    <li>Equipment filter also applies to <span class="code">makeRecoveryPlan()</span></li>
+    <li><span class="code">ExerciseSwapperView</span> should respect the same equipment filter by default, with a "Show all equipment" toggle for overrides</li>
+  </ul>
+
+  <div class="section-label">Acceptance Criteria</div>
+  <ul class="solution-list">
+    <li>A user with only dumbbells and bodyweight selected never receives a barbell exercise in a generated plan</li>
+    <li>Existing users (no equipment profile set) see no change in behaviour</li>
+    <li>Equipment profile change takes effect on the next plan refresh (next <span class="code">refreshAnalytics()</span> cycle)</li>
+  </ul>
+  <div class="file-ref">iOSApp/Engines/WorkoutPlanEngine.swift · makePlan() · iOSApp/Models/Models.swift · UserProfile · iOSApp/Views/Settings/SettingsView.swift</div>
+</div>
+
+<!-- ─────────────────────────────────────────── -->
+<div class="separator"></div>
+<div class="section-heading">Trainer Tab · Advanced Intelligence (Analytics → Plan)</div>
+
+<!-- T-010 -->
+<div class="issue" data-id="T-010" data-priority="p1" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">T-010</span>
+      <span class="badge badge-p1">P1</span>
+      <span class="badge badge-confirmed">Confirmed</span>
+      <span class="badge badge-open" id="status-T-010">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">WorkoutPlanEngine does not receive AnalyticsResult or EmergentInsights — core intelligence gap</div>
+
+  <div class="section-label">Current Behaviour</div>
+  <div class="section-text">
+    <span class="code">generatePlans(log:exercises:readiness:lastPerformance:)</span> has no access to <span class="code">AnalyticsResult</span>, <span class="code">EmergentInsight</span> array, or <span class="code">ReadinessState.factors</span>. All the intelligence computed by the analytics pipeline is invisible to the plan engine. This is the root cause of T-002, T-003, T-005, T-006.
+  </div>
+
+  <div class="section-label">Requirements — Function Signature Change</div>
+  <ul class="solution-list">
+    <li>New signature: <span class="code">generatePlans(log:exercises:readiness:lastPerformance:analytics:insights:)</span></li>
+    <li><span class="code">analytics: AnalyticsResult?</span> — nil-safe, falls back to existing behaviour when nil</li>
+    <li><span class="code">insights: [EmergentInsight]</span> — empty array default</li>
+    <li>Update <span class="code">SeedStore.refreshRecommendedPlans()</span> (T-010 creates this method) to pass the current <span class="code">homeCache</span> analytics result and emergent insights</li>
+    <li>The store-based convenience overload in <span class="code">TrainerTabView</span> also updated to pass analytics</li>
+    <li>All existing callers (tests, previews) must be updated — no silent breakage</li>
+  </ul>
+
+  <div class="section-label">Acceptance Criteria</div>
+  <ul class="solution-list">
+    <li>The function signature change compiles cleanly — xcodebuild passes</li>
+    <li>New user with nil analytics: identical plan output to current behaviour</li>
+    <li>User with analytics: T-005 and T-006 behaviour unlocked (pattern routing + plateau swap)</li>
+  </ul>
+  <div class="file-ref">iOSApp/Engines/WorkoutPlanEngine.swift · generatePlans() · iOSApp/Engines/SeedStore.swift · refreshAnalytics()</div>
+</div>
+
+<!-- T-011 -->
+<div class="issue" data-id="T-011" data-priority="p1" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">T-011</span>
+      <span class="badge badge-p1">P1</span>
+      <span class="badge badge-confirmed">Confirmed</span>
+      <span class="badge badge-open" id="status-T-011">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">Readiness factor breakdown not exposed in Trainer tab — score shown without context</div>
+
+  <div class="section-label">Current Behaviour</div>
+  <div class="section-text">
+    <span class="code">MiniReadinessCard</span> in <span class="code">TrainerTabView</span> shows score + confidence + delta. <span class="code">ReadinessState.factors: [Factor]</span> is fully computed (sleep, resting HR, consecutive days, volume spike, frequency, steps) and is shown on the Home tab — but not in the Trainer tab where it would inform the session decision.
+  </div>
+
+  <div class="section-label">Requirements</div>
+  <ul class="solution-list">
+    <li>Expand <span class="code">MiniReadinessCard</span> to be tappable — tap reveals an inline factor breakdown below the score row</li>
+    <li>Factor breakdown: list up to 4 factors, positive factors in <span class="code">HONTheme.positive</span>, negative in <span class="code">HONTheme.warning</span>, each with a leading icon (checkmark.circle / exclamationmark.circle)</li>
+    <li>If no HealthKit factors are present (sleep/HR nil), show only the training-derived factors (frequency, volume, consecutive days)</li>
+    <li>Expanded state is <span class="code">@State</span> local to <span class="code">TrainerTabView</span> — does not persist</li>
+    <li>Factor text reuses existing <span class="code">Factor.text</span> strings already written in <span class="code">ReadinessEngine.buildFactors()</span> — no new copy needed</li>
+    <li>Low-confidence readiness score shows a disclaimer: "Based on training data only — connect Apple Health for full picture"</li>
+  </ul>
+
+  <div class="section-label">Acceptance Criteria</div>
+  <ul class="solution-list">
+    <li>Tapping the readiness card reveals the factor list with correct positive/negative colouring</li>
+    <li>Factor list matches exactly what <span class="code">ReadinessState.factors</span> contains — no additional computation</li>
+    <li>Tapping again collapses the list</li>
+  </ul>
+  <div class="file-ref">iOSApp/Views/Trainer/TrainerTabView.swift · MiniReadinessCard ~L89 · iOSApp/Engines/ReadinessEngine.swift · buildFactors() ~L368</div>
+</div>
+
+<!-- T-012 -->
+<div class="issue" data-id="T-012" data-priority="p2" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">T-012</span>
+      <span class="badge badge-p2">P2</span>
+      <span class="badge badge-confirmed">Confirmed</span>
+      <span class="badge badge-open" id="status-T-012">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">EmergentInsight outputs not connected to Trainer — 6 advanced signals computed but never used for planning</div>
+
+  <div class="section-label">Available Signals and Trainer Use</div>
+  <div class="section-text" style="margin-bottom:8px;">The following <span class="code">EmergentInsight</span> types are computed each analytics cycle but never reach the Trainer:</div>
+  <ul class="solution-list">
+    <li><span class="code">trueAdaptationState</span> — if "maintaining" (not adapting), flag to the user: "Gains have plateaued across the board — consider a stimulus change this week"</li>
+    <li><span class="code">imbalanceTrajectory</span> — if worsening, route the plan to correct it (feeds into T-005)</li>
+    <li><span class="code">loadTolerance</span> — if low, cap intensity at moderate regardless of readiness score</li>
+    <li><span class="code">feelArchetype</span> — if "moodDependent", add a note: "Your performance varies with how you feel going in — rate yourself before starting"</li>
+    <li><span class="code">strongestDay</span> — if today matches the user's strongest day of week, surface it: "You consistently perform best on [day] — good day to push"</li>
+    <li><span class="code">programCalibration</span> — if frequency is too low for stated goal, surface it in coach note</li>
+  </ul>
+
+  <div class="section-label">Requirements</div>
+  <ul class="solution-list">
+    <li>Depends on T-010 (analytics passed into plan engine)</li>
+    <li>In <span class="code">generatePlans()</span>, iterate insights array and apply the relevant routing rules listed above</li>
+    <li><span class="code">loadTolerance = low</span> overrides intensity: force moderate cap</li>
+    <li><span class="code">strongestDay</span> match: add a <span class="code">coachNotePrefix</span> string that gets prepended to the plan's coach note</li>
+    <li><span class="code">trueAdaptationState = maintaining</span> for ≥3 consecutive weeks: add stimulus-change hint to coach note</li>
+    <li>All routing rules are skipped if the insight's <span class="code">inputs</span> prerequisites are not met (insight is in placeholder state)</li>
+  </ul>
+  <div class="file-ref">iOSApp/Engines/EmergentInsightEngine.swift · iOSApp/Engines/WorkoutPlanEngine.swift · generatePlans()</div>
+</div>
+
+<!-- T-013 -->
+<div class="issue" data-id="T-013" data-priority="p2" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">T-013</span>
+      <span class="badge badge-p2">P2</span>
+      <span class="badge badge-open" id="status-T-013">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">Strongest day routing — high-performance day not flagged in Trainer when it would most affect load decision</div>
+
+  <div class="section-label">Description</div>
+  <div class="section-text">
+    <span class="code">EmergentInsightEngine.strongestDay()</span> identifies the day of week with the highest average session volume. If today is that day and readiness is moderate-to-high, the plan should nudge the user toward the higher end of the intensity band. This is a distinct signal from the readiness score — it's about day-of-week performance patterns, not recovery state.
+  </div>
+
+  <div class="section-label">Requirements</div>
+  <ul class="solution-list">
+    <li>In <span class="code">TrainerTabView</span>, check <span class="code">homeCache.emergentInsights</span> for <span class="code">strongestDay</span> insight</li>
+    <li>If today matches the strongest day and readiness ≥ 65: add a one-line callout above the card deck — "Your strongest day of the week. Go for it." — in <span class="code">HONTheme.positive</span></li>
+    <li>Callout is a single text line, not a card — it must not compete visually with the plan cards</li>
+    <li>Callout only appears when the insight has sufficient data (insight is not in placeholder state)</li>
+    <li>Callout is dismissed after the user starts a session (tracked via <span class="code">@State</span>)</li>
+  </ul>
+  <div class="file-ref">iOSApp/Views/Trainer/TrainerTabView.swift · iOSApp/Engines/EmergentInsightEngine.swift · strongestDay()</div>
+</div>
+
+<!-- T-014 -->
+<div class="issue" data-id="T-014" data-priority="p2" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">T-014</span>
+      <span class="badge badge-p2">P2</span>
+      <span class="badge badge-open" id="status-T-014">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">Per-exercise intelligence not shown on plan cards — slopePerWeek and isPlateau invisible to user</div>
+
+  <div class="section-label">Description</div>
+  <div class="section-text">
+    Each exercise in a plan card shows name + sets × reps + weight. The plan engine has (or will have after T-010) access to <span class="code">slopePerWeek</span> and <span class="code">isPlateau</span> per exercise. Surfacing this on the card gives the user a reason to trust the selection — and flags when something unusual was prescribed.
+  </div>
+
+  <div class="section-label">Requirements</div>
+  <ul class="solution-list">
+    <li>Add an optional <span class="code">performanceTag: String?</span> field to <span class="code">GuidedExercise</span> — populated during plan generation when analytics are available</li>
+    <li>Tag values: "↑ gaining" (slope ≥ 1.0 kg/wk) · "→ holding" (0.2–1.0 kg/wk) · "⟳ variation" (isPlateau, exercise was swapped) · nil (no history)</li>
+    <li>In <span class="code">WorkoutCard</span> exercise list rows, show the tag as a small coloured label after the exercise name — max 10 characters, <span class="code">caption2</span> font</li>
+    <li>Colour: gaining = <span class="code">HONTheme.positive</span>, holding = <span class="code">.secondary</span>, variation = <span class="code">HONTheme.warning</span></li>
+    <li>Tag is hidden when <span class="code">performanceTag == nil</span> — no blank space shown</li>
+  </ul>
+
+  <div class="section-label">Acceptance Criteria</div>
+  <ul class="solution-list">
+    <li>An exercise progressing at +1.5 kg/wk shows "↑ gaining" tag on its row in the plan card</li>
+    <li>An exercise swapped due to plateau shows "⟳ variation" tag</li>
+    <li>New users with no history see no tags — card layout unchanged</li>
+  </ul>
+  <div class="file-ref">iOSApp/Models/GuidedWorkoutModels.swift · GuidedExercise · iOSApp/Views/Trainer/SwipeableWorkoutCards.swift · WorkoutCard ~L121</div>
+</div>
+
+<!-- ─────────────────────────────────────────── -->
 <div class="tally">
   <h3>Quick Reference</h3>
   <div class="tally-grid" id="tally-grid">
@@ -890,6 +1398,7 @@
     <div class="tally-item">UI Bugs <span id="count-ui">—</span></div>
     <div class="tally-item">Architecture <span id="count-arch">—</span></div>
     <div class="tally-item">Product <span id="count-product">—</span></div>
+    <div class="tally-item">Trainer <span id="count-trainer">—</span></div>
   </div>
 </div>
 
@@ -959,9 +1468,10 @@ function updateStats() {
   document.getElementById('count-p0').textContent = p0;
   document.getElementById('count-p1').textContent = p1;
   document.getElementById('count-p2').textContent = p2;
-  document.getElementById('count-ui').textContent   = document.querySelectorAll('[data-id^="B-"]').length;
-  document.getElementById('count-arch').textContent = document.querySelectorAll('[data-id^="A-"]').length;
+  document.getElementById('count-ui').textContent      = document.querySelectorAll('[data-id^="B-"]').length;
+  document.getElementById('count-arch').textContent    = document.querySelectorAll('[data-id^="A-"]').length;
   document.getElementById('count-product').textContent = document.querySelectorAll('[data-id^="P-"]').length;
+  document.getElementById('count-trainer').textContent = document.querySelectorAll('[data-id^="T-"]').length;
 }
 
 // ── Filter buttons ──────────────────────────────────────────────────────────
