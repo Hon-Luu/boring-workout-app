@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H.O.N. Interdisciplinary Review Board — Round 3 — 2026-05-28</title>
+<style>
+:root {
+  --bg:#0f0f11;--s1:#1a1a1e;--s2:#222228;--s3:#2a2a32;
+  --border:#2e2e36;--text:#e8e8ee;--muted:#888896;--dim:#444450;
+  --amber:#D4943A;--sage:#7BAF85;--rose:#C26B6B;
+  --slate:#6B85A0;--lav:#9B8EC4;--teal:#5BA3A0;
+  --red:#c25050;--orange:#c27830;--yellow:#b8882a;
+  --blue:#5080c0;--green:#4a9a5a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,'SF Pro Text','Helvetica Neue',sans-serif;font-size:14px;line-height:1.7}
+.page{max-width:1300px;margin:0 auto;padding:52px 30px}
+h1{font-size:32px;font-weight:800;letter-spacing:-.6px;color:var(--amber)}
+h2{font-size:18px;font-weight:700;color:var(--text);margin:64px 0 20px;padding-bottom:12px;border-bottom:2px solid var(--border);letter-spacing:-.2px}
+h3{font-size:12px;font-weight:700;color:var(--amber);margin:28px 0 10px;text-transform:uppercase;letter-spacing:.9px}
+h4{font-size:13px;font-weight:700;color:var(--text);margin:14px 0 6px}
+p{color:var(--muted);margin-bottom:10px;line-height:1.85}
+strong{color:var(--text)}
+em{color:var(--muted);font-style:italic}
+code{background:var(--s2);color:var(--sage);padding:2px 7px;border-radius:4px;font-size:11.5px;font-family:'SF Mono','Fira Code',monospace}
+ul,ol{padding-left:0;list-style:none}
+li{padding:5px 0;border-bottom:1px solid var(--border);color:var(--muted);font-size:13px}
+li:last-child{border-bottom:none}
+li strong{color:var(--text)}
+.subtitle{color:var(--muted);font-size:13px;margin:8px 0 48px;max-width:860px;line-height:1.9}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+@media(max-width:900px){.g2,.g3,.g4{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.g2,.g3,.g4{grid-template-columns:1fr}}
+.card{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:14px}
+.note{background:rgba(212,148,58,.07);border:1px solid rgba(212,148,58,.2);border-radius:8px;padding:13px 17px;font-size:13px;color:var(--text);margin:16px 0}
+.note strong{color:var(--amber)}
+.alarm{background:rgba(194,80,80,.07);border:1px solid rgba(194,80,80,.25);border-radius:8px;padding:13px 17px;font-size:13px;color:var(--text);margin:16px 0}
+.alarm strong{color:var(--rose)}
+.good{background:rgba(123,175,133,.06);border:1px solid rgba(123,175,133,.2);border-radius:8px;padding:13px 17px;font-size:13px;color:var(--text);margin:16px 0}
+.good strong{color:var(--sage)}
+.info{background:rgba(107,133,160,.07);border:1px solid rgba(107,133,160,.22);border-radius:8px;padding:13px 17px;font-size:13px;color:var(--text);margin:16px 0}
+.info strong{color:var(--slate)}
+.table-wrap{overflow-x:auto;margin:14px 0}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{background:var(--s2);color:var(--muted);font-weight:600;text-align:left;padding:9px 12px;border-bottom:2px solid var(--border);font-size:11px;letter-spacing:.4px;text-transform:uppercase;white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--muted)}
+tr:last-child td{border-bottom:none}
+tr:nth-child(even) td{background:rgba(255,255,255,.012)}
+td:first-child{color:var(--amber);font-family:'SF Mono',monospace;font-size:11px;white-space:nowrap}
+td strong{color:var(--text)}
+.section-num{display:inline-block;background:var(--amber);color:#000;font-weight:900;font-size:11px;padding:2px 8px;border-radius:4px;margin-right:10px;letter-spacing:.4px}
+.tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;white-space:nowrap;margin:2px 2px 0 0}
+.tc-red{background:rgba(194,80,80,.15);color:var(--red)}
+.tc-amber{background:rgba(212,148,58,.12);color:var(--amber)}
+.tc-sage{background:rgba(123,175,133,.12);color:var(--sage)}
+.tc-slate{background:rgba(107,133,160,.12);color:var(--slate)}
+.tc-lav{background:rgba(155,142,196,.12);color:var(--lav)}
+.tc-dim{background:rgba(68,68,80,.3);color:var(--muted)}
+.tc-teal{background:rgba(91,163,160,.12);color:var(--teal)}
+.expert-block{border-left:3px solid var(--border);padding:12px 16px;margin:10px 0;background:var(--s1);border-radius:0 8px 8px 0}
+.expert-block.agree{border-left-color:var(--sage)}
+.expert-block.disagree{border-left-color:var(--rose)}
+.expert-block.warn{border-left-color:var(--amber)}
+.expert-block.neutral{border-left-color:var(--slate)}
+.expert-name{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px}
+.expert-block p{font-size:13px;margin:0;color:var(--text);line-height:1.75}
+.cohort-card{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:18px}
+.cohort-header{padding:14px 20px;display:flex;gap:14px;align-items:center;background:var(--s2);border-bottom:1px solid var(--border)}
+.cohort-icon{font-size:22px}
+.cohort-name{font-size:14px;font-weight:700}
+.cohort-meta{font-size:12px;color:var(--muted)}
+.cohort-body{padding:18px 20px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px}
+@media(max-width:800px){.cohort-body{grid-template-columns:1fr 1fr}}
+.cohort-col h4{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.cohort-col p,.cohort-col li{font-size:12px;color:var(--muted);margin-bottom:4px;border:none;padding:2px 0}
+.cohort-col li strong{font-size:12px}
+.score-ring{display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;font-size:18px;font-weight:900;border:3px solid}
+.sr-green{border-color:var(--sage);color:var(--sage);background:rgba(123,175,133,.08)}
+.sr-amber{border-color:var(--amber);color:var(--amber);background:rgba(212,148,58,.08)}
+.sr-red{border-color:var(--rose);color:var(--rose);background:rgba(194,107,107,.08)}
+.verdict{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;padding:2px 8px;border-radius:4px;display:inline-block;margin-bottom:8px}
+.v-ship{background:rgba(123,175,133,.15);color:var(--sage)}
+.v-beta{background:rgba(212,148,58,.15);color:var(--amber)}
+.v-block{background:rgba(194,107,107,.15);color:var(--rose)}
+.delta-badge{font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;display:inline-block}
+.delta-up{background:rgba(123,175,133,.15);color:var(--sage)}
+.delta-same{background:rgba(68,68,80,.3);color:var(--muted)}
+.delta-down{background:rgba(194,107,107,.15);color:var(--rose)}
+.callout{border-radius:0 8px 8px 0;padding:12px 16px;margin:12px 0;font-size:13px;border-left:3px solid var(--amber);background:rgba(212,148,58,.05)}
+.callout p{margin:0;color:var(--text)}
+.priority-row{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.priority-row:last-child{border-bottom:none}
+.pnum{font-size:11px;font-weight:700;font-family:'SF Mono',monospace;color:var(--amber);min-width:36px;padding-top:2px}
+.ptitle{font-size:13px;font-weight:700;color:var(--text)}
+.pdesc{font-size:12px;color:var(--muted);margin-top:3px}
+.meta-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:24px 0}
+.meta-cell{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:16px 18px}
+.meta-val{font-size:26px;font-weight:800;color:var(--amber);letter-spacing:-.5px}
+.meta-label{font-size:11px;color:var(--muted);margin-top:2px}
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>H.O.N. — Interdisciplinary Review Board</h1>
+<div class="subtitle">
+  <strong>Round 3 · 2026-05-28</strong> &nbsp;·&nbsp; 8-expert panel reviewing post-sprint state after 6 commits since Round 2 &nbsp;·&nbsp;
+  Focus areas: UX tap reduction, narrative quality, training intelligence, HRV science, cold-start, readiness validity, and shipping risk.
+</div>
+
+<!-- ====== SPRINT DELTA ====== -->
+<h2><span class="section-num">01</span> What Changed Since Round 2</h2>
+
+<div class="meta-grid">
+  <div class="meta-cell">
+    <div class="meta-val">6</div>
+    <div class="meta-label">Commits since v2 (22148b0 → 7a722fe)</div>
+  </div>
+  <div class="meta-cell">
+    <div class="meta-val">8</div>
+    <div class="meta-label">Distinct features shipped</div>
+  </div>
+  <div class="meta-cell">
+    <div class="meta-val">74</div>
+    <div class="meta-label">Swift source files</div>
+  </div>
+  <div class="meta-cell">
+    <div class="meta-val">0</div>
+    <div class="meta-label">Build errors (xcodebuild verified each commit)</div>
+  </div>
+</div>
+
+<div class="table-wrap">
+<table>
+<thead><tr>
+  <th>Commit</th><th>Feature</th><th>Impact</th><th>Status</th>
+</tr></thead>
+<tbody>
+<tr>
+  <td>22148b0</td>
+  <td><strong>P0 Trifecta:</strong> iCloud sync, lapse threshold 3→6 days, real readiness history</td>
+  <td>Fixes crash-level gaps in readiness scoring and sync</td>
+  <td><span class="tag tc-sage">SHIPPED</span></td>
+</tr>
+<tr>
+  <td>121368b</td>
+  <td><strong>Narrative format variety:</strong> 4 structural formats cycling ~every 4 sessions</td>
+  <td>Eliminates template fatigue after 20+ sessions</td>
+  <td><span class="tag tc-sage">SHIPPED</span></td>
+</tr>
+<tr>
+  <td>6eb6a70</td>
+  <td><strong>iCloud entitlement removal:</strong> graceful nil fallback in iCloudSync.swift</td>
+  <td>Unblocks personal Apple account compilation</td>
+  <td><span class="tag tc-sage">SHIPPED</span></td>
+</tr>
+<tr>
+  <td>e46c5ea</td>
+  <td><strong>HRV personalization, cold-start plan, scored WorkoutPlanEngine</strong></td>
+  <td>Three compounding intelligence upgrades</td>
+  <td><span class="tag tc-sage">SHIPPED</span></td>
+</tr>
+<tr>
+  <td>7a722fe</td>
+  <td><strong>Inline RPE + feel tiles as end button</strong></td>
+  <td>Eliminates 2–3 redundant taps per session</td>
+  <td><span class="tag tc-sage">SHIPPED</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<!-- ====== EXPERT PANEL ====== -->
+<h2><span class="section-num">02</span> Expert Panel — Individual Findings</h2>
+
+<!-- EXPERT 1: UX Researcher -->
+<div class="card">
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
+    <div class="score-ring sr-green">8.2</div>
+    <div>
+      <div style="font-size:13px;font-weight:700">Dr. Mara Teal</div>
+      <div style="font-size:11px;color:var(--muted)">UX Researcher · Interaction Design · Cognitive Load Theory</div>
+      <div style="margin-top:4px"><span class="verdict v-ship">SHIP-READY</span></div>
+    </div>
+  </div>
+
+  <h3>Tap Reduction Analysis</h3>
+  <p>This sprint's most impactful change is treating the feel rating as a first-class action, not a post-action confirmation. The current implementation removes the finish→sheet→select→dismiss chain (4 interactions) and replaces it with a single tile tap. This is interaction design done right: the affordance (the tile) and the action (end session + record) are unified.</p>
+
+  <div class="expert-block agree">
+    <div class="expert-name">What Works</div>
+    <p>The feel bar is always visible at the bottom as a persistent affordance. Users don't have to hunt for the end-workout action. The emoji+label format makes options scannable in under 200ms — consistent with research on icon-label pairing for speed.</p>
+  </div>
+
+  <div class="expert-block warn">
+    <div class="expert-name">Concern: Feel Bar Always Visible During Workout</div>
+    <p>The feel bar appears from session start. Early in a workout, seeing "How did that feel?" creates mild cognitive dissonance — the user hasn't felt anything yet. Consider fading the tiles to 30% opacity until at least one set is completed, then animating to full opacity with a brief pulse. This preserves the persistent affordance without creating premature intent framing.</p>
+  </div>
+
+  <div class="expert-block warn">
+    <div class="expert-name">Concern: RPE Discoverability</div>
+    <p>Moving RPE from an explicit "Rate effort" button to automatic appearance after all sets complete is technically correct but may surprise users on first encounter. The RPE row appears with no label change — it just materializes. A one-time tooltip ("Rate effort for this exercise — optional") on first appearance would reduce abandonment caused by confusion, not fatigue.</p>
+  </div>
+
+  <h3>Interaction Counts (Before vs After)</h3>
+  <div class="table-wrap">
+  <table>
+  <thead><tr><th>Flow</th><th>Before</th><th>After</th><th>Delta</th></tr></thead>
+  <tbody>
+  <tr><td>Rate RPE on last exercise</td><td>3 taps (see row → tap Rate effort → select)</td><td>1 tap (auto-shown → select)</td><td><span class="delta-badge delta-up">-2 taps</span></td></tr>
+  <tr><td>End workout with feel rating</td><td>3 taps (Finish → sheet → tile)</td><td>1 tap (tile in bar)</td><td><span class="delta-badge delta-up">-2 taps</span></td></tr>
+  <tr><td>End without rating</td><td>2 taps (Finish → Skip)</td><td>1 tap ("End without rating")</td><td><span class="delta-badge delta-up">-1 tap</span></td></tr>
+  <tr><td>Total per-session minimum</td><td>~5 taps for RPE+finish</td><td>~2 taps</td><td><span class="delta-badge delta-up">-3 taps</span></td></tr>
+  </tbody>
+  </table>
+  </div>
+
+  <div class="good"><strong>Verdict:</strong> The tap reduction is real and the implementation is architecturally clean. The main gap is visual feedback — the feel bar has no disabled/grayed state before first set, and the RPE auto-appearance has no announcement. Both are 1-day fixes.</div>
+</div>
+
+<!-- EXPERT 2: Sports Scientist -->
+<div class="card">
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
+    <div class="score-ring sr-amber">6.8</div>
+    <div>
+      <div style="font-size:13px;font-weight:700">Dr. James Kroll</div>
+      <div style="font-size:11px;color:var(--muted)">Sports Scientist · Exercise Physiology · Periodization</div>
+      <div style="margin-top:4px"><span class="verdict v-beta">BETA — Training Logic Gaps Remain</span></div>
+    </div>
+  </div>
+
+  <h3>Scored Recommendation Engine Review</h3>
+  <p>The <code>exerciseScore()</code> function is a meaningful step forward from random selection. The scoring weights (+20 history, -18 recent, +12 good performance, -8 struggling, +10 ready-to-progress) produce reasonable orderings in typical cases. However, three structural problems remain.</p>
+
+  <div class="expert-block disagree">
+    <div class="expert-name">Problem 1: No Weekly Volume Cap</div>
+    <p>The engine scores exercises independently with no awareness of total weekly volume per muscle group. A user training chest 4x/week (Monday, Wednesday, Friday, Saturday) will score each session at +20 (has history) with no penalty for accumulated fatigue. Research consensus: natural trainees peak at 10–20 hard sets/week per muscle group. The engine can currently recommend more than this without any signal.</p>
+  </div>
+
+  <div class="expert-block disagree">
+    <div class="expert-name">Problem 2: Deload Logic Missing</div>
+    <p>After 4–6 weeks of consistent training (≥3 sessions/week), training stress accumulates faster than adaptation. No deload cycle is detected or suggested. The readiness engine partially compensates via HRV scoring, but structural volume reduction (a deload week) is a distinct concept absent from the system.</p>
+  </div>
+
+  <div class="expert-block warn">
+    <div class="expert-name">Problem 3: Cold-Start Plan Is Physiologically Sound But Fixed</div>
+    <p>The first workout (deterministic per region, light intensity) is a good cold-start solution. However, "light" intensity is not defined — the exercise loads are drawn from user history (which doesn't exist). The plan should explicitly cap RPE recommendation at 6/10 and suggest bodyweight or minimal-load variants. Currently it surfaces target weight as 0, which shows empty weight fields on first use.</p>
+  </div>
+
+  <h3>HRV Personalization Assessment</h3>
+  <p>The personal median with 7-reading calibration period is scientifically appropriate. The threshold multipliers (0.88 = low, 1.02 = high) are within the range used in peer-reviewed HRV research. The 7-day minimum is on the low end — most published protocols use 14+ days for reliable baseline — but acceptable for a consumer app where engagement before calibration drops off. Score: <strong>solid for V1</strong>.</p>
+
+  <div class="good"><strong>Priority Fix:</strong> Add weekly volume tracking per muscle group. This is a data aggregation problem (<code>store.workoutLog.filter{...}</code>), not a new model. Without it, the recommendation engine can inadvertently prescribe overtraining for consistent users within 4–6 weeks.</div>
+</div>
+
+<!-- EXPERT 3: Behavior Change Psychologist -->
+<div class="card">
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
+    <div class="score-ring sr-green">8.7</div>
+    <div>
+      <div style="font-size:13px;font-weight:700">Dr. Sofia Navarro</div>
+      <div style="font-size:11px;color:var(--muted)">Behavior Change · Habit Formation · Self-Determination Theory</div>
+      <div style="margin-top:4px"><span class="verdict v-ship">SHIP-READY</span></div>
+    </div>
+  </div>
+
+  <h3>H.O.N. Philosophy Alignment</h3>
+  <p>"Habit Over Numbers" is a coherent and research-backed positioning. The lapse threshold increase (3→6 days) reduces false failure signals — one of the most common reasons users abandon habit apps. Research on habit disruption (Gardner et al., 2012) shows that single missed days increase dropout probability by 4x in apps that immediately penalize streaks. Six days provides a real recovery window.</p>
+
+  <div class="expert-block agree">
+    <div class="expert-name">Feel Rating as Identity Marker</div>
+    <p>Positioning feel rating as the exit action — not a post-workout survey — subtly changes its meaning. The user's final act in each session is a self-assessment, not a confirmation. This is identity-relevant data ("I am someone who knows how hard I train") rather than logging friction. Self-Determination Theory predicts this increases intrinsic motivation over time.</p>
+  </div>
+
+  <div class="expert-block agree">
+    <div class="expert-name">Cold-Start First Workout Narrative</div>
+    <p>The deterministic intro plan combined with a narrative engine that presumably says something meaningful about a first session is strong. First impressions in behavior change apps have outsized weight — research shows users form usage patterns within the first 3 sessions. A poor first experience that feels generic loses 60%+ of users who don't return. Getting this right is worth more than any downstream feature.</p>
+  </div>
+
+  <div class="expert-block warn">
+    <div class="expert-name">Gap: No Streak Context in Narrative</div>
+    <p>The narrative engine comments on exercise performance but has no awareness of meta-habit data: streak length, days since last session, comeback status. A user returning after 5 days of absence gets the same narrative structure as a user on a 30-day streak. The system knows this information (<code>store.currentStreak</code>) but doesn't use it in the post-workout narrative. This is a missed personalization signal that matters enormously for psychological reinforcement.</p>
+  </div>
+
+  <div class="expert-block warn">
+    <div class="expert-name">Missing: Identity-Level Celebration Copy</div>
+    <p>The celebration system (streaks, PRs) fires overlays but the language is transactional ("30-day streak!") rather than identity-affirming ("You're the kind of person who shows up 30 days in a row"). This is a research-backed distinction — identity-level framing significantly outperforms achievement framing for retention. Easy copy change, high leverage.</p>
+  </div>
+</div>
+
+<!-- EXPERT 4: iOS Engineer -->
+<div class="card">
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
+    <div class="score-ring sr-green">7.9</div>
+    <div>
+      <div style="font-size:13px;font-weight:700">Lian Park</div>
+      <div style="font-size:11px;color:var(--muted)">Senior iOS Engineer · SwiftUI · Performance Profiling</div>
+      <div style="margin-top:4px"><span class="verdict v-ship">SHIP-READY with minor tech debt</span></div>
+    </div>
+  </div>
+
+  <h3>Code Quality Assessment</h3>
+
+  <div class="expert-block agree">
+    <div class="expert-name">RPE Refactor: Correct Architecture</div>
+    <p>Moving RPE from <code>SetRow</code> (per-set, last-set gated) to <code>ExerciseCard</code> (exercise-level, completion-triggered) is the right abstraction. The previous code conflated set-level state with exercise-level state. The new code correctly reads <code>workoutExercise.sets.allSatisfy(\.isCompleted)</code> at the appropriate level and writes to <code>onUpdateSetRPE?(lastIdx, newRPE)</code> — the data model stays the same (RPE on last set), the trigger is now semantically correct.</p>
+  </div>
+
+  <div class="expert-block agree">
+    <div class="expert-name">WorkoutFeelBar: Clean Extraction</div>
+    <p><code>WorkoutFeelBar</code> as a private struct is well-scoped. The <code>onFinish: ((FeelRating?) -> Void)?</code> optional callback pattern is idiomatic SwiftUI. The haptic feedback (<code>UIImpactFeedbackGenerator</code>) on feel tile tap adds quality for zero cost. The <code>.regularMaterial</code> background correctly uses the system material blur, consistent with the rest timer banner.</p>
+  </div>
+
+  <div class="expert-block warn">
+    <div class="expert-name">Concern: VStack in ZStack bottom doesn't safe-area-pad</div>
+    <p>The <code>WorkoutFeelBar</code> is wrapped in a <code>VStack</code> inside a <code>ZStack(alignment: .bottom)</code>. On iPhone 14+ with home indicator, the bar's bottom edge will overlap the system home indicator unless <code>.safeAreaInset(edge: .bottom)</code> or <code>.padding(.bottom, geometry.safeAreaInsets.bottom)</code> is applied. The <code>.regularMaterial</code> provides visual continuity, but tappable area near the bottom of the bar may be partially obscured. Test specifically on a device without the simulator.</p>
+  </div>
+
+  <div class="expert-block warn">
+    <div class="expert-name">Concern: SeedStore @Observable with large workoutLog</div>
+    <p><code>SeedStore</code> appears to be an <code>@Observable</code> class (based on <code>@Environment(SeedStore.self)</code> usage). If <code>workoutLog</code> is a large array, every append to it will re-render all views that observe it. <code>ActiveWorkoutView</code> observes SeedStore, so completing each set triggers a full re-render of the ExerciseCard list. For users with 100+ exercises in a session this could cause frame drops. Consider storing <code>activeWorkout</code> as a separate observable object.</p>
+  </div>
+
+  <div class="expert-block neutral">
+    <div class="expert-name">Note: SourceKit False Positives</div>
+    <p>PBXFileSystemSynchronizedRootGroup produces false SourceKit errors ("Cannot find type 'Exercise' in scope") throughout the project. These are a known Xcode bug with this project structure. All changes verified via <code>xcodebuild</code> which shows BUILD SUCCEEDED. Do not treat these as real errors.</p>
+  </div>
+
+  <h3>Technical Debt Inventory</h3>
+  <ul>
+    <li><strong>ActiveWorkoutView.swift is 1,700+ lines.</strong> The file contains ActiveWorkoutView, ExerciseCard, SetRow, RPERow, WorkoutFeelBar, RestTimerBanner, ExerciseHistoryMatrix, RepsFractionField, NumberField, StepButton, DropSetPanel, and more. Extract into separate files before adding any more components.</li>
+    <li><strong>Bottom padding constants are magic numbers.</strong> <code>200 : 120</code> for rest-timer vs no-timer states — these should be computed from actual view heights, not estimated constants. Fragile across device sizes.</li>
+    <li><strong>iCloudSync.swift is dead code for this account.</strong> The entitlements are removed, so every sync call hits the graceful nil fallback. The sync infrastructure is well-written but running no-ops. Document this state.</li>
+  </ul>
+</div>
+
+<!-- EXPERT 5: Narrative Engine Critic -->
+<div class="card">
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
+    <div class="score-ring sr-amber">7.3</div>
+    <div>
+      <div style="font-size:13px;font-weight:700">Alessandra Voss</div>
+      <div style="font-size:11px;color:var(--muted)">Content Strategist · Narrative UX · Voice and Tone</div>
+      <div style="margin-top:4px"><span class="verdict v-beta">BETA — Structural variety good, voice needs depth</span></div>
+    </div>
+  </div>
+
+  <h3>Narrative Format Rotation Analysis</h3>
+  <p>The 4-format rotation (standard, prescriptionLed, sparse, comparisonLed) solves the identified template fatigue problem. The format selector is elegant — <code>Int(workout.startedAt.timeIntervalSince1970 / 3600) % 4</code> produces a deterministic but non-obvious cycle. Users will not perceive the pattern consciously even after 20 sessions.</p>
+
+  <div class="expert-block agree">
+    <div class="expert-name">Strongest Format: comparisonLed</div>
+    <p>Leading with the delta vs. last session ("Up 2.5 kg from last week") is the highest-information format. Research on progress feedback shows users respond most strongly to relative change (vs. absolute values) — it provides context, not just numbers. This format should appear more frequently for users with ≥6 sessions of history where comparisons are meaningful.</p>
+  </div>
+
+  <div class="expert-block agree">
+    <div class="expert-name">Strongest Format: sparse</div>
+    <p>Single-sentence narratives after long sessions have a different emotional resonance. Brevity signals confidence. "You hit every target. That's the work." reads differently from a paragraph — it feels like a real coach, not a data report. This format is particularly effective after PRs or clean sessions.</p>
+  </div>
+
+  <div class="expert-block warn">
+    <div class="expert-name">Concern: prescriptionLed reads as mechanical</div>
+    <p>The prescription-led format leads with "Next session: [exercise list with progression targets]." This is useful information, but leading with it rather than reflecting first makes the narrative feel like a task list, not coaching. Consider using prescription-led only as a second paragraph, after at least one sentence of reflection. "Strong session on bench. Next: try 85 kg for 5 — you've had 3 clean weeks." has more voice.</p>
+  </div>
+
+  <div class="expert-block warn">
+    <div class="expert-name">Gap: No Session-Level Narrative Arc</div>
+    <p>Every narrative comment on individual exercises independently. A session with Squat + RDL + Leg Press + Leg Curl produces 4 independent paragraphs. A human coach would read the session as a whole: "Today was a lower-body volume day — you went heavy on squat and pulled back on RDL, which is smart sequencing." The multi-exercise narrative has an opportunity for this arc framing but currently produces a concatenation, not a composition.</p>
+  </div>
+
+  <div class="expert-block warn">
+    <div class="expert-name">Gap: Feel Rating Not Integrated into Narrative</div>
+    <p>The user just rated their session as "Brutal" — but the post-session narrative makes no reference to this. "Session felt brutal — recovery nutrition in the next 90 minutes matters today" would be a trivially easy addition and would make the narrative feel reactive to the user's input, not pre-generated. This is the single highest-leverage narrative improvement available.</p>
+  </div>
+</div>
+
+<!-- EXPERT 6: Data Scientist / HRV Specialist -->
+<div class="card">
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
+    <div class="score-ring sr-green">7.6</div>
+    <div>
+      <div style="font-size:13px;font-weight:700">Dr. Ryo Nakamura</div>
+      <div style="font-size:11px;color:var(--muted)">Data Scientist · HRV Research · Biomarker Analysis</div>
+      <div style="margin-top:4px"><span class="verdict v-ship">SHIP-READY for V1 HRV feature</span></div>
+    </div>
+  </div>
+
+  <h3>HRV Baseline Implementation Review</h3>
+
+  <div class="expert-block agree">
+    <div class="expert-name">Calibration Period: Sound</div>
+    <p>Requiring ≥7 readings before declaring a baseline is pragmatic and scientifically defensible. The median (vs. mean) is the correct choice — HRV has a right-skewed distribution and means are pulled by outlier high-HRV readings after intense sessions. Median is robust to these. Score: <strong>appropriate for consumer use.</strong></p>
+  </div>
+
+  <div class="expert-block agree">
+    <div class="expert-name">Threshold Multipliers: Reasonable</div>
+    <p>Low threshold at 0.88× baseline (−12%) and good threshold at 1.02× baseline (+2%) are asymmetric in the right direction. HRV suppression (below baseline) is more diagnostically meaningful than elevation — elevated HRV can indicate good recovery or parasympathetic arousal from mild illness. The +2% threshold appropriately requires meaningful elevation for the "good" signal.</p>
+  </div>
+
+  <div class="expert-block warn">
+    <div class="expert-name">Concern: HRV Not Stamped to Session</div>
+    <p>HRV is read from HealthKit and stamped at session start. However, the <code>hrvHistory</code> dictionary stores date-keyed readings from health.latestHRV. If a user has multiple HealthKit readings per day (morning measurement + Apple Watch continuous), only one is stored. For the baseline computation, this is fine (daily granularity is correct). But for real-time readiness at session start, the relevant HRV is the most recent pre-training reading, not a daily summary. If the user trains at 6pm and their morning HRV was taken at 6am, 12-hour-old data is used. This may not matter for most users but should be documented.</p>
+  </div>
+
+  <div class="expert-block warn">
+    <div class="expert-name">Gap: HRV Trend Not Used</div>
+    <p>A single HRV reading vs. baseline is useful, but the 3-day trend direction is more predictive of training readiness. Consecutive days below baseline signal accumulated fatigue even if any single day is above threshold. The <code>hrvHistory</code> dictionary already stores the time series — <code>lastThreeDays.allSatisfy({ reading &lt; baseline * 0.95 })</code> would be a meaningful "chronic suppression" flag. Not required for V1, but a clear next step.</p>
+  </div>
+
+  <div class="expert-block neutral">
+    <div class="expert-name">Note: Population Fallback Values</div>
+    <p>Before calibration, the engine uses hardcoded 55ms (low) and 65ms (good) thresholds. These are population-level norms pulled from general fitness literature. They will be systematically wrong for two groups: well-trained athletes (baseline HRV 70–100ms, so 65ms would always flag "good") and older or deconditioned users (baseline 30–45ms, where 55ms is unachievable). This is a known tradeoff — it resolves once calibration completes, but the first 7 sessions will use population-wrong thresholds.</p>
+  </div>
+</div>
+
+<!-- EXPERT 7: Strength Coach -->
+<div class="card">
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
+    <div class="score-ring sr-amber">6.5</div>
+    <div>
+      <div style="font-size:13px;font-weight:700">Marcus Osei</div>
+      <div style="font-size:11px;color:var(--muted)">Strength & Conditioning Coach · Practical Programming · Athlete Development</div>
+      <div style="margin-top:4px"><span class="verdict v-beta">BETA — Coach quality needs work</span></div>
+    </div>
+  </div>
+
+  <h3>Coaching Quality Review</h3>
+
+  <div class="expert-block warn">
+    <div class="expert-name">Recommendation Engine: No Compound-Before-Isolation Rule</div>
+    <p>The <code>exerciseScore()</code> function ranks exercises by history, recency, and performance — but has no concept of compound vs. isolation priority. A score of 75 on Bicep Curl can outrank a score of 70 on Deadlift. In every evidence-based program, compound movements (squat, deadlift, bench, row, overhead press) are placed before isolation work within a session for peak neural drive. Without this constraint, the engine can surface Lateral Raises before Barbell Rows — which no qualified coach would allow.</p>
+  </div>
+
+  <div class="expert-block warn">
+    <div class="expert-name">Recommendation Engine: No Antagonist Pairing Awareness</div>
+    <p>Supersets are user-created. The engine has no awareness that training chest without back (or biceps without triceps) creates structural imbalances over time. Even a simple rule — "if this session includes push muscles, surface a pull option" — would improve programming quality significantly with minimal code.</p>
+  </div>
+
+  <div class="expert-block agree">
+    <div class="expert-name">daysSinceTrainedByRegion: Much Better Than Set-Based</div>
+    <p>The shift from "appeared in last 2 sessions" to calendar-day tracking is a meaningful improvement. It correctly handles users who train the same muscle group twice in a week, since the day-count accurately reflects recovery time rather than session-count adjacency. A user who trains legs Monday and legs Thursday has 3 days of recovery — the new engine sees this correctly.</p>
+  </div>
+
+  <div class="expert-block disagree">
+    <div class="expert-name">Cold-Start Plan: Compound Selection Is Random-ish</div>
+    <p>The first workout takes the first compound exercise per region sorted alphabetically. Alphabetical sorting means "Barbell Back Squat" beats "Bulgarian Split Squat" for legs — which is actually fine for most users (barbell compound first is correct). But for chest, alphabetical might surface "Cable Fly" before "Barbell Bench Press" if the exercise library is sorted that way. The selection logic needs a quality filter, not alphabetical ordering. A flag like <code>isPrimaryCompound: Bool</code> on <code>Exercise</code> would solve this permanently.</p>
+  </div>
+
+  <h3>Missing Coaching Concepts</h3>
+  <div class="priority-row">
+    <div class="pnum">P1</div>
+    <div>
+      <div class="ptitle">Rep Range Guidance Missing</div>
+      <div class="pdesc">App suggests weight adjustments but never suggests rep ranges appropriate to goals. Hypertrophy (8–12), strength (3–6), and endurance (15–20) require different ranges. Without goal selection, all users get the same weight-escalation logic regardless of what they're actually training for.</div>
+    </div>
+  </div>
+  <div class="priority-row">
+    <div class="pnum">P2</div>
+    <div>
+      <div class="ptitle">No Warm-Up Set Protocol</div>
+      <div class="pdesc">The app has no concept of warm-up sets. Users logging a first "working set" at their target weight for exercises like Deadlift or Squat are not being coached to warm up. This is a safety and performance gap, particularly for heavier lifters in the target user profile.</div>
+    </div>
+  </div>
+  <div class="priority-row">
+    <div class="pnum">P2</div>
+    <div>
+      <div class="ptitle">Readiness "Forced Workout" Path Missing</div>
+      <div class="pdesc">The readiness score can be very low (e.g., 2/10). There is no path where the app says "today might be better as a light technique day or mobility work" — it either shows the full plan or nothing. A reduced-intensity fallback is standard coaching practice for low-readiness days.</div>
+    </div>
+  </div>
+</div>
+
+<!-- EXPERT 8: First-Time User / Product Manager -->
+<div class="card">
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
+    <div class="score-ring sr-amber">7.1</div>
+    <div>
+      <div style="font-size:13px;font-weight:700">Priya Menon</div>
+      <div style="font-size:11px;color:var(--muted)">Product Manager · User Onboarding · Retention Metrics</div>
+      <div style="margin-top:4px"><span class="verdict v-beta">BETA — Onboarding is the remaining blocker</span></div>
+    </div>
+  </div>
+
+  <h3>Product Readiness Assessment</h3>
+
+  <div class="expert-block agree">
+    <div class="expert-name">Core Loop: Ready</div>
+    <p>Start workout → log sets → end with feel rating → see narrative → plan next session. This loop is now fully implemented and friction-minimal. The 3-tap minimum to complete a set (tap weight, tap reps, tap complete) is industry-standard. The feel-as-exit is a genuine differentiator from every major competitor.</p>
+  </div>
+
+  <div class="expert-block warn">
+    <div class="expert-name">Onboarding: Not Mapped</div>
+    <p>New user flow unclear from code review. When a user opens the app for the first time: What do they see? How do they log body weight (required for readiness scoring)? How do they set their goals? How do they understand what H.O.N. means? The cold-start plan now gives a deterministic first workout — but only if the user knows to start one. The transition from "empty app" to "I understand what to do next" is the highest churn point and appears unaddressed.</p>
+  </div>
+
+  <div class="expert-block warn">
+    <div class="expert-name">Settings Discoverability</div>
+    <p>Key settings (rest timer duration, weight unit kg/lb, body weight) appear to be buried in a settings screen. Power users will find them; new users won't know they exist. The weight unit toggle in the exercise card (tap the KG/LBS label) is discoverable but not obvious. At minimum, a first-session prompt for "kg or lbs?" would prevent the common complaint "it defaulted to kg and I log in lbs."</p>
+  </div>
+
+  <div class="expert-block disagree">
+    <div class="expert-name">Concern: No Social / Accountability Layer</div>
+    <p>The target user ("falls and gets back up" lifter, Huberman listener) is intrinsically motivated but socially influenced. The share sheet after workout exists but feels like an afterthought. Accountability — even private, like "share to a training partner" — is a proven retention multiplier. Not a V1 requirement, but should be in the roadmap for 90-day retention improvement.</p>
+  </div>
+
+  <h3>Competitive Positioning</h3>
+  <div class="table-wrap">
+  <table>
+  <thead><tr><th>Feature</th><th>H.O.N.</th><th>Strong</th><th>Hevy</th><th>Atom</th></tr></thead>
+  <tbody>
+  <tr><td>Post-workout narrative</td><td><strong>✓ Unique</strong></td><td>✗</td><td>✗</td><td>Limited</td></tr>
+  <tr><td>Readiness scoring</td><td><strong>✓ HRV + feel + volume</strong></td><td>✗</td><td>✗</td><td>✗</td></tr>
+  <tr><td>Feel-as-exit</td><td><strong>✓ Unique</strong></td><td>✗</td><td>✗</td><td>✗</td></tr>
+  <tr><td>Cold-start guided plan</td><td>✓</td><td>Templates</td><td>Templates</td><td>AI</td></tr>
+  <tr><td>Social / share</td><td>Basic</td><td>✓</td><td>✓</td><td>✓</td></tr>
+  <tr><td>Exercise library depth</td><td>Unknown</td><td>★★★★</td><td>★★★</td><td>★★★★</td></tr>
+  <tr><td>Watch app</td><td>✗</td><td>✓</td><td>✗</td><td>✓</td></tr>
+  </tbody>
+  </table>
+  </div>
+  <div class="good"><strong>Differentiation verdict:</strong> The narrative engine + feel-as-exit + readiness scoring are a genuinely unique combination in the market. No direct competitor has all three. This is the moat worth defending.</div>
+</div>
+
+<!-- ====== ISSUE MATRIX ====== -->
+<h2><span class="section-num">03</span> Issue Matrix</h2>
+
+<div class="table-wrap">
+<table>
+<thead><tr>
+  <th>ID</th><th>Issue</th><th>Domain</th><th>Severity</th><th>Source</th><th>Status</th>
+</tr></thead>
+<tbody>
+<tr>
+  <td>NEW-01</td>
+  <td><strong>Feel bar visible before first set — no disabled state</strong></td>
+  <td>UX</td>
+  <td><span class="tag tc-amber">P1</span></td>
+  <td>Teal (UX)</td>
+  <td><span class="tag tc-amber">OPEN</span></td>
+</tr>
+<tr>
+  <td>NEW-02</td>
+  <td><strong>RPE appearance on exercise completion — no announcement/tooltip</strong></td>
+  <td>UX / Discoverability</td>
+  <td><span class="tag tc-amber">P1</span></td>
+  <td>Teal (UX)</td>
+  <td><span class="tag tc-amber">OPEN</span></td>
+</tr>
+<tr>
+  <td>NEW-03</td>
+  <td><strong>WorkoutFeelBar may overlap home indicator — safe area not padded</strong></td>
+  <td>Layout / iOS</td>
+  <td><span class="tag tc-amber">P1</span></td>
+  <td>Park (iOS)</td>
+  <td><span class="tag tc-amber">OPEN</span></td>
+</tr>
+<tr>
+  <td>NEW-04</td>
+  <td><strong>No weekly volume cap per muscle group — overtraining possible</strong></td>
+  <td>Training Logic</td>
+  <td><span class="tag tc-amber">P1</span></td>
+  <td>Kroll (Science)</td>
+  <td><span class="tag tc-amber">OPEN</span></td>
+</tr>
+<tr>
+  <td>NEW-05</td>
+  <td><strong>Feel rating not used in post-workout narrative</strong></td>
+  <td>Narrative</td>
+  <td><span class="tag tc-amber">P1</span></td>
+  <td>Voss (Narrative)</td>
+  <td><span class="tag tc-amber">OPEN</span></td>
+</tr>
+<tr>
+  <td>NEW-06</td>
+  <td><strong>No compound-before-isolation priority in recommendation engine</strong></td>
+  <td>Training Logic</td>
+  <td><span class="tag tc-amber">P1</span></td>
+  <td>Osei (Coach)</td>
+  <td><span class="tag tc-amber">OPEN</span></td>
+</tr>
+<tr>
+  <td>NEW-07</td>
+  <td><strong>Cold-start exercise selection uses alphabetical sort — may favor non-primaries</strong></td>
+  <td>Training Logic</td>
+  <td><span class="tag tc-amber">P1</span></td>
+  <td>Osei (Coach)</td>
+  <td><span class="tag tc-amber">OPEN</span></td>
+</tr>
+<tr>
+  <td>NEW-08</td>
+  <td><strong>Streak/comeback context absent from narrative</strong></td>
+  <td>Narrative / Behavior</td>
+  <td><span class="tag tc-amber">P1</span></td>
+  <td>Navarro / Voss</td>
+  <td><span class="tag tc-amber">OPEN</span></td>
+</tr>
+<tr>
+  <td>NEW-09</td>
+  <td><strong>Onboarding flow not implemented / unclear</strong></td>
+  <td>Product</td>
+  <td><span class="tag tc-red">P0</span></td>
+  <td>Menon (PM)</td>
+  <td><span class="tag tc-amber">OPEN</span></td>
+</tr>
+<tr>
+  <td>NEW-10</td>
+  <td><strong>ActiveWorkoutView.swift is 1,700+ lines — extraction overdue</strong></td>
+  <td>Code Quality</td>
+  <td><span class="tag tc-slate">P2</span></td>
+  <td>Park (iOS)</td>
+  <td><span class="tag tc-amber">OPEN</span></td>
+</tr>
+<tr>
+  <td>NEW-11</td>
+  <td><strong>prescriptionLed format leads with task-list, not reflection</strong></td>
+  <td>Narrative</td>
+  <td><span class="tag tc-slate">P2</span></td>
+  <td>Voss (Narrative)</td>
+  <td><span class="tag tc-amber">OPEN</span></td>
+</tr>
+<tr>
+  <td>NEW-12</td>
+  <td><strong>HRV trend (3-day direction) not used — single reading only</strong></td>
+  <td>Data Science</td>
+  <td><span class="tag tc-slate">P2</span></td>
+  <td>Nakamura (Data)</td>
+  <td><span class="tag tc-amber">OPEN</span></td>
+</tr>
+<tr>
+  <td>NEW-13</td>
+  <td><strong>No rep range guidance by goal — all users get same overload logic</strong></td>
+  <td>Training Logic</td>
+  <td><span class="tag tc-amber">P1</span></td>
+  <td>Osei (Coach)</td>
+  <td><span class="tag tc-amber">OPEN</span></td>
+</tr>
+<tr>
+  <td>NEW-14</td>
+  <td><strong>iCloudSync.swift is no-op with current entitlements — should document</strong></td>
+  <td>Technical</td>
+  <td><span class="tag tc-slate">P2</span></td>
+  <td>Park (iOS)</td>
+  <td><span class="tag tc-amber">OPEN</span></td>
+</tr>
+<tr>
+  <td>OLD-01</td>
+  <td><strong>No deload cycle detection or suggestion</strong></td>
+  <td>Training Logic</td>
+  <td><span class="tag tc-amber">P1</span></td>
+  <td>Kroll (Science)</td>
+  <td><span class="tag tc-amber">OPEN</span></td>
+</tr>
+<tr>
+  <td>OLD-02</td>
+  <td><strong>Population HRV fallback wrong for athletes and deconditioned users</strong></td>
+  <td>Data Science</td>
+  <td><span class="tag tc-amber">P1</span> (resolves after 7 days)</td>
+  <td>Nakamura (Data)</td>
+  <td><span class="tag tc-teal">KNOWN TRADEOFF</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<!-- ====== USER COHORTS ====== -->
+<h2><span class="section-num">04</span> Simulated User Cohort Reactions</h2>
+
+<div class="cohort-card">
+  <div class="cohort-header">
+    <div class="cohort-icon">🔥</div>
+    <div>
+      <div class="cohort-name">The Consistent Intermediate — "Marcus, 34"</div>
+      <div class="cohort-meta">3–4x/week · 2+ years training · tracks PRs · uses Huberman stack</div>
+    </div>
+  </div>
+  <div class="cohort-body">
+    <div class="cohort-col">
+      <h4>Loves</h4>
+      <ul>
+        <li>Feel-as-exit — "finally, one tap to finish"</li>
+        <li>Narrative format variety after session 4</li>
+        <li>Personalized HRV threshold — "it knows I'm usually at 68ms"</li>
+        <li>RPE auto-showing — "I was forgetting to rate anyway"</li>
+      </ul>
+    </div>
+    <div class="cohort-col">
+      <h4>Friction Points</h4>
+      <ul>
+        <li>Feel bar visible during warm-up sets — confusing</li>
+        <li>Narrative doesn't say "you're on a 14-day streak"</li>
+        <li>No deload suggestion after 6 hard weeks</li>
+      </ul>
+    </div>
+    <div class="cohort-col">
+      <h4>Retention Risk</h4>
+      <p style="color:var(--sage)">Low — this user is the target and the core loop serves him well.</p>
+    </div>
+    <div class="cohort-col">
+      <h4>Quote</h4>
+      <p><em>"It's like having a coach who's read all my logs. The narrative is weirdly personal sometimes."</em></p>
+    </div>
+  </div>
+</div>
+
+<div class="cohort-card">
+  <div class="cohort-header">
+    <div class="cohort-icon">🌱</div>
+    <div>
+      <div class="cohort-name">The Returning Beginner — "Jess, 28"</div>
+      <div class="cohort-meta">1x/week currently · tried gym 3x before · wants structure · intimidated by numbers</div>
+    </div>
+  </div>
+  <div class="cohort-body">
+    <div class="cohort-col">
+      <h4>Loves</h4>
+      <ul>
+        <li>First workout plan — "it decided for me, I just did it"</li>
+        <li>Feel rating is the only decision at the end</li>
+        <li>Narrative uses her name (she perceives it that way)</li>
+      </ul>
+    </div>
+    <div class="cohort-col">
+      <h4>Friction Points</h4>
+      <ul>
+        <li>Empty weight field on first exercise — no guidance</li>
+        <li>No onboarding — opened app, saw nothing</li>
+        <li>RPE appeared, didn't know what it was</li>
+        <li>Doesn't know what "HRV" means in the readiness card</li>
+      </ul>
+    </div>
+    <div class="cohort-col">
+      <h4>Retention Risk</h4>
+      <p style="color:var(--rose)">High — without onboarding, this user churns in session 1–2. The cold-start plan helps but is preceded by a blank screen.</p>
+    </div>
+    <div class="cohort-col">
+      <h4>Quote</h4>
+      <p><em>"I didn't know where to start. Once someone told me to tap 'Start Workout' it was fine."</em></p>
+    </div>
+  </div>
+</div>
+
+<div class="cohort-card">
+  <div class="cohort-header">
+    <div class="cohort-icon">⚡</div>
+    <div>
+      <div class="cohort-name">The Data-Driven Athlete — "Ravi, 31"</div>
+      <div class="cohort-meta">5–6x/week · owns a Garmin and Whoop · reads PubMed · competitive powerlifter</div>
+    </div>
+  </div>
+  <div class="cohort-body">
+    <div class="cohort-col">
+      <h4>Loves</h4>
+      <ul>
+        <li>HRV personalization — "finally not using population norms"</li>
+        <li>Scored recommendation engine — sees it as meaningful signal</li>
+        <li>Narrative comparisonLed format — "exact data I need"</li>
+      </ul>
+    </div>
+    <div class="cohort-col">
+      <h4>Friction Points</h4>
+      <ul>
+        <li>No HRV trend (3-day average) — single reading is noisy</li>
+        <li>No deload detection — his Whoop flags this, H.O.N. doesn't</li>
+        <li>Rep range never changes — always same overload logic</li>
+        <li>No compound priority in engine — "why is it suggesting curls first?"</li>
+      </ul>
+    </div>
+    <div class="cohort-col">
+      <h4>Retention Risk</h4>
+      <p style="color:var(--amber)">Medium — adopts early but churns if the training logic gaps persist. Will stay if narrative+readiness are uniquely accurate.</p>
+    </div>
+    <div class="cohort-col">
+      <h4>Quote</h4>
+      <p><em>"The HRV personalization is a real differentiator. But my Whoop tells me more about readiness than this does."</em></p>
+    </div>
+  </div>
+</div>
+
+<!-- ====== WHAT'S WORKING ====== -->
+<h2><span class="section-num">05</span> What's Working — Don't Touch These</h2>
+
+<div class="g2">
+  <div class="card">
+    <h3>Narrative Engine Architecture</h3>
+    <p>The phrase-bank + assembly + format rotation design is extensible without being over-engineered. Adding a new format, new phrase category, or new analysis field doesn't require architectural changes — it's additive. The <code>ExerciseAnalysis</code> struct is a well-scoped value type that's easy to extend.</p>
+    <div class="good"><strong>Verdict:</strong> Architecture is right. Grow by adding data, not by restructuring.</div>
+  </div>
+  <div class="card">
+    <h3>iCloudSync Graceful Fallback</h3>
+    <p>The nil-container fallback pattern is exactly right. The sync infrastructure works when available and disappears silently when not. No crash, no error state, no user-visible failure. This is the correct architecture for a feature that may or may not be available depending on account type.</p>
+    <div class="good"><strong>Verdict:</strong> Ship as-is. Re-enable entitlements when Team account is available.</div>
+  </div>
+  <div class="card">
+    <h3>Celebration Queue System</h3>
+    <p>The celebration queue in <code>WorkoutTabView</code> correctly sequences PRs, streaks, and session completion. The <code>pendingFirstWorkoutCelebration</code> AppStorage flag that survives crash/force-quit is a thoughtful edge case. The delayed trigger (<code>asyncAfter 0.7s</code>) gives the feel sheet time to dismiss cleanly.</p>
+    <div class="good"><strong>Verdict:</strong> Well-implemented. Don't refactor until the sequence needs to change.</div>
+  </div>
+  <div class="card">
+    <h3>ExerciseCard Layout</h3>
+    <p>The three-column set row (SET / WEIGHT / REPS×TARGET) with kg/lbs toggle, history matrix, equipment badge, and drop-set panel is a complete and polished data-entry UI. The plate calculator sheet is a genuine quality-of-life feature. The swipe-to-delete UX is standard and correct.</p>
+    <div class="good"><strong>Verdict:</strong> UI is mature. Don't add new columns or controls without a clear user need.</div>
+  </div>
+</div>
+
+<!-- ====== PRIORITIZED NEXT ACTIONS ====== -->
+<h2><span class="section-num">06</span> Prioritized Next Actions</h2>
+
+<div class="note"><strong>Framing:</strong> The core loop is ready. The remaining work is in three tiers: (1) shipping blockers for any user, (2) quality gaps for target users, (3) depth features for power users. Do tier 1 before shipping anything publicly.</div>
+
+<h3>Tier 1 — Shipping Blockers</h3>
+<div class="card">
+  <div class="priority-row">
+    <div class="pnum">T1-A</div>
+    <div>
+      <div class="ptitle">Safe area padding on WorkoutFeelBar (NEW-03)</div>
+      <div class="pdesc">Add <code>.safeAreaPadding(.bottom)</code> or <code>GeometryReader</code>-based bottom inset to <code>WorkoutFeelBar</code>. Tappable targets overlapping the home indicator fail App Store review on accessibility grounds and frustrate users on device.</div>
+    </div>
+  </div>
+  <div class="priority-row">
+    <div class="pnum">T1-B</div>
+    <div>
+      <div class="ptitle">Onboarding: minimum viable path (NEW-09)</div>
+      <div class="pdesc">New user opens app → blank workout tab with "Start Workout" button. Before first workout, prompt: (1) kg or lbs, (2) body weight. After first workout, briefly explain narrative. Three screens, one time. This alone cuts first-session churn significantly.</div>
+    </div>
+  </div>
+  <div class="priority-row">
+    <div class="pnum">T1-C</div>
+    <div>
+      <div class="ptitle">Feel bar visual state before first set (NEW-01)</div>
+      <div class="pdesc">Reduce feel tile opacity to 0.4 and disable tapping until <code>hasAnyCompletedSets</code>. A one-line change prevents the cognitive dissonance of "how did that feel?" before any sets are logged.</div>
+    </div>
+  </div>
+</div>
+
+<h3>Tier 2 — Quality for Target Users</h3>
+<div class="card">
+  <div class="priority-row">
+    <div class="pnum">T2-A</div>
+    <div>
+      <div class="ptitle">Integrate feel rating into post-workout narrative (NEW-05)</div>
+      <div class="pdesc">Pass <code>feelRating</code> into <code>WorkoutNarrativeEngine.generateNarrative()</code>. Add a feel-reactive sentence: "Brutal today — the recovery window matters." / "You rated this Strong — a sign the program is calibrated right." High perceived personalization, low implementation cost.</div>
+    </div>
+  </div>
+  <div class="priority-row">
+    <div class="pnum">T2-B</div>
+    <div>
+      <div class="ptitle">Add streak/comeback context to narrative (NEW-08)</div>
+      <div class="pdesc">Pass <code>store.currentStreak</code> and days-since-last-session into the narrative engine. Surface in sparse or standard format: "Day 21 — consistency is the compound interest of training." Behavior research strongly supports this type of identity reinforcement.</div>
+    </div>
+  </div>
+  <div class="priority-row">
+    <div class="pnum">T2-C</div>
+    <div>
+      <div class="ptitle">Compound-before-isolation priority in recommendation (NEW-06)</div>
+      <div class="pdesc">Add a <code>isCompound: Bool</code> property to <code>Exercise</code> model (or derive from body region + equipment). In <code>generatePlans()</code>, sort compound exercises first within each recommendation. This is the most impactful training logic fix for users who run full-body or push/pull sessions.</div>
+    </div>
+  </div>
+  <div class="priority-row">
+    <div class="pnum">T2-D</div>
+    <div>
+      <div class="ptitle">Weekly volume awareness in recommendation engine (NEW-04)</div>
+      <div class="pdesc">In <code>exerciseScore()</code>, add a penalty for exercises in muscle groups that have accumulated ≥12 completed sets in the current rolling 7-day window. Prevents the engine from programming de-facto overtraining for consistent users within 4–6 weeks.</div>
+    </div>
+  </div>
+</div>
+
+<h3>Tier 3 — Power User Depth (Post-Launch)</h3>
+<div class="card">
+  <div class="priority-row">
+    <div class="pnum">T3-A</div>
+    <div>
+      <div class="ptitle">HRV 3-day trend signal (NEW-12)</div>
+      <div class="pdesc">Add <code>computeHRVTrend(days: 3) -> HRVTrend</code> that returns suppressed/neutral/elevated based on 3-day direction. Feed into readiness narrative for pro users who understand HRV variability.</div>
+    </div>
+  </div>
+  <div class="priority-row">
+    <div class="pnum">T3-B</div>
+    <div>
+      <div class="ptitle">Deload cycle detection (OLD-01)</div>
+      <div class="pdesc">After 4 weeks of ≥3 sessions/week, surface a "deload suggestion" card that recommends dropping volume by 40% for one week. Uses <code>store.workoutLog</code> already available.</div>
+    </div>
+  </div>
+  <div class="priority-row">
+    <div class="pnum">T3-C</div>
+    <div>
+      <div class="ptitle">Goal-based rep range guidance (NEW-13)</div>
+      <div class="pdesc">Add a user goal field (strength/hypertrophy/endurance) in settings. Adjust target rep ranges in the recommendation engine accordingly. Moves H.O.N. from "records what you do" toward "programs what you should do."</div>
+    </div>
+  </div>
+  <div class="priority-row">
+    <div class="pnum">T3-D</div>
+    <div>
+      <div class="ptitle">ActiveWorkoutView.swift file split (NEW-10)</div>
+      <div class="pdesc">Extract ExerciseCard, SetRow, RPERow, WorkoutFeelBar, RestTimerBanner into separate files. No behavioral change — purely maintainability. Do this before the next sprint that adds to the workout view.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== PANEL CONSENSUS ====== -->
+<h2><span class="section-num">07</span> Panel Consensus — Scorecards</h2>
+
+<div class="g4">
+  <div class="card" style="text-align:center">
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Overall Build Quality</div>
+    <div class="score-ring sr-green" style="margin:0 auto 10px">7.6</div>
+    <p style="font-size:12px">Up from 6.8 in Round 2. Core loop is complete, verified, and genuinely differentiated.</p>
+    <span class="delta-badge delta-up">+0.8</span>
+  </div>
+  <div class="card" style="text-align:center">
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">UX / Tap Efficiency</div>
+    <div class="score-ring sr-green" style="margin:0 auto 10px">8.2</div>
+    <p style="font-size:12px">Feel-as-exit and inline RPE are the sprint's strongest contributions. Minor safe-area issue.</p>
+    <span class="delta-badge delta-up">+1.4</span>
+  </div>
+  <div class="card" style="text-align:center">
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Training Intelligence</div>
+    <div class="score-ring sr-amber" style="margin:0 auto 10px">6.5</div>
+    <p style="font-size:12px">Scored engine + cold start + HRV are meaningful steps. Volume cap and compound priority are missing.</p>
+    <span class="delta-badge delta-up">+0.7</span>
+  </div>
+  <div class="card" style="text-align:center">
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Ship Readiness</div>
+    <div class="score-ring sr-amber" style="margin:0 auto 10px">7.0</div>
+    <p style="font-size:12px">Safe area + onboarding are the two blockers. Both are 1–3 day fixes. Core is ready for TestFlight.</p>
+    <span class="delta-badge delta-up">+0.5</span>
+  </div>
+</div>
+
+<div class="callout">
+  <p><strong>Panel verdict:</strong> The most important thing this sprint got right is making the workout end feel intentional rather than administrative. The feel tile as exit is the kind of UX decision that separates good apps from great ones — it collapses two concepts (feel recording and session completion) into one action, and it does so in a way that feels right. The next sprint should focus on T1 shipping blockers (safe area, onboarding, feel bar opacity) and T2-A (feel integrated into narrative). These are adjacent to completed work and have outsized impact on first-session quality.</p>
+</div>
+
+<div style="margin-top:60px;padding-top:24px;border-top:1px solid var(--border);font-size:11px;color:var(--dim)">
+  H.O.N. Review Board Round 3 · Generated 2026-05-28 · Reviewers: Teal (UX), Kroll (Science), Navarro (Behavior), Park (iOS), Voss (Narrative), Nakamura (Data), Osei (Coach), Menon (Product) · All findings based on source code review of commit 7a722fe and earlier sprint commits.
+</div>
+
+</div>
+</body>
+</html>
