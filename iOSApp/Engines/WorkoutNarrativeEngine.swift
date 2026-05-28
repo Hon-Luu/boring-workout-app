@@ -677,6 +677,36 @@ enum WorkoutNarrativeEngine {
         return nil
     }
 
+    // MARK: - N-004: Session arc opening sentence
+
+    private static let sessionArcs: [String: [String]] = [
+        "lower":      ["Lower body focus today.", "Leg day — the work that matters most.", "Lower body session logged."],
+        "upper_push": ["Push session done.", "Chest and shoulders — solid upper work.", "Upper push work logged."],
+        "upper_pull": ["Pull session complete.", "Back and arms — strong pulling work.", "Upper pull day logged."],
+        "full":       ["Full body session.", "You hit multiple patterns today.", "Balanced full-body work."],
+        "mixed":      ["Varied session today.", "Mixed work — multiple patterns hit.", "Solid variety today."]
+    ]
+
+    private static func sessionArcKey(for analyses: [ExerciseAnalysis]) -> String? {
+        // Determine dominant body pattern from exercise names (crude heuristic)
+        // We rely on exercise names since ExerciseAnalysis doesn't carry bodyRegion
+        let names = analyses.map { $0.name.lowercased() }
+        let hasLower = names.contains { $0.contains("squat") || $0.contains("deadlift") || $0.contains("lunge") || $0.contains("leg") || $0.contains("hip") || $0.contains("calf") }
+        let hasPush  = names.contains { $0.contains("bench") || $0.contains("press") || $0.contains("push") || $0.contains("dip") || $0.contains("fly") }
+        let hasPull  = names.contains { $0.contains("row") || $0.contains("pull") || $0.contains("curl") || $0.contains("lat") || $0.contains("face") }
+        if hasLower && !hasPush && !hasPull { return "lower" }
+        if hasPush && !hasPull && !hasLower { return "upper_push" }
+        if hasPull && !hasPush && !hasLower { return "upper_pull" }
+        if hasLower && (hasPush || hasPull)  { return "full" }
+        if hasPush && hasPull               { return "mixed" }
+        return nil
+    }
+
+    private static func pickSessionArc(key: String) -> String {
+        guard let pool = sessionArcs[key], !pool.isEmpty else { return "" }
+        return pool[Int.random(in: 0..<pool.count)]
+    }
+
     // MARK: - Multi exercise narrative
 
     private static let reflectionBridges = [
@@ -776,6 +806,11 @@ enum WorkoutNarrativeEngine {
 
         // ── Standard ─────────────────────────────────────────────────────────
         var parts: [String] = []
+
+        // N-004: session arc opening sentence for multi-exercise sessions
+        if analyses.count >= 2, let arcKey = sessionArcKey(for: analyses) {
+            parts.append(pickSessionArc(key: arcKey))
+        }
 
         if let p = pick(bank.frames[frameType] ?? [], exerciseId: anchorId, category: "frame") {
             parts.append(fill(p.phrase, analyses.first!, second: analyses.dropFirst().first))

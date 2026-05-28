@@ -9,6 +9,7 @@ struct GuidedWorkoutPlanView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var exercises: [GuidedExercise]
     @State private var showSwapper: (Bool, Int) = (false, 0)
+    @State private var showReasoning = false
 
     init(plan: GuidedWorkoutPlan, onStart: @escaping () -> Void) {
         self.plan = plan
@@ -31,6 +32,27 @@ struct GuidedWorkoutPlanView: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     .padding(.vertical, 4)
+                }
+
+                // T-003: Why this plan
+                Section {
+                    DisclosureGroup(isExpanded: $showReasoning) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            WhyBullet(text: "Split: \(plan.splitLabel)")
+                            WhyBullet(text: "Intensity: \(plan.intensity.rawValue.capitalized)")
+                            if let progressionNote = plan.progressionNote, !progressionNote.isEmpty {
+                                WhyBullet(text: progressionNote)
+                            }
+                            if let recoveryNote = plan.recoveryNote, !recoveryNote.isEmpty {
+                                WhyBullet(text: recoveryNote)
+                            }
+                        }
+                        .padding(.top, 4)
+                    } label: {
+                        Label("Why this plan", systemImage: "lightbulb")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(HONTheme.accent)
+                    }
                 }
 
                 // Exercises
@@ -140,6 +162,10 @@ struct GuidedWorkoutSessionView: View {
     @State private var restTimer: Timer? = nil
     @State private var showFinishAlert = false
     @AppStorage("restTimerSeconds") private var restTimerSeconds: Int = 90
+    // T-004: post-exercise narrative
+    @State private var narrativeMessage: String = ""
+    @State private var showNarrative: Bool = false
+    @State private var narrativeTask: Task<Void, Never>? = nil
 
     init(plan: GuidedWorkoutPlan) {
         self.plan = plan
@@ -175,6 +201,19 @@ struct GuidedWorkoutSessionView: View {
                             )
 
                             LogSetButton(action: logCurrentSet)
+
+                            // T-004: post-exercise narrative phrase (fades after 4s)
+                            if showNarrative && !narrativeMessage.isEmpty {
+                                Text(narrativeMessage)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 10)
+                                    .frame(maxWidth: .infinity)
+                                    .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+                                    .transition(.opacity.combined(with: .move(edge: .top)))
+                            }
 
                             if restSecondsLeft > 0 {
                                 RestCountdown(seconds: restSecondsLeft, onSkip: stopRest)
@@ -237,6 +276,8 @@ struct GuidedWorkoutSessionView: View {
         let ex = exercises[currentExerciseIndex]
 
         if ex.completedSets.filter(\.isCompleted).count >= ex.targetSets {
+            // T-004: generate post-exercise narrative on exercise completion
+            generateNarrative(for: ex)
             // Move to next exercise
             if currentExerciseIndex + 1 < exercises.count {
                 currentExerciseIndex += 1
@@ -265,6 +306,48 @@ struct GuidedWorkoutSessionView: View {
         restTimer?.invalidate()
         restTimer = nil
         restSecondsLeft = 0
+    }
+
+    // T-004: build a minimal WorkoutLogEntry for the completed exercise, generate a phrase, fade it out after 4s
+    private func generateNarrative(for ge: GuidedExercise) {
+        let completedSets = ge.completedSets.filter(\.isCompleted)
+        guard !completedSets.isEmpty else { return }
+
+        // Build a minimal log entry containing just this exercise
+        let we = WorkoutExercise(exercise: ge.exercise, sets: completedSets)
+        var entry = WorkoutLogEntry()
+        entry.exercises = [we]
+
+        // History for this exercise from the store
+        let history = store.exerciseHistory(for: ge.exercise)
+            .map { (date: Date, sets: [SetRecord]) -> WorkoutLogEntry in
+                let we2 = WorkoutExercise(exercise: ge.exercise, sets: sets)
+                var e = WorkoutLogEntry()
+                e.startedAt = date
+                e.exercises = [we2]
+                return e
+            }
+
+        let phrase = WorkoutNarrativeEngine.generate(
+            workout: entry,
+            history: history
+        )
+        guard !phrase.isEmpty else { return }
+
+        narrativeTask?.cancel()
+        withAnimation(.easeIn(duration: 0.3)) {
+            narrativeMessage = phrase
+            showNarrative = true
+        }
+        narrativeTask = Task {
+            try? await Task.sleep(for: .seconds(4))
+            guard !Task.isCancelled else { return }
+            await MainActor.run {
+                withAnimation(.easeOut(duration: 0.5)) {
+                    showNarrative = false
+                }
+            }
+        }
     }
 
     private func saveAndDismiss() {
@@ -594,6 +677,24 @@ struct ExerciseSwapperView: View {
                     Button("Cancel") { dismiss() }
                 }
             }
+        }
+    }
+}
+
+// MARK: - T-003 Why Bullet
+
+private struct WhyBullet: View {
+    let text: String
+    var body: some View {
+        HStack(alignment: .top, spacing: 8) {
+            Text("•")
+                .font(.caption)
+                .foregroundStyle(HONTheme.accent)
+                .padding(.top, 1)
+            Text(text)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 }

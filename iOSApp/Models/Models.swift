@@ -489,6 +489,15 @@ struct WeightEntry: Codable, Identifiable, Equatable {
     let kg: Double
 }
 
+// MARK: - Training Goal (P-003)
+
+enum TrainingGoal: String, CaseIterable, Codable {
+    case strength    = "Strength"     // 3-5 reps
+    case hypertrophy = "Hypertrophy"  // 8-12 reps
+    case endurance   = "Endurance"    // 15-20 reps
+    case general     = "General"      // current behaviour
+}
+
 // MARK: - User Body Profile
 
 struct UserProfile: Codable, Equatable {
@@ -502,6 +511,10 @@ struct UserProfile: Codable, Equatable {
     var heightCm: Double?              // for future BMI / relative scaling
     /// Expert override for fatigue decay α. nil = auto (tier-based); valid range 0.03–0.10
     var customFatigueDecay: Double?
+    /// Training goal — determines rep ranges in guided plans (P-003)
+    var trainingGoal: TrainingGoal = .general
+    /// Equipment available to the user — used to filter exercise pool (T-009)
+    var availableEquipment: Set<Equipment> = Set(Equipment.allCases)
 
     var hasBodyComposition: Bool {
         bodyFatPercent != nil || muscleMassPercent != nil

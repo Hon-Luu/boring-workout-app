@@ -12,28 +12,13 @@ struct ProgressView: View {
     @State private var howExpanded       = true
     @State private var cardioExpanded    = true
     @State private var whatExpanded      = true
-    @State private var insightsExpanded  = true
 
     private var log: [WorkoutLogEntry] { store.workoutLog }
 
-    private var allInsights: [EmergentInsight] {
-        EmergentInsightEngine.compute(
-            log: log,
-            analyticsResult: store.analyticsCache,
-            hrv: health.hrv,
-            sleepHours: health.sleepHours,
-            cardioLog: store.cardioLog,
-            vo2Max: health.vo2Max,
-            stepsToday: health.stepsToday,
-            restDays: store.restDays,
-            weightHistory: store.userProfile.weightHistory
-        )
-    }
-
-    // Only surface insights that are live or exactly 1 session away
-    private var insights: [EmergentInsight] {
-        allInsights.filter { $0.dataAvailable || $0.sessionsRemaining <= 1 }
-    }
+    // UX-002: goal-based chart visibility
+    private var goal: TrainingGoal { store.userProfile.trainingGoal }
+    private var showVolumeAndPattern: Bool { goal != .strength }
+    private var showCardio: Bool          { goal == .endurance || goal == .general }
 
     var body: some View {
         NavigationStack {
@@ -42,21 +27,8 @@ struct ProgressView: View {
                     if !store.isLoaded {
                         ProgressLoadingSkeleton()
                     } else {
-                        DashboardHeroCard(
-                            composite:         store.analyticsCache.compositeScore,
-                            strengthScore:     store.analyticsCache.strengthScore.compositeScore,
-                            relativeStrengths: store.analyticsCache.strengthScore.relativeStrengths,
-                            log:               log,
-                            cardioLog:         store.cardioLog,
-                            userProfile:       store.userProfile,
-                            exerciseAnalytics: store.analyticsCache.exerciseAnalytics
-                        )
-
-                        ArchetypeTopBadge(log: log)
-
-                        // Progressive overload intelligence: hero position per review board
                         CollapsibleDashSection(
-                            title: "Am I Getting Stronger",
+                            title: "Am I Getting Stronger?",
                             icon: "chart.line.uptrend.xyaxis",
                             isExpanded: $strongerExpanded
                         ) {
@@ -64,7 +36,7 @@ struct ProgressView: View {
                         }
 
                         CollapsibleDashSection(
-                            title: "Where Am I",
+                            title: "How Strong Am I?",
                             icon: "mappin.circle.fill",
                             isExpanded: $whereExpanded
                         ) {
@@ -75,17 +47,21 @@ struct ProgressView: View {
                             )
                         }
 
-                        CollapsibleDashSection(
-                            title: "How Do I Train",
-                            icon: "dumbbell.fill",
-                            isExpanded: $howExpanded
-                        ) {
-                            HowSectionContent(log: log, analytics: store.analyticsCache)
+                        // UX-002: hide for strength-only goal (e1RM trend is more relevant)
+                        if showVolumeAndPattern {
+                            CollapsibleDashSection(
+                                title: "How Do I Train?",
+                                icon: "dumbbell.fill",
+                                isExpanded: $howExpanded
+                            ) {
+                                HowSectionContent(log: log, analytics: store.analyticsCache)
+                            }
                         }
 
-                        if !store.cardioLog.isEmpty {
+                        // UX-002: show cardio for endurance/general only; hidden entirely when no cardio data
+                        if showCardio && !store.cardioLog.isEmpty {
                             CollapsibleDashSection(
-                                title: "Cardio Performance",
+                                title: "Am I Doing Cardio?",
                                 icon: "bolt.heart.fill",
                                 isExpanded: $cardioExpanded
                             ) {
@@ -94,7 +70,7 @@ struct ProgressView: View {
                         }
 
                         CollapsibleDashSection(
-                            title: "Recovery Signals",
+                            title: "How Am I Recovering?",
                             icon: "waveform.path.ecg",
                             isExpanded: $whatExpanded
                         ) {
@@ -112,16 +88,6 @@ struct ProgressView: View {
                                 sleepHistory:      health.sleepHistory,
                                 rhrHistory:        health.restingHRHistory
                             )
-                        }
-
-                        if !insights.isEmpty {
-                            CollapsibleDashSection(
-                                title: "Emergent Insights",
-                                icon: "sparkles",
-                                isExpanded: $insightsExpanded
-                            ) {
-                                InsightsSectionContent(insights: insights)
-                            }
                         }
                     }
                 }

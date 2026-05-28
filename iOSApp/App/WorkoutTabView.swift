@@ -197,13 +197,22 @@ struct WorkoutTabView: View {
         let completedWD       = cal.component(.weekday, from: entry.startedAt)
         let completedDayIndex = (completedWD + 5) % 7
 
+        // B-008b: count exercises with 0 completed sets when ≥1 was planned
+        let skippedCount = entry.exercises.filter { we in
+            we.completedSets.isEmpty && !we.sets.isEmpty
+        }.count
+
+        let hasPR = !store.newPRs.isEmpty
+
         queue.append(.sessionComplete(
             duration: entry.formattedDuration,
             sets: entry.totalSets,
             volume: Int(entry.totalVolume),
             sessionDays: sessionDays,
             isComeback: isComeback,
-            completedDayIndex: completedDayIndex
+            completedDayIndex: completedDayIndex,
+            skippedCount: skippedCount,
+            hasPR: hasPR
         ))
 
         // 3. PRs last — individual achievements (up to 3)

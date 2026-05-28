@@ -131,6 +131,12 @@ class SeedStore {
     /// Set by HealthKitService after fetch; passed into ReadinessEngine.
     var restingHR: Double? = nil
     var pendingWeightSuggestions: [WeightSuggestion] = []
+    /// A-002: stable recommended plans — regenerated only when analytics refresh, not on every render
+    private(set) var recommendedPlans: [GuidedWorkoutPlan] = []
+    /// P-001: log of plan start/skip interactions
+    var planFeedbackLog: [PlanFeedback] = []
+    /// V-002: true when deload is recommended based on training load and plateau data
+    private(set) var deloadRecommended: Bool = false
     /// "yyyy-MM-dd" → readiness score. Stored once per day by refreshAnalytics().
     /// This is the source of truth for the 14-day readiness trend chart.
     var readinessScoreHistory: [String: Int] = [:]
@@ -331,9 +337,17 @@ class SeedStore {
     func applyWeightSuggestion(exerciseId: UUID, weightKg: Double) {
         guard activeWorkout != nil,
               let exIdx = activeWorkout!.exercises.firstIndex(where: { $0.exercise.id == exerciseId }) else { return }
-        for i in activeWorkout!.exercises[exIdx].sets.indices {
-            activeWorkout!.exercises[exIdx].sets[i].weight       = weightKg
-            activeWorkout!.exercises[exIdx].sets[i].targetWeight = weightKg
+        // B-004: skip warm-up sets — sets whose targetWeight was < 80% of the max target weight
+        let sets = activeWorkout!.exercises[exIdx].sets
+        let maxTarget = sets.map { $0.targetWeight }.max() ?? 0
+        let warmupThreshold = maxTarget * 0.80
+        for i in sets.indices {
+            // Only apply to working sets (those at or near max target weight)
+            let wasWarmup = maxTarget > 0 && sets[i].targetWeight < warmupThreshold
+            if !wasWarmup {
+                activeWorkout!.exercises[exIdx].sets[i].weight       = weightKg
+                activeWorkout!.exercises[exIdx].sets[i].targetWeight = weightKg
+            }
         }
         saveActiveWorkout()
     }
@@ -789,6 +803,7 @@ class SeedStore {
     private let activeWorkoutKey        = "activeWorkout_v1"
     private let readinessHistoryKey     = "readinessScoreHistory_v1"
     private let hrvHistoryKey           = "hrvHistory_v1"
+    private let planFeedbackKey         = "planFeedbackLog_v1"
 
     /// Keys that participate in iCloud sync (subset — excludes ephemeral keys).
     private var iCloudSyncKeys: [String] {
@@ -949,6 +964,7 @@ class SeedStore {
         let awk = activeWorkoutKey
         let rhk      = readinessHistoryKey
         let hrvHistKey = hrvHistoryKey
+        let pfk      = planFeedbackKey
         let syncKeys = iCloudSyncKeys
         let exs = exercises   // `let` — safe to read from any thread
 
@@ -969,6 +985,7 @@ class SeedStore {
             var savedActiveWorkout: WorkoutLogEntry? = nil
             var readinessHist = [String: Int]()
             var hrvHist       = [String: Double]()
+            var pfLog         = [PlanFeedback]()
 
             if let d = UserDefaults.standard.data(forKey: lk),
                let v = try? JSONDecoder().decode([WorkoutLogEntry].self, from: d)         { log       = v }
@@ -994,6 +1011,8 @@ class SeedStore {
                let v = try? JSONDecoder().decode([String: Int].self, from: d)             { readinessHist = v }
             if let d = UserDefaults.standard.data(forKey: hrvHistKey),
                let v = try? JSONDecoder().decode([String: Double].self, from: d)          { hrvHist = v }
+            if let d = UserDefaults.standard.data(forKey: pfk),
+               let v = try? JSONDecoder().decode([PlanFeedback].self, from: d)            { pfLog = v }
 
             let needsSeed = !UserDefaults.standard.bool(forKey: sk)
             if needsSeed {
@@ -1045,6 +1064,7 @@ class SeedStore {
                 recentExerciseIds      = recentIds
                 readinessScoreHistory  = readinessHist
                 hrvHistory             = hrvHist
+                planFeedbackLog        = pfLog
                 // Restore an in-progress workout if the app was killed mid-session
                 if !needsSeed, let recovered = savedActiveWorkout {
                     activeWorkout = recovered
@@ -1073,6 +1093,25 @@ class SeedStore {
         }
     }
 
+    /// A-002: Regenerate recommended plans — call only when data changes, not on every render.
+    func refreshRecommendedPlans() {
+        let plans = WorkoutPlanEngine.generatePlans(store: self, readiness: homeCache.readiness)
+        self.recommendedPlans = plans
+    }
+
+    /// P-001: Log a plan feedback event (skip or start).
+    func logPlanFeedback(_ feedback: PlanFeedback) {
+        planFeedbackLog.insert(feedback, at: 0)
+        if planFeedbackLog.count > 200 { planFeedbackLog = Array(planFeedbackLog.prefix(200)) }
+        let log = planFeedbackLog
+        let key = planFeedbackKey
+        DispatchQueue.global(qos: .background).async {
+            if let data = try? JSONEncoder().encode(log) {
+                UserDefaults.standard.set(data, forKey: key)
+            }
+        }
+    }
+
     func refreshAnalytics() {
         let token        = UUID()
         analyticsPendingToken = token
@@ -1094,12 +1133,16 @@ class SeedStore {
             let home   = HomeCache.build(log: log, exercises: exs, routines: routinesCopy, cardioLog: cLogCopy, generalLog: gLogCopy, stepsToday: stepsCopy, sleepHours: sleepCopy, restingHR: rhrCopy, hrv: hrvCopy, hrvBaseline: baselineCopy, scoreHistory: histCopy)
             let todayKey   = Self.dateKeyFormatter.string(from: Date())
             let todayScore = home.readiness.score
+            // V-002: deload detection — 4 consecutive weeks ≥3 sessions AND (plateau OR low readiness)
+            let deload = Self.computeDeloadRecommended(log: log, result: result, readinessScore: home.readiness.score)
+
             DispatchQueue.main.async {
                 guard self?.analyticsPendingToken == token else { return }
                 self?.analyticsCache       = result
                 self?.homeCache            = home
                 self?.lastPerformanceCache = lpCache
                 self?.exerciseHistoryCache = histCache
+                self?.deloadRecommended    = deload
                 // Stamp today's real readiness score for the 14-day trend chart
                 self?.readinessScoreHistory[todayKey] = todayScore
                 self?.saveReadinessHistory()
@@ -1108,8 +1151,30 @@ class SeedStore {
                     self?.hrvHistory[todayKey] = hrv
                     self?.saveHRVHistory()
                 }
+                // A-002: refresh plans after analytics update
+                self?.refreshRecommendedPlans()
             }
         }
+    }
+
+    /// V-002: detect whether a deload week should be recommended.
+    private static func computeDeloadRecommended(log: [WorkoutLogEntry], result: AnalyticsResult, readinessScore: Int) -> Bool {
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        // Group sessions into 7-day buckets over last 28 days
+        var weekCounts = [Int: Int]()   // week index (0=most recent) → session count
+        for entry in log {
+            let daysAgo = cal.dateComponents([.day], from: cal.startOfDay(for: entry.startedAt), to: today).day ?? 99
+            guard daysAgo < 28 else { continue }
+            let weekIdx = daysAgo / 7
+            weekCounts[weekIdx, default: 0] += 1
+        }
+        // Need ≥4 consecutive weeks with ≥3 sessions
+        let consecutiveActiveWeeks = (0..<4).filter { (weekCounts[$0] ?? 0) >= 3 }.count
+        guard consecutiveActiveWeeks >= 4 else { return false }
+        // Plateau on ≥2 compound exercises OR avg readiness < 60
+        let compoundPlateauCount = result.exerciseAnalytics.filter { $0.isPlateau && $0.exercise.isCompound }.count
+        return compoundPlateauCount >= 2 || readinessScore < 60
     }
 
     private func injectSampleData() {

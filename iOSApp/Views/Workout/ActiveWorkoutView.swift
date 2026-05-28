@@ -1170,7 +1170,7 @@ private struct SuggestionRow: View {
     }
 }
 
-// MARK: - RPE Row
+// MARK: - RPE Row (B-006: word-based chips)
 
 private struct RPERow: View {
     let rpe: Double?
@@ -1178,7 +1178,24 @@ private struct RPERow: View {
 
     @State private var showRPEInfo = false
 
-    private let steps: [Double] = stride(from: 6.0, through: 10.0, by: 0.5).map { $0 }
+    // B-006: word chips mapping to internal numeric values
+    private struct RPEChip {
+        let label: String
+        let value: Double
+        var color: Color
+    }
+
+    private let chips: [RPEChip] = [
+        RPEChip(label: "Easy",      value: 6.5,  color: HONTheme.accent),
+        RPEChip(label: "Hard",      value: 8.0,  color: HONTheme.positive),
+        RPEChip(label: "Very Hard", value: 9.0,  color: HONTheme.warning),
+        RPEChip(label: "Max",       value: 10.0, color: HONTheme.negative),
+    ]
+
+    /// Returns the closest word label for any numeric RPE value (e.g. old stored values)
+    private func closestChip(for val: Double) -> RPEChip? {
+        chips.min(by: { abs($0.value - val) < abs($1.value - val) })
+    }
 
     var body: some View {
         HStack(spacing: 6) {
@@ -1200,7 +1217,7 @@ private struct RPERow: View {
                 VStack(alignment: .leading, spacing: 16) {
                     Text("RPE — Rate of Perceived Exertion")
                         .font(.headline)
-                    Text("A 1–10 scale rating how hard a set felt.\n\n6 = moderate effort, conversational pace.\n8 = hard — could do 2 more reps.\n9 = very hard — 1 rep left in the tank.\n10 = absolute maximum effort, could not do another rep.")
+                    Text("How hard did the set feel?\n\nEasy (6.5) — comfortable, could keep going.\nHard (8.0) — challenging, 2 reps left.\nVery Hard (9.0) — near limit, 1 rep left.\nMax (10.0) — nothing left in the tank.")
                         .font(.body)
                         .foregroundStyle(.secondary)
                     Spacer()
@@ -1224,31 +1241,26 @@ private struct RPERow: View {
                     }
                     .buttonStyle(.plain)
 
-                    ForEach(steps, id: \.self) { val in
-                        let selected = rpe == val
+                    ForEach(chips, id: \.value) { chip in
+                        // A chip is "selected" when the stored RPE maps closest to this chip
+                        let selected: Bool = {
+                            guard let r = rpe else { return false }
+                            return closestChip(for: r)?.value == chip.value
+                        }()
                         Button {
-                            onUpdate(selected ? nil : val)
+                            onUpdate(selected ? nil : chip.value)
                         } label: {
-                            Text(val.truncatingRemainder(dividingBy: 1) == 0 ? "\(Int(val))" : String(format: "%.1f", val))
-                                .font(.system(size: 10, weight: .semibold).monospacedDigit())
-                                .foregroundStyle(selected ? HONTheme.textPrimary : rpeColor(val))
+                            Text(chip.label)
+                                .font(.system(size: 10, weight: .semibold))
+                                .foregroundStyle(selected ? HONTheme.textPrimary : chip.color)
                                 .padding(.horizontal, 8).padding(.vertical, 8)
-                                .background(selected ? rpeColor(val) : rpeColor(val).opacity(0.12),
+                                .background(selected ? chip.color : chip.color.opacity(0.12),
                                             in: RoundedRectangle(cornerRadius: 7))
                         }
                         .buttonStyle(.plain)
                     }
                 }
             }
-        }
-    }
-
-    private func rpeColor(_ val: Double) -> Color {
-        switch val {
-        case ..<7:   return HONTheme.accent
-        case 7..<8:  return HONTheme.positive
-        case 8..<9:  return HONTheme.warning
-        default:     return HONTheme.negative
         }
     }
 }

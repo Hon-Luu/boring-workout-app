@@ -163,17 +163,33 @@ final class HealthKitService {
     // MARK: - Recovery
 
     private func fetchHRV() {
+        // H-001: prioritise the most recent reading within last 4 hours,
+        // fall back to same-day, then yesterday.
         let type = HKQuantityType(.heartRateVariabilitySDNN)
-        let start = Calendar.current.startOfDay(for: Date()).addingTimeInterval(-86400)
-        let predicate = HKQuery.predicateForSamples(withStart: start, end: Date())
         let sort = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
-        let q = HKSampleQuery(sampleType: type, predicate: predicate, limit: 20, sortDescriptors: [sort]) { [weak self] _, samples, error in
-            if let error { print("HealthKit HRV error: \(error)"); return }
-            guard let samples = samples as? [HKQuantitySample], !samples.isEmpty else { return }
-            let avg = samples.map { $0.quantity.doubleValue(for: HKUnit(from: "ms")) }.reduce(0, +) / Double(samples.count)
-            DispatchQueue.main.async { self?.hrv = avg }
+        let now = Date()
+        let fourHoursAgo = now.addingTimeInterval(-4 * 3600)
+        let yesterday    = Calendar.current.startOfDay(for: now).addingTimeInterval(-86400)
+
+        // First: try last 4 hours
+        let recentPredicate = HKQuery.predicateForSamples(withStart: fourHoursAgo, end: now)
+        let qRecent = HKSampleQuery(sampleType: type, predicate: recentPredicate, limit: 5, sortDescriptors: [sort]) { [weak self] _, samples, _ in
+            if let samples = samples as? [HKQuantitySample], !samples.isEmpty {
+                let avg = samples.map { $0.quantity.doubleValue(for: HKUnit(from: "ms")) }.reduce(0, +) / Double(samples.count)
+                DispatchQueue.main.async { self?.hrv = avg }
+                return
+            }
+            // Fallback: same-day or yesterday
+            let dayPredicate = HKQuery.predicateForSamples(withStart: yesterday, end: now)
+            let qDay = HKSampleQuery(sampleType: type, predicate: dayPredicate, limit: 20, sortDescriptors: [sort]) { [weak self] _, daySamples, error in
+                if let error { print("HealthKit HRV error: \(error)"); return }
+                guard let daySamples = daySamples as? [HKQuantitySample], !daySamples.isEmpty else { return }
+                let avg = daySamples.map { $0.quantity.doubleValue(for: HKUnit(from: "ms")) }.reduce(0, +) / Double(daySamples.count)
+                DispatchQueue.main.async { self?.hrv = avg }
+            }
+            self?.store.execute(qDay)
         }
-        store.execute(q)
+        store.execute(qRecent)
     }
 
     private func fetchRestingHR() {

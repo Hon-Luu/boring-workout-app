@@ -9,7 +9,12 @@ struct WorkoutPlanEngine {
         readiness: ReadinessState,
         lastPerformance: [UUID: [SetRecord]] = [:],
         weeklyVolume: [BodyRegion: Int] = [:],
-        analytics: AnalyticsResult? = nil
+        analytics: AnalyticsResult? = nil,
+        goal: TrainingGoal = .general,
+        availableEquipment: Set<Equipment> = Set(Equipment.allCases),
+        timeBudgetMinutes: Int = 50,
+        deloadRecommended: Bool = false,
+        insights: [EmergentInsight] = []
     ) -> [GuidedWorkoutPlan] {
         // Cold start: no history — return a single guided intro plan
         guard !log.isEmpty else {
@@ -17,35 +22,106 @@ struct WorkoutPlanEngine {
         }
 
         let daysSince  = daysSinceTrainedByRegion(log: log)
-        let intensity  = intensityForScore(readiness.score)
-        let fresh      = BodyRegion.allCases.filter { (daysSince[$0] ?? 99) >= 2 }
-        let stale      = BodyRegion.allCases.filter { (daysSince[$0] ?? 99) < 2 }
+
+        // P-004: gap-aware intensity override
+        let gapDays: Int = {
+            guard let last = log.first?.startedAt else { return 0 }
+            return Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: last), to: Calendar.current.startOfDay(for: Date())).day ?? 0
+        }()
+
+        var baseIntensity = intensityForScore(readiness.score)
+
+        // V-002: deload override
+        if deloadRecommended { baseIntensity = .light }
+
+        // P-004: extended gap overrides
+        var gapFreshOverride = false
+        if gapDays >= 28 {
+            baseIntensity = .light
+            gapFreshOverride = true
+        } else if gapDays >= 14 {
+            if baseIntensity == .heavy { baseIntensity = .moderate }
+            gapFreshOverride = true
+        }
+
+        let intensity = baseIntensity
+
+        // T-012: check insights for load tolerance
+        let hasLowLoadTolerance = insights.contains { $0.title == "Load Tolerance" && $0.stateName.contains("LOW") }
+        let effectiveIntensity: GuidedWorkoutPlan.Intensity = hasLowLoadTolerance && intensity == .heavy ? .moderate : intensity
+
+        let fresh: [BodyRegion]
+        let stale: [BodyRegion]
+        if gapFreshOverride {
+            fresh = BodyRegion.allCases
+            stale = []
+        } else {
+            fresh = BodyRegion.allCases.filter { (daysSince[$0] ?? 99) >= 2 }
+            stale = BodyRegion.allCases.filter { (daysSince[$0] ?? 99) < 2 }
+        }
+
         // Exercises done in the last 2 sessions — deprioritised to encourage muscle rest
         let recentExIds: Set<UUID> = Set(log.prefix(2).flatMap { $0.exercises.map { $0.exercise.id } })
 
-        let primary   = makePlan(exercises: exercises, log: log, lastPerf: lastPerformance,
+        // T-012: build insight-based coach note addendums
+        var insightNotes: [String] = []
+        if insights.contains(where: { $0.title == "True Adaptation State" && $0.stateName.contains("MAINTAINING") }) {
+            insightNotes.append("Consider changing rep ranges or exercise variation to stimulate new adaptation.")
+        }
+        if insights.contains(where: { $0.title == "Mind-Body Alignment" && $0.stateName.contains("MOOD") }) {
+            insightNotes.append("Rate how you feel before starting — your mood-exercise correlation is high.")
+        }
+
+        var primary   = makePlan(exercises: exercises, log: log, lastPerf: lastPerformance,
                                  focus: primarySplit(fresh: fresh, stale: stale, weeklyVolume: weeklyVolume, analytics: analytics),
-                                 intensity: intensity, recentExIds: recentExIds, analytics: analytics, readiness: readiness)
+                                 intensity: effectiveIntensity, recentExIds: recentExIds, analytics: analytics,
+                                 readiness: readiness, goal: goal, availableEquipment: availableEquipment,
+                                 timeBudgetMinutes: timeBudgetMinutes, extraNotes: insightNotes)
         let alternateIntensity: GuidedWorkoutPlan.Intensity = {
-            switch intensity {
+            switch effectiveIntensity {
             case .heavy: return .moderate
             case .moderate, .light: return .light
             }
         }()
-        let alternate = makePlan(exercises: exercises, log: log, lastPerf: lastPerformance,
+        var alternate = makePlan(exercises: exercises, log: log, lastPerf: lastPerformance,
                                  focus: alternateSplit(fresh: fresh, stale: stale, weeklyVolume: weeklyVolume),
-                                 intensity: alternateIntensity, recentExIds: recentExIds, analytics: analytics, readiness: readiness)
+                                 intensity: alternateIntensity, recentExIds: recentExIds, analytics: analytics,
+                                 readiness: readiness, goal: goal, availableEquipment: availableEquipment,
+                                 timeBudgetMinutes: timeBudgetMinutes, extraNotes: insightNotes)
         let recovery  = makeRecoveryPlan(exercises: exercises, log: log,
                                          lastPerf: lastPerformance, recentExIds: recentExIds)
+
+        // T-003: attach recovery/gap note when overrides are in effect
+        let recoveryNote: String? = {
+            if deloadRecommended { return "Deload week — load reduced to let your body fully consolidate gains." }
+            if gapDays >= 28     { return "Extended gap detected — intensity eased back to rebuild momentum safely." }
+            if gapDays >= 14     { return "Gap detected (\(gapDays) days) — capped at moderate intensity to ease back in." }
+            return nil
+        }()
+        if let note = recoveryNote {
+            primary.recoveryNote = note
+            alternate.recoveryNote = note
+        }
         return [primary, alternate, recovery]
     }
 
     /// Convenience overload that reads from the store (main-thread only).
     static func generatePlans(store: SeedStore, readiness: ReadinessState) -> [GuidedWorkoutPlan] {
-        generatePlans(log: store.workoutLog, exercises: store.exercises,
-                      readiness: readiness, lastPerformance: store.lastPerformanceCache,
-                      weeklyVolume: store.homeCache.weeklyVolume,
-                      analytics: store.analyticsCache)
+        let insights = EmergentInsightEngine.compute(
+            log: store.workoutLog,
+            analyticsResult: store.analyticsCache,
+            hrv: nil, sleepHours: nil
+        )
+        return generatePlans(
+            log: store.workoutLog, exercises: store.exercises,
+            readiness: readiness, lastPerformance: store.lastPerformanceCache,
+            weeklyVolume: store.homeCache.weeklyVolume,
+            analytics: store.analyticsCache,
+            goal: store.userProfile.trainingGoal,
+            availableEquipment: store.userProfile.availableEquipment,
+            deloadRecommended: store.deloadRecommended,
+            insights: insights
+        )
     }
 
     // MARK: - Split Selection
@@ -109,16 +185,37 @@ struct WorkoutPlanEngine {
         intensity: GuidedWorkoutPlan.Intensity,
         recentExIds: Set<UUID>,
         analytics: AnalyticsResult? = nil,
-        readiness: ReadinessState? = nil
+        readiness: ReadinessState? = nil,
+        goal: TrainingGoal = .general,
+        availableEquipment: Set<Equipment> = Set(Equipment.allCases),
+        timeBudgetMinutes: Int = 50,
+        extraNotes: [String] = []
     ) -> GuidedWorkoutPlan {
         // T-006: build a set of plateaued exercise IDs from analytics
         let plateauedIds: Set<UUID> = analytics.map { a in
             Set(a.exerciseAnalytics.filter(\.isPlateau).map(\.id))
         } ?? []
 
+        // T-008: limit exercise count based on time budget
+        let maxExercises: Int
+        switch timeBudgetMinutes {
+        case ..<40:  maxExercises = 4   // Quick: 3-4
+        case 40..<58: maxExercises = 6  // Standard: 5-6
+        default:     maxExercises = 8   // Full: 7-8
+        }
+
+        // T-009: build equipment-filtered pool; fall back to bodyweight if pool < 2
+        let availEquip = availableEquipment
+
         var result: [GuidedExercise] = []
         for region in focus {
-            let pool       = allExercises.filter { $0.bodyRegion == region }
+            // T-009: filter by available equipment
+            var pool = allExercises.filter { $0.bodyRegion == region && availEquip.contains($0.equipment) }
+            // Fallback: if fewer than 2 exercises available, add bodyweight ones
+            if pool.count < 2 {
+                let bwPool = allExercises.filter { $0.bodyRegion == region && $0.equipment == .bodyweight }
+                pool = Array(Set(pool + bwPool))
+            }
             let compounds  = pool.filter(\.isCompound)
             let isolations = pool.filter { !$0.isCompound }
 
@@ -127,31 +224,50 @@ struct WorkoutPlanEngine {
                plateauedIds.contains(top.id) {
                 let fallback = compounds.filter { $0.id != top.id }
                 if let alt = bestExercise(from: fallback, lastPerf: lastPerf, recentExIds: recentExIds) {
-                    result.append(guided(alt, intensity: intensity, lastPerf: lastPerf))
+                    result.append(guided(alt, intensity: intensity, lastPerf: lastPerf, analytics: analytics, goal: goal))
                 } else {
-                    result.append(guided(top, intensity: intensity, lastPerf: lastPerf))
+                    result.append(guided(top, intensity: intensity, lastPerf: lastPerf, analytics: analytics, goal: goal))
                 }
             } else if let main = bestExercise(from: compounds, lastPerf: lastPerf, recentExIds: recentExIds) {
-                result.append(guided(main, intensity: intensity, lastPerf: lastPerf))
+                result.append(guided(main, intensity: intensity, lastPerf: lastPerf, analytics: analytics, goal: goal))
             }
 
-            if result.count < 5,
+            // T-008: only add isolations when budget allows (Quick = compounds only)
+            if timeBudgetMinutes >= 40, result.count < maxExercises,
                let iso = bestExercise(from: isolations, lastPerf: lastPerf, recentExIds: recentExIds) {
-                result.append(guided(iso, intensity: intensity, lastPerf: lastPerf))
+                result.append(guided(iso, intensity: intensity, lastPerf: lastPerf, analytics: analytics, goal: goal))
             }
         }
-        result = Array(result.prefix(6))
+        result = Array(result.prefix(maxExercises))
         let title   = planTitle(regions: focus, intensity: intensity)
         let minutes = result.count * (intensity == .heavy ? 10 : 7)
-        return GuidedWorkoutPlan(
+        var baseNote = smartCoachNote(intensity: intensity, regions: focus,
+                                      exercises: result, lastPerf: lastPerf,
+                                      readiness: readiness, analytics: analytics)
+        if !extraNotes.isEmpty {
+            baseNote = ([baseNote] + extraNotes).joined(separator: " ")
+        }
+        // T-003: build "Why this plan" reasoning fields
+        let splitDesc = splitDescription(focus: focus)
+        let progNote: String? = {
+            guard !result.filter({ $0.targetWeight > 0 }).isEmpty else { return nil }
+            switch intensity {
+            case .heavy:    return "Progressive overload — weights pushed toward new stimulus."
+            case .moderate: return "Consistent loading — maintain current weights, focus on clean reps."
+            case .light:    return "Reduced load — quality over quantity to let adaptations solidify."
+            }
+        }()
+
+        var plan = GuidedWorkoutPlan(
             id: UUID(), title: title,
             subtitle: focus.map(\.rawValue).joined(separator: " · "),
             bodyRegions: focus, exercises: result,
             estimatedMinutes: minutes, intensity: intensity,
-            coachNote: smartCoachNote(intensity: intensity, regions: focus,
-                                      exercises: result, lastPerf: lastPerf,
-                                      readiness: readiness, analytics: analytics)
+            coachNote: String(baseNote.prefix(240))
         )
+        plan.splitLabel = splitDesc
+        plan.progressionNote = progNote
+        return plan
     }
 
     private static func makeRecoveryPlan(
@@ -206,6 +322,19 @@ struct WorkoutPlanEngine {
             intensity: .light,
             coachNote: "Your first session — the goal isn't performance, it's learning the movements and finding starting weights. Start lighter than you think you need to. Keep RPE at 6/10 — controlled, never grinding. After 3 sessions the app will personalise weights and plans based on your actual data."
         )
+    }
+
+    // MARK: - T-003 Why-This-Plan Helpers
+
+    private static func splitDescription(focus: [BodyRegion]) -> String {
+        let names = focus.map(\.rawValue)
+        let set = Set(focus)
+        if set.count >= 4 { return "Full Body" }
+        if set.contains(.chest) && set.contains(.shoulders) && set.contains(.arms) { return "Push" }
+        if set.contains(.back)  && set.contains(.arms)                              { return "Pull" }
+        if set.contains(.legs)  && set.contains(.core)                              { return "Legs & Core" }
+        if set.count == 1 { return names[0] }
+        return names.prefix(2).joined(separator: " / ")
     }
 
     // MARK: - Exercise Scoring
@@ -278,18 +407,58 @@ struct WorkoutPlanEngine {
     private static func guided(
         _ exercise: Exercise,
         intensity: GuidedWorkoutPlan.Intensity,
-        lastPerf: [UUID: [SetRecord]]
+        lastPerf: [UUID: [SetRecord]],
+        analytics: AnalyticsResult? = nil,
+        goal: TrainingGoal = .general
     ) -> GuidedExercise {
-        let (sets, reps) = setsAndReps(for: intensity, isCompound: exercise.isCompound)
-        let weight = lastPerf[exercise.id]?.first?.weight ?? 0
-        return GuidedExercise(exercise: exercise, targetSets: sets, targetReps: reps, targetWeight: weight)
+        let (sets, reps) = setsAndReps(for: intensity, isCompound: exercise.isCompound, goal: goal)
+
+        // P-002: progressive overload weight calculation
+        let lastSets = lastPerf[exercise.id] ?? []
+        let weight: Double
+        if lastSets.isEmpty {
+            weight = 0
+        } else {
+            let allHit = lastSets.allSatisfy { $0.targetReps > 0 && $0.reps >= $0.targetReps }
+            let anyMissedBadly = lastSets.contains { $0.targetReps > 0 && $0.reps < Int(Double($0.targetReps) * 0.70) }
+            let baseWeight = lastSets.first?.weight ?? 0
+            if allHit {
+                let increment = exercise.isCompound ? 2.5 : 1.25
+                weight = baseWeight + increment
+            } else if anyMissedBadly {
+                weight = baseWeight  // hold
+            } else {
+                weight = baseWeight  // normal: same weight
+            }
+        }
+
+        // T-014: performance tag from analytics
+        let performanceTag: String? = {
+            guard let ea = analytics?.exerciseAnalytics.first(where: { $0.id == exercise.id }) else { return nil }
+            if ea.isPlateau { return "⟳ variation" }
+            if ea.slopePerWeek >= 1.0 { return "↑ gaining" }
+            if ea.slopePerWeek >= 0.2 { return "→ holding" }
+            return nil
+        }()
+
+        return GuidedExercise(exercise: exercise, targetSets: sets, targetReps: reps, targetWeight: weight, performanceTag: performanceTag)
     }
 
-    private static func setsAndReps(for intensity: GuidedWorkoutPlan.Intensity, isCompound: Bool) -> (Int, Int) {
-        switch intensity {
-        case .heavy:    return isCompound ? (4, 5)  : (3, 8)
-        case .moderate: return isCompound ? (3, 8)  : (3, 12)
-        case .light:    return isCompound ? (3, 12) : (2, 15)
+    private static func setsAndReps(for intensity: GuidedWorkoutPlan.Intensity, isCompound: Bool, goal: TrainingGoal = .general) -> (Int, Int) {
+        // P-003: goal-based rep ranges
+        switch goal {
+        case .strength:
+            return isCompound ? (4, 4) : (3, 6)
+        case .hypertrophy:
+            return isCompound ? (3, 10) : (3, 12)
+        case .endurance:
+            return isCompound ? (3, 15) : (2, 20)
+        case .general:
+            switch intensity {
+            case .heavy:    return isCompound ? (4, 5)  : (3, 8)
+            case .moderate: return isCompound ? (3, 8)  : (3, 12)
+            case .light:    return isCompound ? (3, 12) : (2, 15)
+            }
         }
     }
 

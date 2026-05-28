@@ -3,7 +3,7 @@ import SwiftUI
 struct SwipeableWorkoutCards: View {
     let plans: [GuidedWorkoutPlan]
     let onStart: (GuidedWorkoutPlan) -> Void
-    let onSkip: () -> Void
+    let onSkip: (GuidedWorkoutPlan) -> Void
 
     @State private var currentIndex: Int = 0
     @State private var dragOffset: CGSize = .zero
@@ -62,6 +62,7 @@ struct SwipeableWorkoutCards: View {
     // MARK: - Actions
 
     private func skipCard() {
+        guard let plan = visiblePlans.first else { return }
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
             dragOffset = CGSize(width: -600, height: 80)
@@ -69,6 +70,7 @@ struct SwipeableWorkoutCards: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
             currentIndex = min(currentIndex + 1, plans.count)
             dragOffset = .zero
+            onSkip(plan)
         }
     }
 
@@ -162,6 +164,14 @@ private struct WorkoutCard: View {
                             .frame(width: 7, height: 7)
                         Text(ge.exercise.name)
                             .font(.subheadline)
+                        if let tag = ge.performanceTag {
+                            Text(tag)
+                                .font(.caption2)
+                                .foregroundStyle(tag.hasPrefix("↑") ? HONTheme.positive : tag.hasPrefix("⟳") ? HONTheme.warning : .secondary)
+                                .padding(.horizontal, 5)
+                                .padding(.vertical, 2)
+                                .background((tag.hasPrefix("↑") ? HONTheme.positive : tag.hasPrefix("⟳") ? HONTheme.warning : Color.secondary).opacity(0.12), in: Capsule())
+                        }
                         Spacer()
                         Text("\(ge.targetSets)×\(ge.targetReps)")
                             .font(.caption.monospacedDigit())

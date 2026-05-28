@@ -3,7 +3,7 @@ import SwiftUI
 // MARK: - Celebration Kind
 
 enum CelebrationKind {
-    case sessionComplete(duration: String, sets: Int, volume: Int, sessionDays: [Int], isComeback: Bool, completedDayIndex: Int)
+    case sessionComplete(duration: String, sets: Int, volume: Int, sessionDays: [Int], isComeback: Bool, completedDayIndex: Int, skippedCount: Int = 0, hasPR: Bool = false)
     case personalRecord(exerciseName: String, weight: Double, reps: Int)
     case streakMilestone(days: Int)
 }
@@ -178,7 +178,17 @@ struct SessionCelebrationView: View {
     let sessionDays: [Int]       // Mon=0..Sun=6 indices of this week's session days
     let isComeback: Bool
     let completedDayIndex: Int   // Mon=0..Sun=6 of the workout just finished — drives the sparking dot
+    let skippedCount: Int
+    let hasPR: Bool
     let onDismiss: () -> Void
+
+    init(duration: String, sets: Int, volume: Int, sessionDays: [Int], isComeback: Bool,
+         completedDayIndex: Int, skippedCount: Int = 0, hasPR: Bool = false, onDismiss: @escaping () -> Void) {
+        self.duration = duration; self.sets = sets; self.volume = volume
+        self.sessionDays = sessionDays; self.isComeback = isComeback
+        self.completedDayIndex = completedDayIndex; self.skippedCount = skippedCount
+        self.hasPR = hasPR; self.onDismiss = onDismiss
+    }
 
     @State private var vignetteOn    = false
     @State private var ruleScale     = 0.0
@@ -199,19 +209,55 @@ struct SessionCelebrationView: View {
 
     private var feedbackText: String {
         if isComeback {
-            return "You came back. Most people don't."
+            let pool = ["You came back. Most people don't.",
+                        "A return is a reset. Good to be back.",
+                        "You came back. That's the whole habit."]
+            return pool[sessionDays.count % pool.count]
+        }
+        // B-007: PR variant
+        if hasPR {
+            let pool = ["New peak today. That's what showing up does.",
+                        "A personal record this session. Keep this standard.",
+                        "PR logged. The work is compounding."]
+            let idx = UserDefaults.standard.integer(forKey: "lastFeedbackIndex")
+            UserDefaults.standard.set((idx + 1) % pool.count, forKey: "lastFeedbackIndex")
+            return pool[idx % pool.count]
         }
         let n = min(max(sessionDays.count, 1), 7)
-        let pool = [
-            "You chose this today.",
-            "Twice this week. That's someone who trains.",
-            "Three times. That's a person who shows up.",
-            "Four times this week. The habit is real.",
-            "Five sessions. This is consistency.",
-            "Six sessions. Remarkable week.",
-            "Seven for seven. You're building something that lasts."
+        // B-007: expanded pool per session count (4-6 options, identity-framing)
+        let pools: [[String]] = [
+            ["You chose this today.", "One session in. That's the start.",
+             "You showed up. That's what matters.", "The habit started here."],
+            ["Twice this week. That's someone who trains.",
+             "Two sessions. You're building a pattern.",
+             "Back again. This is who you are.",
+             "Twice in a week. Consistent."],
+            ["Three times. That's a person who shows up.",
+             "Three sessions this week. The habit is forming.",
+             "You came back three times. That's identity.",
+             "Three for the week. Solid."],
+            ["Four times this week. The habit is real.",
+             "Four sessions. This isn't a phase.",
+             "Four times in a week. You're someone who trains.",
+             "Four sessions. The pattern is clear."],
+            ["Five sessions. This is consistency.",
+             "Five times this week. Remarkable.",
+             "Five sessions. You're the person you said you'd be.",
+             "Five for the week. That's elite frequency."],
+            ["Six sessions. Remarkable week.",
+             "Six times this week. That's discipline.",
+             "Six sessions — almost a perfect week.",
+             "Six for six. Your body knows this by now."],
+            ["Seven for seven. You're building something that lasts.",
+             "Perfect week. Every single day.",
+             "Seven sessions. This is who you are now.",
+             "Seven for seven. The habit is you."]
         ]
-        return pool[n - 1]
+        let pool = pools[n - 1]
+        let storedIdx = UserDefaults.standard.integer(forKey: "lastFeedbackIndex")
+        let idx = storedIdx % pool.count
+        UserDefaults.standard.set(storedIdx + 1, forKey: "lastFeedbackIndex")
+        return pool[idx]
     }
 
     var body: some View {
@@ -320,7 +366,30 @@ struct SessionCelebrationView: View {
                     .opacity(feedbackOn ? 1 : 0)
                     .animation(.easeInOut(duration: 2.5), value: feedbackOn)
 
+                // B-008b: skipped exercises note
+                if skippedCount > 0 {
+                    Text("\(skippedCount) exercise\(skippedCount == 1 ? "" : "s") left for next time.")
+                        .font(.custom("DMSans-Regular", size: 11))
+                        .foregroundStyle(Color.white.opacity(0.32))
+                        .padding(.top, 8)
+                        .opacity(feedbackOn ? 1 : 0)
+                        .animation(.easeInOut(duration: 2.5), value: feedbackOn)
+                }
+
                 Spacer()
+
+                // B-005: Share button
+                let shareString = "Logged \(sets) sets · \(volumeStr(volume)) kg · \(duration) — tracked with H.O.N."
+                ShareLink(item: shareString) {
+                    Text("Share")
+                        .font(.custom("DMSans-Regular", size: 10))
+                        .kerning(0.1)
+                        .textCase(.uppercase)
+                        .foregroundStyle(Color.white.opacity(0.4))
+                }
+                .opacity(buttonOn ? 1 : 0)
+                .animation(.easeInOut(duration: 1.5), value: buttonOn)
+                .padding(.bottom, 8)
 
                 Button(action: onDismiss) {
                     Text("Continue")
@@ -650,11 +719,12 @@ struct CelebrationOverlay: View {
 
     var body: some View {
         switch kind {
-        case .sessionComplete(let dur, let sets, let vol, let days, let comeback, let dayIdx):
+        case .sessionComplete(let dur, let sets, let vol, let days, let comeback, let dayIdx, let skipped, let hasPR):
             SessionCelebrationView(
                 duration: dur, sets: sets, volume: vol,
                 sessionDays: days, isComeback: comeback,
-                completedDayIndex: dayIdx, onDismiss: onDismiss
+                completedDayIndex: dayIdx, skippedCount: skipped,
+                hasPR: hasPR, onDismiss: onDismiss
             )
         case .personalRecord(let name, let weight, let reps):
             PRCelebrationView(exerciseName: name, weight: weight, reps: reps, onDismiss: onDismiss)
@@ -771,7 +841,7 @@ extension View {
     CelebrationOverlay(
         kind: .sessionComplete(duration: "52m", sets: 21, volume: 5840,
                                sessionDays: [0, 2, 4, 6], isComeback: true,
-                               completedDayIndex: 6),
+                               completedDayIndex: 6, skippedCount: 0, hasPR: false),
         onDismiss: {}
     )
 }
@@ -780,7 +850,7 @@ extension View {
     CelebrationOverlay(
         kind: .sessionComplete(duration: "52m", sets: 21, volume: 5840,
                                sessionDays: [0, 2, 4, 6], isComeback: false,
-                               completedDayIndex: 6),
+                               completedDayIndex: 6, skippedCount: 1, hasPR: false),
         onDismiss: {}
     )
 }
@@ -789,7 +859,7 @@ extension View {
     CelebrationOverlay(
         kind: .sessionComplete(duration: "38m", sets: 12, volume: 2100,
                                sessionDays: [2], isComeback: false,
-                               completedDayIndex: 2),
+                               completedDayIndex: 2, skippedCount: 0, hasPR: true),
         onDismiss: {}
     )
 }

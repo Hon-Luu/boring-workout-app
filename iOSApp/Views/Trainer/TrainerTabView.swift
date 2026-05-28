@@ -4,14 +4,28 @@ struct TrainerTabView: View {
     @Environment(SeedStore.self) private var store
 
     private var readiness: ReadinessState { store.homeCache.readiness }
-    private var plans: [GuidedWorkoutPlan] {
-        WorkoutPlanEngine.generatePlans(store: store, readiness: readiness)
-    }
+    // A-002: use stable plans from store (regenerated on data change, not every render)
+    private var plans: [GuidedWorkoutPlan] { store.recommendedPlans }
 
     @State private var selectedPlan: GuidedWorkoutPlan? = nil
     @State private var showPlanPreview = false
     @State private var showLiveSession = false
     @State private var strongestDayDismissed = false
+    // T-008: time budget picker
+    @AppStorage("trainerTimeBudget") private var timeBudgetMinutes: Int = 50
+    // V-002: deload callout dismissal (keyed by week string)
+    @AppStorage("deloadCalloutDismissedWeek") private var deloadCalloutDismissedWeek: String = ""
+
+    private var currentWeekKey: String {
+        let cal = Calendar.current
+        let week = cal.component(.weekOfYear, from: Date())
+        let year = cal.component(.year, from: Date())
+        return "\(year)-W\(week)"
+    }
+
+    private var showDeloadCallout: Bool {
+        store.deloadRecommended && deloadCalloutDismissedWeek != currentWeekKey
+    }
 
     /// Returns true when today is the user's strongest day of the week and readiness is sufficient.
     private var showStrongestDayCallout: Bool {
@@ -50,13 +64,54 @@ struct TrainerTabView: View {
                             .padding(.horizontal, 4)
                     }
 
+                    // V-002: deload callout
+                    if showDeloadCallout {
+                        HStack(alignment: .top, spacing: 10) {
+                            Image(systemName: "moon.zzz.fill")
+                                .foregroundStyle(HONTheme.warning)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Recovery week")
+                                    .font(.subheadline.bold())
+                                    .foregroundStyle(HONTheme.warning)
+                                Text("You've been training hard. This week's plans are dialled back — intentional recovery.")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            Button {
+                                deloadCalloutDismissedWeek = currentWeekKey
+                            } label: {
+                                Image(systemName: "xmark")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .padding(12)
+                        .background(HONTheme.warning.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
+                    }
+
                     // Today's plan header
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Today's Plans")
-                            .font(.title3.bold())
-                        Text("Swipe to skip · Tap Start to begin")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Today's Plans")
+                                    .font(.title3.bold())
+                                Text("Swipe to skip · Tap Start to begin")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                        }
+                        // T-008: time budget picker
+                        Picker("Time", selection: $timeBudgetMinutes) {
+                            Text("Quick").tag(35)
+                            Text("Standard").tag(50)
+                            Text("Full").tag(65)
+                        }
+                        .pickerStyle(.segmented)
+                        .onChange(of: timeBudgetMinutes) { _, _ in
+                            store.refreshRecommendedPlans()
+                        }
                     }
 
                     // Swipeable cards
@@ -66,8 +121,17 @@ struct TrainerTabView: View {
                             selectedPlan = plan
                             showPlanPreview = true
                             strongestDayDismissed = true
+                            // P-001: log plan start
+                            let fb = PlanFeedback(planId: plan.id, action: "started",
+                                                  timestamp: Date(), focusRegions: plan.bodyRegions)
+                            store.logPlanFeedback(fb)
                         },
-                        onSkip: {}
+                        onSkip: { plan in
+                            // P-001: log plan skip
+                            let fb = PlanFeedback(planId: plan.id, action: "skipped",
+                                                  timestamp: Date(), focusRegions: plan.bodyRegions)
+                            store.logPlanFeedback(fb)
+                        }
                     )
 
                     // Coach notes

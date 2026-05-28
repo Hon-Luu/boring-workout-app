@@ -502,37 +502,14 @@ struct WhereSectionContent: View {
     let log: [WorkoutLogEntry]
     let analytics: AnalyticsResult
     let bodyWeightKg: Double?
-    @State private var showDevelopmentDetail = false
 
     var body: some View {
         VStack(spacing: 12) {
-            // Standard lift tier bars — first since it's the most actionable at a glance
+            // Standard lift tier bars — most actionable at a glance
             StandardLiftsCard(log: log, bodyWeightKg: bodyWeightKg)
 
-            // Movement pattern radar + development tier — equal-width side by side
-            HStack(alignment: .top, spacing: 12) {
-                ExpandableChartCard(title: "Movement Pattern Strength") { patternRadarCard }
-                    .frame(maxWidth: .infinity)
-                muscleGridCard
-                    .frame(maxWidth: .infinity)
-                    .overlay(alignment: .topTrailing) {
-                        Image(systemName: "info.circle")
-                            .font(.system(size: 11))
-                            .foregroundStyle(.tertiary)
-                            .padding(8)
-                    }
-                    .contentShape(Rectangle())
-                    .onTapGesture { showDevelopmentDetail = true }
-                    .sheet(isPresented: $showDevelopmentDetail) {
-                        DevelopmentTierDetailSheet(analytics: analytics)
-                    }
-            }
-
-            // Strength retention rings — only show once at least one exercise has ≥ 2 sessions
-            let qualifiedForRings = analytics.exerciseAnalytics.filter { $0.sessions.count >= 2 }
-            if !qualifiedForRings.isEmpty {
-                StrengthRetentionRingsCard(exerciseAnalytics: qualifiedForRings)
-            }
+            // Movement pattern strength radar
+            ExpandableChartCard(title: "Movement Pattern Strength") { patternRadarCard }
         }
     }
 
@@ -541,67 +518,6 @@ struct WhereSectionContent: View {
         MovementPatternRadarCard(categoryAnalytics: analytics.categoryAnalytics)
     }
 
-    // Muscle group heat grid — maxHeight must come BEFORE .background so the fill stretches to match the radar card
-    private var muscleGridCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Development Tier")
-                    .font(.cardTitle)
-                Text("Weekly e1RM improvement rate")
-                    .font(.system(size: 10))
-                    .foregroundStyle(.secondary)
-            }
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 6) {
-                ForEach(muscleData, id: \.name) { item in
-                    VStack(spacing: 3) {
-                        Text(item.name)
-                            .font(.system(size: 9, weight: .semibold))
-                            .foregroundStyle(.secondary)
-                        Text(item.rateLabel)
-                            .font(.system(size: 12, weight: .semibold, design: .monospaced))
-                            .foregroundStyle(item.color)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-                    .background(item.color.opacity(0.1), in: RoundedRectangle(cornerRadius: 8))
-                }
-            }
-            Spacer(minLength: 0)
-        }
-        .padding(14)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background(AppTheme.cardBG, in: RoundedRectangle(cornerRadius: 14))
-    }
-
-    private struct MuscleItem { let name: String; let rateLabel: String; let color: Color }
-
-    private var muscleData: [MuscleItem] {
-        let patterns = Dictionary(
-            analytics.categoryAnalytics.map { ($0.pattern, $0.improvementRatePerWeek) },
-            uniquingKeysWith: { a, _ in a }
-        )
-        func rateLabel(_ rate: Double?) -> (String, Color) {
-            guard let r = rate else { return ("—", .secondary) }
-            if r > 1.0 { return ("+\(String(format: "%.1f", r))%/wk", HONTheme.positive) }
-            if r > 0.5 { return ("+\(String(format: "%.1f", r))%/wk", HONTheme.accent) }
-            if r > 0.0 { return ("+\(String(format: "%.1f", r))%/wk", HONTheme.warning) }
-            return ("\(String(format: "%.1f", r))%/wk", HONTheme.negative)
-        }
-        let push = rateLabel(patterns[.horizontalPush])
-        let pull = rateLabel(patterns[.verticalPull])
-        let ohp  = rateLabel(patterns[.verticalPush])
-        let sq   = rateLabel(patterns[.kneeFlexion])
-        let dl   = rateLabel(patterns[.hipHinge])
-        let iso  = rateLabel(patterns[.isolation])
-        return [
-            MuscleItem(name: "Chest / Push",  rateLabel: push.0, color: push.1),
-            MuscleItem(name: "Back / Pull",   rateLabel: pull.0, color: pull.1),
-            MuscleItem(name: "Shoulders",     rateLabel: ohp.0,  color: ohp.1),
-            MuscleItem(name: "Squat",         rateLabel: sq.0,   color: sq.1),
-            MuscleItem(name: "Hinge / Hip",   rateLabel: dl.0,   color: dl.1),
-            MuscleItem(name: "Isolation",     rateLabel: iso.0,  color: iso.1),
-        ]
-    }
 }
 
 // MARK: - Movement Pattern Radar Card (F-11: expanded view adds WoW rows + coaching)
@@ -987,28 +903,6 @@ struct StrongerSectionContent: View {
         VStack(spacing: 12) {
             MomentumChipsCard(exerciseAnalytics: exerciseAnalytics)
 
-            // INOL — card shows compound lifts only; expanded sheet shows all (F-14)
-            let allInolExercises = exerciseAnalytics.compactMap { ea -> (String, Double)? in
-                guard let v = ea.latestINOL else { return nil }
-                return (ea.exercise.name, v)
-            }
-            let compoundInolExercises = exerciseAnalytics.compactMap { ea -> (String, Double)? in
-                guard ea.exercise.isCompound, let v = ea.latestINOL else { return nil }
-                return (ea.exercise.name, v)
-            }
-            let cardInolExercises = compoundInolExercises.isEmpty ? allInolExercises : compoundInolExercises
-            if !allInolExercises.isEmpty {
-                ExpandableChartCard(title: "Training Load (INOL)") {
-                    TrainingLoadCard(
-                        inolExercises: cardInolExercises,
-                        allInolExercises: allInolExercises,
-                        exerciseAnalytics: exerciseAnalytics
-                    )
-                }
-            }
-
-            OverloadScoreboardCard(exerciseAnalytics: exerciseAnalytics)
-
             velocityCard
                 .sheet(item: $selectedVelocityExercise) { ex in
                     VelocityDetailSheet(analytics: ex)
@@ -1359,18 +1253,6 @@ struct HowSectionContent: View {
                 }
             }
 
-            if avgDensity > 0 {
-                ExpandableChartCard(title: "Session Density") {
-                    SessionDensityCard(log: log, avgDensity: avgDensity)
-                }
-            }
-
-            ExpandableChartCard(title: "Workout Duration") {
-                WorkoutDurationCard(log: log)
-            }
-
-            VolumeHeatmapCard(log: log)
-            INOLCalendarCard(log: log)
         }
     }
 }
@@ -1394,8 +1276,6 @@ struct WhatSectionContent: View {
     var body: some View {
         VStack(spacing: 12) {
             ExpandableChartCard(title: "Recovery Signals") { recoveryCard }
-            fitnessMetricsCard
-            ExpandableChartCard(title: "Feel × Session Volume") { feelScatterCard }
             ExpandableChartCard(title: "Habits & Performance") {
                 HabitsPerformanceCard(log: log)
             }
@@ -1416,19 +1296,6 @@ struct WhatSectionContent: View {
             sleepHistory: sleepHistory,
             rhrHistory: rhrHistory
         )
-    }
-
-    @ViewBuilder
-    private var fitnessMetricsCard: some View {
-        if vo2Max != nil || activeCalories != nil {
-            ExpandableChartCard(title: "Fitness Metrics") {
-                FitnessMetricsCard(vo2Max: vo2Max, activeCalories: activeCalories)
-            }
-        }
-    }
-
-    private var feelScatterCard: some View {
-        FeelVolumeCard(log: log)
     }
 }
 

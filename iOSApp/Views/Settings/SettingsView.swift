@@ -244,6 +244,51 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    Picker("Training Goal", selection: profile.trainingGoal) {
+                        ForEach(TrainingGoal.allCases, id: \.self) { goal in
+                            Text(goal.rawValue).tag(goal)
+                        }
+                    }
+                } header: {
+                    Text("Trainer")
+                } footer: {
+                    Text("Strength: 3-5 reps. Hypertrophy: 8-12 reps. Endurance: 15-20 reps. General: intensity-based (default).")
+                        .font(.caption2)
+                }
+
+                Section {
+                    ForEach(Equipment.allCases, id: \.self) { equip in
+                        let isEnabled = store.userProfile.availableEquipment.contains(equip)
+                        Button {
+                            var newEquipment = store.userProfile.availableEquipment
+                            if isEnabled {
+                                newEquipment.remove(equip)
+                                // Always keep at least bodyweight
+                                if newEquipment.isEmpty { newEquipment = [.bodyweight] }
+                            } else {
+                                newEquipment.insert(equip)
+                            }
+                            store.userProfile.availableEquipment = newEquipment
+                        } label: {
+                            HStack {
+                                Text(equip.rawValue)
+                                    .foregroundStyle(HONTheme.textPrimary)
+                                Spacer()
+                                if isEnabled {
+                                    Image(systemName: "checkmark")
+                                        .foregroundStyle(HONTheme.accent)
+                                }
+                            }
+                        }
+                    }
+                } header: {
+                    Text("Available Equipment")
+                } footer: {
+                    Text("Only exercises using your available equipment will appear in guided plans.")
+                        .font(.caption2)
+                }
+
+                Section {
                     NavigationLink {
                         HealthMetricsSettingsView()
                     } label: {

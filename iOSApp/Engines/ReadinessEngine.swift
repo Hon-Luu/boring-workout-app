@@ -195,6 +195,29 @@ struct ReadinessEngine {
             else if hrv >= goodHRV { score += 4 }
         }
 
+        // H-002: 3-day HRV trend (chronic suppression modifier)
+        // scoreHistory is keyed "yyyy-MM-dd" → Int readiness, but we also use hrv value from the single reading
+        // We use a simplified approach: check if HRV is below baseline for 3 consecutive days using scoreHistory
+        if let baseline = hrvBaseline {
+            let cal = Calendar.current
+            // Look at hrv readings implied by readiness drops — use scoreHistory to detect chronic suppression
+            // Count recent days with low readiness (< 55) as proxy for HRV suppression
+            let recentKeys = (1...3).compactMap { daysAgo -> String? in
+                guard let d = cal.date(byAdding: .day, value: -daysAgo, to: today) else { return nil }
+                return Self.dateKeyFormatter.string(from: d)
+            }
+            let lowReadinessDays = recentKeys.filter { key in
+                guard let s = scoreHistory[key] else { return false }
+                return s < 55
+            }.count
+            if lowReadinessDays >= 3 {
+                score -= 5  // chronic suppression — all 3 days below threshold
+            } else if lowReadinessDays >= 2 {
+                score -= 3  // HRV trending down
+            }
+            _ = baseline  // suppress unused warning when HRV baseline exists
+        }
+
         // Volume spike penalty — if last session was high-volume, penalize next-day readiness
         if let lastSession = log.sorted(by: { $0.startedAt > $1.startedAt }).first {
             let sessionVolume = lastSession.totalVolume

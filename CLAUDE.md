@@ -89,6 +89,8 @@ Six tabs, all mounted at startup (no lazy loading — `@ViewBuilder` closures re
 
 **`ReadinessEngine.compute(log:)`** — produces `ReadinessState` (score 0–100, confidence, delta, coachingNote) from recent log. Called once per `refreshAnalytics()` cycle, result stored in `homeCache.readiness`.
 
+**Readiness baseline formula** (A-005): `65 + min(15, sessionsLast30Days)`. Baseline is NOT a fixed 68 — it scales with recent training frequency from 65 (no sessions) to 80 (≥15 sessions in 30 days). Implemented in `ReadinessEngine.computeBaseline()`.
+
 **`WorkoutPlanEngine`** — generates `[GuidedWorkoutPlan]` from readiness + last performance. Has a value-type overload (safe for background threads) and a store-based convenience overload that delegates to it.
 
 **Strength decay model** (`StrengthLabView`): `peakE1RM × strengthRetentionFactor(daysSince)` — no decay first 14 days, then −0.7%/day, floor 50%.
