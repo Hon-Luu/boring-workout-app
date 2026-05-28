@@ -11,6 +11,7 @@ struct SwapTarget: Identifiable {
 struct ActiveWorkoutView: View {
     @Environment(SeedStore.self) private var store
     @Binding var showExercisePicker: Bool
+    var onFinish: ((FeelRating?) -> Void)? = nil
 
     @State private var restSecondsRemaining: Int = 0
     @State private var restTimerExpired = false
@@ -178,20 +179,23 @@ struct ActiveWorkoutView: View {
                                 .foregroundStyle(HONTheme.accent)
                         }
                         .padding(.horizontal)
-                        .padding(.bottom, (restSecondsRemaining > 0 || restTimerExpired) ? 100 : 16)
+                        .padding(.bottom, (restSecondsRemaining > 0 || restTimerExpired) ? 200 : 120)
                     }
                     .padding(.top, 8)
                 }
 
-                if restSecondsRemaining > 0 || restTimerExpired {
-                    RestTimerBanner(
-                        seconds: restSecondsRemaining,
-                        duration: restDuration,
-                        isExpired: restTimerExpired,
-                        onSkip: { stopRestTimer() }
-                    )
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-                    .animation(.spring(response: 0.4), value: restSecondsRemaining > 0 || restTimerExpired)
+                VStack(spacing: 0) {
+                    if restSecondsRemaining > 0 || restTimerExpired {
+                        RestTimerBanner(
+                            seconds: restSecondsRemaining,
+                            duration: restDuration,
+                            isExpired: restTimerExpired,
+                            onSkip: { stopRestTimer() }
+                        )
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                        .animation(.spring(response: 0.4), value: restSecondsRemaining > 0 || restTimerExpired)
+                    }
+                    WorkoutFeelBar(onFinish: onFinish)
                 }
             }
             .overlay(alignment: .top) {
@@ -576,8 +580,6 @@ private struct ExerciseCard: View {
                 onUpdateFailure(setIndex, true)
                 onCompleteSet(setIndex)
             },
-            isLastSet: setIndex == totalSets - 1,
-            onUpdateRPE: onUpdateSetRPE.map { fn in { rpe in fn(setIndex, rpe) } }
         )
         .swipeToDelete { onRemoveSet(setIndex) }
         .padding(.horizontal, 16)
@@ -649,6 +651,17 @@ private struct ExerciseCard: View {
                 ForEach(Array(workoutExercise.sets.enumerated()), id: \.element.id) { setIndex, set in
                     makeSetRow(setIndex: setIndex, set: set)
                 }
+            }
+
+            if !workoutExercise.sets.isEmpty && workoutExercise.sets.allSatisfy(\.isCompleted),
+               let lastIdx = workoutExercise.sets.indices.last {
+                Divider().padding(.horizontal, 16)
+                RPERow(rpe: workoutExercise.sets[lastIdx].rpe) { newRPE in
+                    onUpdateSetRPE?(lastIdx, newRPE)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 6)
+                .transition(.opacity.combined(with: .move(edge: .top)))
             }
 
             let completedSets = workoutExercise.sets.filter(\.isCompleted)
@@ -733,11 +746,8 @@ private struct SetRow: View {
     let onUncompleteDropSet: () -> Void
     let onToggleFailure: () -> Void
     var onCompleteAsFailed: (() -> Void)? = nil
-    var isLastSet: Bool = false
-    var onUpdateRPE: ((Double?) -> Void)? = nil
 
     @State private var showZeroRepsAlert = false
-    @State private var showRPERow = false
 
     private var accentColor: Color {
         record.isCompleted ? (record.repOutcome == .missed ? AppTheme.warning : AppTheme.positive) : isActive ? AppTheme.primary : .secondary
@@ -858,35 +868,6 @@ private struct SetRow: View {
                 )
                 .padding(.leading, 30)
                 .padding(.vertical, 8)
-            }
-
-            // RPE capture — shown for last set when completed; toggled by user
-            if isLastSet && record.isCompleted {
-                VStack(spacing: 0) {
-                    if showRPERow || record.rpe != nil {
-                        RPERow(rpe: record.rpe) { newRPE in
-                            onUpdateRPE?(newRPE)
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 6)
-                    } else {
-                        Button {
-                            withAnimation(.easeInOut(duration: 0.2)) { showRPERow = true }
-                        } label: {
-                            HStack(spacing: 5) {
-                                Image(systemName: "gauge.with.needle.fill")
-                                    .font(.system(size: 11))
-                                Text("Rate effort (RPE)")
-                                    .font(.system(size: 11, weight: .semibold))
-                            }
-                            .foregroundStyle(HONTheme.accent.opacity(0.8))
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 6)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
             }
 
             // "Finish with lighter weight" nudge when set is completed but missed target
@@ -1431,6 +1412,50 @@ private struct RestTimerBanner: View {
         return String(format: "%d:%02d", m, s)
     }
     private var timerColor: Color { seconds > 30 ? HONTheme.positive : seconds > 10 ? HONTheme.warning : HONTheme.negative }
+}
+
+// MARK: - Workout Feel Bar
+
+private struct WorkoutFeelBar: View {
+    let onFinish: ((FeelRating?) -> Void)?
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Text("How did that feel?")
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(.secondary)
+
+            HStack(spacing: 6) {
+                ForEach(FeelRating.allCases, id: \.self) { feel in
+                    Button {
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        onFinish?(feel)
+                    } label: {
+                        VStack(spacing: 3) {
+                            Text(feel.icon)
+                                .font(.system(size: 20))
+                            Text(feel.rawValue)
+                                .font(.system(size: 9, weight: .semibold))
+                                .foregroundStyle(.primary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                        .background(Color.secondary.opacity(0.09), in: RoundedRectangle(cornerRadius: 10))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 16)
+
+            Button("End without rating") {
+                onFinish?(nil)
+            }
+            .font(.system(size: 11))
+            .foregroundStyle(.secondary)
+        }
+        .padding(.vertical, 10)
+        .background(.regularMaterial)
+    }
 }
 
 // MARK: - Exercise History Matrix

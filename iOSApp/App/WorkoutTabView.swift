@@ -9,7 +9,6 @@ struct WorkoutTabView: View {
     @State private var showRoutines = false
     @State private var showStartOptions = false
     @State private var showRoutineSelector = false
-    @State private var showFeelSelector = false
     @State private var showEmptyWorkoutAlert = false
 
     // Celebration queue
@@ -27,7 +26,7 @@ struct WorkoutTabView: View {
         NavigationStack {
             Group {
                 if store.activeWorkout != nil {
-                    ActiveWorkoutView(showExercisePicker: $showPicker)
+                    ActiveWorkoutView(showExercisePicker: $showPicker, onFinish: handleFinish)
                 } else {
                     EmptyWorkoutView(
                         onStartCustom: { showStartOptions = true },
@@ -42,17 +41,6 @@ struct WorkoutTabView: View {
                     ToolbarItem(placement: .topBarLeading) {
                         Button("Discard", role: .destructive) { showDiscardAlert = true }
                             .foregroundStyle(HONTheme.negative)
-                    }
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button("Finish") {
-                            let completedSets = store.activeWorkout?.exercises.flatMap(\.completedSets).count ?? 0
-                            if completedSets == 0 {
-                                showEmptyWorkoutAlert = true
-                            } else {
-                                showFeelSelector = true
-                            }
-                        }
-                        .fontWeight(.semibold)
                     }
                 } else {
                     ToolbarItem(placement: .topBarTrailing) {
@@ -87,23 +75,6 @@ struct WorkoutTabView: View {
                 Button("Cancel", role: .cancel) {}
             } message: {
                 Text("Start empty and pick exercises, or load all exercises from a saved routine.")
-            }
-            .sheet(isPresented: $showFeelSelector) {
-                FeelSelectorSheet { feel in
-                    store.finishWorkout(feel: feel)
-                    if let entry = store.workoutLog.first {
-                        let bw = store.userProfile.bodyWeightKg
-                        if let bw, entry.activeCalories == nil {
-                            store.updateWorkoutCalories(id: entry.id, calories: 5.0 * bw * (entry.duration / 3600.0))
-                        }
-                        health.saveWorkout(entry, bodyWeightKg: bw)
-                    }
-                    NotificationScheduler.scheduleReEngagement()
-                    if store.workoutLog.count == 1 {
-                        pendingFirstWorkoutCelebration = true
-                        showFirstWorkoutCelebration = true
-                    }
-                }
             }
             .sheet(isPresented: $showFirstWorkoutCelebration, onDismiss: {
                 pendingFirstWorkoutCelebration = false
@@ -155,6 +126,24 @@ struct WorkoutTabView: View {
                 habitEngine.onSessionLogged(entry: entry, fullLog: store.workoutLog,
                                             cardioLog: store.cardioLog, generalLog: store.generalLog)
             }
+        }
+    }
+
+    private func handleFinish(_ feel: FeelRating?) {
+        let completedSets = store.activeWorkout?.exercises.flatMap(\.completedSets).count ?? 0
+        guard completedSets > 0 else { showEmptyWorkoutAlert = true; return }
+        store.finishWorkout(feel: feel)
+        if let entry = store.workoutLog.first {
+            let bw = store.userProfile.bodyWeightKg
+            if let bw, entry.activeCalories == nil {
+                store.updateWorkoutCalories(id: entry.id, calories: 5.0 * bw * (entry.duration / 3600.0))
+            }
+            health.saveWorkout(entry, bodyWeightKg: bw)
+        }
+        NotificationScheduler.scheduleReEngagement()
+        if store.workoutLog.count == 1 {
+            pendingFirstWorkoutCelebration = true
+            showFirstWorkoutCelebration = true
         }
     }
 
