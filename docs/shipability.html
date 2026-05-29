@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H.O.N. — Ship Criteria</title>
+<style>
+  :root {
+    --bg:       #111111;
+    --card:     #1c1c1e;
+    --border:   rgba(255,255,255,0.07);
+    --amber:    #f59e0b;
+    --positive: #34d399;
+    --negative: #f87171;
+    --warning:  #fbbf24;
+    --muted:    rgba(255,255,255,0.4);
+    --text:     rgba(255,255,255,0.88);
+    --text2:    rgba(255,255,255,0.55);
+    --blue:     #60a5fa;
+    --purple:   #a78bfa;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 32px 20px 64px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .header { margin-bottom: 36px; }
+  .header-top {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .logo {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber);
+  }
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--amber), transparent);
+    opacity: 0.3;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    color: var(--text);
+  }
+  .subtitle {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+
+  .section-heading {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin: 32px 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-heading::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .stats {
+    display: flex;
+    gap: 6px;
+    margin: 20px 0 28px;
+    flex-wrap: wrap;
+  }
+  .stat-pill {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.04em;
+  }
+  .stat-open    { background: rgba(248,113,113,0.15); color: var(--negative); }
+  .stat-pass    { background: rgba(52,211,153,0.15);  color: var(--positive); }
+  .stat-partial { background: rgba(251,191,36,0.15);  color: var(--warning); }
+  .stat-total   { background: rgba(255,255,255,0.08); color: var(--text2); }
+
+  .filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover  { border-color: var(--amber); color: var(--amber); }
+  .filter-btn.active { background: var(--amber); border-color: var(--amber); color: #111; }
+
+  /* Category block */
+  .category-block {
+    margin-bottom: 24px;
+  }
+  .category-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .category-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.04em;
+  }
+  .category-count {
+    font-size: 11px;
+    color: var(--text2);
+    background: rgba(255,255,255,0.06);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .category-chevron {
+    margin-left: auto;
+    color: var(--text2);
+    font-size: 11px;
+    transition: transform 0.2s;
+  }
+  .category-block.collapsed .category-chevron { transform: rotate(-90deg); }
+  .category-block.collapsed .test-list { display: none; }
+
+  /* Test case */
+  .test-case {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transition: border-color 0.2s;
+  }
+  .test-case:hover { border-color: rgba(255,255,255,0.12); }
+  .test-case.status-pass   { border-left: 3px solid var(--positive); }
+  .test-case.status-fail   { border-left: 3px solid var(--negative); }
+  .test-case.status-partial{ border-left: 3px solid var(--warning); }
+  .test-case.status-open   { border-left: 3px solid rgba(255,255,255,0.15); }
+
+  .test-id {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    letter-spacing: 0.06em;
+    color: var(--amber);
+    background: rgba(245,158,11,0.1);
+    padding: 2px 7px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .test-body { flex: 1; }
+
+  .test-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+
+  .test-detail {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.5;
+    margin-bottom: 6px;
+  }
+
+  .test-pass-criteria {
+    font-size: 11px;
+    color: rgba(52,211,153,0.8);
+    background: rgba(52,211,153,0.06);
+    border: 1px solid rgba(52,211,153,0.12);
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+
+  .status-select {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .status-open    { background: rgba(248,113,113,0.15); color: var(--negative); }
+  .status-pass    { background: rgba(52,211,153,0.15);  color: var(--positive); }
+  .status-fail    { background: rgba(248,113,113,0.3);  color: #fca5a5; }
+  .status-partial { background: rgba(251,191,36,0.15);  color: var(--warning); }
+
+  /* Metrics section */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 600px) {
+    .metrics-grid { grid-template-columns: 1fr; }
+  }
+
+  .metric-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .metric-card-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 12px;
+  }
+
+  .metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 12px;
+  }
+  .metric-row:last-child { border-bottom: none; }
+
+  .metric-name { color: var(--text2); flex: 1; line-height: 1.4; }
+  .metric-target {
+    font-weight: 700;
+    color: var(--text);
+    font-family: 'SF Mono', monospace;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .metric-target.positive { color: var(--positive); }
+  .metric-target.amber    { color: var(--amber); }
+  .metric-target.negative { color: var(--negative); }
+
+  /* Gate items */
+  .gate-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .gate-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 13px;
+    color: var(--text2);
+  }
+  .gate-item:last-child { border-bottom: none; }
+  .gate-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(248,113,113,0.15);
+    color: var(--negative);
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .done-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--positive);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-top: 16px;
+  }
+  .done-card p {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.8;
+  }
+
+  .separator {
+    height: 1px;
+    background: var(--border);
+    margin: 28px 0;
+  }
+
+  .tier-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin-bottom: 14px;
+  }
+  .tier-a { background: rgba(248,113,113,0.15); color: var(--negative); }
+  .tier-b { background: rgba(96,165,250,0.15);  color: var(--blue); }
+
+  @media (max-width: 600px) {
+    body { padding: 20px 14px 48px; }
+    .test-case { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <span class="logo">H.O.N.</span>
+    <div class="divider-line"></div>
+  </div>
+  <h1>Ship Criteria</h1>
+  <div class="subtitle">63 must-pass test cases · Pre-launch gates · Post-launch KPI targets · Definition of Done · Last updated: 2026-05-29</div>
+</div>
+
+<div class="stats">
+  <span class="stat-pill stat-total" id="stat-total">63 total</span>
+  <span class="stat-pill stat-open" id="stat-open">— open</span>
+  <span class="stat-pill stat-partial" id="stat-partial">— partial</span>
+  <span class="stat-pill stat-pass" id="stat-pass">— passed</span>
+</div>
+
+<div class="filters">
+  <button class="filter-btn active" onclick="filterTests('all', this)">All</button>
+  <button class="filter-btn" onclick="filterTests('open', this)">Open</button>
+  <button class="filter-btn" onclick="filterTests('pass', this)">Passed</button>
+  <button class="filter-btn" onclick="filterTests('fail', this)">Failed</button>
+  <button class="filter-btn" onclick="filterTests('partial', this)">Partial</button>
+</div>
+
+<!-- Section 1 -->
+<div class="section-heading">Section 1 — Must-Pass Test Cases</div>
+
+<!-- Category 1: Build & Stability -->
+<div class="category-block" id="cat-build">
+  <div class="category-header" onclick="toggleCategory('cat-build')">
+    <span style="font-size:14px">🏗</span>
+    <span class="category-title">1. Build &amp; Stability</span>
+    <span class="category-count">8 tests</span>
+    <span class="category-chevron">▼</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="build">
+      <div class="test-id">TC-001</div>
+      <div class="test-body">
+        <div class="test-title">Clean Build — Zero Warnings</div>
+        <div class="test-detail">Run <code style="font-family:monospace;font-size:11px;background:rgba(255,255,255,0.06);padding:1px 4px;border-radius:3px">xcodebuild -scheme workout -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build</code>. Must complete without errors. Warnings are acceptable only if pre-existing and documented.</div>
+        <div class="test-pass-criteria">Pass: Exit code 0. Zero new errors. Zero new build-time warnings added by recent commits.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="build">
+      <div class="test-id">TC-002</div>
+      <div class="test-body">
+        <div class="test-title">No Crash on Cold Start — Simulator</div>
+        <div class="test-detail">Fresh install on iPhone 17 Pro simulator. Launch app. Wait 5 seconds. Verify SeedStore.isLoaded = true and home screen renders completely.</div>
+        <div class="test-pass-criteria">Pass: App reaches home screen in &lt;2s. No EXC_BAD_ACCESS, SIGABRT, or watchdog timeout. isLoaded transitions to true.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="build">
+      <div class="test-id">TC-003</div>
+      <div class="test-body">
+        <div class="test-title">No Crash on Any Tab Navigation</div>
+        <div class="test-detail">Launch app with seeded data. Tap each of the 6 tabs in sequence (Home, Trainer, Workout, Progress, StrengthLab, Settings). Hold 2 seconds per tab. Repeat 3 cycles.</div>
+        <div class="test-pass-criteria">Pass: No crash on any tab. All 6 tabs render their content. No blank screens.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="build">
+      <div class="test-id">TC-004</div>
+      <div class="test-body">
+        <div class="test-title">Background / Foreground Stability</div>
+        <div class="test-detail">Open app. Background it (Home button). Wait 10 seconds. Return to foreground. Repeat 10 times. Also test with active workout in progress.</div>
+        <div class="test-pass-criteria">Pass: No crash across 10 background/foreground cycles. Active workout state preserved on return. No ANR on foreground transition.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="build">
+      <div class="test-id">TC-005</div>
+      <div class="test-body">
+        <div class="test-title">Memory Pressure Stability</div>
+        <div class="test-detail">Open app with 50+ session data seed. Open heavy views (StrengthLab, Progress charts). Simulate memory warning via Xcode Debug &gt; Simulate Memory Warning.</div>
+        <div class="test-pass-criteria">Pass: App handles memory warning without crash. Data not corrupted. Caches can be rebuilt on next analyticsRefresh call.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="build">
+      <div class="test-id">TC-006</div>
+      <div class="test-body">
+        <div class="test-title">Data Persistence Across Restarts</div>
+        <div class="test-detail">Log a complete workout session. Force-quit app. Relaunch. Verify: session appears in Progress tab, e1RM is present in StrengthLab, lastPerformanceCache reflects the session.</div>
+        <div class="test-pass-criteria">Pass: All logged data survives app kill and relaunch. No data loss. isLoaded sets to true within 2s of relaunch.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="build">
+      <div class="test-id">TC-007</div>
+      <div class="test-body">
+        <div class="test-title">Simulator Build — No Device-Only APIs</div>
+        <div class="test-detail">Confirm all simulator builds succeed without device-only framework conditionals (#if targetEnvironment) that would break simulator runs. HealthKit stubs must be functional.</div>
+        <div class="test-pass-criteria">Pass: All features accessible on simulator. No compile-time errors for simulator target. HealthKit gracefully absent on simulator.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="build">
+      <div class="test-id">TC-008</div>
+      <div class="test-body">
+        <div class="test-title">Physical Device Build and Launch</div>
+        <div class="test-detail">Build and run on a real iPhone (any model). Verify HealthKit permission is requested correctly, Apple Watch integration initializes, and all 6 tabs load.</div>
+        <div class="test-pass-criteria">Pass: Device build succeeds. HealthKit permission dialog appears. No crash on real hardware that didn't occur on simulator.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 2: Data Accuracy -->
+<div class="category-block" id="cat-data">
+  <div class="category-header" onclick="toggleCategory('cat-data')">
+    <span style="font-size:14px">🧮</span>
+    <span class="category-title">2. Data Accuracy</span>
+    <span class="category-count">12 tests</span>
+    <span class="category-chevron">▼</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="data">
+      <div class="test-id">TC-009</div>
+      <div class="test-body">
+        <div class="test-title">e1RM — Epley Formula (2–10 reps)</div>
+        <div class="test-detail">Log 100 kg × 5 reps. Expected Epley e1RM: 100 × (1 + 5/30) = 116.67 kg. Log 80 kg × 10 reps. Expected: 80 × (1 + 10/30) = 106.67 kg. Verify in StrengthLab.</div>
+        <div class="test-pass-criteria">Pass: Displayed e1RM within ±0.5 kg of manual calculation. Formula uses Epley for reps 2–10.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="data">
+      <div class="test-id">TC-010</div>
+      <div class="test-body">
+        <div class="test-title">e1RM — Mayhew Formula (11–15 reps)</div>
+        <div class="test-detail">Log 70 kg × 12 reps. Mayhew formula: weight / (0.522 + 0.419 × e^(-0.055 × reps)). Verify app uses Mayhew at reps = 11 and Epley at reps = 10 (boundary test).</div>
+        <div class="test-pass-criteria">Pass: Formula switches at exactly 11 reps. Mayhew result within ±0.5 kg of manual. Epley used at 10, Mayhew at 11.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="data">
+      <div class="test-id">TC-011</div>
+      <div class="test-body">
+        <div class="test-title">e1RM — Exact (1 rep), Excluded (&gt;15 reps)</div>
+        <div class="test-detail">Log 150 kg × 1 rep. e1RM should equal exactly 150 kg. Log 60 kg × 16 reps. e1RM should return 0 (excluded, not calculated).</div>
+        <div class="test-pass-criteria">Pass: 1-rep e1RM = weight exactly. >15 reps e1RM = 0 (excluded, not causing analytics issues).</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="data">
+      <div class="test-id">TC-012</div>
+      <div class="test-body">
+        <div class="test-title">Readiness Score Range (20–99)</div>
+        <div class="test-detail">Seed scenarios producing minimum readiness (consecutive high-RPE days) and maximum readiness (7-day rest, good sleep). Verify score stays within 20–99 range in all conditions.</div>
+        <div class="test-pass-criteria">Pass: Score never exceeds 99, never falls below 20, regardless of log data. Score of 0 or 100 indicates a range clamp bug.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="data">
+      <div class="test-id">TC-013</div>
+      <div class="test-body">
+        <div class="test-title">Equipment Weight Calculation — Dumbbell ×2</div>
+        <div class="test-detail">Log dumbbell curl at 20 kg. The displayed "total load" should be 40 kg (bilateral). Equipment.effectiveWeight should apply the ×2 multiplier. Verify in StrengthLab e1RM.</div>
+        <div class="test-pass-criteria">Pass: Dumbbell entries use 2× the logged weight for bilateral total. e1RM calculated on total load, not per-hand weight.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="data">
+      <div class="test-id">TC-014</div>
+      <div class="test-body">
+        <div class="test-title">Equipment Weight Calculation — Barbell 20 kg Floor</div>
+        <div class="test-detail">Log barbell squat at 0 kg (empty bar). Equipment.effectiveWeight should floor at 20 kg (bar weight). Logging "20 kg" on barbell should mean 40 kg total (20 bar + 20 added). Verify calculation.</div>
+        <div class="test-pass-criteria">Pass: Empty barbell (0 kg entered) = 20 kg effective weight. 20 kg entered on barbell = 40 kg effective. Floor enforced consistently.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="data">
+      <div class="test-id">TC-015</div>
+      <div class="test-body">
+        <div class="test-title">WorkoutLog Persistence — All Fields Saved</div>
+        <div class="test-detail">Complete a workout with: drop sets, RPE values, toFailure flag, supersetGroup assignment. Force-quit and relaunch. Verify all fields present in the reloaded WorkoutLogEntry.</div>
+        <div class="test-pass-criteria">Pass: isDropCompleted, dropWeight, dropReps, toFailure, rpe, velocityProfile, supersetGroup all preserved across kill+relaunch cycle.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="data">
+      <div class="test-id">TC-016</div>
+      <div class="test-body">
+        <div class="test-title">Cardio Log Persistence</div>
+        <div class="test-detail">Complete a cardio session (run: 30 min, 5 km). Force-quit and relaunch. Verify cardio session appears in Progress tab with correct duration and distance values.</div>
+        <div class="test-pass-criteria">Pass: Cardio session persists with correct type, duration, distance, and date across relaunch.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="data">
+      <div class="test-id">TC-017</div>
+      <div class="test-body">
+        <div class="test-title">Streak Calculation Accuracy</div>
+        <div class="test-detail">Seed sessions on days: Mon, Wed, Fri (week 1), Mon, Wed, Fri (week 2). Verify streak = 6 (not calendar days). Skip Saturday. Start Sunday. Verify streak definition matches documented behavior.</div>
+        <div class="test-pass-criteria">Pass: Streak count matches number of training sessions, not calendar days. Streak definition consistent with Progress tab display and homeCache.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="data">
+      <div class="test-id">TC-018</div>
+      <div class="test-body">
+        <div class="test-title">Personal Records Detection</div>
+        <div class="test-detail">Log bench press: session 1 = 80 kg × 5 (e1RM ~93), session 2 = 85 kg × 5 (e1RM ~99). Verify session 2 is flagged as PR. Then log 85 kg × 4 reps. Verify it does NOT override the previous PR.</div>
+        <div class="test-pass-criteria">Pass: PRs based on e1RM, not raw weight. PR correctly attributed to highest e1RM session. PR not retroactively overwritten by lower e1RM performance.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="data">
+      <div class="test-id">TC-019</div>
+      <div class="test-body">
+        <div class="test-title">RPE Range Validation (6–10 Only)</div>
+        <div class="test-detail">Attempt to save RPE = 5 (below range) and RPE = 11 (above range). These must be rejected or not be selectable. Confirm only values 6, 7, 8, 9, 10 are available.</div>
+        <div class="test-pass-criteria">Pass: RPE selector enforces 6–10 range. Values outside range are not accessible or produce a validation error. Stored RPE is always nil or 6–10.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="data">
+      <div class="test-id">TC-020</div>
+      <div class="test-body">
+        <div class="test-title">Date Calculations — Timezone Safety</div>
+        <div class="test-detail">Log a session at 11:45 PM. Log another at 12:05 AM the next day. Verify they appear on the correct calendar dates in Progress tab. Simulate a timezone change (travel).</div>
+        <div class="test-pass-criteria">Pass: Sessions attributed to correct local calendar date at time of logging. Timezone change does not retroactively shift existing session dates.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 3: UI Completeness -->
+<div class="category-block" id="cat-ui">
+  <div class="category-header" onclick="toggleCategory('cat-ui')">
+    <span style="font-size:14px">📱</span>
+    <span class="category-title">3. UI Completeness</span>
+    <span class="category-count">10 tests</span>
+    <span class="category-chevron">▼</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="ui">
+      <div class="test-id">TC-021</div>
+      <div class="test-body">
+        <div class="test-title">All 6 Tabs Reachable and Functional</div>
+        <div class="test-detail">From app launch, verify each tab (Home, Trainer, Workout, Progress, StrengthLab, Settings) is reachable by tap, loads without error, and shows expected content.</div>
+        <div class="test-pass-criteria">Pass: All 6 tabs reachable in 1 tap from the tab bar. Each renders primary content. No tab shows blank or loading indefinitely.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="ui">
+      <div class="test-id">TC-022</div>
+      <div class="test-body">
+        <div class="test-title">Safe Area Padding on All Screens</div>
+        <div class="test-detail">On iPhone with Dynamic Island (iPhone 17 Pro) and notch (iPhone 14), verify no content is hidden under the status bar, Dynamic Island, or home indicator area on any screen.</div>
+        <div class="test-pass-criteria">Pass: No text, buttons, or interactive elements obscured by system UI on any screen. Bottom content has sufficient padding above home indicator.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="ui">
+      <div class="test-id">TC-023</div>
+      <div class="test-body">
+        <div class="test-title">Dark Mode Throughout</div>
+        <div class="test-detail">Set device to Dark Mode. Navigate all 6 tabs and all primary sub-screens. No white flash, no light-mode card, no hardcoded white background in any view.</div>
+        <div class="test-pass-criteria">Pass: Every screen respects dark mode. No hardcoded UIColor.white or Color.white. Color scheme consistent with design system throughout.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="ui">
+      <div class="test-id">TC-024</div>
+      <div class="test-body">
+        <div class="test-title">No Placeholder Text or TODO Strings</div>
+        <div class="test-detail">Search all visible strings in the app for "TODO", "FIXME", "placeholder", "lorem ipsum", "test string", "coming soon". None should appear in production UI.</div>
+        <div class="test-pass-criteria">Pass: Zero placeholder or development-only strings visible in any production screen during normal navigation.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="ui">
+      <div class="test-id">TC-025</div>
+      <div class="test-body">
+        <div class="test-title">No Empty States Without Content</div>
+        <div class="test-detail">Test each tab with zero data (fresh install). Verify every tab has a meaningful empty state (message, call-to-action, or illustration). No tab should show a completely blank screen.</div>
+        <div class="test-pass-criteria">Pass: Every empty state communicates value and provides a clear next action. No blank white or black screens with zero content.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="ui">
+      <div class="test-id">TC-026</div>
+      <div class="test-body">
+        <div class="test-title">Navigation Back from All Screens</div>
+        <div class="test-detail">Navigate into every drill-down screen (exercise detail, session detail, plan detail, settings sub-screens). Verify back navigation works from every screen, ideally with swipe gesture and back button.</div>
+        <div class="test-pass-criteria">Pass: Back navigation from every screen returns to the correct parent. No navigation stack corruption. Swipe-to-go-back works consistently.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="ui">
+      <div class="test-id">TC-027</div>
+      <div class="test-body">
+        <div class="test-title">No Truncated Text on Standard Exercise Names</div>
+        <div class="test-detail">Check the exercise list and workout view for all exercises with long names (e.g., "Incline Dumbbell Fly", "Romanian Deadlift", "Seated Dumbbell Shoulder Press"). Verify no name truncates to "..." inappropriately.</div>
+        <div class="test-pass-criteria">Pass: Exercise names fully visible or ellipsis is intentional and designed. No critical information cut off in any standard layout.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="ui">
+      <div class="test-id">TC-028</div>
+      <div class="test-body">
+        <div class="test-title">Consistent Typography — HONTheme Compliance</div>
+        <div class="test-detail">Visually audit all screens against DESIGN_SYSTEM.md. Verify font weights, sizes, and colors match the design tokens. No freelanced type styles not in the system.</div>
+        <div class="test-pass-criteria">Pass: All text uses HONTheme type styles. No hardcoded font sizes or colors that deviate from the documented design tokens.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="ui">
+      <div class="test-id">TC-029</div>
+      <div class="test-body">
+        <div class="test-title">Landscape Orientation — No Layout Breaks</div>
+        <div class="test-detail">Rotate device to landscape on key screens: Active Workout, Home, Progress charts. Verify layout does not break catastrophically (minor suboptimal layout is acceptable if content is still usable).</div>
+        <div class="test-pass-criteria">Pass: No layout elements overlap or disappear in landscape. Content is accessible even if not optimized for landscape. No crash on rotation.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="ui">
+      <div class="test-id">TC-030</div>
+      <div class="test-body">
+        <div class="test-title">Scroll Performance — No Jank on Lists</div>
+        <div class="test-detail">With 50+ session history, scroll through the Progress tab workout history list. Also scroll through the exercise picker with full exercise database. Verify smooth 60fps scrolling.</div>
+        <div class="test-pass-criteria">Pass: No visible dropped frames during scrolling. No noticeable lag when list has 50+ items. Exercise picker scrolls smoothly through full database.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 4: Experience & Flow -->
+<div class="category-block" id="cat-exp">
+  <div class="category-header" onclick="toggleCategory('cat-exp')">
+    <span style="font-size:14px">🎯</span>
+    <span class="category-title">4. Experience &amp; Flow</span>
+    <span class="category-count">10 tests</span>
+    <span class="category-chevron">▼</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="exp">
+      <div class="test-id">TC-031</div>
+      <div class="test-body">
+        <div class="test-title">Onboarding Completes in Under 3 Minutes</div>
+        <div class="test-detail">Time the full onboarding flow from first launch to home screen. Use a stopwatch. Test with a non-technical user if possible. Include all mandatory steps.</div>
+        <div class="test-pass-criteria">Pass: Onboarding completes in ≤3 minutes for a user who reads each screen carefully. Under 90 seconds for a user who knows what they want.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="exp">
+      <div class="test-id">TC-032</div>
+      <div class="test-body">
+        <div class="test-title">First Workout Completable with Zero Prior Knowledge</div>
+        <div class="test-detail">Give the app to someone with no prior briefing. Ask them to "log a workout." Time them. Note any moments of confusion or help-seeking.</div>
+        <div class="test-pass-criteria">Pass: User completes first session without help in ≤10 minutes. Finds exercise picker, logs sets, and completes session without verbal guidance.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="exp">
+      <div class="test-id">TC-033</div>
+      <div class="test-body">
+        <div class="test-title">Trainer Generates Plan from Cold Start</div>
+        <div class="test-detail">Open Trainer tab immediately after completing onboarding (0 sessions logged). Verify a plan or meaningful content is generated. Not a blank screen or error state.</div>
+        <div class="test-pass-criteria">Pass: Trainer tab has usable content within 2 seconds of navigation. Content is relevant to the user's stated goal and equipment.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="exp">
+      <div class="test-id">TC-034</div>
+      <div class="test-body">
+        <div class="test-title">Celebration Fires After First-Ever Completion</div>
+        <div class="test-detail">Complete the very first workout session on a fresh install. Verify a celebration moment (animation, confetti, milestone message, or equivalent) fires exactly once.</div>
+        <div class="test-pass-criteria">Pass: Visible celebration fires on first session completion. Celebration is proportionate and not over-engineered. Does not repeat on subsequent sessions.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option class="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="exp">
+      <div class="test-id">TC-035</div>
+      <div class="test-body">
+        <div class="test-title">Comeback Message Fires at 7+ Day Gap</div>
+        <div class="test-detail">Seed last session 8 days ago. Open app. Verify a comeback/gap message appears exactly once. Verify it does NOT fire at 6 days. Verify the historyKey is "Short Gap" at 8 days and "Long Gap" at 21+ days.</div>
+        <div class="test-pass-criteria">Pass: Gap message fires at ≥7 days, not before. Correct historyKey phrase bank used. Message fires once per return, not per app open.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="exp">
+      <div class="test-id">TC-036</div>
+      <div class="test-body">
+        <div class="test-title">Feel Selector Appears After Every Session</div>
+        <div class="test-detail">Complete 5 sessions. Verify the feel/mood selector (post-session rating) appears after each completion. Verify skipping it is possible without penalty. Verify it doesn't appear mid-session.</div>
+        <div class="test-pass-criteria">Pass: Feel selector appears on 100% of session completions. Skippable. Captured data persists and influences readiness on next session.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="exp">
+      <div class="test-id">TC-037</div>
+      <div class="test-body">
+        <div class="test-title">Coaching Narrative Appears After Each Set</div>
+        <div class="test-detail">Log 10 sets across 3 exercises. Verify coaching narrative text appears after each logged set (or at minimum, is available/accessible after each set). Narrative should be contextually varied.</div>
+        <div class="test-pass-criteria">Pass: Coaching text present after every logged completed set. No two consecutive sets show identical text in the same session. Text is grammatically correct.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="exp">
+      <div class="test-id">TC-038</div>
+      <div class="test-body">
+        <div class="test-title">Progress Page Readable with Under 10 Sessions</div>
+        <div class="test-detail">Seed exactly 7 sessions (2.5 weeks). Navigate to Progress tab. Every chart, stat, and section should display meaningful content or a clear "not enough data yet" placeholder. No confusing empty charts.</div>
+        <div class="test-pass-criteria">Pass: Progress tab is useful and navigable with 7 sessions. Sparse charts have helpful callouts. Streak and PR sections populated. No crash on small datasets.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="exp">
+      <div class="test-id">TC-039</div>
+      <div class="test-body">
+        <div class="test-title">Cardio Session Completable End-to-End</div>
+        <div class="test-detail">Start, log, and complete a cardio session (any cardio type) without any strength training context. The entire flow from tap to completion should be independent of the strength logging flow.</div>
+        <div class="test-pass-criteria">Pass: Cardio session completable in &lt;2 minutes of interaction. No dead ends. Session saved and visible in Progress. No dependency on strength training state.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="exp">
+      <div class="test-id">TC-040</div>
+      <div class="test-body">
+        <div class="test-title">Weight Suggestions Appear Within 1 Second</div>
+        <div class="test-detail">With 5+ sessions logged for an exercise, tap to add that exercise in an active session. Measure time from tap to weight suggestion appearing. Use stopwatch or Xcode instruments.</div>
+        <div class="test-pass-criteria">Pass: Weight suggestion visible ≤1 second after exercise is added to session. Suggestion based on lastPerformanceCache (O(1) lookup, not live scan).</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 5: Coaching Quality -->
+<div class="category-block" id="cat-coaching">
+  <div class="category-header" onclick="toggleCategory('cat-coaching')">
+    <span style="font-size:14px">🗣</span>
+    <span class="category-title">5. Coaching Quality</span>
+    <span class="category-count">8 tests</span>
+    <span class="category-chevron">▼</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="coaching">
+      <div class="test-id">TC-041</div>
+      <div class="test-body">
+        <div class="test-title">No Generic Filler Phrases</div>
+        <div class="test-detail">Complete 3 full sessions. Read every coaching narrative phrase. Flag any phrase that could have been generated by a generic fitness app with no context about this user's actual performance.</div>
+        <div class="test-pass-criteria">Pass: Every phrase references or implies knowledge of the user's actual rep/weight/RPE context. Zero phrases that are 100% context-free generic motivational text.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="coaching">
+      <div class="test-id">TC-042</div>
+      <div class="test-body">
+        <div class="test-title">No Grammatical Errors in Any Phrase</div>
+        <div class="test-detail">Read all phrases visible across a 3-session testing sprint. Any grammar errors (subject-verb agreement, tense consistency, punctuation) are a Fail. Pay particular attention to phrase assembly seams where two phrases are concatenated.</div>
+        <div class="test-pass-criteria">Pass: Zero grammatical errors. Assembled phrases (from multiple phrase bank components) read as natural sentences. No dangling words from phrase concatenation.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="coaching">
+      <div class="test-id">TC-043</div>
+      <div class="test-body">
+        <div class="test-title">No Phrase Repeats Within Same Session</div>
+        <div class="test-detail">Log 15 sets across 5 exercises in a single session. Record every coaching phrase shown. Verify no exact phrase repeats within the same session. The pick() rotation mechanism must prevent repeats.</div>
+        <div class="test-pass-criteria">Pass: Zero exact phrase duplicates within a single session. pick() rotation prevents back-to-back identical phrases. UserDefaults rotation state persists correctly.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="coaching">
+      <div class="test-id">TC-044</div>
+      <div class="test-body">
+        <div class="test-title">Gap Message Fires Only on Actual Gap</div>
+        <div class="test-detail">Log sessions on consecutive days. Verify the "Short Gap" or "Long Gap" message does NOT appear when training has been continuous. The historyKey for recent training must be "Normal".</div>
+        <div class="test-pass-criteria">Pass: Gap messages absent on day-after or 2-day-after sessions. historyKey = "Normal" for active users. False positive rate = 0%.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="coaching">
+      <div class="test-id">TC-045</div>
+      <div class="test-body">
+        <div class="test-title">Narrative Matches Session Context</div>
+        <div class="test-detail">Test 3 distinct contexts: (1) comeback after 10-day gap, (2) personal record day, (3) plateau (4th week same weight). Verify the coaching narrative is materially different and contextually appropriate for each.</div>
+        <div class="test-pass-criteria">Pass: Comeback session shows "Short Gap" or "Long Gap" phrasing. PR session shows achievement acknowledgment. Plateau session shows "Stalled" historyKey content. Not generic in any case.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="coaching">
+      <div class="test-id">TC-046</div>
+      <div class="test-body">
+        <div class="test-title">RPE Word Chips Map to Correct Values</div>
+        <div class="test-detail">Tap each RPE chip in the UI. Verify the word label matches the standard RPE scale: 6=Light, 7=Moderate, 8=Hard, 9=Very Hard, 10=Max (or equivalent H.O.N. terminology). Store the saved value and verify it matches the chip selected.</div>
+        <div class="test-pass-criteria">Pass: Each chip stores the correct numeric RPE. Label text is accurate to standard RPE scale language or documented H.O.N. equivalents.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="coaching">
+      <div class="test-id">TC-047</div>
+      <div class="test-body">
+        <div class="test-title">Coaching Tone Passes H.O.N. Voice Check</div>
+        <div class="test-detail">Read 20 coaching phrases across varied sessions. Apply the H.O.N. voice standard: direct, honest, not preachy, not sycophantic, not guilt-inducing, not generic. Flag any phrase that violates tone.</div>
+        <div class="test-pass-criteria">Pass: Zero phrases that are sycophantic ("Amazing job!!" type), preachy ("You really need to rest"), or generic (could appear in any fitness app). All phrases feel like a knowledgeable friend talking to you.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="coaching">
+      <div class="test-id">TC-048</div>
+      <div class="test-body">
+        <div class="test-title">Drop Set and To-Failure Modifiers Active</div>
+        <div class="test-detail">Log a set with isDropCompleted = true. Verify "Drop Set — Completed" phrase bank key fires. Log a set with toFailure = true. Verify "To Failure" connective phrase fires. Test that these modifiers replace the correct phrase slots.</div>
+        <div class="test-pass-criteria">Pass: Drop set modifier replaces weight slot with correct phrase bank key. To-failure modifier replaces trend slot. Both fire only when the respective flag is true.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 6: Performance -->
+<div class="category-block" id="cat-perf">
+  <div class="category-header" onclick="toggleCategory('cat-perf')">
+    <span style="font-size:14px">⚡</span>
+    <span class="category-title">6. Performance</span>
+    <span class="category-count">6 tests</span>
+    <span class="category-chevron">▼</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="perf">
+      <div class="test-id">TC-049</div>
+      <div class="test-body">
+        <div class="test-title">Tab Switch Under 100ms</div>
+        <div class="test-detail">With seeded data (30+ sessions), use Xcode Time Profiler to measure render time on tab switch. Swipe between all 6 tabs. No tab should block the main thread for &gt;100ms during a switch.</div>
+        <div class="test-pass-criteria">Pass: All tab switches complete main-thread work in ≤100ms. No visible lag. No spinner or loading state during tab switch.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="perf">
+      <div class="test-id">TC-050</div>
+      <div class="test-body">
+        <div class="test-title">Analytics Refresh Under 500ms Background</div>
+        <div class="test-detail">Log a new session and observe the refreshAnalytics() cycle. The background thread must complete all cache rebuilds and return to main within 500ms. Use instruments or logging to measure.</div>
+        <div class="test-pass-criteria">Pass: refreshAnalytics() completes in ≤500ms for datasets up to 100 sessions. Token debounce mechanism correctly drops stale results.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="perf">
+      <div class="test-id">TC-051</div>
+      <div class="test-body">
+        <div class="test-title">App Launch Under 2 Seconds (Cold Start)</div>
+        <div class="test-detail">Kill the app completely. Launch it. Time from tap to fully interactive home screen. Measure 3 times and use average. Include isLoaded transition in the measurement.</div>
+        <div class="test-pass-criteria">Pass: Cold start to interactive home screen ≤2 seconds on iPhone 17 Pro simulator or modern device. No loading spinner after 2s from tap.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="perf">
+      <div class="test-id">TC-052</div>
+      <div class="test-body">
+        <div class="test-title">No Jank on Workout Scroll</div>
+        <div class="test-detail">In an active workout with 8+ exercises and 5+ sets each, scroll up and down through the active workout view. Use Xcode GPU Frame Capture to verify consistent 60fps rendering.</div>
+        <div class="test-pass-criteria">Pass: Active workout scrolling maintains 60fps. No frame drops visible to the naked eye. No layout recalculations blocking scroll.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="perf">
+      <div class="test-id">TC-053</div>
+      <div class="test-body">
+        <div class="test-title">No ANR or Watchdog Timeout</div>
+        <div class="test-detail">Run the full app for 30 minutes with active use (logging, tab switching, analytics navigation). Monitor for watchdog terminations in Xcode Console. Check for Main Thread Checker violations.</div>
+        <div class="test-pass-criteria">Pass: Zero watchdog terminations. Zero Main Thread Checker violations in a 30-minute session. All heavy operations on background threads.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="perf">
+      <div class="test-id">TC-054</div>
+      <div class="test-body">
+        <div class="test-title">Memory Under 150MB Typical Session</div>
+        <div class="test-detail">Use Xcode Memory Gauge during a 30-minute simulated session (logging, analytics viewing, tab switching). Peak memory should not exceed 150MB. Alert if &gt;200MB.</div>
+        <div class="test-pass-criteria">Pass: Typical session memory ≤150MB peak. No memory leak (memory not growing unboundedly across repeated analytics refreshes). exerciseHistoryCache capped at 20 per exercise.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 7: Accessibility -->
+<div class="category-block" id="cat-a11y">
+  <div class="category-header" onclick="toggleCategory('cat-a11y')">
+    <span style="font-size:14px">♿</span>
+    <span class="category-title">7. Accessibility</span>
+    <span class="category-count">5 tests</span>
+    <span class="category-chevron">▼</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="a11y">
+      <div class="test-id">TC-055</div>
+      <div class="test-body">
+        <div class="test-title">Dynamic Type — All Text Scales Correctly</div>
+        <div class="test-detail">Set iOS text size to "Accessibility Extra Large" in Settings &gt; Accessibility &gt; Display &amp; Text Size. Navigate all primary screens. Text must be legible and layouts must not break catastrophically.</div>
+        <div class="test-pass-criteria">Pass: All text scales at Accessibility Extra Large. No text truncated to a single character. No overlapping elements. Core functionality accessible at maximum text size.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="a11y">
+      <div class="test-id">TC-056</div>
+      <div class="test-body">
+        <div class="test-title">VoiceOver Labels on All Interactive Elements</div>
+        <div class="test-detail">Enable VoiceOver. Navigate through active workout logging, the home screen, and settings. Every button, slider, and input must have a descriptive accessibility label. No "Button" without context.</div>
+        <div class="test-pass-criteria">Pass: VoiceOver announces meaningful labels for all interactive elements. No elements announced as just "Button" or "Image". Log buttons clearly describe their function.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="a11y">
+      <div class="test-id">TC-057</div>
+      <div class="test-body">
+        <div class="test-title">Minimum 44pt Tap Targets</div>
+        <div class="test-detail">Use Xcode Accessibility Inspector to measure tap target sizes on all interactive elements. Particular focus on: set log buttons, RPE chips, weight increment/decrement buttons, tab bar items.</div>
+        <div class="test-pass-criteria">Pass: All interactive elements ≥44×44pt tap area. Elements visually smaller than 44pt must have expanded hit areas via .contentShape or padding.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="a11y">
+      <div class="test-id">TC-058</div>
+      <div class="test-body">
+        <div class="test-title">Color Not Sole Indicator of State</div>
+        <div class="test-detail">Review all status indicators, progress states, and alerts. Every state communicated by color must also have a text label, icon, or pattern as a secondary indicator. Critical for colorblind users.</div>
+        <div class="test-pass-criteria">Pass: No information is conveyed by color alone. Pass/fail states, readiness levels, and progress indicators all have non-color secondary cues.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="a11y">
+      <div class="test-id">TC-059</div>
+      <div class="test-body">
+        <div class="test-title">Contrast Ratio ≥ 4.5:1 for Body Text</div>
+        <div class="test-detail">Use Colour Contrast Analyser or Xcode Accessibility Inspector to measure foreground-to-background contrast for all body text. WCAG AA standard requires 4.5:1 for normal text, 3:1 for large text.</div>
+        <div class="test-pass-criteria">Pass: All body text ≥4.5:1 contrast ratio. All large text (18pt+) ≥3:1. Secondary text (rgba 0.55) must also meet minimum thresholds on its background.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 8: Privacy & Data -->
+<div class="category-block" id="cat-privacy">
+  <div class="category-header" onclick="toggleCategory('cat-privacy')">
+    <span style="font-size:14px">🔒</span>
+    <span class="category-title">8. Privacy &amp; Data</span>
+    <span class="category-count">4 tests</span>
+    <span class="category-chevron">▼</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="privacy">
+      <div class="test-id">TC-060</div>
+      <div class="test-body">
+        <div class="test-title">HealthKit Permission — Requested Once with Explanation</div>
+        <div class="test-detail">Fresh install. Launch app. HealthKit permission dialog must appear exactly once, with a clear explanation of what data is accessed and why. Must not re-request if already granted.</div>
+        <div class="test-pass-criteria">Pass: HealthKit permission requested once. Dialog includes purpose string explaining use. Not requested again after granting. Graceful degradation if denied.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="privacy">
+      <div class="test-id">TC-061</div>
+      <div class="test-body">
+        <div class="test-title">No Data Sent Without Consent</div>
+        <div class="test-detail">Use Charles Proxy or Proxyman to monitor network traffic during a full session. Verify zero outbound data requests during normal use. All data must be local-only unless user explicitly opts in to a future feature.</div>
+        <div class="test-pass-criteria">Pass: Zero outbound network requests during normal app use. No analytics pings, no telemetry, no data upload without explicit user opt-in.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="privacy">
+      <div class="test-id">TC-062</div>
+      <div class="test-body">
+        <div class="test-title">Complete Offline Functionality</div>
+        <div class="test-detail">Put device in Airplane Mode. Use all 6 tabs: log a workout, view trainer, review progress, check StrengthLab, change settings. Every feature must work without network access.</div>
+        <div class="test-pass-criteria">Pass: All features function in Airplane Mode. No loading spinners waiting for network. No error messages about connectivity. Data saves locally without network.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="privacy">
+      <div class="test-id">TC-063</div>
+      <div class="test-body">
+        <div class="test-title">Data Deletable from Settings</div>
+        <div class="test-detail">Log 10+ sessions. Navigate to Settings. Find and use "Delete All Data" or equivalent function. Verify all workout data, user profile, and cached analytics are completely removed. App should return to onboarding state.</div>
+        <div class="test-pass-criteria">Pass: All user data removable from within the app. After deletion, app returns to clean state. No orphaned data in any cache or UserDefaults. Deletion is irreversible with confirmation dialog.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<div class="separator"></div>
+
+<!-- Section 2: Success Metrics -->
+<div class="section-heading">Section 2 — Success Metrics for Launch</div>
+
+<div class="tier-label tier-a">Tier A — Pre-Launch Gates (must hit before App Store submission)</div>
+<div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;">
+  <ul class="gate-list">
+    <li><div class="gate-icon">!</div><span>Zero P0 bugs open at time of submission</span></li>
+    <li><div class="gate-icon">!</div><span>Crash-free rate &gt;99.5% on TestFlight over the last 100 sessions before submission</span></li>
+    <li><div class="gate-icon">!</div><span>Onboarding completion rate &gt;85% on TestFlight (user reaches home screen)</span></li>
+    <li><div class="gate-icon">!</div><span>First-session completion rate &gt;90% (user completes at least 1 full workout)</span></li>
+    <li><div class="gate-icon">!</div><span>All 63 must-pass test cases green (no open or fail status remaining)</span></li>
+  </ul>
+</div>
+
+<div class="tier-label tier-b">Tier B — Post-Launch KPI Targets (measured at D7, D30, D90)</div>
+
+<div class="metrics-grid">
+  <div class="metric-card">
+    <div class="metric-card-title">Retention</div>
+    <div class="metric-row"><span class="metric-name">D1 retention</span><span class="metric-target positive">&gt;60%</span></div>
+    <div class="metric-row"><span class="metric-name">D7 retention</span><span class="metric-target positive">&gt;35%</span></div>
+    <div class="metric-row"><span class="metric-name">D30 retention</span><span class="metric-target positive">&gt;20%</span></div>
+    <div class="metric-row"><span class="metric-name">D90 retention</span><span class="metric-target positive">&gt;12%</span></div>
+    <div class="metric-row"><span class="metric-name">DAU/MAU (stickiness)</span><span class="metric-target positive">&gt;0.25</span></div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-card-title">Session Quality</div>
+    <div class="metric-row"><span class="metric-name">Session completion rate</span><span class="metric-target positive">&gt;80%</span></div>
+    <div class="metric-row"><span class="metric-name">Onboarding drop-off rate</span><span class="metric-target positive">&lt;15%</span></div>
+    <div class="metric-row"><span class="metric-name">App crash rate</span><span class="metric-target positive">&lt;0.1% of sessions</span></div>
+    <div class="metric-row"><span class="metric-name">Time to first session</span><span class="metric-target positive">&lt;24h from install</span></div>
+    <div class="metric-row"><span class="metric-name">Avg session duration</span><span class="metric-target amber">35–55 min</span></div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-card-title">Engagement &amp; Growth</div>
+    <div class="metric-row"><span class="metric-name">Notification opt-in rate</span><span class="metric-target positive">&gt;50%</span></div>
+    <div class="metric-row"><span class="metric-name">Trainer used at least once by D30</span><span class="metric-target positive">&gt;40%</span></div>
+    <div class="metric-row"><span class="metric-name">Sessions/active week by week 4</span><span class="metric-target positive">&gt;3.0</span></div>
+    <div class="metric-row"><span class="metric-name">% reaching 4-week streak</span><span class="metric-target positive">&gt;25%</span></div>
+    <div class="metric-row"><span class="metric-name">NPS at D30</span><span class="metric-target positive">&gt;40</span></div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-card-title">Feature Adoption</div>
+    <div class="metric-row"><span class="metric-name">% logging RPE at least once</span><span class="metric-target amber">&gt;30%</span></div>
+    <div class="metric-row"><span class="metric-name">% using trainer tab by D30</span><span class="metric-target amber">&gt;40%</span></div>
+    <div class="metric-row"><span class="metric-name">% reviewing progress/week</span><span class="metric-target amber">&gt;50%</span></div>
+    <div class="metric-row"><span class="metric-name">Weight progression (intermediate)</span><span class="metric-target amber">avg +1.5 kg/mo</span></div>
+    <div class="metric-row"><span class="metric-name">W1 completer retention delta</span><span class="metric-target positive">+20%+ vs. dropouts</span></div>
+  </div>
+</div>
+
+<div class="separator"></div>
+
+<!-- Section 3: Definition of Done -->
+<div class="section-heading">Section 3 — Definition of Done</div>
+
+<div class="done-card">
+  <p>H.O.N. is done and ready to ship when a person with no prior knowledge of the codebase can pick up an iPhone, install the app, complete onboarding in under three minutes, log their first workout without any help, and walk away having received coaching feedback that feels specific to what they just did — and when that experience is rock-solid for the 22 types of real people in our cohort, from the 58-year-old woman worried about osteoporosis to the powerlifter who will fact-check every e1RM calculation, from the night-shift nurse with irregular training patterns to the bad actor trying to crash the app with 999 kg inputs. Done means all 63 test cases are green, zero P0 bugs are open, the crash-free rate on TestFlight exceeds 99.5%, every calculation in the codebase matches the documented formulas to within 0.5%, the coaching narrative never repeats itself in a single session and never sounds like it was written for someone else, the app launches in under 2 seconds, tabs switch in under 100ms, and the entire experience works flawlessly in Airplane Mode. Done does not mean feature-complete — it means the features we ship are complete, correct, honest, and worthy of the H.O.N. name.</p>
+</div>
+
+<script>
+// Status persistence via localStorage
+const STORAGE_KEY = 'hon_ship_criteria_status';
+
+function loadStatuses() {
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  document.querySelectorAll('.test-case').forEach(tc => {
+    const id = tc.querySelector('.test-id').textContent;
+    if (saved[id]) {
+      const sel = tc.querySelector('.status-select');
+      sel.value = saved[id];
+      applyStatus(tc, sel, saved[id]);
+    }
+  });
+  updateStats();
+}
+
+function updateStatus(selectEl) {
+  const tc = selectEl.closest('.test-case');
+  const id = tc.querySelector('.test-id').textContent;
+  const status = selectEl.value;
+  applyStatus(tc, selectEl, status);
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  saved[id] = status;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+  updateStats();
+}
+
+function applyStatus(tc, sel, status) {
+  tc.className = 'test-case status-' + status;
+  sel.className = 'status-select status-' + status;
+  tc.dataset.status = status;
+}
+
+function updateStats() {
+  const all = document.querySelectorAll('.test-case');
+  let open = 0, pass = 0, fail = 0, partial = 0;
+  all.forEach(tc => {
+    switch(tc.dataset.status) {
+      case 'open': open++; break;
+      case 'pass': pass++; break;
+      case 'fail': fail++; break;
+      case 'partial': partial++; break;
+    }
+  });
+  document.getElementById('stat-total').textContent = all.length + ' total';
+  document.getElementById('stat-open').textContent = (open + fail) + ' open/fail';
+  document.getElementById('stat-partial').textContent = partial + ' partial';
+  document.getElementById('stat-pass').textContent = pass + ' passed';
+}
+
+function filterTests(status, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.test-case').forEach(tc => {
+    if (status === 'all') {
+      tc.style.display = '';
+    } else {
+      tc.style.display = tc.dataset.status === status ? '' : 'none';
+    }
+  });
+}
+
+function toggleCategory(id) {
+  const block = document.getElementById(id);
+  block.classList.toggle('collapsed');
+}
+
+loadStatuses();
+</script>
+</body>
+</html>

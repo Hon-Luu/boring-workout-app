@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H.O.N. — Review Board Protocol</title>
+<style>
+  :root {
+    --bg:       #111111;
+    --card:     #1c1c1e;
+    --border:   rgba(255,255,255,0.07);
+    --amber:    #f59e0b;
+    --positive: #34d399;
+    --negative: #f87171;
+    --warning:  #fbbf24;
+    --muted:    rgba(255,255,255,0.4);
+    --text:     rgba(255,255,255,0.88);
+    --text2:    rgba(255,255,255,0.55);
+    --blue:     #60a5fa;
+    --purple:   #a78bfa;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 32px 20px 64px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .header { margin-bottom: 36px; }
+  .header-top {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .logo {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber);
+  }
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--amber), transparent);
+    opacity: 0.3;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    color: var(--text);
+  }
+  .subtitle {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+
+  .section-heading {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin: 32px 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-heading::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .intro-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--amber);
+    border-radius: 14px;
+    padding: 20px 24px;
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+
+  /* Discipline cards */
+  .disciplines-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  @media (max-width: 640px) {
+    .disciplines-grid { grid-template-columns: 1fr; }
+  }
+
+  .discipline-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    transition: border-color 0.2s;
+  }
+  .discipline-card:hover { border-color: rgba(255,255,255,0.14); }
+
+  .discipline-number {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'SF Mono', monospace;
+    color: var(--amber);
+    background: rgba(245,158,11,0.1);
+    padding: 2px 7px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 8px;
+  }
+  .discipline-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .discipline-lens {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 8px;
+  }
+  .discipline-focus {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.6;
+  }
+
+  /* Review areas */
+  .area-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 10px;
+  }
+  .area-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .area-number {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--amber);
+    width: 24px;
+    flex-shrink: 0;
+  }
+  .area-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    flex: 1;
+  }
+  .area-description {
+    font-size: 13px;
+    color: var(--text2);
+    margin-left: 36px;
+    line-height: 1.6;
+  }
+
+  /* Rubric */
+  .rubric-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-top: 8px;
+  }
+  @media (max-width: 600px) {
+    .rubric-grid { grid-template-columns: 1fr; }
+  }
+
+  .rubric-cell {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+  }
+  .rubric-score {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .rubric-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .rubric-desc {
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--text2);
+  }
+  .score-1 .rubric-score, .score-1 .rubric-label { color: var(--negative); }
+  .score-1 { border-color: rgba(248,113,113,0.2); }
+  .score-2 .rubric-score, .score-2 .rubric-label { color: var(--warning); }
+  .score-3 .rubric-score, .score-3 .rubric-label { color: var(--amber); }
+  .score-4 .rubric-score, .score-4 .rubric-label { color: var(--positive); }
+  .score-5 .rubric-score, .score-5 .rubric-label { color: var(--purple); }
+  .score-5 { border-color: rgba(167,139,250,0.2); }
+
+  /* Prompt box */
+  .prompt-box {
+    background: #0d0d0d;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    color: rgba(255,255,255,0.75);
+    white-space: pre-wrap;
+    overflow-x: auto;
+    position: relative;
+  }
+
+  .copy-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.06);
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: -apple-system, sans-serif;
+  }
+  .copy-btn:hover { border-color: var(--amber); color: var(--amber); }
+  .copy-btn.copied { border-color: var(--positive); color: var(--positive); }
+
+  .prompt-highlight { color: var(--amber); }
+  .prompt-placeholder { color: var(--blue); }
+  .prompt-comment { color: var(--text2); }
+
+  /* Scorecard */
+  .scorecard-wrapper {
+    overflow-x: auto;
+    margin: 0 -4px;
+    padding: 0 4px;
+    border-radius: 10px;
+  }
+
+  .scorecard-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    min-width: 720px;
+  }
+
+  .scorecard-table th {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text2);
+    padding: 10px 8px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    background: var(--card);
+  }
+
+  .scorecard-table th.row-header {
+    text-align: left;
+    padding-left: 12px;
+    min-width: 160px;
+  }
+
+  .scorecard-table td {
+    padding: 8px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .scorecard-table td.row-header {
+    text-align: left;
+    padding-left: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .scorecard-table td.row-header .sub {
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--text2);
+    display: block;
+  }
+
+  .scorecard-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .score-input {
+    width: 36px;
+    height: 32px;
+    text-align: center;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'SF Mono', monospace;
+    cursor: pointer;
+    transition: all 0.15s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .score-input:hover { border-color: var(--amber); }
+  .score-input:focus { outline: none; border-color: var(--amber); }
+
+  .score-input.s1 { background: rgba(248,113,113,0.15); color: var(--negative); border-color: rgba(248,113,113,0.25); }
+  .score-input.s2 { background: rgba(251,191,36,0.12); color: var(--warning); border-color: rgba(251,191,36,0.2); }
+  .score-input.s3 { background: rgba(245,158,11,0.12); color: var(--amber); border-color: rgba(245,158,11,0.2); }
+  .score-input.s4 { background: rgba(52,211,153,0.12); color: var(--positive); border-color: rgba(52,211,153,0.2); }
+  .score-input.s5 { background: rgba(167,139,250,0.15); color: var(--purple); border-color: rgba(167,139,250,0.25); }
+
+  .total-cell {
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'SF Mono', monospace;
+    padding: 8px;
+    text-align: center;
+  }
+
+  .avg-row td {
+    background: rgba(245,158,11,0.05);
+    font-weight: 600;
+    font-size: 11px;
+    color: var(--amber);
+    border-top: 1px solid rgba(245,158,11,0.15);
+    padding: 10px 8px;
+  }
+  .avg-row td.row-header { font-size: 11px; }
+
+  .separator {
+    height: 1px;
+    background: var(--border);
+    margin: 28px 0;
+  }
+
+  .verdict-area {
+    margin-top: 20px;
+  }
+  .verdict-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .verdict-btn {
+    flex: 1;
+    padding: 14px;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    color: var(--text2);
+  }
+  .verdict-btn.ship { border-color: rgba(52,211,153,0.3); }
+  .verdict-btn.ship:hover, .verdict-btn.ship.selected { background: rgba(52,211,153,0.15); border-color: var(--positive); color: var(--positive); }
+  .verdict-btn.conditional { border-color: rgba(245,158,11,0.3); }
+  .verdict-btn.conditional:hover, .verdict-btn.conditional.selected { background: rgba(245,158,11,0.12); border-color: var(--amber); color: var(--amber); }
+  .verdict-btn.no-ship { border-color: rgba(248,113,113,0.3); }
+  .verdict-btn.no-ship:hover, .verdict-btn.no-ship.selected { background: rgba(248,113,113,0.15); border-color: var(--negative); color: var(--negative); }
+
+  @media (max-width: 600px) {
+    body { padding: 20px 14px 48px; }
+    .verdict-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <span class="logo">H.O.N.</span>
+    <div class="divider-line"></div>
+  </div>
+  <h1>Review Board Protocol</h1>
+  <div class="subtitle">12 reviewer disciplines · 7 review areas · Scoring rubric · Copy-paste LLM prompt · Interactive scorecard · Last updated: 2026-05-29</div>
+</div>
+
+<!-- Section 1: How to use -->
+<div class="section-heading">Section 1 — How to Use This Document</div>
+<div class="intro-card">
+This document defines the H.O.N. review board process. Each review assigns one reviewer (human or LLM) to one of the 12 disciplines below and asks them to evaluate the app across all 7 review areas from that discipline's specific lens. To run a review, copy the prompt from Section 5, replace <code style="font-family:monospace;font-size:12px;background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:3px">[DISCIPLINE]</code> and <code style="font-family:monospace;font-size:12px;background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:3px">[DISCIPLINE_LENS]</code> with the chosen role, and provide the reviewer with access to the codebase (or a screenshot tour of the app). Record scores in the Section 6 scorecard. For a comprehensive pre-ship review, aim to run at least 4–6 disciplines. For a quick sanity check, the three highest-priority disciplines are: Product Manager (overall product sense), iOS Engineer (technical correctness), and Certified Strength Coach (domain accuracy).
+</div>
+
+<!-- Section 2: 12 Disciplines -->
+<div class="section-heading">Section 2 — The 12 Reviewer Disciplines</div>
+
+<div class="disciplines-grid">
+
+  <div class="discipline-card">
+    <div class="discipline-number">01</div>
+    <div class="discipline-title">Product Manager</div>
+    <div class="discipline-lens">Core Loop Clarity</div>
+    <div class="discipline-focus">Does the app solve a real, felt problem? Is the core habit loop (log → get insight → come back) immediately obvious? Can a user articulate the value proposition in 30 seconds? Is feature prioritization coherent — nothing feels bolted on? Are the 3 most important screens earning their place?</div>
+  </div>
+
+  <div class="discipline-card">
+    <div class="discipline-number">02</div>
+    <div class="discipline-title">UX Designer</div>
+    <div class="discipline-lens">Interaction &amp; Hierarchy</div>
+    <div class="discipline-focus">Information architecture across 6 tabs. Visual hierarchy on each primary screen. Interaction patterns (taps, swipes, long presses) are consistent and discoverable. Delight moments are earned, not forced. The design system is applied uniformly. Nothing requires a tutorial to use.</div>
+  </div>
+
+  <div class="discipline-card">
+    <div class="discipline-number">03</div>
+    <div class="discipline-title">iOS Engineer</div>
+    <div class="discipline-lens">Technical Correctness</div>
+    <div class="discipline-focus">SwiftUI best practices: @Observable store usage, view re-render efficiency, proper use of environment. Performance: no main-thread blocking, background task safety, memory management. Architecture coherence: single store pattern, cache invalidation, startup gate (isLoaded). No data races in refreshAnalytics().</div>
+  </div>
+
+  <div class="discipline-card">
+    <div class="discipline-number">04</div>
+    <div class="discipline-title">Data Scientist</div>
+    <div class="discipline-lens">Analytics Integrity</div>
+    <div class="discipline-focus">Statistical soundness of the readiness score (0–100 range, confidence intervals, input signal weighting). e1RM formula selection (Epley vs. Mayhew — are the reps boundaries appropriate?). Strength decay model: is 0.7%/day after 14 days evidence-based? Do the caches represent the data faithfully? Are insights actionable or merely decorative?</div>
+  </div>
+
+  <div class="discipline-card">
+    <div class="discipline-number">05</div>
+    <div class="discipline-title">Certified Strength &amp; Conditioning Coach</div>
+    <div class="discipline-lens">Exercise Science Accuracy</div>
+    <div class="discipline-focus">Progression logic: is the weight suggestion aligned with progressive overload principles? Recovery recommendations: does the readiness engine reflect real recovery science? Are compound/isolation exercise classifications correct? Does the trainer tab produce programs that a real CSCS would endorse? Are there any contraindications for special populations (rehabilitation, elderly)?</div>
+  </div>
+
+  <div class="discipline-card">
+    <div class="discipline-number">06</div>
+    <div class="discipline-title">Sports Psychologist</div>
+    <div class="discipline-lens">Motivation Architecture</div>
+    <div class="discipline-focus">Feedback loop quality: does post-set coaching reinforce identity (I am someone who trains) vs. only performance (you hit your numbers)? Streak mechanics: do they create positive tension or unhealthy anxiety? Comeback messaging: does it reduce shame for the lapsed user? Is the "H.O.N. philosophy" (Habit Over Numbers) embodied in the actual UX, or just the name?</div>
+  </div>
+
+  <div class="discipline-card">
+    <div class="discipline-number">07</div>
+    <div class="discipline-title">Behavioral Economist</div>
+    <div class="discipline-lens">Habit Formation Design</div>
+    <div class="discipline-focus">Commitment devices: does completing onboarding feel like a commitment the user wants to keep? Loss aversion: how does the app leverage (or avoid over-leveraging) streak loss fear? Variable rewards: is there enough surprise in coaching narrative to drive re-engagement? Friction analysis: is there appropriate friction before data deletion and zero friction before logging?</div>
+  </div>
+
+  <div class="discipline-card">
+    <div class="discipline-number">08</div>
+    <div class="discipline-title">Accessibility Expert</div>
+    <div class="discipline-lens">Inclusive Design</div>
+    <div class="discipline-focus">WCAG 2.1 AA compliance: contrast ratios, focus management, keyboard navigation (external keyboard). VoiceOver completeness and accuracy of announcements. Dynamic Type across all screens at Accessibility Extra Large. Minimum 44pt tap targets universally. Color independence: no information conveyed by color alone. One-handed usability.</div>
+  </div>
+
+  <div class="discipline-card">
+    <div class="discipline-number">09</div>
+    <div class="discipline-title">Security &amp; Privacy</div>
+    <div class="discipline-lens">Data Protection</div>
+    <div class="discipline-focus">HealthKit data handling: minimal scope requested, proper purpose strings, denied-permission graceful degradation. Local storage: is sensitive health data encrypted at rest? No PII logged to console or telemetry. Network traffic: zero outbound data without explicit consent. Permission scope: only data types actually needed are requested. Data deletion is complete and verified.</div>
+  </div>
+
+  <div class="discipline-card">
+    <div class="discipline-number">10</div>
+    <div class="discipline-title">Growth &amp; Marketing</div>
+    <div class="discipline-lens">Virality &amp; Acquisition</div>
+    <div class="discipline-focus">Shareable moments: what's screenshot-worthy? (PRs, streak milestones, coaching narrative). Referral potential: what would make a user say "you have to try this app"? Onboarding funnel: where do new users drop off and why? App Store presence: does the current product support a compelling preview video and screenshots? Category positioning vs. MyFitnessPal, Strong, Hevy.</div>
+  </div>
+
+  <div class="discipline-card">
+    <div class="discipline-number">11</div>
+    <div class="discipline-title">QA Engineer</div>
+    <div class="discipline-lens">Defect Coverage</div>
+    <div class="discipline-focus">Edge cases: zero data, extreme values, same-day multiple sessions, mid-session kill, concurrent updates. Error states: what happens when any operation fails? State machine completeness: can any user action leave the app in an undefined state? Regression risk: which changes to SeedStore are most likely to introduce regressions? Input validation coverage.</div>
+  </div>
+
+  <div class="discipline-card">
+    <div class="discipline-number">12</div>
+    <div class="discipline-title">Retention Specialist</div>
+    <div class="discipline-lens">Long-Term Value</div>
+    <div class="discipline-focus">D1/D7/D30/D90 retention prediction: which features drive which retention windows? Churn signals: what does the data look like for a user about to churn — can they be saved? Re-engagement mechanics: is the comeback experience compelling enough for ghost users? Long-term value progression: does the app get more valuable the more you use it, or plateau early? Identity investment over time.</div>
+  </div>
+
+</div>
+
+<!-- Section 3: 7 Review Areas -->
+<div class="section-heading">Section 3 — The 7 Review Areas</div>
+
+<div class="area-card">
+  <div class="area-header">
+    <div class="area-number">1</div>
+    <div class="area-title">First Impression &amp; Onboarding</div>
+  </div>
+  <div class="area-description">
+    <strong>0–60s:</strong> What does a brand-new user see immediately? Is the value proposition clear before any interaction? Does the visual design create confidence? <br>
+    <strong>0–5min:</strong> Onboarding flow completeness, cognitive load of each step, time to reach first interactive home screen.<br>
+    <strong>0–24h:</strong> Post-onboarding prompt to action — does the home screen immediately make the user want to log their first workout? Does the first-time trainer tab experience feel worth returning for?
+  </div>
+</div>
+
+<div class="area-card">
+  <div class="area-header">
+    <div class="area-number">2</div>
+    <div class="area-title">Core Workout Loop</div>
+  </div>
+  <div class="area-description">
+    The fundamental unit of value: starting a session → adding exercises → logging sets → completing. Is this loop frictionless? Does it feel fast during an actual workout? Is every step intuitive without prior knowledge? Does the coaching narrative add real value after each set, or is it noise? Does the post-session feel selector feel meaningful or like a chore?
+  </div>
+</div>
+
+<div class="area-card">
+  <div class="area-header">
+    <div class="area-number">3</div>
+    <div class="area-title">Intelligence Layer</div>
+  </div>
+  <div class="area-description">
+    Readiness score: is it credible and actionable? Does it actually change behavior? Weight suggestions: are they calibrated correctly? Coaching narrative: does it feel like a knowledgeable coach or a random motivational generator? Trainer tab plans: do they improve demonstrably with more data? Does the app feel smarter after 4 weeks than after 1 week?
+  </div>
+</div>
+
+<div class="area-card">
+  <div class="area-header">
+    <div class="area-number">4</div>
+    <div class="area-title">Progress &amp; Analytics</div>
+  </div>
+  <div class="area-description">
+    Data visualization quality: are charts readable at a glance? Insight actionability: does the user know what to do after viewing the Progress tab? StrengthLab depth: is the composite strength score meaningful? Is the strength decay model honest and useful? Does the analytics section reward long-term users with richer insight than newcomers?
+  </div>
+</div>
+
+<div class="area-card">
+  <div class="area-header">
+    <div class="area-number">5</div>
+    <div class="area-title">Retention Mechanics</div>
+  </div>
+  <div class="area-description">
+    Streak design: is it motivating without being anxiety-inducing? Celebration quality: are milestone moments proportionate and genuine? Comeback flows: does the app make returning after a gap feel welcoming, not shameful? Identity reinforcement: over time, does the user start to see themselves as "a person who trains"? What brings them back on day 22 vs. day 1?
+  </div>
+</div>
+
+<div class="area-card">
+  <div class="area-header">
+    <div class="area-number">6</div>
+    <div class="area-title">Technical Quality</div>
+  </div>
+  <div class="area-description">
+    Stability: zero crashes in normal use. Performance: tab switch &lt;100ms, launch &lt;2s, analytics &lt;500ms background. Data integrity: no data loss, no corrupted cache, all calculations verified accurate. Architecture coherence: single store, proper threading, debounced analytics. Error handling: graceful degradation on any failure.
+  </div>
+</div>
+
+<div class="area-card">
+  <div class="area-header">
+    <div class="area-number">7</div>
+    <div class="area-title">Ship Readiness Verdict</div>
+  </div>
+  <div class="area-description">
+    Overall score from the reviewer's discipline lens (1–5). Top 3 strengths with specific references. Top 3 blockers with specific references. Ship / Conditional Ship / No-Ship recommendation. One-paragraph executive summary that the CEO could read and immediately understand the state of the product.
+  </div>
+</div>
+
+<!-- Section 4: Scoring Rubric -->
+<div class="section-heading">Section 4 — Scoring Rubric (1–5 per area)</div>
+
+<div class="rubric-grid">
+  <div class="rubric-cell score-1">
+    <div class="rubric-score">1</div>
+    <div class="rubric-label">Broken</div>
+    <div class="rubric-desc">Feature is absent, non-functional, or actively harmful. Blocks core use case. Ship blocker.</div>
+  </div>
+  <div class="rubric-cell score-2">
+    <div class="rubric-score">2</div>
+    <div class="rubric-label">Below Par</div>
+    <div class="rubric-desc">Present but significantly below expectations. Creates friction, confusion, or erodes trust. Needs work before ship.</div>
+  </div>
+  <div class="rubric-cell score-3">
+    <div class="rubric-score">3</div>
+    <div class="rubric-label">Baseline</div>
+    <div class="rubric-desc">Meets minimum acceptable standard. Does the job without inspiring confidence. Shippable if not a core differentiator.</div>
+  </div>
+  <div class="rubric-cell score-4">
+    <div class="rubric-score">4</div>
+    <div class="rubric-label">Exceeds</div>
+    <div class="rubric-desc">Notably good. A user would positively remark on this area. Creates differentiation from competitors.</div>
+  </div>
+  <div class="rubric-cell score-5">
+    <div class="rubric-score">5</div>
+    <div class="rubric-label">Best-in-Class</div>
+    <div class="rubric-desc">Sets a new standard. Would be referenced as a model example in the category. Memorable and remarkable.</div>
+  </div>
+</div>
+
+<!-- Section 5: The Review Prompt -->
+<div class="section-heading">Section 5 — The Review Prompt</div>
+<p style="font-size:13px;color:var(--text2);margin-bottom:16px;">Replace <span style="color:var(--blue);font-family:monospace">[DISCIPLINE]</span> and <span style="color:var(--blue);font-family:monospace">[DISCIPLINE_LENS]</span> for each reviewer. All other content is fixed.</p>
+
+<div style="position:relative;">
+<div class="prompt-box" id="review-prompt">
+<span class="prompt-comment"># H.O.N. App Review — [DISCIPLINE] Perspective</span>
+
+<span class="prompt-comment">## Context</span>
+You are reviewing <span class="prompt-highlight">H.O.N. (Habit Over Numbers)</span>, a SwiftUI iOS fitness app built with a single @Observable store (SeedStore). The app's core philosophy is that consistent habit formation matters more than optimizing numbers — the name itself is a manifesto against obsessive metric-chasing.
+
+<span class="prompt-comment">## App Architecture Summary</span>
+- <span class="prompt-highlight">Six tabs:</span> Home (readiness dashboard), Trainer (AI workout plans), Workout (active logging), Progress (history + charts), StrengthLab (e1RM analytics + decay model), Settings
+- <span class="prompt-highlight">Single store:</span> SeedStore (@Observable), loaded once on startup behind an isLoaded gate
+- <span class="prompt-highlight">Three performance caches:</span> lastPerformanceCache (O(1) per-exercise lookup), exerciseHistoryCache (20-session cap), homeCache (pre-computed readiness, trends, hints)
+- <span class="prompt-highlight">Analytics pipeline:</span> refreshAnalytics() runs on background thread with UUID token debounce; commits to main only if token still matches
+- <span class="prompt-highlight">Coaching narrative:</span> WorkoutNarrativeEngine assembles phrases from phrase_bank.json using a pick() rotation (UserDefaults-backed, prevents repeats)
+- <span class="prompt-highlight">e1RM formula routing:</span> Epley (2–10 reps), Mayhew (11–15 reps), exact (1 rep), 0/excluded (>15 reps)
+- <span class="prompt-highlight">Readiness engine:</span> ReadinessEngine.compute(log:) produces score 0–100, confidence, delta, coachingNote
+- <span class="prompt-highlight">Strength decay:</span> peakE1RM × retentionFactor — no decay for 14 days, then −0.7%/day, floor at 50%
+
+<span class="prompt-comment">## Key Source Files</span>
+- iOSApp/Models/Models.swift — all data models (Exercise, SetRecord, WorkoutLogEntry, etc.)
+- iOSApp/App/ContentView.swift — tab structure, ContentView
+- iOSApp/Engines/ — ReadinessEngine, StrengthAnalyticsEngine, WorkoutNarrativeEngine, etc.
+- iOSApp/Views/ — screen views grouped by tab area
+- iOSApp/Services/ — HealthKit, persistence layer
+
+<span class="prompt-comment">## Your Role</span>
+You are reviewing this app as a <span class="prompt-placeholder">[DISCIPLINE]</span>.
+Your lens is: <span class="prompt-placeholder">[DISCIPLINE_LENS]</span>
+
+<span class="prompt-comment">## Review Instructions</span>
+Evaluate the app across these 7 areas. For each area, provide:
+- A score from 1–5 using the rubric below
+- 2–4 specific findings (what works, what doesn't, what's missing)
+- At least one file reference where applicable (e.g., "WorkoutNarrativeEngine.swift line ~X")
+- The most important single improvement for this area from your discipline's perspective
+
+<span class="prompt-highlight">Area 1: First Impression &amp; Onboarding</span> (0–60s, 0–5min, 0–24h)
+<span class="prompt-highlight">Area 2: Core Workout Loop</span> (logging, feedback, completion)
+<span class="prompt-highlight">Area 3: Intelligence Layer</span> (readiness, coaching narrative, recommendations)
+<span class="prompt-highlight">Area 4: Progress &amp; Analytics</span> (data visualization, insight quality, actionability)
+<span class="prompt-highlight">Area 5: Retention Mechanics</span> (streaks, celebrations, comeback flows, identity)
+<span class="prompt-highlight">Area 6: Technical Quality</span> (stability, performance, data integrity)
+<span class="prompt-highlight">Area 7: Ship Readiness Verdict</span> (overall rating, top 3 strengths, top 3 blockers, ship/no-ship)
+
+<span class="prompt-comment">## Scoring Rubric</span>
+1 = Broken or absent (ship blocker)
+2 = Present but significantly below expectations (needs work before ship)
+3 = Meets baseline expectations (shippable)
+4 = Exceeds expectations (notable quality, creates differentiation)
+5 = Best-in-class, sets a new standard (remarkable, memorable)
+
+<span class="prompt-comment">## Tone Requirements</span>
+- Be direct and specific. Vague observations ("the UX could be improved") are not useful.
+- Reference specific screens, features, or code patterns when making claims.
+- Do not soften findings to protect feelings. If something is broken, say it's broken.
+- Do not inflate scores to seem balanced. A 3 means acceptable, not great.
+- Prioritize your top 3 findings by impact on ship decision.
+
+<span class="prompt-comment">## Output Format</span>
+For each area:
+  Score: X/5
+  Strengths: [bullet list]
+  Issues: [bullet list]
+  Key improvement: [one sentence]
+
+At the end, write a one-paragraph <span class="prompt-highlight">Executive Summary</span> that a non-technical CEO could read in 60 seconds to understand:
+- Where the app is genuinely strong
+- The 1–2 things that must be fixed before ship
+- Your overall confidence level in the product
+- Your ship recommendation: SHIP / CONDITIONAL SHIP (fix X first) / NO-SHIP</div>
+<button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+</div>
+
+<!-- Section 6: Interactive Scorecard -->
+<div class="section-heading">Section 6 — Review Scorecard</div>
+<p style="font-size:13px;color:var(--text2);margin-bottom:16px;">Enter scores per discipline × area. Totals calculated automatically. Saved in localStorage.</p>
+
+<div class="scorecard-wrapper">
+<table class="scorecard-table" id="scorecard">
+<thead>
+<tr>
+  <th class="row-header">Discipline</th>
+  <th>Area 1<br><span style="font-weight:400;font-size:9px;opacity:0.6">Onboarding</span></th>
+  <th>Area 2<br><span style="font-weight:400;font-size:9px;opacity:0.6">Core Loop</span></th>
+  <th>Area 3<br><span style="font-weight:400;font-size:9px;opacity:0.6">Intelligence</span></th>
+  <th>Area 4<br><span style="font-weight:400;font-size:9px;opacity:0.6">Analytics</span></th>
+  <th>Area 5<br><span style="font-weight:400;font-size:9px;opacity:0.6">Retention</span></th>
+  <th>Area 6<br><span style="font-weight:400;font-size:9px;opacity:0.6">Technical</span></th>
+  <th>Area 7<br><span style="font-weight:400;font-size:9px;opacity:0.6">Verdict</span></th>
+  <th>Total<br><span style="font-weight:400;font-size:9px;opacity:0.6">/35</span></th>
+</tr>
+</thead>
+<tbody id="scorecard-body">
+</tbody>
+<tfoot>
+<tr class="avg-row" id="avg-row">
+  <td class="row-header">Column Average</td>
+  <td id="avg-1">—</td>
+  <td id="avg-2">—</td>
+  <td id="avg-3">—</td>
+  <td id="avg-4">—</td>
+  <td id="avg-5">—</td>
+  <td id="avg-6">—</td>
+  <td id="avg-7">—</td>
+  <td id="avg-total">—</td>
+</tr>
+</tfoot>
+</table>
+</div>
+
+<div class="verdict-area">
+  <p style="font-size:12px;color:var(--text2);margin-bottom:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;">Overall Board Verdict</p>
+  <div class="verdict-row">
+    <button class="verdict-btn ship" onclick="setVerdict('ship', this)">Ship It</button>
+    <button class="verdict-btn conditional" onclick="setVerdict('conditional', this)">Conditional Ship</button>
+    <button class="verdict-btn no-ship" onclick="setVerdict('no-ship', this)">No Ship</button>
+  </div>
+  <div id="verdict-display" style="font-size:13px;color:var(--text2);min-height:20px;padding:8px 0;"></div>
+</div>
+
+<script>
+const DISCIPLINES = [
+  { id: 'pm', label: 'Product Manager', sub: 'Core Loop Clarity' },
+  { id: 'ux', label: 'UX Designer', sub: 'Interaction & Hierarchy' },
+  { id: 'ios', label: 'iOS Engineer', sub: 'Technical Correctness' },
+  { id: 'ds', label: 'Data Scientist', sub: 'Analytics Integrity' },
+  { id: 'cscs', label: 'Strength Coach', sub: 'Exercise Science' },
+  { id: 'psych', label: 'Sports Psychologist', sub: 'Motivation Architecture' },
+  { id: 'econ', label: 'Behavioral Economist', sub: 'Habit Formation' },
+  { id: 'a11y', label: 'Accessibility Expert', sub: 'Inclusive Design' },
+  { id: 'sec', label: 'Security & Privacy', sub: 'Data Protection' },
+  { id: 'growth', label: 'Growth & Marketing', sub: 'Virality & Acquisition' },
+  { id: 'qa', label: 'QA Engineer', sub: 'Defect Coverage' },
+  { id: 'retention', label: 'Retention Specialist', sub: 'Long-Term Value' },
+];
+
+const STORAGE_KEY_SCORECARD = 'hon_review_scorecard';
+const STORAGE_KEY_VERDICT = 'hon_review_verdict';
+
+function buildScorecard() {
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY_SCORECARD) || '{}');
+  const tbody = document.getElementById('scorecard-body');
+  tbody.innerHTML = '';
+
+  DISCIPLINES.forEach(d => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td class="row-header">${d.label}<span class="sub">${d.sub}</span></td>`;
+
+    for (let a = 1; a <= 7; a++) {
+      const key = `${d.id}-a${a}`;
+      const val = saved[key] || '';
+      const td = document.createElement('td');
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.min = '1';
+      input.max = '5';
+      input.className = 'score-input';
+      input.value = val;
+      if (val) applyScoreColor(input, parseInt(val));
+      input.dataset.key = key;
+      input.dataset.disc = d.id;
+      input.dataset.area = a;
+      input.addEventListener('input', onScoreChange);
+      td.appendChild(input);
+      tr.appendChild(td);
+    }
+
+    const totalTd = document.createElement('td');
+    totalTd.className = 'total-cell';
+    totalTd.id = `total-${d.id}`;
+    totalTd.textContent = computeRowTotal(d.id, saved);
+    tr.appendChild(totalTd);
+
+    tbody.appendChild(tr);
+  });
+
+  updateColumnAverages(saved);
+}
+
+function computeRowTotal(discId, saved) {
+  let sum = 0, count = 0;
+  for (let a = 1; a <= 7; a++) {
+    const v = parseInt(saved[`${discId}-a${a}`]);
+    if (!isNaN(v)) { sum += v; count++; }
+  }
+  if (count === 0) return '—';
+  return count === 7 ? sum : `${sum}*`;
+}
+
+function updateColumnAverages(saved) {
+  for (let a = 1; a <= 7; a++) {
+    let sum = 0, count = 0;
+    DISCIPLINES.forEach(d => {
+      const v = parseInt(saved[`${d.id}-a${a}`]);
+      if (!isNaN(v)) { sum += v; count++; }
+    });
+    const el = document.getElementById(`avg-${a}`);
+    el.textContent = count > 0 ? (sum / count).toFixed(1) : '—';
+    el.style.color = count > 0 ? scoreToColor(sum / count) : '';
+  }
+
+  // Overall average
+  let totalSum = 0, totalCount = 0;
+  DISCIPLINES.forEach(d => {
+    for (let a = 1; a <= 7; a++) {
+      const v = parseInt(saved[`${d.id}-a${a}`]);
+      if (!isNaN(v)) { totalSum += v; totalCount++; }
+    }
+  });
+  const avgEl = document.getElementById('avg-total');
+  if (totalCount > 0) {
+    const avg = totalSum / totalCount;
+    avgEl.textContent = avg.toFixed(1);
+    avgEl.style.color = scoreToColor(avg);
+  } else {
+    avgEl.textContent = '—';
+  }
+}
+
+function scoreToColor(score) {
+  if (score < 2) return 'var(--negative)';
+  if (score < 3) return 'var(--warning)';
+  if (score < 4) return 'var(--amber)';
+  if (score < 4.7) return 'var(--positive)';
+  return 'var(--purple)';
+}
+
+function applyScoreColor(input, score) {
+  input.className = 'score-input';
+  if (score >= 1 && score <= 5) {
+    input.classList.add('s' + score);
+  }
+}
+
+function onScoreChange(e) {
+  const input = e.target;
+  let val = parseInt(input.value);
+  if (isNaN(val)) { input.value = ''; input.className = 'score-input'; }
+  else {
+    val = Math.max(1, Math.min(5, val));
+    input.value = val;
+    applyScoreColor(input, val);
+  }
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY_SCORECARD) || '{}');
+  if (input.value === '') {
+    delete saved[input.dataset.key];
+  } else {
+    saved[input.dataset.key] = input.value;
+  }
+  localStorage.setItem(STORAGE_KEY_SCORECARD, JSON.stringify(saved));
+  document.getElementById(`total-${input.dataset.disc}`).textContent = computeRowTotal(input.dataset.disc, saved);
+  updateColumnAverages(saved);
+}
+
+function setVerdict(v, btn) {
+  document.querySelectorAll('.verdict-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  localStorage.setItem(STORAGE_KEY_VERDICT, v);
+  const msgs = {
+    'ship': 'Board consensus: Ship it. The product is ready.',
+    'conditional': 'Board consensus: Conditional ship. Address blockers first, then submit.',
+    'no-ship': 'Board consensus: No-ship. Significant issues must be resolved before submission.'
+  };
+  document.getElementById('verdict-display').textContent = msgs[v] || '';
+}
+
+function loadVerdict() {
+  const v = localStorage.getItem(STORAGE_KEY_VERDICT);
+  if (v) {
+    const btn = document.querySelector(`.verdict-btn.${v}`);
+    if (btn) setVerdict(v, btn);
+  }
+}
+
+function copyPrompt(btn) {
+  const text = document.getElementById('review-prompt').innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  }).catch(() => {
+    btn.textContent = 'Select All';
+    setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+  });
+}
+
+buildScorecard();
+loadVerdict();
+</script>
+
+</body>
+</html>
