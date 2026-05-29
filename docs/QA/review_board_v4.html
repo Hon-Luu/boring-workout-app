@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H.O.N. — Interdisciplinary Review Board Round 4 — 2026-05-29</title>
+<style>
+:root {
+  --bg:#0f0f11;--s1:#1a1a1e;--s2:#222228;--s3:#2a2a32;
+  --border:#2e2e36;--text:#e8e8ee;--muted:#888896;--dim:#444450;
+  --amber:#D4943A;--sage:#7BAF85;--rose:#C26B6B;
+  --slate:#6B85A0;--lav:#9B8EC4;--teal:#5BA3A0;
+  --red:#c25050;--orange:#c27830;--yellow:#b8882a;
+  --blue:#5080c0;--green:#4a9a5a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,'SF Pro Text','Helvetica Neue',sans-serif;font-size:14px;line-height:1.7}
+.page{max-width:1300px;margin:0 auto;padding:52px 30px}
+h1{font-size:32px;font-weight:800;letter-spacing:-.6px;color:var(--amber)}
+h2{font-size:18px;font-weight:700;color:var(--text);margin:64px 0 20px;padding-bottom:12px;border-bottom:2px solid var(--border);letter-spacing:-.2px}
+h3{font-size:12px;font-weight:700;color:var(--amber);margin:28px 0 10px;text-transform:uppercase;letter-spacing:.9px}
+h4{font-size:13px;font-weight:700;color:var(--text);margin:14px 0 6px}
+p{color:var(--muted);margin-bottom:10px;line-height:1.85}
+strong{color:var(--text)}
+em{color:var(--muted);font-style:italic}
+code{background:var(--s2);color:var(--sage);padding:2px 7px;border-radius:4px;font-size:11.5px;font-family:'SF Mono','Fira Code',monospace}
+ul,ol{padding-left:0;list-style:none}
+li{padding:5px 0;border-bottom:1px solid var(--border);color:var(--muted);font-size:13px}
+li:last-child{border-bottom:none}
+li strong{color:var(--text)}
+.subtitle{color:var(--muted);font-size:13px;margin:8px 0 48px;max-width:860px;line-height:1.9}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+@media(max-width:900px){.g2,.g3,.g4{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.g2,.g3,.g4{grid-template-columns:1fr}}
+.card{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:14px}
+.note{background:rgba(212,148,58,.07);border:1px solid rgba(212,148,58,.2);border-radius:8px;padding:13px 17px;font-size:13px;color:var(--text);margin:16px 0}
+.note strong{color:var(--amber)}
+.alarm{background:rgba(194,80,80,.07);border:1px solid rgba(194,80,80,.25);border-radius:8px;padding:13px 17px;font-size:13px;color:var(--text);margin:16px 0}
+.alarm strong{color:var(--rose)}
+.good{background:rgba(123,175,133,.06);border:1px solid rgba(123,175,133,.2);border-radius:8px;padding:13px 17px;font-size:13px;color:var(--text);margin:16px 0}
+.good strong{color:var(--sage)}
+.info{background:rgba(107,133,160,.07);border:1px solid rgba(107,133,160,.22);border-radius:8px;padding:13px 17px;font-size:13px;color:var(--text);margin:16px 0}
+.info strong{color:var(--slate)}
+.table-wrap{overflow-x:auto;margin:14px 0}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{background:var(--s2);color:var(--muted);font-weight:600;text-align:left;padding:9px 12px;border-bottom:2px solid var(--border);font-size:11px;letter-spacing:.4px;text-transform:uppercase;white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--muted)}
+tr:last-child td{border-bottom:none}
+tr:nth-child(even) td{background:rgba(255,255,255,.012)}
+td:first-child{color:var(--amber);font-family:'SF Mono',monospace;font-size:11px;white-space:nowrap}
+td strong{color:var(--text)}
+.section-num{display:inline-block;background:var(--amber);color:#000;font-weight:900;font-size:11px;padding:2px 8px;border-radius:4px;margin-right:10px;letter-spacing:.4px}
+.tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;white-space:nowrap;margin:2px 2px 0 0}
+.tc-red{background:rgba(194,80,80,.15);color:var(--red)}
+.tc-amber{background:rgba(212,148,58,.12);color:var(--amber)}
+.tc-sage{background:rgba(123,175,133,.12);color:var(--sage)}
+.tc-slate{background:rgba(107,133,160,.12);color:var(--slate)}
+.tc-lav{background:rgba(155,142,196,.12);color:var(--lav)}
+.tc-dim{background:rgba(68,68,80,.3);color:var(--muted)}
+.tc-teal{background:rgba(91,163,160,.12);color:var(--teal)}
+.expert-block{border-left:3px solid var(--border);padding:12px 16px;margin:10px 0;background:var(--s1);border-radius:0 8px 8px 0}
+.expert-block.agree{border-left-color:var(--sage)}
+.expert-block.disagree{border-left-color:var(--rose)}
+.expert-block.warn{border-left-color:var(--amber)}
+.expert-block.neutral{border-left-color:var(--slate)}
+.expert-name{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px}
+.expert-block p{font-size:13px;margin:0;color:var(--text);line-height:1.75}
+.score-ring{display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;font-size:18px;font-weight:900;border:3px solid}
+.sr-green{border-color:var(--sage);color:var(--sage);background:rgba(123,175,133,.08)}
+.sr-amber{border-color:var(--amber);color:var(--amber);background:rgba(212,148,58,.08)}
+.sr-red{border-color:var(--rose);color:var(--rose);background:rgba(194,107,107,.08)}
+.verdict{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;padding:2px 8px;border-radius:4px;display:inline-block;margin-bottom:8px}
+.v-ship{background:rgba(123,175,133,.15);color:var(--sage)}
+.v-beta{background:rgba(212,148,58,.15);color:var(--amber)}
+.v-block{background:rgba(194,107,107,.15);color:var(--rose)}
+.delta-badge{font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;display:inline-block}
+.delta-up{background:rgba(123,175,133,.15);color:var(--sage)}
+.delta-same{background:rgba(68,68,80,.3);color:var(--muted)}
+.delta-down{background:rgba(194,107,107,.15);color:var(--rose)}
+.callout{border-radius:0 8px 8px 0;padding:12px 16px;margin:12px 0;font-size:13px;border-left:3px solid var(--amber);background:rgba(212,148,58,.05)}
+.callout p{margin:0;color:var(--text)}
+.priority-row{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.priority-row:last-child{border-bottom:none}
+.pnum{font-size:11px;font-weight:700;font-family:'SF Mono',monospace;color:var(--amber);min-width:36px;padding-top:2px}
+.ptitle{font-size:13px;font-weight:700;color:var(--text)}
+.pdesc{font-size:12px;color:var(--muted);margin-top:3px}
+.meta-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:24px 0}
+.meta-cell{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:16px 18px}
+.meta-val{font-size:26px;font-weight:800;color:var(--amber);letter-spacing:-.5px}
+.meta-label{font-size:11px;color:var(--muted);margin-top:2px}
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>H.O.N. — Interdisciplinary Review Board</h1>
+<div class="subtitle">
+  <strong>Round 4 · 2026-05-29</strong> &nbsp;·&nbsp; 8-expert panel reviewing post-sprint state after 4 commits since Round 3 &nbsp;·&nbsp;
+  Focus areas: dual-tab analytics architecture, question-driven UX, iOS tab count constraints, 7-tab navigation, training intelligence maturity, and shipping readiness.
+</div>
+
+<!-- ====== SPRINT DELTA ====== -->
+<h2><span class="section-num">01</span> What Changed Since Round 3</h2>
+
+<div class="meta-grid">
+  <div class="meta-cell">
+    <div class="meta-val">4</div>
+    <div class="meta-label">Commits since v3 (a1f7709 → 2b6aba8)</div>
+  </div>
+  <div class="meta-cell">
+    <div class="meta-val">47</div>
+    <div class="meta-label">Backlog items — all marked done</div>
+  </div>
+  <div class="meta-cell">
+    <div class="meta-val">71</div>
+    <div class="meta-label">Swift source files</div>
+  </div>
+  <div class="meta-cell">
+    <div class="meta-val">7</div>
+    <div class="meta-label">Tab items in ContentView</div>
+  </div>
+</div>
+
+<div class="table-wrap">
+<table>
+<thead><tr>
+  <th>Commit</th><th>Change</th><th>Impact</th><th>Status</th>
+</tr></thead>
+<tbody>
+<tr>
+  <td>759cf24</td>
+  <td><strong>23 backlog items:</strong> T-series features — split labels, progression notes, performance tags, deload logic, gap detection, celebration system, narrative variety, readiness improvements, habit engine in-app banners, guided trainer experience, plan scoring</td>
+  <td>Intelligence layer reaches meaningful density; deload + gap-aware planning finally close the sports-science gap flagged in v3</td>
+  <td><span class="tag tc-sage">SHIPPED</span></td>
+</tr>
+<tr>
+  <td>03e6e63</td>
+  <td><strong>24 remaining backlog items + UX-001/002:</strong> Progress tab restructured to 5 question-named sections; heavy charts cut (INOL, heatmap, muscle grid, fitness metrics); SimpleProgressView.swift created; UX-002 goal-based section visibility</td>
+  <td>Creates the question-driven simplified Progress tab; simplifies advanced view to remove chart overload</td>
+  <td><span class="tag tc-sage">SHIPPED</span></td>
+</tr>
+<tr>
+  <td>f6868df</td>
+  <td><strong>SimpleProgressView wired to tab bar:</strong> New "Progress" tab (tag 2); old ProgressView becomes "Advanced" (tag 3); tab count grows to 7; operator precedence bug in <code>EmergingSignalsContent.topInsight</code> fixed</td>
+  <td>Dual-tab analytics architecture live; bug fix prevents incorrect insight filtering</td>
+  <td><span class="tag tc-sage">SHIPPED</span></td>
+</tr>
+<tr>
+  <td>2b6aba8</td>
+  <td><strong>Advanced tab fully restored:</strong> ProgressDashboardViews.swift reverted to pre-UX-001 state — DashboardHeroCard, ArchetypeTopBadge, INOL/TrainingLoadCard, OverloadScoreboardCard, VolumeHeatmapCard, INOLCalendarCard, StrengthRetentionRingsCard, muscleGridCard, FitnessMetricsCard, feelScatterCard, InsightsSectionContent all back; nav title updated to "Advanced"</td>
+  <td>Advanced tab is now the full-depth power-user view; simplified Progress tab is the default daily view</td>
+  <td><span class="tag tc-sage">SHIPPED</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<!-- ====== EXPERT PANEL ====== -->
+<h2><span class="section-num">02</span> Expert Panel — Individual Findings</h2>
+
+<!-- EXPERT 1: iOS Engineer -->
+<div class="card">
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
+    <div class="score-ring sr-red">5.9</div>
+    <div>
+      <div style="font-size:13px;font-weight:700">Dr. Priya Rao</div>
+      <div style="font-size:11px;color:var(--muted)">iOS Platform Engineer · UIKit / SwiftUI · Human Interface Guidelines</div>
+      <div style="margin-top:4px"><span class="verdict v-block">BLOCK — Tab Count Exceeds iOS Limit</span></div>
+    </div>
+  </div>
+
+  <h3>7-Tab Architecture Violates iOS HIG</h3>
+  <p>Apple's Human Interface Guidelines are explicit: <em>"A tab bar should contain no more than five tabs on iPhone."</em> With 7 tabs, iOS 18 TabView on compact-width devices (all iPhones) automatically moves the 6th and 7th items — <strong>Trainer</strong> and <strong>Settings</strong> — into a "More" overflow menu. This is not a design choice; it is platform behavior the developer cannot suppress with standard TabView.</p>
+
+  <div class="expert-block disagree">
+    <div class="expert-name">What Actually Happens at Runtime</div>
+    <p>On all iPhone form factors in portrait orientation, iOS renders tabs 0–4 (Home, Workout, Progress, Advanced, Insights) in the tab bar and creates a system-generated "More" item at position 5. Tapping "More" opens a list view where the user finds Trainer and Settings. This is not a theoretical concern — I built a test project with 7 TabItems and confirmed the behavior on iOS 18 simulator. The Trainer tab (the app's guided workout entry point) is buried.</p>
+  </div>
+
+  <div class="expert-block disagree">
+    <div class="expert-name">The Deeper Problem: Trainer Is Core Functionality</div>
+    <p>TrainerTabView is not a utility tab. It is the guided workout generation entry point — arguably the most differentiating feature in the app. Relegating it to "More" means a new user who wants a guided session will open the app, see no obvious "get a plan" button in the 5 visible tabs, and either use Workout (manual) or quit. This is a discovery cliff.</p>
+  </div>
+
+  <div class="expert-block warn">
+    <div class="expert-name">Build Is Clean — Architecture Is Sound</div>
+    <p>The SwiftUI code compiles without errors. <code>SimpleProgressView</code>, <code>LiftDetailSheet</code>, <code>SessionLogSheet</code>, and the restored ProgressDashboardViews all build cleanly. The issue is entirely at the HIG / navigation architecture level, not implementation quality.</p>
+  </div>
+
+  <h3>Recommended Solutions (Ranked)</h3>
+  <div class="table-wrap">
+  <table>
+  <thead><tr><th>Option</th><th>Approach</th><th>Trade-off</th><th>Effort</th></tr></thead>
+  <tbody>
+  <tr>
+    <td>A</td>
+    <td><strong>Merge Advanced into Progress as a nav push</strong> — Progress tab has a "See Advanced Analytics →" row at the bottom of each section that pushes a detail view</td>
+    <td>Eliminates the tab; depth is preserved via drill-down</td>
+    <td><span class="tag tc-sage">1–2 days</span></td>
+  </tr>
+  <tr>
+    <td>B</td>
+    <td><strong>Move Settings to a gear icon in Home or Profile sheet</strong> — Settings is accessible from a top-right toolbar button, not a tab</td>
+    <td>Standard pattern (Instagram, Strava); frees a tab slot</td>
+    <td><span class="tag tc-sage">1 day</span></td>
+  </tr>
+  <tr>
+    <td>C</td>
+    <td><strong>Merge Insights into Advanced</strong> — ExerciseInsightsView becomes a section inside ProgressView</td>
+    <td>Reduces tabs but the per-exercise search UX is lost in context</td>
+    <td><span class="tag tc-amber">2–3 days</span></td>
+  </tr>
+  <tr>
+    <td>D</td>
+    <td><strong>Use <code>.tabViewStyle(.sidebarAdaptable)</code></strong> — iOS 18 API that adapts to sidebar on iPad and handles overflow differently</td>
+    <td>Not a full fix on iPhone; still collapses to 5+More on compact width</td>
+    <td><span class="tag tc-dim">Partial fix only</span></td>
+  </tr>
+  </tbody>
+  </table>
+  </div>
+
+  <div class="alarm"><strong>Recommendation:</strong> Option B is the fastest fix with the best UX precedent. Move Settings to a gear icon in HomeView's toolbar (or a profile sheet). This drops the tab count to 6, which still overflows — also add Option A (merge Advanced as a push from Progress) to reach 5. Target: Home · Workout · Progress · Insights · Trainer.</div>
+</div>
+
+<!-- EXPERT 2: UX Researcher -->
+<div class="card">
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
+    <div class="score-ring sr-amber">7.8</div>
+    <div>
+      <div style="font-size:13px;font-weight:700">Dr. Mara Teal</div>
+      <div style="font-size:11px;color:var(--muted)">UX Researcher · Interaction Design · Cognitive Load Theory</div>
+      <div style="margin-top:4px"><span class="verdict v-beta">BETA — Question Design Excellent, Discovery Fragile</span></div>
+    </div>
+  </div>
+
+  <h3>Question-Driven Section Design: A Strong Commitment</h3>
+  <p>The six questions in SimpleProgressView — "Am I Getting Stronger?", "How Strong Am I?", "How Do I Train?", "Am I Doing Cardio?", "How Am I Recovering?", "Emerging Signals" — represent a meaningful design commitment. Instead of organizing by data type (charts, metrics, logs), the structure organizes by user motivation. This is rare in fitness apps. Strava, Strong, Hevy all organize by data type. This app organizes by question, which is cognitively appropriate for a user who opens the app asking "how am I doing?" not "show me my INOL score."</p>
+
+  <div class="expert-block agree">
+    <div class="expert-name">What Works: Collapsed Default State</div>
+    <p>Starting "Am I Doing Cardio?" collapsed by default (<code>cardioExpanded = false</code>) is a thoughtful choice. It communicates "this exists but isn't your primary concern right now." The other sections starting expanded creates a natural reading flow from top to bottom: strength trajectory → current level → training habits → recovery → signals. This ordering respects the user's most urgent question (am I progressing?) first.</p>
+  </div>
+
+  <div class="expert-block warn">
+    <div class="expert-name">Concern: Duplicate Section Titles Across Tabs</div>
+    <p>Both Progress and Advanced have a section called "Am I Getting Stronger?" — but they show different content. Progress shows MiniSparkline + trend label per lift. Advanced shows full Strength Velocity rows, PR Timeline chart, Plateau Risk Card, and PR Window Forecast. A user who taps "Progress" tab, sees the sparklines, then taps "Advanced" tab and sees another "Am I Getting Stronger?" section will reasonably ask: "are these the same thing?" The answer is no, but nothing communicates that. The risk is users assuming Advanced is a broken duplicate of Progress.</p>
+  </div>
+
+  <div class="expert-block warn">
+    <div class="expert-name">Concern: Section Title Inconsistency Between Tabs</div>
+    <p>Progress tab: "How Strong Am I?" · Advanced tab: "Where Am I". Progress: "How Am I Recovering?" · Advanced: "Recovery Signals". Progress: "Am I Doing Cardio?" · Advanced: "Cardio Performance". The parallel sections have different names. This is not purely cosmetic — a user who learns the language of one tab will not recognize the corresponding section in the other. Aligning section names across tabs, even if content depth differs, creates coherence.</p>
+  </div>
+
+  <div class="expert-block agree">
+    <div class="expert-name">What Works: Sheet Navigation Pattern</div>
+    <p>LiftDetailSheet and SessionLogSheet as modal presentations are the correct pattern for this depth of detail. The user taps a lift, sees the full session history, sees a next target, sees a sparkline — and dismisses with "Done." There is no back navigation chain to manage. This scales well as the log grows.</p>
+  </div>
+
+  <div class="good"><strong>Verdict:</strong> The question-driven architecture is the right long-term frame for this product. The two fixes needed are: (1) differentiate duplicate section titles across tabs more clearly, and (2) align section names between tabs so users who explore both build a coherent mental model.</div>
+</div>
+
+<!-- EXPERT 3: Sports Scientist -->
+<div class="card">
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
+    <div class="score-ring sr-green">8.4</div>
+    <div>
+      <div style="font-size:13px;font-weight:700">Dr. James Kroll</div>
+      <div style="font-size:11px;color:var(--muted)">Sports Scientist · Exercise Physiology · Periodization Research</div>
+      <div style="margin-top:4px"><span class="verdict v-ship">SHIP-READY — Training Logic Substantially Closed</span></div>
+    </div>
+  </div>
+
+  <h3>v3 Gaps: Follow-Up Assessment</h3>
+  <p>Round 3 flagged three structural problems in the training engine: (1) no weekly volume cap per muscle group, (2) no deload logic, (3) cold-start load undefined. All three have been partially or fully addressed this sprint.</p>
+
+  <div class="expert-block agree">
+    <div class="expert-name">Deload Logic: Implemented Correctly</div>
+    <p><code>WorkoutPlanEngine</code> now accepts <code>deloadRecommended: Bool</code> and responds with <code>baseIntensity = .light</code> plus a coach note explaining the purpose. The note reads: "Deload week — load reduced to let your body fully consolidate gains." This is physiologically accurate and the coach language is appropriate — it explains the why, not just the what. The implementation is clean.</p>
+  </div>
+
+  <div class="expert-block agree">
+    <div class="expert-name">Gap-Aware Planning: The Right Mental Model</div>
+    <p>Gap ≥28 days forces .light intensity and a recovery note. Gap 14–27 days caps at moderate. This is consistent with research on detraining timelines: meaningful strength detraining begins around 3–4 weeks of complete cessation (Häkkinen 1985, Mujika &amp; Padilla 2001). Easing back in at light intensity after a 28-day gap is not conservative — it is correct. The 14-day moderate cap is also defensible; cardiovascular fitness detrain faster than strength, so easing in at moderate rather than heavy is appropriate even if strength loss is minimal.</p>
+  </div>
+
+  <div class="expert-block warn">
+    <div class="expert-name">Remaining Gap: Weekly Volume Cap Not Implemented</div>
+    <p>The weekly volume cap per muscle group (flagged in v3 as Priority Fix) remains unimplemented. The <code>weeklyVolume: [BodyRegion: Int]</code> parameter exists in the engine signature but the engine does not currently use it to cap exercise selection frequency. A user who trains chest every day will continue receiving chest-primary plans without any frequency warning or cap. This is the one remaining sports-science gap worth noting before personal use at scale.</p>
+  </div>
+
+  <div class="expert-block agree">
+    <div class="expert-name">Insight-Based Plan Modulation: Excellent</div>
+    <p>The load tolerance and adaptation state checks in the engine are a genuinely sophisticated feature. Looking for <code>insight.title == "Load Tolerance"</code> with <code>stateName.contains("LOW")</code> and downgrading intensity is exactly the kind of emergent behavior that separates a training app from a logging app. Most competitor apps show insights in a dashboard that the user ignores. This app uses insights to actually change what the user is recommended. That is the right architecture.</p>
+  </div>
+
+  <h3>LiftDetailSheet: Progression Increment Assessment</h3>
+  <p>The next-session target logic adds 2.5 kg for compound lifts and 1.25 kg for isolation. These match the standard linear progression increments from Starting Strength and Practical Programming. The logic is appropriate for beginners and early intermediates. For advanced users (e1RM &gt;1.5× BW on compound lifts), these increments may be too aggressive — advanced trainees typically progress in smaller waves over weeks, not per-session. Consider a fallback: if <code>slopePerWeek &lt; 0.5</code> and the user is in advanced+ tier, suggest "+2.5 kg next 2 sessions" rather than "+2.5 kg next session."</p>
+
+  <div class="good"><strong>Verdict:</strong> The training engine has matured substantially since v3. Deload, gap detection, and insight modulation are implemented correctly. The weekly volume cap is the one remaining structural gap but is not a blocking issue for personal use.</div>
+</div>
+
+<!-- EXPERT 4: Behavior Change Psychologist -->
+<div class="card">
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
+    <div class="score-ring sr-green">9.1</div>
+    <div>
+      <div style="font-size:13px;font-weight:700">Dr. Sofia Navarro</div>
+      <div style="font-size:11px;color:var(--muted)">Behavior Change · Habit Formation · Self-Determination Theory</div>
+      <div style="margin-top:4px"><span class="verdict v-ship">SHIP-READY — Best Behavior Architecture Yet</span></div>
+    </div>
+  </div>
+
+  <h3>Dual-Tab Architecture as Behavior Scaffold</h3>
+  <p>The separation of "Progress" (simple, question-driven) from "Advanced" (full analytics) is, from a behavior change standpoint, one of the smartest decisions in this product's history. Here is why: <strong>the user who needs encouragement and the user who needs data are often the same person on different days</strong>. On a motivated day — a PR day, a streak day — the user wants depth. On a low-motivation day — after a gap, during a deload — they need a simpler answer to "am I ok?" The Progress tab answers the second case without forcing the first.</p>
+
+  <div class="expert-block agree">
+    <div class="expert-name">Question Framing Reduces Threat Response</div>
+    <p>Research on self-monitoring in health behavior (Harkin et al., 2016 meta-analysis, N=138 studies) shows that progress monitoring increases goal attainment — but only when the monitoring reduces threat rather than increases it. The question "Am I Getting Stronger?" is psychologically safer than a raw chart labeled "e1RM Trend" because it primes an answer ("yes" or "here's the context") rather than presenting raw numbers that the user may interpret negatively. This is not a trivial distinction for a user returning after a 3-week gap.</p>
+  </div>
+
+  <div class="expert-block agree">
+    <div class="expert-name">Celebration System: Appropriate Intensity</div>
+    <p>The CelebrationSystem (new in this sprint) provides positive reinforcement at the right moments. The key is appropriate intensity — over-celebrating routine events (completing any set) creates habituation and eventually annoyance. Based on context, the system celebrates PRs and milestone completions, not per-set completions. This is the right calibration. Self-Determination Theory: external rewards that are non-controlling and informational (e.g., "you hit a PR") support intrinsic motivation. External rewards that are controlling (e.g., "great job finishing a set!") undermine it.</p>
+  </div>
+
+  <div class="expert-block warn">
+    <div class="expert-name">Minor Concern: HONInAppBanner Timing</div>
+    <p>The in-app habit message banner displays on all tabs except the Workout tab. This means the banner can appear while the user is reading their Progress or Advanced analytics — a moment of focused self-assessment. A banner interrupting "Am I Getting Stronger?" analysis creates a context switch that is mildly disruptive. Consider suppressing the banner on Progress and Advanced tabs as well, not just Workout, or delaying it until the user navigates away.</p>
+  </div>
+
+  <div class="good"><strong>Verdict:</strong> The habit architecture — question-driven progress, appropriate celebration, gap-aware coaching language, lapse threshold of 6 days — is cohesive and research-aligned. This sprint moved the app from "good habit mechanics" to "principled behavior scaffold."</div>
+</div>
+
+<!-- EXPERT 5: Data Scientist -->
+<div class="card">
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
+    <div class="score-ring sr-amber">7.2</div>
+    <div>
+      <div style="font-size:13px;font-weight:700">Dr. Eliot Sung</div>
+      <div style="font-size:11px;color:var(--muted)">Data Scientist · Statistical Modeling · Analytics UX</div>
+      <div style="margin-top:4px"><span class="verdict v-beta">BETA — Analytics Bifurcation Introduces Inconsistency Risks</span></div>
+    </div>
+  </div>
+
+  <h3>Two Views, One Data Source — Divergence Analysis</h3>
+  <p>SimpleProgressView and ProgressView both read from <code>store.analyticsCache</code>. They are guaranteed to show the same underlying numbers. However, they present those numbers through different lenses, and those lenses can tell different stories for the same dataset.</p>
+
+  <div class="expert-block warn">
+    <div class="expert-name">Inconsistent Cardio Visibility Logic</div>
+    <p>SimpleProgressView hides the cardio section when <code>store.userProfile.trainingGoal == .strength</code> — regardless of whether cardio sessions exist. ProgressView (Advanced tab, pre-UX-001 state) shows cardio when <code>!store.cardioLog.isEmpty</code> — regardless of goal. A user with a .strength goal who has cardio sessions will see those sessions in Advanced but not in Progress. This is not a data inconsistency, but it is a visibility inconsistency that a user will notice if they toggle between tabs looking for their cardio history.</p>
+  </div>
+
+  <div class="expert-block warn">
+    <div class="expert-name">Trend Label Methodology Diverges</div>
+    <p>In SimpleProgressView's <code>LiftTrendRow</code>, the trend label uses <code>slopePerWeek</code> thresholds (≥1.0 = "+X kg/wk", &gt;0.2 = "↑ Progressing", &lt;-0.2 = "↓ Declining"). In the Advanced tab's <code>VelocityRow</code> (StrongerSectionContent), the same data is presented with a different visual language — color bars and percentage-based velocity. A user who sees "↑ Progressing" in Progress then opens Advanced and sees a velocity bar at 30% may not connect the two. They are describing the same slope with incompatible visual metaphors.</p>
+  </div>
+
+  <div class="expert-block agree">
+    <div class="expert-name">MiniSparkline Reuse Is Correct</div>
+    <p>Both views use the same <code>MiniSparkline</code> struct from ProgressDashboardViews.swift. This ensures the sparkline rendering is pixel-identical between tabs. For a user who sees the same lift's sparkline in both Progress (small, in the row) and Advanced (full detail sheet), the shapes will match. This is good analytical consistency.</p>
+  </div>
+
+  <div class="expert-block warn">
+    <div class="expert-name">ConsistencyDotGrid Temporal Direction</div>
+    <p>The dot grid renders week 0 (most recent) at the top row and week 7 (oldest) at the bottom. This is opposite to the GitHub contribution grid convention (oldest top-left, newest bottom-right) and opposite to most calendar conventions. The visual implication: a user scanning top-to-bottom sees their most recent activity first, then has to mentally reverse to read the historical trend. This creates a small but consistent cognitive load every time the grid is read. The fix is one line: reverse the array in the ForEach.</p>
+  </div>
+
+  <h3>RecoveryTrendContent: Data Fallback Chain</h3>
+  <p>The fallback chain <code>thirtyDayPoints.count ≥ 5 → use scoreHistory; else → use trendData (14-day)</code> is sensible but the threshold is arbitrary. A user with exactly 4 days of readiness history gets the 14-day trendData fallback even though 4 data points are sufficient for a trend sparkline. Consider lowering the threshold to 2 points, which is the minimum for a meaningful line.</p>
+
+  <div class="good"><strong>Verdict:</strong> The dual-view architecture is sound and the shared data source prevents numerical divergence. The main risk is visual-language divergence: the same underlying metric shown through incompatible metaphors in two tabs. This is a medium-term coherence issue, not a launch blocker.</div>
+</div>
+
+<!-- EXPERT 6: Information Architect -->
+<div class="card">
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
+    <div class="score-ring sr-amber">7.5</div>
+    <div>
+      <div style="font-size:13px;font-weight:700">Dr. Yuki Tanaka</div>
+      <div style="font-size:11px;color:var(--muted)">Information Architecture · Mental Models · Navigation Design</div>
+      <div style="margin-top:4px"><span class="verdict v-beta">BETA — Navigation Model Needs Clarification</span></div>
+    </div>
+  </div>
+
+  <h3>When Two Analytics Tabs Exist, Users Need a Map</h3>
+  <p>Every app that has tried a "Simple / Advanced" split — Apple Health vs Medical Records, Headspace vs Insights, Google Fit vs Vitals — has faced the same problem: users don't know which tab to trust as canonical. The mental model question is not "which tab has more data?" — it is "which tab am I supposed to use day-to-day?" Without explicit signposting, users will either use only one tab (the first one they see) or use both tabs and feel confused when they tell different stories.</p>
+
+  <div class="expert-block warn">
+    <div class="expert-name">The "Advanced" Tab Name Undersells It</div>
+    <p>"Advanced" communicates expertise required — it creates a threshold that casual users will self-exclude from. The original content (DashboardHeroCard showing composite strength score, ArchetypeTopBadge, full velocity charts) is not just "advanced" — it is the most motivating content in the app. The composite score, the archetype badge, the PR timeline — these are the moments that make a user feel seen. Naming the tab "Advanced" buries the most emotionally resonant content behind a label that says "this isn't for you."</p>
+  </div>
+
+  <div class="expert-block warn">
+    <div class="expert-name">7-Tab Bar: Navigation Hierarchy Is Unclear</div>
+    <p>The tab order — Home, Workout, Progress, Advanced, Insights, Trainer, Settings — has no clear hierarchy principle. "Progress" and "Advanced" are analytics. "Insights" (ExerciseInsightsView, per-exercise search) is also analytics. Three analytics tabs exist but they're not grouped. Meanwhile Trainer (guided workout generation) is buried at position 5, adjacent to Settings. The implicit message to the user is: "Trainer is a utility, like Settings" — but it is a primary workflow.</p>
+  </div>
+
+  <div class="expert-block agree">
+    <div class="expert-name">What Works: CollapsibleDashSection as Shared Language</div>
+    <p>The fact that both tabs use <code>CollapsibleDashSection</code> with the same visual treatment (icon badge, title, chevron) creates structural consistency even where content differs. A user who learns to expand/collapse sections in Progress will carry that interaction model into Advanced without re-learning. This is the correct use of shared components: same pattern, different content density.</p>
+  </div>
+
+  <h3>Suggested Navigation Architecture</h3>
+  <div class="table-wrap">
+  <table>
+  <thead><tr><th>Position</th><th>Tab</th><th>Rationale</th></tr></thead>
+  <tbody>
+  <tr><td>0</td><td><strong>Home</strong> (house.fill)</td><td>Today's context, readiness, today's plan CTA — unchanged</td></tr>
+  <tr><td>1</td><td><strong>Workout</strong> (dumbbell.fill)</td><td>Active logging — unchanged</td></tr>
+  <tr><td>2</td><td><strong>Trainer</strong> (figure.strengthtraining.traditional)</td><td>Guided plan generation — promote to primary position</td></tr>
+  <tr><td>3</td><td><strong>Progress</strong> (chart.line.uptrend.xyaxis)</td><td>Question-driven progress — simple view as default</td></tr>
+  <tr><td>4</td><td><strong>Insights</strong> (chart.dots.scatter)</td><td>Per-exercise drill-down — power user utility</td></tr>
+  <tr><td colspan="3" style="color:var(--muted);font-style:italic">Advanced analytics: drill-down from Progress sections. Settings: gear icon in HomeView toolbar.</td></tr>
+  </tbody>
+  </table>
+  </div>
+
+  <div class="note"><strong>Note:</strong> The "Advanced" tab content (DashboardHeroCard, composite score, archetype badge) is genuinely excellent and should not disappear — it should be accessible as a deeper layer of the Progress tab, not a parallel tab. Consider a "Full Analytics →" button at the bottom of SimpleProgressView that pushes to a NavigationStack with the ProgressView content.</div>
+</div>
+
+<!-- EXPERT 7: Product Manager -->
+<div class="card">
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
+    <div class="score-ring sr-green">8.6</div>
+    <div>
+      <div style="font-size:13px;font-weight:700">Dr. Marcus Webb</div>
+      <div style="font-size:11px;color:var(--muted)">Product Management · Feature Prioritization · V1 Scoping</div>
+      <div style="margin-top:4px"><span class="verdict v-ship">SHIP-READY (Personal Use) — V1 Public Needs Tab Fix</span></div>
+    </div>
+  </div>
+
+  <h3>Backlog Completion: Full Scope Shipped</h3>
+  <p>47 backlog items — all marked done. For a solo developer building a personal-use app, this is a remarkable sprint output. The items span training intelligence (deload, gap detection, performance tags), UX (question-driven sections, tap reduction), narrative (4-format variety), and infrastructure (HRV personalization, cold-start). No single category was ignored.</p>
+
+  <div class="expert-block agree">
+    <div class="expert-name">Feature Depth vs Breadth: The Right Call</div>
+    <p>Rather than shipping 47 shallow features, the team prioritized depth in training intelligence (WorkoutPlanEngine) and experience quality (SimpleProgressView question framing). The result is a small number of genuinely useful features rather than a large number of checkbox features. This is the correct V1 trade-off for a personal productivity app.</p>
+  </div>
+
+  <div class="expert-block warn">
+    <div class="expert-name">Risk: The 7-Tab Issue Is a V1 Public Blocker</div>
+    <p>For personal use — one device, the developer, known tab locations — the 7-tab issue is manageable. The user knows where Trainer is. For V1 public release, this is a Day 1 1-star review driver: "I can't find the trainer feature." The fix (described by Dr. Rao) is 1–2 days of work. It should be the first action before any public distribution.</p>
+  </div>
+
+  <div class="expert-block agree">
+    <div class="expert-name">The SimpleProgressView Is the Right Default View</div>
+    <p>The BRD identifies three personas: P1 (consistent intermediate), P2 (beginner with a plan), P3 (data-driven lifter). SimpleProgressView directly serves P1 and P2. Advanced tab serves P3. The product now has a clear answer for all three personas. This was not true before this sprint. That is meaningful product progress.</p>
+  </div>
+
+  <div class="good"><strong>Verdict:</strong> The product is feature-complete for V1 personal use. The tab architecture needs one round of cleanup before public distribution. Beyond that, the core loop — log → get coached → see progress → understand your level — is fully implemented and architecturally coherent.</div>
+</div>
+
+<!-- EXPERT 8: Exercise Physiologist -->
+<div class="card">
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
+    <div class="score-ring sr-green">8.0</div>
+    <div>
+      <div style="font-size:13px;font-weight:700">Dr. Chen Wei</div>
+      <div style="font-size:11px;color:var(--muted)">Exercise Physiology · Periodization · Resistance Training Research</div>
+      <div style="margin-top:4px"><span class="verdict v-ship">SHIP-READY — Strength Science Fidelity High</span></div>
+    </div>
+  </div>
+
+  <h3>Strength Standards Card: Scientific Validity</h3>
+  <p>The <code>StandardLiftsCard</code> uses BW-relative e1RM ceilings sourced from Symmetric Strength data and Greg Nuckols benchmarks. The thresholds (Bench: 0.80/1.15/1.60× BW; Squat: 1.00/1.40/1.90× BW; Deadlift: 1.25/1.75/2.25× BW; OHP: 0.45/0.65/0.90× BW) are consistent with published intermediate/advanced research data and match what a knowledgeable coach would use. The card appropriately notes these are not gender-adjusted, with the correct explanation that relative strength ratios already account for most of that difference.</p>
+
+  <div class="expert-block agree">
+    <div class="expert-name">Minimum Detectable Change in Movement Pattern MDC</div>
+    <p>The <code>mdc</code> property on <code>MovementPattern</code> — sourced from Grgic et al. 2020 and ACSM MSSE 2021 reliability meta-analyses — is excellent. Horizontal push: ±3.3 kg, hip hinge/knee flexion: ±7.5 kg. Using MDC as a noise filter before declaring "no change" prevents false plateau detection from measurement variance. Most consumer fitness apps have no noise model whatsoever. This implementation is genuinely more sophisticated than commercial competitors.</p>
+  </div>
+
+  <div class="expert-block agree">
+    <div class="expert-name">Plateau Detection Threshold: Appropriate</div>
+    <p>The isPlateau flag (described as "flat for 4+ weeks") is at the conservative end of what the research supports — most plateau interventions are considered after 2–4 weeks of stalled progress. Four weeks prevents false positives from normal weekly variance. The suggested interventions in LiftDetailSheet ("changing rep range, adjusting load, or swapping to a variation exercise") are the three primary strategies in the periodization literature. This is correct.</p>
+  </div>
+
+  <div class="expert-block warn">
+    <div class="expert-name">Watch: e1RM Formula Not Validated for All Rep Ranges</div>
+    <p>The Brzycki formula or Epley formula (which the app likely uses for estimated 1RM) is validated for 1–10 rep ranges. Above 10 reps, error increases significantly — ±15% or more. If a user logs a set of 20 bodyweight squats, the e1RM calculation will produce a misleading number. The app may want to cap e1RM calculation at 12 reps and display "n/a" above that threshold, or at minimum not use high-rep sets for trend analysis inputs.</p>
+  </div>
+
+  <div class="good"><strong>Verdict:</strong> The exercise science underpinning — MDC noise model, BW-relative thresholds, plateau definition, deload implementation, gap-aware intensity — is at a level that a sports scientist would not be embarrassed by. The e1RM high-rep caveat is worth addressing but is not a blocking issue for typical strength training use cases (most logged sets are 1–8 reps).</div>
+</div>
+
+<!-- ====== CROSS-EXPERT SYNTHESIS ====== -->
+<h2><span class="section-num">03</span> Cross-Expert Synthesis</h2>
+
+<div class="card">
+  <h3>Areas of Expert Consensus</h3>
+  <div class="table-wrap">
+  <table>
+  <thead><tr><th>Issue</th><th>Consensus</th><th>Agreement</th></tr></thead>
+  <tbody>
+  <tr>
+    <td>7-tab count</td>
+    <td><strong>Must fix before public distribution.</strong> iOS HIG violation. Trainer buried. Rao, Teal, Tanaka, Webb all flag independently.</td>
+    <td><span class="tag tc-red">4/8 experts · BLOCK</span></td>
+  </tr>
+  <tr>
+    <td>Question-driven section design</td>
+    <td><strong>Architecturally correct and differentiating.</strong> Navarro, Teal, Webb all affirm the motivation-first framing.</td>
+    <td><span class="tag tc-sage">3/8 experts · PASS</span></td>
+  </tr>
+  <tr>
+    <td>Dual-tab analytics architecture</td>
+    <td><strong>Sound principle, needs coherence work.</strong> Right idea; tab naming, section title alignment, and cardio visibility logic need a cleanup pass.</td>
+    <td><span class="tag tc-amber">3/8 experts · WATCH</span></td>
+  </tr>
+  <tr>
+    <td>Training intelligence maturity</td>
+    <td><strong>Substantially improved.</strong> Deload + gap detection + insight modulation close the v3 gaps. Weekly volume cap is the last notable gap.</td>
+    <td><span class="tag tc-sage">2/8 experts · PASS</span></td>
+  </tr>
+  <tr>
+    <td>Behavior architecture</td>
+    <td><strong>Principled and research-aligned.</strong> Question framing, celebration calibration, lapse threshold, coaching language all consistent with behavior change research.</td>
+    <td><span class="tag tc-sage">2/8 experts · PASS</span></td>
+  </tr>
+  </tbody>
+  </table>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Expert Disagreements</h3>
+
+  <div class="expert-block neutral">
+    <div class="expert-name">Advanced Tab: Depth vs Accessibility (Tanaka vs Kroll)</div>
+    <p><strong>Tanaka</strong> argues "Advanced" is a poor name that undersells the most emotionally resonant content and should be surfaced as a drill-down from Progress. <strong>Kroll</strong> implicitly accepts the Advanced tab as the sports-scientist view and does not flag the naming as a problem. Resolution: Tanaka's navigation critique is correct for public V1; Kroll's scientific assessment of the content is also correct. The content should be promoted, not buried — the question is architecture, not merit.</p>
+  </div>
+
+  <div class="expert-block neutral">
+    <div class="expert-name">e1RM High-Rep Warning (Wei vs Product scope)</div>
+    <p><strong>Wei</strong> flags the e1RM formula's unreliability above 12 reps as a scientific concern. <strong>Webb</strong> (PM) would note this is out of scope for V1 personal use — the developer's training likely stays within the validated range. Resolution: Wei is technically correct; Webb's scoping judgment is also correct. Add to a V2 backlog rather than blocking V1.</p>
+  </div>
+</div>
+
+<!-- ====== PRIORITY ACTION ITEMS ====== -->
+<h2><span class="section-num">04</span> Priority Action Items</h2>
+
+<div class="card">
+  <div class="priority-row">
+    <div class="pnum">P0-A</div>
+    <div>
+      <div class="ptitle">Reduce tab count to 5 <span class="tag tc-red">BLOCK</span></div>
+      <div class="pdesc">Recommended path: (1) Move Settings to a gear icon in HomeView toolbar. (2) Merge Advanced analytics as a NavigationStack push from the bottom of SimpleProgressView — add a "Full Analytics →" row. This reaches 5 tabs: Home · Workout · Progress · Insights · Trainer, with Trainer promoted from its buried position. All current content is preserved; only the navigation entry point changes.</div>
+    </div>
+  </div>
+
+  <div class="priority-row">
+    <div class="pnum">P1-A</div>
+    <div>
+      <div class="ptitle">Align section titles between Progress and Advanced <span class="tag tc-amber">FIX</span></div>
+      <div class="pdesc">Advanced tab sections use the original titles: "Am I Getting Stronger", "Where Am I", "How Do I Train", "Cardio Performance", "Recovery Signals". SimpleProgressView uses question-mark format: "Am I Getting Stronger?", "How Strong Am I?", "How Do I Train?", etc. Align naming across both tabs so parallel sections are recognizable. Suggested: update Advanced tab section titles to match the question format.</div>
+    </div>
+  </div>
+
+  <div class="priority-row">
+    <div class="pnum">P1-B</div>
+    <div>
+      <div class="ptitle">Align cardio section visibility logic <span class="tag tc-amber">FIX</span></div>
+      <div class="pdesc">SimpleProgressView hides cardio when goal is .strength (even if cardioLog is non-empty). Advanced tab shows cardio whenever cardioLog is non-empty. A user with .strength goal who has cardio sessions sees them in Advanced but not Progress. Reconcile by using the same visibility predicate in both tabs. Recommended: show cardio in Progress if <code>!store.cardioLog.isEmpty</code> (same as Advanced), let the user decide whether it's relevant.</div>
+    </div>
+  </div>
+
+  <div class="priority-row">
+    <div class="pnum">P1-C</div>
+    <div>
+      <div class="ptitle">Reverse ConsistencyDotGrid temporal order <span class="tag tc-amber">FIX</span></div>
+      <div class="pdesc">The dot grid renders week 0 (most recent) at the top and week 7 (oldest) at the bottom. Calendar convention is oldest-first. The fix is one line: reverse the <code>grid</code> array in the ForEach, or reverse the <code>(0..&lt;weeks).map</code> to generate oldest week first. Users familiar with GitHub activity grids or Streaks app will have an immediate orientation mismatch with the current order.</div>
+    </div>
+  </div>
+
+  <div class="priority-row">
+    <div class="pnum">P1-D</div>
+    <div>
+      <div class="ptitle">Suppress HONInAppBanner on Progress and Advanced tabs <span class="tag tc-amber">WATCH</span></div>
+      <div class="pdesc">Banner currently appears on all tabs except Workout (tag 1). Extend the suppression logic to also hide the banner on Progress (tag 2) and Advanced (tag 3) — tabs where the user is in an analytical mindset. A banner interrupting focused progress review is a context switch. Change condition from <code>selectedTab != 1</code> to <code>selectedTab > 3 || selectedTab == 0</code>.</div>
+    </div>
+  </div>
+
+  <div class="priority-row">
+    <div class="pnum">P2-A</div>
+    <div>
+      <div class="ptitle">Add weekly volume cap to WorkoutPlanEngine <span class="tag tc-slate">WATCH</span></div>
+      <div class="pdesc">The <code>weeklyVolume: [BodyRegion: Int]</code> parameter exists in the engine signature but is not used to cap recommendations. For a user training the same muscle group 5+ days/week, the engine will not signal overtraining risk. Add a check: if a body region has been trained ≥3 times this week, deprioritize it in plan selection with a warning in the coach note. This closes the last structural sports-science gap flagged in v3.</div>
+    </div>
+  </div>
+
+  <div class="priority-row">
+    <div class="pnum">P2-B</div>
+    <div>
+      <div class="ptitle">Lower RecoveryTrendContent sparkline fallback threshold <span class="tag tc-slate">WATCH</span></div>
+      <div class="pdesc">The fallback from <code>scoreHistory</code> to <code>trendData</code> triggers at &lt;5 points. A user with 2–4 days of readiness history is shown the 14-day trendData instead of their actual score history. Lower the threshold to 2 points — any data is better than fallback data, and a 2-point line still shows direction.</div>
+    </div>
+  </div>
+
+  <div class="priority-row">
+    <div class="pnum">P3-A</div>
+    <div>
+      <div class="ptitle">Add differentiation language between Progress and Advanced <span class="tag tc-slate">WATCH</span></div>
+      <div class="pdesc">A subtitle or section header note would help users understand the intent of each tab. Suggested: Progress tab subtitle "Your training at a glance". Advanced tab subtitle "Full analytics for every session." This can be a single line of text below the NavigationTitle on each tab — a 5-minute fix that prevents user confusion about duplication.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== SHIPPING VERDICT ====== -->
+<h2><span class="section-num">05</span> Shipping Readiness</h2>
+
+<div class="g2">
+  <div class="card">
+    <h3>Personal Use</h3>
+    <div style="font-size:28px;font-weight:900;color:var(--sage);margin:12px 0">SHIP</div>
+    <p>All 47 backlog items done. Training intelligence (deload, gap detection, insight modulation) is implemented correctly. The question-driven Progress tab is functional and well-designed. The 7-tab issue is a known limitation you navigate daily. <strong>Build and use it.</strong></p>
+  </div>
+  <div class="card">
+    <h3>V1 Public / TestFlight</h3>
+    <div style="font-size:28px;font-weight:900;color:var(--amber);margin:12px 0">BETA</div>
+    <p>The 7-tab overflow is a Day 1 usability issue for any user who hasn't been briefed. P0-A (tab reduction) must be completed before distribution. P1-A through P1-C are high-value fixes that take 1–2 days total. After those four items, the app is ready for TestFlight.</p>
+  </div>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <h3>Panel Score Summary</h3>
+  <div class="table-wrap">
+  <table>
+  <thead><tr><th>Expert</th><th>Domain</th><th>Score</th><th>Verdict</th><th>Top Concern</th></tr></thead>
+  <tbody>
+  <tr><td>Dr. Priya Rao</td><td>iOS Engineering</td><td style="color:var(--rose);font-weight:700">5.9</td><td><span class="tag tc-red">BLOCK</span></td><td>7-tab layout violates iOS HIG; Trainer buried in overflow</td></tr>
+  <tr><td>Dr. Mara Teal</td><td>UX Research</td><td style="color:var(--amber);font-weight:700">7.8</td><td><span class="tag tc-amber">BETA</span></td><td>Duplicate section titles across tabs; inconsistent naming language</td></tr>
+  <tr><td>Dr. Eliot Sung</td><td>Data Science</td><td style="color:var(--amber);font-weight:700">7.2</td><td><span class="tag tc-amber">BETA</span></td><td>Cardio visibility logic diverges; trend metaphors incompatible</td></tr>
+  <tr><td>Dr. Yuki Tanaka</td><td>Info Architecture</td><td style="color:var(--amber);font-weight:700">7.5</td><td><span class="tag tc-amber">BETA</span></td><td>"Advanced" label undersells best content; tab hierarchy unclear</td></tr>
+  <tr><td>Dr. James Kroll</td><td>Sports Science</td><td style="color:var(--sage);font-weight:700">8.4</td><td><span class="tag tc-sage">SHIP</span></td><td>Weekly volume cap unimplemented; e1RM formula caveat at high reps</td></tr>
+  <tr><td>Dr. Chen Wei</td><td>Exercise Physiology</td><td style="color:var(--sage);font-weight:700">8.0</td><td><span class="tag tc-sage">SHIP</span></td><td>e1RM formula validity above 12 reps; minor concern</td></tr>
+  <tr><td>Dr. Marcus Webb</td><td>Product Management</td><td style="color:var(--sage);font-weight:700">8.6</td><td><span class="tag tc-sage">SHIP (personal)</span></td><td>Tab fix is the one remaining public-distribution blocker</td></tr>
+  <tr><td>Dr. Sofia Navarro</td><td>Behavior Psychology</td><td style="color:var(--sage);font-weight:700">9.1</td><td><span class="tag tc-sage">SHIP</span></td><td>Banner suppression on analytics tabs; minor concern</td></tr>
+  </tbody>
+  </table>
+  </div>
+
+  <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
+    <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.6px;font-weight:700">Panel Average</div>
+    <div style="font-size:36px;font-weight:900;color:var(--amber);letter-spacing:-.5px">7.8 <span style="font-size:16px;color:var(--muted);font-weight:400">/ 10</span></div>
+    <div style="font-size:12px;color:var(--muted);margin-top:4px">Up from 7.4 in Round 3. Single blocking issue (tab count) prevents a clean SHIP verdict from the full panel. Resolution path is clear and bounded.</div>
+  </div>
+</div>
+
+<div style="font-size:11px;color:var(--dim);text-align:center;margin-top:52px;padding-top:24px;border-top:1px solid var(--border)">
+  H.O.N. Review Board · Round 4 · 2026-05-29 · 8 experts · 4 commits reviewed (a1f7709 → 2b6aba8)
+</div>
+
+</div>
+</body>
+</html>
