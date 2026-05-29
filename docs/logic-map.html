@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H.O.N. — Logic Map</title>
+<style>
+:root {
+  --bg:      #111111;
+  --card:    #1c1c1e;
+  --border:  rgba(255,255,255,0.07);
+  --amber:   #f59e0b;
+  --text:    rgba(255,255,255,0.88);
+  --text2:   rgba(255,255,255,0.55);
+  --positive:#34d399;
+  --negative:#f87171;
+
+  --clr-NE: #f59e0b;
+  --clr-WP: #60a5fa;
+  --clr-RE: #34d399;
+  --clr-CS: #a78bfa;
+  --clr-HH: #fb923c;
+  --clr-ML: #f472b6;
+  --clr-SA: #22d3ee;
+  --clr-EI: #a3e635;
+  --clr-WF: #fb7185;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;font-size:13px;line-height:1.5;padding:28px 16px 80px}
+.wrap{max-width:1400px;margin:0 auto}
+
+.header{margin-bottom:28px}
+.logo{font-size:10px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--amber);margin-bottom:6px}
+h1{font-size:22px;font-weight:300;letter-spacing:.04em;color:var(--text);margin-bottom:4px}
+.subtitle{font-size:12px;color:var(--text2)}
+
+.stats-bar{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:24px;padding:14px 18px;background:var(--card);border:1px solid var(--border);border-radius:12px}
+.stat{font-size:11px;color:var(--text2)}.stat span{color:var(--text);font-weight:600;margin-left:4px}
+
+.controls{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;align-items:center}
+.search-box{flex:1;min-width:200px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-size:13px;outline:none}
+.search-box::placeholder{color:var(--text2)}
+.search-box:focus{border-color:rgba(255,255,255,0.2)}
+
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.fb{padding:4px 10px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:11px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.fb:hover{border-color:rgba(255,255,255,0.25);color:var(--text)}
+.fb.active{color:#111;border-color:transparent}
+.fb[data-f="all"].active{background:var(--text2);color:#111}
+.fb[data-f="NE"].active{background:var(--clr-NE)}
+.fb[data-f="WP"].active{background:var(--clr-WP)}
+.fb[data-f="RE"].active{background:var(--clr-RE)}
+.fb[data-f="CS"].active{background:var(--clr-CS)}
+.fb[data-f="HH"].active{background:var(--clr-HH)}
+.fb[data-f="ML"].active{background:var(--clr-ML)}
+.fb[data-f="SA"].active{background:var(--clr-SA)}
+.fb[data-f="EI"].active{background:var(--clr-EI)}
+.fb[data-f="WF"].active{background:var(--clr-WF)}
+
+.table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;min-width:900px}
+thead tr{background:#222;position:sticky;top:0;z-index:10}
+thead th{padding:10px 12px;text-align:left;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);border-bottom:1px solid var(--border);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:hover{background:rgba(255,255,255,0.03)}
+tbody tr.hidden{display:none}
+td{padding:9px 12px;vertical-align:top;font-size:12px}
+
+.rule-id{font-family:'SF Mono',Menlo,monospace;font-size:10px;color:var(--text2);white-space:nowrap}
+.engine-badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600;white-space:nowrap;color:#111}
+.badge-NE{background:var(--clr-NE)}
+.badge-WP{background:var(--clr-WP)}
+.badge-RE{background:var(--clr-RE)}
+.badge-CS{background:var(--clr-CS);color:#fff}
+.badge-HH{background:var(--clr-HH)}
+.badge-ML{background:var(--clr-ML)}
+.badge-SA{background:var(--clr-SA)}
+.badge-EI{background:var(--clr-EI)}
+.badge-WF{background:var(--clr-WF)}
+
+.cat-tag{display:inline-block;padding:1px 6px;border-radius:6px;font-size:10px;background:rgba(255,255,255,0.07);color:var(--text2);white-space:nowrap}
+.cond{color:var(--text);font-size:12px}
+.result{color:var(--positive);font-size:12px}
+.els{color:var(--text2);font-size:11px}
+.thresh{font-family:'SF Mono',Menlo,monospace;font-size:10px;color:var(--amber)}
+.fileref{font-family:'SF Mono',Menlo,monospace;font-size:10px;color:var(--text2);white-space:nowrap}
+
+.no-results{text-align:center;padding:48px;color:var(--text2);font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="header">
+  <div class="logo">H.O.N.</div>
+  <h1>Logic Map</h1>
+  <div class="subtitle">Every if-then rule, decision branch, and threshold across all coaching, readiness, trainer, and analytics engines.</div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat">Total rules <span id="s-total">—</span></div>
+  <div class="stat">Showing <span id="s-visible">—</span></div>
+  <div class="stat">Narrative Engine <span id="s-NE" style="color:var(--clr-NE)">—</span></div>
+  <div class="stat">Plan Engine <span id="s-WP" style="color:var(--clr-WP)">—</span></div>
+  <div class="stat">Readiness <span id="s-RE" style="color:var(--clr-RE)">—</span></div>
+  <div class="stat">Celebration <span id="s-CS" style="color:var(--clr-CS)">—</span></div>
+  <div class="stat">Habit <span id="s-HH" style="color:var(--clr-HH)">—</span></div>
+  <div class="stat">Msg Library <span id="s-ML" style="color:var(--clr-ML)">—</span></div>
+  <div class="stat">Strength Analytics <span id="s-SA" style="color:var(--clr-SA)">—</span></div>
+  <div class="stat">Emergent Insights <span id="s-EI" style="color:var(--clr-EI)">—</span></div>
+  <div class="stat">Feedback Engine <span id="s-WF" style="color:var(--clr-WF)">—</span></div>
+</div>
+
+<div class="controls">
+  <input class="search-box" id="search" placeholder="Search conditions, results, thresholds…" oninput="applyFilters()">
+  <div class="filters">
+    <button class="fb active" data-f="all" onclick="setFilter('all',this)">All</button>
+    <button class="fb" data-f="NE" onclick="setFilter('NE',this)">Narrative</button>
+    <button class="fb" data-f="WP" onclick="setFilter('WP',this)">Plan Engine</button>
+    <button class="fb" data-f="RE" onclick="setFilter('RE',this)">Readiness</button>
+    <button class="fb" data-f="CS" onclick="setFilter('CS',this)">Celebration</button>
+    <button class="fb" data-f="HH" onclick="setFilter('HH',this)">Habit</button>
+    <button class="fb" data-f="ML" onclick="setFilter('ML',this)">Msg Library</button>
+    <button class="fb" data-f="SA" onclick="setFilter('SA',this)">Str. Analytics</button>
+    <button class="fb" data-f="EI" onclick="setFilter('EI',this)">Emergent</button>
+    <button class="fb" data-f="WF" onclick="setFilter('WF',this)">Feedback</button>
+  </div>
+</div>
+
+<div class="table-wrap">
+<table id="tbl">
+<thead>
+  <tr>
+    <th>ID</th>
+    <th>Engine</th>
+    <th>Category</th>
+    <th>IF (Condition)</th>
+    <th>THEN (Result)</th>
+    <th>ELSE / Default</th>
+    <th>Thresholds</th>
+    <th>File · Line</th>
+  </tr>
+</thead>
+<tbody id="tbody"></tbody>
+</table>
+<div class="no-results" id="no-results" style="display:none">No matching rules found.</div>
+</div>
+
+</div>
+
+<script>
+const RULES = [
+// ── WorkoutNarrativeEngine ──────────────────────────────────────────────────
+{id:"NE-001",e:"NE",cat:"Reps Classification",cond:"completed/target reps ≤ 0.50",res:"repOutcome = underSignificant",els:"0.50–0.90 → underSlight · 0.90–1.10 → onTarget · >1.10 → overTarget",thresh:"0.50, 0.90, 1.10",file:"WorkoutNarrativeEngine.swift:47"},
+{id:"NE-002",e:"NE",cat:"Reps Classification",cond:"0.50 < pct < 0.90",res:"repOutcome = underSlight",els:"see NE-001",thresh:"0.50, 0.90",file:"WorkoutNarrativeEngine.swift:49"},
+{id:"NE-003",e:"NE",cat:"Reps Classification",cond:"0.90 ≤ pct ≤ 1.10",res:"repOutcome = onTarget",els:"see NE-001",thresh:"0.90, 1.10",file:"WorkoutNarrativeEngine.swift:50"},
+{id:"NE-004",e:"NE",cat:"Reps Classification",cond:"pct > 1.10",res:"repOutcome = overTarget",els:"see NE-001",thresh:"1.10",file:"WorkoutNarrativeEngine.swift:52"},
+{id:"NE-005",e:"NE",cat:"Beginner Band Widening",cond:"exerciseHistory.count < 60 sessions",res:"lowerBound = 0.80, upperBound = 1.15 (wider acceptable range)",els:"standard: 0.90–1.10",thresh:"60, 0.80, 1.15",file:"WorkoutNarrativeEngine.swift:147"},
+{id:"NE-006",e:"NE",cat:"To Failure Override",cond:"any completed set has toFailure == true",res:"isToFailure = true · rawRepOutcome forced to onTarget",els:"isToFailure = false",thresh:"—",file:"WorkoutNarrativeEngine.swift:197, 211"},
+{id:"NE-007",e:"NE",cat:"Near-Target Zone",cond:"!isToFailure AND !beginnerMode AND 0.85 ≤ pct < 0.90",res:"isNearTarget = true",els:"isNearTarget = false",thresh:"0.85, 0.90",file:"WorkoutNarrativeEngine.swift:208"},
+{id:"NE-008",e:"NE",cat:"Weight State",cond:"actual < prescribed × 0.98",res:"weightState = droppedCompleted (if reps hit) or droppedStillUnder (if reps missed)",els:"if actual > prescribed × 1.02: userIncreased",thresh:"0.98, 1.02",file:"WorkoutNarrativeEngine.swift:242"},
+{id:"NE-009",e:"NE",cat:"Weight State",cond:"weight increased AND pct ≥ 0.75",res:"repOutcome promoted to onTarget (user increased slight miss treated as success)",els:"if pct < 0.75: keep original repOutcome",thresh:"0.75",file:"WorkoutNarrativeEngine.swift:259"},
+{id:"NE-010",e:"NE",cat:"Trend Direction",cond:"delta (lastRate - firstRate) > 0.08",res:"trendKey = Improving",els:"if delta < -0.08: Declining · else: Plateauing At/Below Target",thresh:"0.08, -0.08",file:"WorkoutNarrativeEngine.swift:274"},
+{id:"NE-011",e:"NE",cat:"Trend Direction",cond:"trend is plateauing AND latestRate < 0.9",res:"trendKey = Plateauing Below Target",els:"trendKey = Plateauing At Target",thresh:"0.9",file:"WorkoutNarrativeEngine.swift:277"},
+{id:"NE-012",e:"NE",cat:"Improving Under",cond:"trendKey == Improving AND repOutcome == underSlight",res:"isImprovingUnder = true",els:"false",thresh:"—",file:"WorkoutNarrativeEngine.swift:283"},
+{id:"NE-013",e:"NE",cat:"Deload Trigger",cond:"current pct < 0.65 AND previous session pct < 0.65",res:"needsDeload = true",els:"false",thresh:"0.65",file:"WorkoutNarrativeEngine.swift:286"},
+{id:"NE-014",e:"NE",cat:"History Key",cond:"exerciseHistory is empty",res:"historyKey = First Time",els:"—",thresh:"—",file:"WorkoutNarrativeEngine.swift:311"},
+{id:"NE-015",e:"NE",cat:"History Key",cond:"days since last same exercise ≥ 14",res:"historyKey = Long Gap",els:"if 7–13 days: Short Gap · if <7: Normal",thresh:"7, 14",file:"WorkoutNarrativeEngine.swift:317"},
+{id:"NE-016",e:"NE",cat:"History Key",cond:"7 ≤ days < 14",res:"historyKey = Short Gap",els:"see NE-015",thresh:"7, 14",file:"WorkoutNarrativeEngine.swift:318"},
+{id:"NE-017",e:"NE",cat:"Drop Set Detection",cond:"any completed set has isDropCompleted == true",res:"hasCompletedDropSet = true",els:"false",thresh:"—",file:"WorkoutNarrativeEngine.swift:322"},
+{id:"NE-018",e:"NE",cat:"Double Progression Gate",cond:"allSetsHitTarget == true AND !hasCompletedDropSet",res:"readyToProgress = true",els:"false",thresh:"—",file:"WorkoutNarrativeEngine.swift:327"},
+{id:"NE-019",e:"NE",cat:"Stuck Session Count",cond:"consecutive prior sessions at same weight (±2%) where not allSetsHitTarget",res:"stuckSessionCount increments by 1",els:"break when weight changes or all sets hit",thresh:"0.02",file:"WorkoutNarrativeEngine.swift:296"},
+{id:"NE-020",e:"NE",cat:"Weight Progression",cond:"needsDeload == true",res:"nextWeightKg = weight × 0.90, rounded to 0.5 kg",els:"—",thresh:"0.90, 0.5",file:"WorkoutNarrativeEngine.swift:339"},
+{id:"NE-021",e:"NE",cat:"Weight Progression",cond:"weightState == userIncreasedSlightMiss or userIncreasedSignificantMiss",res:"nextWeightKg = hold at current weight",els:"—",thresh:"—",file:"WorkoutNarrativeEngine.swift:341"},
+{id:"NE-022",e:"NE",cat:"Weight Progression",cond:"hasCompletedDropSet == true",res:"nextWeightKg = hold at current weight",els:"—",thresh:"—",file:"WorkoutNarrativeEngine.swift:344"},
+{id:"NE-023",e:"NE",cat:"Weight Progression",cond:"readyToProgress == true",res:"nextWeightKg += increment: compound 2.5% (0.5–5.0 kg cap), isolation 1.5% (0.5–2.5 kg cap)",els:"—",thresh:"0.025, 0.015, 0.5, 5.0, 2.5",file:"WorkoutNarrativeEngine.swift:347"},
+{id:"NE-024",e:"NE",cat:"Weight Progression",cond:"stuckSessionCount ≥ 4",res:"nextWeightKg = weight × 0.90, rounded to 0.5 kg (extended stall reset)",els:"—",thresh:"4, 0.90, 0.5",file:"WorkoutNarrativeEngine.swift:350"},
+{id:"NE-025",e:"NE",cat:"Weight Progression",cond:"stuckSessionCount ≥ 3 AND isCompound",res:"nextWeightKg = weight × 1.10, rounded to 0.5 kg (neural overload attempt)",els:"if !isCompound: deload to 0.90",thresh:"3, 1.10, 0.5",file:"WorkoutNarrativeEngine.swift:353"},
+{id:"NE-026",e:"NE",cat:"Weight Progression",cond:"stuckSessionCount ≥ 3 AND !isCompound (isolation)",res:"nextWeightKg = weight × 0.90 (stalled isolation deload)",els:"—",thresh:"3, 0.90",file:"WorkoutNarrativeEngine.swift:356"},
+{id:"NE-027",e:"NE",cat:"Advice Routing (whatsNextKey)",cond:"needsDeload == true",res:"whatsNextKey = Deload — Reset Weight (highest priority, overrides all)",els:"—",thresh:"—",file:"WorkoutNarrativeEngine.swift:100"},
+{id:"NE-028",e:"NE",cat:"Advice Routing (whatsNextKey)",cond:"hasCompletedDropSet == true AND readyToProgress",res:"whatsNextKey = Build From Drop Set",els:"if !ready: Use Drop Set Strategy",thresh:"—",file:"WorkoutNarrativeEngine.swift:102"},
+{id:"NE-029",e:"NE",cat:"Advice Routing (whatsNextKey)",cond:"stuckSessionCount ≥ 4",res:"whatsNextKey = Stuck — Extended",els:"if ≥3 compound: Neural Overload · if ≥2: Rest & Microload",thresh:"2, 3, 4",file:"WorkoutNarrativeEngine.swift:106"},
+{id:"NE-030",e:"NE",cat:"Advice Routing (whatsNextKey)",cond:"repOutcome == overTarget AND readyToProgress",res:"whatsNextKey = Progress Weight",els:"Hold Weight — Work Reps",thresh:"—",file:"WorkoutNarrativeEngine.swift:112"},
+{id:"NE-031",e:"NE",cat:"Connective Routing",cond:"isNearTarget == true (takes priority over all below)",res:"connectiveKey = Near Target / Building",els:"—",thresh:"—",file:"WorkoutNarrativeEngine.swift:125"},
+{id:"NE-032",e:"NE",cat:"Connective Routing",cond:"isImprovingUnder == true",res:"connectiveKey = On Target / Progress",els:"—",thresh:"—",file:"WorkoutNarrativeEngine.swift:127"},
+{id:"NE-033",e:"NE",cat:"Assembly — History Phrase",cond:"historyKey != Normal",res:"prepend history phrase at index 0 of parts array",els:"no history phrase",thresh:"—",file:"WorkoutNarrativeEngine.swift:437"},
+{id:"NE-034",e:"NE",cat:"Assembly — Drop Set Slot",cond:"hasCompletedDropSet == true",res:"use Drop Set phrase in weight slot (replaces standard weight phrase)",els:"if weightState != held: use weight phrase",thresh:"—",file:"WorkoutNarrativeEngine.swift:417"},
+{id:"NE-035",e:"NE",cat:"Assembly — To Failure Slot",cond:"isToFailure == true",res:"use To Failure phrase in trend slot (replaces trend phrase)",els:"if trendKey != Omitted: use trend phrase",thresh:"—",file:"WorkoutNarrativeEngine.swift:428"},
+{id:"NE-036",e:"NE",cat:"Assembly — Multi Frame",cond:"hitCount == total sets",res:"frame = All Hit",els:"all missed: All Missed · majority hit: Majority Hit · majority missed: Majority Missed · else: Exactly Half",thresh:"—",file:"WorkoutNarrativeEngine.swift:509"},
+{id:"NE-037",e:"NE",cat:"Assembly — Multi Scope",cond:"total exercises ≥ 4",res:"scope = 4+ Exercises",els:"if all same outcome: 2–3 Same Outcome · else: 2–3 Mixed",thresh:"4",file:"WorkoutNarrativeEngine.swift:528"},
+{id:"NE-038",e:"NE",cat:"Profile Addendum",cond:"stuckSessionCount ≥ 2 AND profile.avgBreakthroughSessions known",res:"compare stuckCount to user's historical avg breakthrough timing for context",els:"—",thresh:"2",file:"WorkoutNarrativeEngine.swift:471"},
+{id:"NE-039",e:"NE",cat:"Profile Addendum",cond:"readinessBefore pre ≥ post by ≥2 (went in strong, came out tired)",res:"append hidden fatigue message",els:"if post - pre ≥ 2 (came in tired, hit numbers): different positive message",thresh:"2",file:"WorkoutNarrativeEngine.swift:481"},
+{id:"NE-040",e:"NE",cat:"Best Day Observation",cond:"profile.hasSufficientData AND todayWeekday == profile.bestPerformanceDay AND feel ≥ normal",res:"append 'you tend to perform best on this day' message",els:"no message",thresh:"—",file:"WorkoutNarrativeEngine.swift:173"},
+
+// ── WorkoutPlanEngine ────────────────────────────────────────────────────────
+{id:"WP-001",e:"WP",cat:"Intensity Band",cond:"readiness score ≥ 78",res:"intensity = heavy",els:"55–77: moderate · <55: light",thresh:"78, 55",file:"WorkoutPlanEngine.swift:121"},
+{id:"WP-002",e:"WP",cat:"Intensity Band",cond:"55 ≤ readiness < 78",res:"intensity = moderate",els:"see WP-001",thresh:"55, 78",file:"WorkoutPlanEngine.swift:123"},
+{id:"WP-003",e:"WP",cat:"Intensity Band",cond:"readiness < 55",res:"intensity = light",els:"see WP-001",thresh:"55",file:"WorkoutPlanEngine.swift:125"},
+{id:"WP-004",e:"WP",cat:"Set/Rep Prescription",cond:"intensity == heavy",res:"compound: 4×5 · isolation: 3×8",els:"—",thresh:"4, 5, 3, 8",file:"WorkoutPlanEngine.swift:104"},
+{id:"WP-005",e:"WP",cat:"Set/Rep Prescription",cond:"intensity == moderate",res:"compound: 3×8 · isolation: 3×12",els:"—",thresh:"3, 8, 3, 12",file:"WorkoutPlanEngine.swift:105"},
+{id:"WP-006",e:"WP",cat:"Set/Rep Prescription",cond:"intensity == light",res:"compound: 3×12 · isolation: 2×15",els:"—",thresh:"3, 12, 2, 15",file:"WorkoutPlanEngine.swift:106"},
+{id:"WP-007",e:"WP",cat:"Time Estimation",cond:"intensity == heavy",res:"estimatedMinutes = exercise count × 10",els:"else: count × 7",thresh:"10, 7",file:"WorkoutPlanEngine.swift:74"},
+{id:"WP-008",e:"WP",cat:"Primary Split Selection",cond:"freshRegions.count ≥ 2",res:"select from stale regions: chest+shoulders → [chest,shoulders,arms] · back+arms → [back,arms] · legs → [legs,core]",els:"if fresh < 2: (fresh + stale).prefix(3)",thresh:"2, 3",file:"WorkoutPlanEngine.swift:34"},
+{id:"WP-009",e:"WP",cat:"Recovery Plan",cond:"readiness < 55 (light intensity trigger)",res:"hardcoded: [core, arms, shoulders] regardless of user history",els:"—",thresh:"—",file:"WorkoutPlanEngine.swift:85"},
+{id:"WP-010",e:"WP",cat:"Coach Note",cond:"intensity == heavy",res:"'Your readiness is high — push hard. Focus on progressive overload and full range of motion.'",els:"moderate/light: different hardcoded strings",thresh:"—",file:"WorkoutPlanEngine.swift:140"},
+{id:"WP-011",e:"WP",cat:"Coach Note",cond:"intensity == moderate",res:"'Solid day to train. Hit working sets with good form and leave one rep in reserve.'",els:"—",thresh:"—",file:"WorkoutPlanEngine.swift:142"},
+{id:"WP-012",e:"WP",cat:"Coach Note",cond:"intensity == light",res:"'Keep effort moderate. Prioritise technique over load and finish feeling energised, not drained.'",els:"—",thresh:"—",file:"WorkoutPlanEngine.swift:144"},
+
+// ── ReadinessEngine ──────────────────────────────────────────────────────────
+{id:"RE-001",e:"RE",cat:"Baseline Formula",cond:"sessions in last 30 days ≥ 1",res:"baseline = 65 + min(15, sessionCount30d)",els:"0 sessions: baseline = 65",thresh:"65, 15, 30",file:"ReadinessEngine.swift:288"},
+{id:"RE-002",e:"RE",cat:"Score Base",cond:"start of every calculation",res:"score starts at 68",els:"—",thresh:"68",file:"ReadinessEngine.swift:139"},
+{id:"RE-003",e:"RE",cat:"Days Since Last",cond:"daysSinceLast == 0 (trained today already)",res:"modifier = 0",els:"—",thresh:"0",file:"ReadinessEngine.swift:142"},
+{id:"RE-004",e:"RE",cat:"Days Since Last",cond:"daysSinceLast == 1 (yesterday)",res:"modifier = +8",els:"—",thresh:"1, +8",file:"ReadinessEngine.swift:143"},
+{id:"RE-005",e:"RE",cat:"Days Since Last",cond:"daysSinceLast == 2 (sweet spot)",res:"modifier = +12",els:"—",thresh:"2, +12",file:"ReadinessEngine.swift:144"},
+{id:"RE-006",e:"RE",cat:"Days Since Last",cond:"daysSinceLast == 3",res:"modifier = +6",els:"—",thresh:"3, +6",file:"ReadinessEngine.swift:145"},
+{id:"RE-007",e:"RE",cat:"Days Since Last",cond:"4 ≤ daysSinceLast ≤ 6",res:"modifier = -4",els:"—",thresh:"4, 6, -4",file:"ReadinessEngine.swift:146"},
+{id:"RE-008",e:"RE",cat:"Days Since Last",cond:"daysSinceLast ≥ 7",res:"modifier = -14",els:"—",thresh:"7, -14",file:"ReadinessEngine.swift:147"},
+{id:"RE-009",e:"RE",cat:"Consecutive Active Days",cond:"consecutiveDays == 4",res:"modifier = -8",els:"—",thresh:"4, -8",file:"ReadinessEngine.swift:152"},
+{id:"RE-010",e:"RE",cat:"Consecutive Active Days",cond:"consecutiveDays == 5",res:"modifier = -14",els:"—",thresh:"5, -14",file:"ReadinessEngine.swift:153"},
+{id:"RE-011",e:"RE",cat:"Consecutive Active Days",cond:"consecutiveDays ≥ 6",res:"modifier = -20",els:"—",thresh:"6, -20",file:"ReadinessEngine.swift:154"},
+{id:"RE-012",e:"RE",cat:"Recent Frequency",cond:"sessions in recent window ≤ 1",res:"modifier = -8",els:"—",thresh:"1, -8",file:"ReadinessEngine.swift:158"},
+{id:"RE-013",e:"RE",cat:"Recent Frequency",cond:"sessions in recent window ≥ 4",res:"modifier = +5",els:"—",thresh:"4, +5",file:"ReadinessEngine.swift:158"},
+{id:"RE-014",e:"RE",cat:"Volume Spike (7-day)",cond:"vol7d / vol_prior7d < 0.70 (deload week)",res:"modifier = +6",els:"—",thresh:"0.70, +6",file:"ReadinessEngine.swift:162"},
+{id:"RE-015",e:"RE",cat:"Volume Spike (7-day)",cond:"vol7d / vol_prior7d > 1.50 (big spike)",res:"modifier = -6",els:"—",thresh:"1.50, -6",file:"ReadinessEngine.swift:163"},
+{id:"RE-016",e:"RE",cat:"Steps Factor",cond:"dailySteps < 3,000",res:"stepFactor = 0.30 → score adjustment ≈ -4",els:"—",thresh:"3000, 0.30",file:"ReadinessEngine.swift:262"},
+{id:"RE-017",e:"RE",cat:"Steps Factor",cond:"3,000 ≤ steps < 7,000",res:"stepFactor = 0.50 → no adjustment (neutral)",els:"—",thresh:"3000, 7000, 0.50",file:"ReadinessEngine.swift:263"},
+{id:"RE-018",e:"RE",cat:"Steps Factor",cond:"7,000 ≤ steps < 10,000",res:"stepFactor = 0.70 → score adjustment ≈ +2",els:"—",thresh:"7000, 10000, 0.70",file:"ReadinessEngine.swift:264"},
+{id:"RE-019",e:"RE",cat:"Steps Factor",cond:"steps ≥ 10,000",res:"stepFactor = 0.85 → score adjustment ≈ +4",els:"—",thresh:"10000, 0.85",file:"ReadinessEngine.swift:265"},
+{id:"RE-020",e:"RE",cat:"Sleep Modifier",cond:"sleep ≥ 7.5 hours",res:"modifier = +5",els:"—",thresh:"7.5, +5",file:"ReadinessEngine.swift:172"},
+{id:"RE-021",e:"RE",cat:"Sleep Modifier",cond:"7.0 ≤ sleep < 7.5 hours",res:"modifier = +2",els:"—",thresh:"7.0, 7.5, +2",file:"ReadinessEngine.swift:173"},
+{id:"RE-022",e:"RE",cat:"Sleep Modifier",cond:"6.0 ≤ sleep < 7.0 hours",res:"modifier = 0 (neutral)",els:"—",thresh:"6.0, 7.0",file:"ReadinessEngine.swift:174"},
+{id:"RE-023",e:"RE",cat:"Sleep Modifier",cond:"5.0 ≤ sleep < 6.0 hours",res:"modifier = -5",els:"—",thresh:"5.0, 6.0, -5",file:"ReadinessEngine.swift:175"},
+{id:"RE-024",e:"RE",cat:"Sleep Modifier",cond:"sleep < 5.0 hours",res:"modifier = -10",els:"—",thresh:"5.0, -10",file:"ReadinessEngine.swift:176"},
+{id:"RE-025",e:"RE",cat:"Resting HR Modifier",cond:"rhr < 55 bpm (athletic)",res:"modifier = +3",els:"—",thresh:"55, +3",file:"ReadinessEngine.swift:181"},
+{id:"RE-026",e:"RE",cat:"Resting HR Modifier",cond:"55 ≤ rhr < 65 bpm (normal)",res:"modifier = 0",els:"—",thresh:"55, 65",file:"ReadinessEngine.swift:182"},
+{id:"RE-027",e:"RE",cat:"Resting HR Modifier",cond:"65 ≤ rhr < 75 bpm (elevated)",res:"modifier = -3",els:"—",thresh:"65, 75, -3",file:"ReadinessEngine.swift:183"},
+{id:"RE-028",e:"RE",cat:"Resting HR Modifier",cond:"rhr ≥ 75 bpm (high)",res:"modifier = -6",els:"—",thresh:"75, -6",file:"ReadinessEngine.swift:184"},
+{id:"RE-029",e:"RE",cat:"Volume Penalty (last session)",cond:"lastSessionVolRatio > 1.80 (massive spike)",res:"modifier = -10",els:"—",thresh:"1.80, -10",file:"ReadinessEngine.swift:195"},
+{id:"RE-030",e:"RE",cat:"Volume Penalty (last session)",cond:"1.40 < lastSessionVolRatio ≤ 1.80",res:"modifier = -5",els:"—",thresh:"1.40, 1.80, -5",file:"ReadinessEngine.swift:196"},
+{id:"RE-031",e:"RE",cat:"RPE Penalty (last session)",cond:"avgRPE of last session ≥ 9.0",res:"modifier = -8",els:"—",thresh:"9.0, -8",file:"ReadinessEngine.swift:202"},
+{id:"RE-032",e:"RE",cat:"RPE Penalty (last session)",cond:"8.0 ≤ avgRPE < 9.0",res:"modifier = -4",els:"—",thresh:"8.0, 9.0, -4",file:"ReadinessEngine.swift:203"},
+{id:"RE-033",e:"RE",cat:"Pre-Session Readiness",cond:"avg readinessBefore across recent sessions ≤ 1.3",res:"modifier = -5 (chronically tired before sessions)",els:"—",thresh:"1.3, -5",file:"ReadinessEngine.swift:214"},
+{id:"RE-034",e:"RE",cat:"Pre-Session Readiness",cond:"avg readinessBefore ≥ 2.7 (consistently strong)",res:"modifier = +4",els:"—",thresh:"2.7, +4",file:"ReadinessEngine.swift:215"},
+{id:"RE-035",e:"RE",cat:"Score Clamping",cond:"final score after all modifiers",res:"score = max(20, min(99, score))",els:"—",thresh:"20, 99",file:"ReadinessEngine.swift:218"},
+{id:"RE-036",e:"RE",cat:"Confidence Level",cond:"totalSessions ≥ 10",res:"confidence = high",els:"3–9: medium · <3: low",thresh:"10, 3",file:"ReadinessEngine.swift:226"},
+{id:"RE-037",e:"RE",cat:"Readiness Narrative",cond:"score ≥ 80",res:"narrative headline: 'Good momentum right now'",els:"—",thresh:"80",file:"ReadinessEngine.swift:295"},
+{id:"RE-038",e:"RE",cat:"Readiness Narrative",cond:"65 ≤ score < 80",res:"narrative headline: 'Ready to train'",els:"—",thresh:"65, 80",file:"ReadinessEngine.swift:302"},
+{id:"RE-039",e:"RE",cat:"Readiness Narrative",cond:"50 ≤ score < 65",res:"narrative headline: 'Keep it controlled today'",els:"—",thresh:"50, 65",file:"ReadinessEngine.swift:308"},
+{id:"RE-040",e:"RE",cat:"Readiness Narrative",cond:"score < 50",res:"narrative headline: 'Rest is training too'",els:"—",thresh:"50",file:"ReadinessEngine.swift:314"},
+{id:"RE-041",e:"RE",cat:"Trend Classification",cond:"last7dayAvg - first7dayAvg > 4",res:"trend label: Gradual upward slope",els:"if < -4: Downward · else: Stable",thresh:"4, -4",file:"ReadinessEngine.swift:363"},
+{id:"RE-042",e:"RE",cat:"Factor: Timing",cond:"daysSinceLast == 1 or 2",res:"positive factor: 'Workout timing is dialled in'",els:"if > 5 days: negative factor",thresh:"1, 2, 5",file:"ReadinessEngine.swift:382"},
+{id:"RE-043",e:"RE",cat:"Factor: Frequency",cond:"recent sessions ≥ 3",res:"positive factor: 'Showing up consistently'",els:"if ≤ 1: negative factor",thresh:"3, 1",file:"ReadinessEngine.swift:388"},
+{id:"RE-044",e:"RE",cat:"Factor: Volume",cond:"volRatio < 0.80 (lighter than usual)",res:"positive factor: 'Lighter load — body getting a breather'",els:"if > 1.4: negative; if 0.8–1.4: positive 'well managed'",thresh:"0.80, 1.40",file:"ReadinessEngine.swift:402"},
+{id:"RE-045",e:"RE",cat:"Factor: Data Confidence",cond:"totalSessions < 3",res:"negative factor: 'More sessions logged will sharpen score'",els:"if ≥ 3: positive factor",thresh:"3",file:"ReadinessEngine.swift:450"},
+
+// ── CelebrationSystem ────────────────────────────────────────────────────────
+{id:"CS-001",e:"CS",cat:"Comeback Detection",cond:"isComeback flag == true (gap from prev session ≥ 7 days in WorkoutTabView)",res:"feedbackText = 'You came back. Most people don't.'",els:"use session count pool",thresh:"7",file:"CelebrationSystem.swift:201"},
+{id:"CS-002",e:"CS",cat:"Weekly Session Message",cond:"sessionDays.count == 1",res:"'First one in. Come back and the habit begins.'",els:"different string per count 2–7",thresh:"1",file:"CelebrationSystem.swift:204"},
+{id:"CS-003",e:"CS",cat:"Weekly Session Message",cond:"sessionDays.count == 7",res:"'Seven for seven. A perfect week.'",els:"—",thresh:"7",file:"CelebrationSystem.swift:214"},
+{id:"CS-004",e:"CS",cat:"Streak Milestone",cond:"streakDays == 7",res:"'Seven days. The habit is becoming automatic.'",els:"—",thresh:"7",file:"CelebrationSystem.swift:543"},
+{id:"CS-005",e:"CS",cat:"Streak Milestone",cond:"streakDays == 30",res:"'Thirty days. This is who you are now.'",els:"—",thresh:"30",file:"CelebrationSystem.swift:544"},
+{id:"CS-006",e:"CS",cat:"Streak Milestone",cond:"streakDays == 100",res:"'A hundred days. Most people quit before they reach this.'",els:"any other value: '{n} days. Keep showing up.'",thresh:"100",file:"CelebrationSystem.swift:545"},
+
+// ── HONHabitEngine ───────────────────────────────────────────────────────────
+{id:"HH-001",e:"HH",cat:"Return After Lapse",cond:"gap between prev workout and current ≥ 7 days",res:"trigger returnAfterLapse H.O.N. message with daysGone context",els:"no message if < 7 days",thresh:"7",file:"HONHabitEngine.swift:164"},
+{id:"HH-002",e:"HH",cat:"Lapse Start Detection",cond:"gap from most recent any-activity (cardio+strength) ≥ 7 days",res:"lapseStart = mostRecent date (used for recovery messaging)",els:"lapseStart = nil",thresh:"7",file:"HONHabitEngine.swift:144"},
+{id:"HH-003",e:"HH",cat:"Session Milestone",cond:"totalSessions matches [1, 10, 25, 50, 100, 200, 365]",res:"fire sessionMilestone message",els:"no milestone message",thresh:"1, 10, 25, 50, 100, 200, 365",file:"HONHabitEngine.swift:176"},
+{id:"HH-004",e:"HH",cat:"Weekly Count",cond:"sessions this week ≥ 2",res:"fire weeklyCount message",els:"no message",thresh:"2",file:"HONHabitEngine.swift:185"},
+{id:"HH-005",e:"HH",cat:"Consecutive Weeks Milestone",cond:"consecutive training weeks matches [2, 4, 8, 12, 26, 52] AND not shown before",res:"fire consecutiveWeeks milestone message",els:"no repeat; 4-week cooldown",thresh:"2, 4, 8, 12, 26, 52",file:"HONHabitEngine.swift:195"},
+{id:"HH-006",e:"HH",cat:"Pattern Flag",cond:"userType == typeA AND confidence high AND not shown in 28 days AND bestDayProb ≥ 0.80",res:"fire patternFlag message about consistent training day",els:"28-day cooldown",thresh:"0.80, 28",file:"HONHabitEngine.swift:206"},
+
+// ── HONMessageLibrary ────────────────────────────────────────────────────────
+{id:"ML-001",e:"ML",cat:"Return After Lapse",cond:"daysGone < 14",res:"'You're back. {n} days off, and you chose to return. That's the skill.'",els:"—",thresh:"14",file:"HONMessageLibrary.swift:198"},
+{id:"ML-002",e:"ML",cat:"Return After Lapse",cond:"14 ≤ daysGone < 30",res:"'{n} weeks away. Start at 70% intensity.'",els:"—",thresh:"14, 30",file:"HONMessageLibrary.swift:205"},
+{id:"ML-003",e:"ML",cat:"Return After Lapse",cond:"30 ≤ daysGone < 90",res:"'{n} weeks. Deload + rebuild. 60–70% intensity.'",els:"—",thresh:"30, 90",file:"HONMessageLibrary.swift:212"},
+{id:"ML-004",e:"ML",cat:"Return After Lapse",cond:"daysGone ≥ 90",res:"'{n} weeks. Two-week deload-ramp: week 1 at 50%, week 2 at 70%.'",els:"—",thresh:"90",file:"HONMessageLibrary.swift:219"},
+{id:"ML-005",e:"ML",cat:"Weekly Count Message",cond:"weeklyCount == 2",res:"pool of 3 messages via seed rotation",els:"3 → different pool · 4 → different pool · 5+ → flame icon pool",thresh:"2, 3, 4, 5",file:"HONMessageLibrary.swift:103"},
+{id:"ML-006",e:"ML",cat:"Session Milestone Message",cond:"totalSessions == 1",res:"pool of 3 first-session messages",els:"10, 25, 50, 100, 200, 365 each have their own pool of 3",thresh:"1, 10, 25, 50, 100, 200, 365",file:"HONMessageLibrary.swift:45"},
+
+// ── StrengthAnalyticsEngine ──────────────────────────────────────────────────
+{id:"SA-001",e:"SA",cat:"Plateau Detection",cond:"slopePerWeek < 0.5 kg/wk over 4-week window AND ≥ 3 sessions in window",res:"isPlateau = true",els:"isPlateau = false",thresh:"0.5, 4, 3",file:"StrengthAnalyticsEngine.swift:122, 279"},
+{id:"SA-002",e:"SA",cat:"Trend Regression Window",cond:"always",res:"linear regression computed over last 6 weeks of sessions",els:"—",thresh:"6",file:"StrengthAnalyticsEngine.swift:118"},
+{id:"SA-003",e:"SA",cat:"Rolling Average Window",cond:"always",res:"5-session rolling average of e1RM used for smoothed trend",els:"—",thresh:"5",file:"StrengthAnalyticsEngine.swift:117"},
+{id:"SA-004",e:"SA",cat:"Fatigue Decay — Beginner",cond:"experienceTier == beginner",res:"fatigueDecay = 0.10 (~25% rep decline by set 3)",els:"—",thresh:"0.10",file:"StrengthAnalyticsEngine.swift:158"},
+{id:"SA-005",e:"SA",cat:"Fatigue Decay — Intermediate",cond:"experienceTier == intermediate",res:"fatigueDecay = 0.08",els:"—",thresh:"0.08",file:"StrengthAnalyticsEngine.swift:159"},
+{id:"SA-006",e:"SA",cat:"Fatigue Decay — Advanced",cond:"experienceTier == advanced",res:"fatigueDecay = 0.05 (~12% decline by set 4)",els:"—",thresh:"0.05",file:"StrengthAnalyticsEngine.swift:160"},
+{id:"SA-007",e:"SA",cat:"Fatigue Decay — Elite",cond:"experienceTier == elite",res:"fatigueDecay = 0.03 (<8% decline by set 4)",els:"—",thresh:"0.03",file:"StrengthAnalyticsEngine.swift:161"},
+{id:"SA-008",e:"SA",cat:"Fatigue Decay — Custom",cond:"userProfile.customFatigueDecay provided",res:"use custom value, clamped max(0.03, min(0.10, custom))",els:"—",thresh:"0.03, 0.10",file:"StrengthAnalyticsEngine.swift:164"},
+{id:"SA-009",e:"SA",cat:"INOL Zone",cond:"INOL < 0.4",res:"zone = Insufficient",els:"0.4–0.8: Moderate · 0.8–1.5: Optimal · 1.5–2.0: Heavy · ≥2.0: Overreaching",thresh:"0.4, 0.8, 1.5, 2.0",file:"StrengthAnalyticsEngine.swift:59"},
+{id:"SA-010",e:"SA",cat:"Efficiency Quartile",cond:"efficiencyScore ≥ Q3 (top quartile)",res:"label = Great",els:"Q1–Q3: Average · <Q1: Below avg",thresh:"Q1, Q3",file:"StrengthAnalyticsEngine.swift:391"},
+{id:"SA-011",e:"SA",cat:"Feel Coaching",cond:"feel == easy AND streak ≥ 3 sessions",res:"'May be underloading — consider increasing intensity'",els:"—",thresh:"3",file:"StrengthAnalyticsEngine.swift:408"},
+{id:"SA-012",e:"SA",cat:"Feel Coaching",cond:"feel == strong AND streak ≥ 3 sessions",res:"'Body primed — consider adding load next time'",els:"if streak == 2: 'Weight increase may be warranted'",thresh:"3, 2",file:"StrengthAnalyticsEngine.swift:412"},
+{id:"SA-013",e:"SA",cat:"Feel Coaching",cond:"feel == tired AND streak ≥ 3 sessions",res:"'Prioritise sleep and deload'",els:"if streak == 2: 'Check recovery'",thresh:"3, 2",file:"StrengthAnalyticsEngine.swift:418"},
+{id:"SA-014",e:"SA",cat:"Feel Coaching",cond:"feel == brutal AND streak ≥ 2 sessions",res:"'Recovery day or deload strongly recommended'",els:"—",thresh:"2",file:"StrengthAnalyticsEngine.swift:422"},
+{id:"SA-015",e:"SA",cat:"Category Efficiency",cond:"volume ≥ median AND improvement ≥ median",res:"efficiency = Efficient (high volume + strong gains)",els:"—",thresh:"median",file:"StrengthAnalyticsEngine.swift:543"},
+{id:"SA-016",e:"SA",cat:"Category Efficiency",cond:"volume ≥ median AND improvement < median",res:"efficiency = Inefficient (high volume + slow gains)",els:"—",thresh:"median",file:"StrengthAnalyticsEngine.swift:544"},
+{id:"SA-017",e:"SA",cat:"Category Efficiency",cond:"volume < median AND improvement ≥ median",res:"efficiency = Opportunity (low volume + strong gains)",els:"—",thresh:"median",file:"StrengthAnalyticsEngine.swift:545"},
+{id:"SA-018",e:"SA",cat:"Category Efficiency",cond:"volume < median AND improvement < median",res:"efficiency = Low Priority (low volume + slow gains)",els:"—",thresh:"median",file:"StrengthAnalyticsEngine.swift:546"},
+
+// ── EmergentInsightEngine ────────────────────────────────────────────────────
+{id:"EI-001",e:"EI",cat:"HRV High Threshold",cond:"measured HRV ≥ 65 ms",res:"hrvHigh = true",els:"if no HRV data: proxy — daysSinceLast == 1 or 2",thresh:"65",file:"EmergentInsightEngine.swift:60"},
+{id:"EI-002",e:"EI",cat:"Feel High Threshold",cond:"normalized feelScore ≥ 0.5 (from first 3 recent sessions)",res:"feelHigh = true",els:"false",thresh:"0.5, 3",file:"EmergentInsightEngine.swift:55"},
+{id:"EI-003",e:"EI",cat:"Mind-Body Alignment",cond:"hrvHigh == true AND feelHigh == true",res:"state = alignedPeak (positive recovery + positive feel)",els:"—",thresh:"—",file:"EmergentInsightEngine.swift:64"},
+{id:"EI-004",e:"EI",cat:"Mind-Body Alignment",cond:"hrvHigh == true AND feelHigh == false",res:"state = suppressed (good recovery, low feel = CNS fatigue)",els:"—",thresh:"—",file:"EmergentInsightEngine.swift:66"},
+{id:"EI-005",e:"EI",cat:"Mind-Body Alignment",cond:"hrvHigh == false AND feelHigh == true",res:"state = overconfident (low recovery, high feel = illusion of readiness)",els:"—",thresh:"—",file:"EmergentInsightEngine.swift:68"},
+{id:"EI-006",e:"EI",cat:"Mind-Body Alignment",cond:"hrvHigh == false AND feelHigh == false",res:"state = alignedDepleted (both low = true depletion)",els:"—",thresh:"—",file:"EmergentInsightEngine.swift:70"},
+{id:"EI-007",e:"EI",cat:"Strength Velocity",cond:"slopePerWeek > 0.30 kg/wk",res:"velocityUp = true",els:"false",thresh:"0.30",file:"EmergentInsightEngine.swift:94"},
+{id:"EI-008",e:"EI",cat:"Training Stress Balance",cond:"CTL (42-day chronic load) - ATL (7-day acute load) > 0",res:"tsbPositive = true (recovered state)",els:"false (fatigued state)",thresh:"42, 7",file:"EmergentInsightEngine.swift:97"},
+{id:"EI-009",e:"EI",cat:"True Adaptation State",cond:"velocityUp AND tsbPositive",res:"state = falseGains (gaining but still accumulated load — may revert)",els:"—",thresh:"—",file:"EmergentInsightEngine.swift:100"},
+{id:"EI-010",e:"EI",cat:"True Adaptation State",cond:"velocityUp AND !tsbPositive",res:"state = trueAdaptation (best case: strength up + fully recovered)",els:"—",thresh:"—",file:"EmergentInsightEngine.swift:102"},
+{id:"EI-011",e:"EI",cat:"True Adaptation State",cond:"!velocityUp AND !tsbPositive",res:"state = expectedSuppression (fatigue phase — normal during high load)",els:"—",thresh:"—",file:"EmergentInsightEngine.swift:104"},
+{id:"EI-012",e:"EI",cat:"True Adaptation State",cond:"!velocityUp AND tsbPositive",res:"state = trueRegression (strength down despite recovered state = detraining)",els:"—",thresh:"—",file:"EmergentInsightEngine.swift:106"},
+{id:"EI-013",e:"EI",cat:"Program Calibration",cond:"setSuccessRate ≥ 0.80 AND avgRPE < 7.5",res:"state = sandbagging (hitting reps easily + low effort)",els:"—",thresh:"0.80, 7.5",file:"EmergentInsightEngine.swift:139"},
+{id:"EI-014",e:"EI",cat:"Program Calibration",cond:"setSuccessRate ≥ 0.80 AND avgRPE ≥ 7.5",res:"state = outpacingProgram (hitting reps + working very hard)",els:"—",thresh:"0.80, 7.5",file:"EmergentInsightEngine.swift:141"},
+{id:"EI-015",e:"EI",cat:"Program Calibration",cond:"setSuccessRate < 0.80 AND avgRPE < 7.5",res:"state = disengaged (missing reps + low effort = not trying)",els:"—",thresh:"0.80, 7.5",file:"EmergentInsightEngine.swift:143"},
+{id:"EI-016",e:"EI",cat:"Program Calibration",cond:"setSuccessRate < 0.80 AND avgRPE ≥ 7.5",res:"state = tooHeavy (missing reps + maxing out = program too heavy)",els:"—",thresh:"0.80, 7.5",file:"EmergentInsightEngine.swift:145"},
+{id:"EI-017",e:"EI",cat:"RPE Default",cond:"no RPE data logged",res:"avgRPE defaults to 7.5",els:"—",thresh:"7.5",file:"EmergentInsightEngine.swift:135"},
+{id:"EI-018",e:"EI",cat:"Set Success Default",cond:"no target sets (no targets defined)",res:"successRate defaults to 0.75",els:"—",thresh:"0.75",file:"EmergentInsightEngine.swift:132"},
+{id:"EI-019",e:"EI",cat:"Net Recovery Capacity",cond:"sleep ≥ 7.0h AND ATL ≤ 55",res:"state = surplus (great recovery window, high capacity)",els:"—",thresh:"7.0, 55",file:"EmergentInsightEngine.swift:223"},
+{id:"EI-020",e:"EI",cat:"Net Recovery Capacity",cond:"sleep ≥ 7.0h AND ATL > 55",res:"state = resilientWindow (good sleep, can handle high load)",els:"—",thresh:"7.0, 55",file:"EmergentInsightEngine.swift:225"},
+{id:"EI-021",e:"EI",cat:"Net Recovery Capacity",cond:"sleep < 7.0h AND ATL ≤ 55",res:"state = lifestyleConstrained (poor sleep, low load = lifestyle issue not training)",els:"—",thresh:"7.0, 55",file:"EmergentInsightEngine.swift:227"},
+{id:"EI-022",e:"EI",cat:"Net Recovery Capacity",cond:"sleep < 7.0h AND ATL > 55",res:"state = compoundedDeficit (worst: poor sleep + high training load)",els:"—",thresh:"7.0, 55",file:"EmergentInsightEngine.swift:229"},
+{id:"EI-023",e:"EI",cat:"Acute Load Proxy",cond:"always",res:"ATL = (last 7d volume / 800), capped at 100",els:"—",thresh:"7, 800, 100",file:"EmergentInsightEngine.swift:868"},
+{id:"EI-024",e:"EI",cat:"Chronic Load Proxy",cond:"always",res:"CTL = (last 42d volume / 6) / 800, capped at 100",els:"—",thresh:"42, 6, 800, 100",file:"EmergentInsightEngine.swift:875"},
+{id:"EI-025",e:"EI",cat:"PR Attempt Quality",cond:"!velocityPositive (no strength momentum)",res:"state = notReady",els:"—",thresh:"—",file:"EmergentInsightEngine.swift:260"},
+{id:"EI-026",e:"EI",cat:"PR Attempt Quality",cond:"velocityPositive AND tsbPositive AND feelMomentumUp",res:"state = primeWindow (best time to attempt PR)",els:"—",thresh:"—",file:"EmergentInsightEngine.swift:262"},
+{id:"EI-027",e:"EI",cat:"PR Attempt Quality",cond:"velocityPositive AND tsbPositive AND !feelMomentumUp",res:"state = wastedWindow (conditions right but feel down)",els:"—",thresh:"—",file:"EmergentInsightEngine.swift:262"},
+{id:"EI-028",e:"EI",cat:"PR Attempt Quality",cond:"velocityPositive AND !tsbPositive AND feelMomentumUp",res:"state = foolsGold (feeling good but fatigued — likely to miss)",els:"—",thresh:"—",file:"EmergentInsightEngine.swift:264"},
+{id:"EI-029",e:"EI",cat:"PR Attempt Quality",cond:"velocityPositive AND !tsbPositive AND !feelMomentumUp",res:"state = patientWindow (wait for conditions to align)",els:"—",thresh:"—",file:"EmergentInsightEngine.swift:266"},
+{id:"EI-030",e:"EI",cat:"PR Velocity Threshold",cond:"slopePerWeek > 0.50 kg/wk (higher bar for PR readiness)",res:"velocityPositive = true",els:"false",thresh:"0.50",file:"EmergentInsightEngine.swift:250"},
+{id:"EI-031",e:"EI",cat:"Feel Momentum",cond:"mostRecentFeel ≥ previousFeel (requires ≥2 feels)",res:"feelMomentumUp = true",els:"false",thresh:"—",file:"EmergentInsightEngine.swift:254"},
+{id:"EI-032",e:"EI",cat:"Imbalance Trajectory",cond:"pushVsPullDiff > 0.30 %/wk",res:"state = diverging (push pulling away from pull)",els:"—",thresh:"0.30",file:"EmergentInsightEngine.swift:297"},
+{id:"EI-033",e:"EI",cat:"Imbalance Trajectory",cond:"pushVsPullDiff < -0.30 %/wk",res:"state = overcorrecting (pull pulling away from push)",els:"—",thresh:"-0.30",file:"EmergentInsightEngine.swift:298"},
+{id:"EI-034",e:"EI",cat:"Imbalance Trajectory",cond:"abs(diff) < 0.10 %/wk",res:"state = stable (well balanced)",els:"0.10–0.30: converging",thresh:"0.10, 0.30",file:"EmergentInsightEngine.swift:299"},
+{id:"EI-035",e:"EI",cat:"Feel Archetype",cond:"feel-performance correlation r > 0.50",res:"archetype = moodDependent (feel strongly predicts output)",els:"r < 0.20: inconsistentPerformer · else based on volume comparison",thresh:"0.50, 0.20",file:"EmergentInsightEngine.swift:335"},
+{id:"EI-036",e:"EI",cat:"Feel Archetype",cond:"volOnLowFeel > volOnHighFeel × 1.10",res:"archetype = sandbagger (performs better when feeling bad)",els:"—",thresh:"1.10",file:"EmergentInsightEngine.swift:336"},
+{id:"EI-037",e:"EI",cat:"Feel Archetype",cond:"volOnHighFeel > volOnLowFeel × 1.20",res:"archetype = optimist (performs significantly better when feeling good)",els:"—",thresh:"1.20",file:"EmergentInsightEngine.swift:337"},
+{id:"EI-038",e:"EI",cat:"Load Tolerance",cond:"highDensityFeelRate > 0.60",res:"state = volumeResponder (thrives under high density)",els:"< 0.35: loadSensitive · else: loadNeutral",thresh:"0.60, 0.35",file:"EmergentInsightEngine.swift:385"},
+{id:"EI-039",e:"EI",cat:"Strongest Day",cond:"sessions on day ≥ 3 AND avg volume advantage ≥ 15% over weekly avg",res:"day flagged as dominant performance day",els:"< 3 sessions or < 15% advantage: not flagged",thresh:"3, 0.15",file:"EmergentInsightEngine.swift:433, 454"},
+{id:"EI-040",e:"EI",cat:"Cardio Fatigue",cond:"avgRPE post-cardio - avgRPE baseline ≥ 1.0",res:"state = fatigueCarryover (cardio impairs strength performance)",els:"if < 0: cardioPriming · else: minimalInterference",thresh:"1.0",file:"EmergentInsightEngine.swift:522"},
+{id:"EI-041",e:"EI",cat:"Weight Correlation",cond:"bodyWeight-strength correlation r > 0.50",res:"state = weightDrivenStrength (gains track body weight changes)",els:"r < -0.30: efficientAdaptation · else: independentSignals",thresh:"0.50, -0.30",file:"EmergentInsightEngine.swift:631"},
+{id:"EI-042",e:"EI",cat:"Aerobic Capacity",cond:"VO2max < 35",res:"state = baseline (rapid improvement zone)",els:"35–44: moderateBase · 45–54: goodFitness · ≥55: eliteBase",thresh:"35, 45, 55",file:"EmergentInsightEngine.swift:678"},
+{id:"EI-043",e:"EI",cat:"Rest Day Steps",cond:"restDaySteps < 3,000",res:"state = deepRecovery (maximum repair)",els:"3000–7000: activeRecovery · ≥7000: highActivity (may reduce recovery)",thresh:"3000, 7000",file:"EmergentInsightEngine.swift:732"},
+{id:"EI-044",e:"EI",cat:"Sleep Before PR",cond:"sleep ≥ 7.5h night before planned PR attempt",res:"state = primedForPR",els:"6.5–7.5: adequate · <6.5: sleepDeficit (impaired output)",thresh:"7.5, 6.5",file:"EmergentInsightEngine.swift:809"},
+
+// ── WorkoutFeedbackEngine ────────────────────────────────────────────────────
+{id:"WF-001",e:"WF",cat:"Session Volume Trend",cond:"session volume > 3-session avg by > 12%",res:"flag: output notably up",els:"if < -15%: flag output down",thresh:"0.12, 0.15",file:"WorkoutFeedbackEngine.swift:77"},
+{id:"WF-002",e:"WF",cat:"Session Quality Score",cond:"always",res:"score = repHitRate×50 + min(surplusAvg/2,1)×25 + (1-min(decline,1))×15 + completionBonus×10",els:"—",thresh:"50, 25, 15, 10",file:"WorkoutFeedbackEngine.swift:417"},
+{id:"WF-003",e:"WF",cat:"Quality Classification",cond:"repHitRate ≥ 1.0 AND setCompletionRate ≥ 1.0",res:"isClean = true",els:"false",thresh:"1.0",file:"WorkoutFeedbackEngine.swift:425"},
+{id:"WF-004",e:"WF",cat:"Quality Classification",cond:"repSurplusAvg ≥ 1.0 AND isClean == true",res:"isStrong = true (hit all sets AND had reps to spare)",els:"false",thresh:"1.0",file:"WorkoutFeedbackEngine.swift:426"},
+{id:"WF-005",e:"WF",cat:"Quality Classification",cond:"repHitRate < 0.75",res:"isStruggling = true",els:"false",thresh:"0.75",file:"WorkoutFeedbackEngine.swift:427"},
+{id:"WF-006",e:"WF",cat:"Quality Classification",cond:"0.75 ≤ repHitRate < 1.0",res:"isStuck = true",els:"—",thresh:"0.75, 1.0",file:"WorkoutFeedbackEngine.swift:428"},
+{id:"WF-007",e:"WF",cat:"Exercise Decision",cond:"consecutiveStruggle ≥ 2 OR (sessionsAtWeight ≥ 3 AND avgRecentScore < 45)",res:"deload: nextWeight = currentWeight × 0.90",els:"—",thresh:"2, 3, 45, 0.90",file:"WorkoutFeedbackEngine.swift:479"},
+{id:"WF-008",e:"WF",cat:"Exercise Decision",cond:"current.isStrong AND pastQuality[0].isClean AND setCompletionRate ≥ 1.0",res:"strong signal: add weight increment immediately",els:"—",thresh:"1.0",file:"WorkoutFeedbackEngine.swift:486"},
+{id:"WF-009",e:"WF",cat:"Exercise Decision",cond:"consecutiveClean ≥ 2 AND avgRecentScore ≥ 72 AND setCompletionRate ≥ 1.0",res:"standard progression: add weight increment",els:"—",thresh:"2, 72, 1.0",file:"WorkoutFeedbackEngine.swift:492"},
+{id:"WF-010",e:"WF",cat:"Exercise Decision",cond:"current.isClean AND avgRecentScore ≥ 60 (but not ≥ 72)",res:"hold: one more clean session needed before progressing",els:"—",thresh:"60, 72",file:"WorkoutFeedbackEngine.swift:498"},
+{id:"WF-011",e:"WF",cat:"Exercise Decision",cond:"sessionsAtWeight ≥ 3 AND current.isClean AND avgRecentScore < 72",res:"hold: stagnation — need consistently high quality before progressing",els:"—",thresh:"3, 72",file:"WorkoutFeedbackEngine.swift:504"},
+{id:"WF-012",e:"WF",cat:"Exercise Decision",cond:"current.isStruggling AND weight recently jumped up",res:"roll back: reduce to previous weight",els:"if recent clean session and gap ≤5 days: likely fatigue, hold · else: hold",thresh:"5",file:"WorkoutFeedbackEngine.swift:510"},
+{id:"WF-013",e:"WF",cat:"Rolling Quality Window",cond:"always",res:"quality computed from current + last 2 sessions (3 total)",els:"—",thresh:"3",file:"WorkoutFeedbackEngine.swift:466"},
+{id:"WF-014",e:"WF",cat:"Sessions At Weight",cond:"always",res:"scan up to last 5 sessions at same weight for stalling check",els:"—",thresh:"5",file:"WorkoutFeedbackEngine.swift:462"},
+{id:"WF-015",e:"WF",cat:"Rep Decline Rate",cond:"always",res:"repDecline = (firstSetReps - lastSetReps) / firstSetReps (0.0–1.0 fraction)",els:"—",thresh:"—",file:"WorkoutFeedbackEngine.swift:409"},
+];
+
+// ── Render & Filter ──────────────────────────────────────────────────────────
+let activeFilter = 'all';
+
+function renderAll() {
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+  RULES.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.dataset.engine = r.e;
+    tr.dataset.text = [r.id, r.cat, r.cond, r.res, r.els, r.thresh, r.file].join(' ').toLowerCase();
+    tr.innerHTML = `
+      <td><span class="rule-id">${r.id}</span></td>
+      <td><span class="engine-badge badge-${r.e}">${engineName(r.e)}</span></td>
+      <td><span class="cat-tag">${r.cat}</span></td>
+      <td class="cond">${r.cond}</td>
+      <td class="result">${r.res}</td>
+      <td class="els">${r.els}</td>
+      <td class="thresh">${r.thresh}</td>
+      <td class="fileref">${r.file}</td>`;
+    tbody.appendChild(tr);
+  });
+  applyFilters();
+  updateStats();
+}
+
+function engineName(e) {
+  const m = {NE:'Narrative',WP:'Plan Engine',RE:'Readiness',CS:'Celebration',HH:'Habit',ML:'Msg Library',SA:'Str.Analytics',EI:'Emergent',WF:'Feedback'};
+  return m[e] || e;
+}
+
+function setFilter(f, btn) {
+  activeFilter = f;
+  document.querySelectorAll('.fb').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+
+function applyFilters() {
+  const q = document.getElementById('search').value.toLowerCase();
+  let visible = 0;
+  document.querySelectorAll('#tbody tr').forEach(tr => {
+    const matchEngine = activeFilter === 'all' || tr.dataset.engine === activeFilter;
+    const matchSearch = !q || tr.dataset.text.includes(q);
+    const show = matchEngine && matchSearch;
+    tr.classList.toggle('hidden', !show);
+    if (show) visible++;
+  });
+  document.getElementById('s-visible').textContent = visible;
+  document.getElementById('no-results').style.display = visible === 0 ? '' : 'none';
+}
+
+function updateStats() {
+  const total = RULES.length;
+  document.getElementById('s-total').textContent = total;
+  document.getElementById('s-visible').textContent = total;
+  ['NE','WP','RE','CS','HH','ML','SA','EI','WF'].forEach(e => {
+    document.getElementById('s-'+e).textContent = RULES.filter(r => r.e === e).length;
+  });
+}
+
+renderAll();
+</script>
+</body>
+</html>
