@@ -2177,6 +2177,63 @@
   <div class="file-ref">iOSApp/Views/Progress/ProgressView.swift · iOSApp/Models/Models.swift (UserProfile.goal) · iOSApp/Views/Settings/SettingsView.swift · iOSApp/Engines/SeedStore.swift</div>
 </div>
 
+<!-- UX-003 -->
+<div class="issue" data-id="UX-003" data-priority="p1" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">UX-003</span>
+      <span class="badge badge-p1">P1</span>
+      <span class="badge badge-open" id="status-UX-003">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">Secondary views are raw number dumps — no context, no voice, no visual hierarchy</div>
+
+  <div class="section-label">Problem</div>
+  <div class="section-text">
+    Drill-down sheets, session summaries, completion screens, and detail views throughout the app present numbers without meaning. A user sees "102.5 kg · 5 reps" with no indication of whether that's a PR, a regression, a plateau, or unremarkable. They see a list of sets with no sentence that says what it means. The H.O.N. voice — spare, direct, identity-affirming — is present in phrases during a workout but disappears the moment a user goes one level deeper. Secondary views feel like spreadsheet exports attached to a premium app.
+  </div>
+
+  <div class="section-label">Affected Views</div>
+  <ul class="solution-list">
+    <li><strong>Lift drill-down sheet</strong> (tapped from Progress "Am I getting stronger?") — shows e1RM history chart and raw set log with no contextual sentence. No "this is your best week in 6 weeks", no plateau callout in plain language, no suggested next step at the top.</li>
+    <li><strong>Tier progression sheet</strong> (tapped from "How strong am I?") — shows tier label and ratio with no motivating context. No indication of how close the user is to the next tier or what reaching it would mean.</li>
+    <li><strong>CardioSessionSummaryView</strong> — rounds, duration, exercise count as standalone numbers. No coaching sentence. No acknowledgement that this was harder or easier than last time.</li>
+    <li><strong>Session recap</strong> (tapped from consistency strip) — lists exercises and sets logged with no narrative. A user looking back at a session sees a ledger, not a story.</li>
+    <li><strong>Recovery sparkline detail</strong> — shows readiness factors as a list of values with no explanatory sentence tying them together. "Sleep: 6.5h · HR: 58bpm · Volume: high" communicates nothing about the combined effect.</li>
+    <li><strong>Pattern balance expanded list</strong> — set counts per movement with no interpretation. "Carry: 0 sets" appears without the implication that this is a gap worth addressing.</li>
+  </ul>
+
+  <div class="section-label">What Secondary Views Should Do</div>
+  <ul class="solution-list">
+    <li><strong>One lead sentence per screen</strong> — every drill-down opens with a single sentence that interprets the most important number. Not a label. A statement: "Your squat has added 12.5 kg in the last 8 weeks." or "You haven't trained carries in 3 weeks — the only gap in your pattern."</li>
+    <li><strong>Relative context on every key number</strong> — numbers should be anchored to a reference point: "102.5 kg (your best in 6 weeks)", "74% readiness (your 30-day average is 71%)", "6 rounds (you hit 5 last time)". Context makes the number meaningful. Without it, the number is noise.</li>
+    <li><strong>Visual hierarchy — one dominant number</strong> — not all numbers are equal. The most important number on each screen should be visually dominant (larger, full opacity, centre-weighted). Supporting stats are smaller, muted, secondary. Currently every stat gets the same visual weight, so nothing is the point.</li>
+    <li><strong>The H.O.N. voice does not stop at the workout</strong> — the coaching language that makes the in-workout experience feel considered must carry into every screen. Secondary views are not utility screens — they are the moment a user reflects on their progress. That moment deserves the same intentionality as the moment they log a set.</li>
+    <li><strong>Actionable exit</strong> — where a view implies a next action ("your squat is stalled — try a variation next session"), it should surface a one-line suggestion at the bottom. Not a CTA button — a sentence.</li>
+  </ul>
+
+  <div class="section-label">Design Principles for Implementation</div>
+  <ul class="solution-list">
+    <li>Lead sentence: generated from structured data, not hardcoded. Use the same phrase-bank infrastructure as WorkoutNarrativeEngine. Each view type has its own phrase category.</li>
+    <li>Relative anchoring: every displayed number has a <span class="code">context: String?</span> annotation — computed at the call site, displayed as secondary text below or beside the number. Nil = no context = don't show. Never show a context string that says "no data".</li>
+    <li>Visual hierarchy: use <span class="code">HONTheme.textPrimary</span> at full size for the lead number only; supporting stats use <span class="code">HONTheme.textSecondary</span> at 80% scale. One dominant number per screen, not five equal ones.</li>
+    <li>Voice: all generated sentences must pass the H.O.N. tone check — direct, spare, no cheerleading. "12.5 kg added in 8 weeks" not "Amazing progress! You've been crushing it!"</li>
+  </ul>
+
+  <div class="section-label">Acceptance Criteria</div>
+  <ul class="solution-list">
+    <li>Every drill-down sheet opens with a lead sentence (never a number, never a label, never empty)</li>
+    <li>Every key metric displayed in a secondary view has a context annotation showing its reference point</li>
+    <li>Each screen has one visually dominant number; all others are secondary weight</li>
+    <li>CardioSessionSummaryView includes a coaching sentence generated from session data</li>
+    <li>Lift drill-down sheet includes PR flag ("personal best"), plateau flag if applicable, and suggested next target at top — before the chart</li>
+    <li>No secondary view shows a plain number list without at least one interpretive sentence</li>
+    <li>All generated text passes H.O.N. voice review — no cheerleading, no generic encouragement</li>
+  </ul>
+  <div class="file-ref">iOSApp/Views/Progress/ (all drill-down sheets) · iOSApp/Features/Cardio/CardioSessionView.swift · CardioSessionSummaryView · iOSApp/Design/HONTheme.swift · iOSApp/Engines/WorkoutNarrativeEngine.swift (phrase infrastructure) · phrase_bank.json</div>
+</div>
+
 <!-- ─────────────────────────────────────────── -->
 <div class="tally">
   <h3>Quick Reference</h3>
