@@ -338,7 +338,7 @@
     <div class="divider-line"></div>
   </div>
   <h1>Product Backlog</h1>
-  <div class="subtitle">Last updated: 2026-05-28 · Tap checkbox to cycle status · Open → In Progress → Done</div>
+  <div class="subtitle">Last updated: 2026-05-29 · Tap checkbox to cycle status · Open → In Progress → Done</div>
 </div>
 
 <div class="stats">
@@ -2235,6 +2235,266 @@
 </div>
 
 <!-- ─────────────────────────────────────────── -->
+<div class="section-heading">Navigation &amp; Progress Views</div>
+
+<!-- NAV-001 -->
+<div class="issue" data-id="NAV-001" data-priority="p1" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">NAV-001</span>
+      <span class="badge badge-p1">P1 · BLOCK</span>
+      <span class="badge badge-open" id="status-NAV-001">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">Reduce tab count from 6 to 5 — Settings to gear icon, Advanced merged as Progress drill-down, Trainer promoted</div>
+
+  <div class="section-label">Problem</div>
+  <div class="section-text">
+    Six tabs exceed the cognitive load a bottom tab bar should carry. Settings (visited rarely) occupies a permanent tab. Advanced analytics (StrengthLabView) is structurally separate from Progress despite answering the same user questions. Trainer is buried at position 4 despite being a differentiated feature worth surfacing.
+  </div>
+
+  <div class="section-label">Proposed Architecture</div>
+  <ul class="solution-list">
+    <li><strong>Remove Settings tab</strong> — move to gear icon in HomeView toolbar (NavigationStack push to SettingsView)</li>
+    <li><strong>Merge Advanced (StrengthLabView)</strong> — accessible as a NavigationStack push from the bottom of SimpleProgressView via a "Full Analytics →" row. Not a tab; a depth level.</li>
+    <li><strong>Resulting 5 tabs:</strong> Home · Workout · Progress · Insights · Trainer (Trainer promoted from position 4)</li>
+    <li>Tag assignments: Home(0) · Workout(1) · Progress(2) · Insights(3) · Trainer(4)</li>
+  </ul>
+
+  <div class="section-label">Acceptance Criteria</div>
+  <ul class="solution-list">
+    <li>Tab bar shows exactly 5 items; Settings tab removed</li>
+    <li>Gear icon in HomeView toolbar opens SettingsView via NavigationStack push</li>
+    <li>"Full Analytics →" row at bottom of Progress opens StrengthLabView within the same NavigationStack</li>
+    <li>Trainer is reachable as a primary tab (not buried)</li>
+    <li>No regression: all Settings functionality accessible from gear icon path</li>
+  </ul>
+  <div class="file-ref">iOSApp/App/ContentView.swift · iOSApp/Views/Home/HomeView.swift · iOSApp/Views/Progress/SimpleProgressView.swift · iOSApp/Views/Progress/StrengthLabView.swift</div>
+</div>
+
+<!-- NAV-002 -->
+<div class="issue" data-id="NAV-002" data-priority="p1" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">NAV-002</span>
+      <span class="badge badge-p1">P1 · FIX</span>
+      <span class="badge badge-open" id="status-NAV-002">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">Align section title format between Progress and Advanced — question format with "?" missing from Advanced</div>
+
+  <div class="section-label">Problem</div>
+  <div class="section-text">
+    SimpleProgressView uses question-format section titles: "Am I Getting Stronger?", "How Strong Am I?", "How Do I Train?", etc. StrengthLabView (Advanced) uses the same category names but without the question mark: "Am I Getting Stronger", "How Strong Am I". When these views are navigated together (as per NAV-001), the inconsistency is jarring and undermines the question-framing design language.
+  </div>
+
+  <div class="section-label">Fix</div>
+  <ul class="solution-list">
+    <li>Audit all section title strings in <span class="code">StrengthLabView.swift</span></li>
+    <li>Append "?" to any title that matches a SimpleProgressView question category</li>
+    <li>One-pass find-and-replace; no logic changes</li>
+  </ul>
+  <div class="file-ref">iOSApp/Views/Progress/StrengthLabView.swift · iOSApp/Views/Progress/SimpleProgressView.swift</div>
+</div>
+
+<!-- NAV-003 -->
+<div class="issue" data-id="NAV-003" data-priority="p1" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">NAV-003</span>
+      <span class="badge badge-p1">P1 · FIX</span>
+      <span class="badge badge-open" id="status-NAV-003">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">Cardio section visibility logic inconsistent between Progress and Advanced views</div>
+
+  <div class="section-label">Problem</div>
+  <div class="section-text">
+    <span class="code">SimpleProgressView</span> hides the cardio section when <span class="code">store.userProfile.goal == .strength</span> even when <span class="code">cardioLog</span> is non-empty. <span class="code">StrengthLabView</span> shows cardio whenever <span class="code">cardioLog</span> is non-empty, ignoring the goal setting. A user with goal=.strength who has logged cardio sees cardio data in Advanced but not in Progress — inconsistent and confusing.
+  </div>
+
+  <div class="section-label">Fix</div>
+  <ul class="solution-list">
+    <li>Change the cardio section guard in <span class="code">SimpleProgressView</span> from <span class="code">goal != .strength</span> to <span class="code">!store.cardioLog.isEmpty</span></li>
+    <li>Verify <span class="code">StrengthLabView</span> already uses <span class="code">!store.cardioLog.isEmpty</span> (no change needed if so)</li>
+    <li>Result: cardio section appears whenever the user has cardio data, regardless of goal — data-driven, not goal-gated</li>
+  </ul>
+  <div class="file-ref">iOSApp/Views/Progress/SimpleProgressView.swift · cardio section guard · iOSApp/Views/Progress/StrengthLabView.swift</div>
+</div>
+
+<!-- NAV-004 -->
+<div class="issue" data-id="NAV-004" data-priority="p1" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">NAV-004</span>
+      <span class="badge badge-p1">P1 · FIX</span>
+      <span class="badge badge-open" id="status-NAV-004">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">ConsistencyDotGrid renders most-recent week at top — reverses calendar convention (oldest should be first)</div>
+
+  <div class="section-label">Problem</div>
+  <div class="section-text">
+    <span class="code">ConsistencyDotGrid</span> iterates weeks with week 0 (most recent) at the top and oldest at the bottom. Every calendar, date picker, and timeline UI the user encounters in daily life runs oldest-first (top) to newest-last (bottom). The reversed order requires mental reorientation every time a user reads the grid.
+  </div>
+
+  <div class="section-label">Fix</div>
+  <ul class="solution-list">
+    <li>Reverse the weeks array in the <span class="code">ForEach</span> that renders the grid rows: <span class="code">ForEach(weeks.reversed(), id: \.self) { ... }</span></li>
+    <li>One-line change; no data model changes required</li>
+    <li>Verify the week labels (if any) also update to reflect reversed order</li>
+  </ul>
+  <div class="file-ref">iOSApp/Views/Progress/ · ConsistencyDotGrid · ForEach weeks loop</div>
+</div>
+
+<!-- NAV-005 -->
+<div class="issue" data-id="NAV-005" data-priority="p2" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">NAV-005</span>
+      <span class="badge badge-p2">P2 · WATCH</span>
+      <span class="badge badge-open" id="status-NAV-005">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">HONInAppBanner appears on Progress and Advanced tabs — should be suppressed there</div>
+
+  <div class="section-label">Problem</div>
+  <div class="section-text">
+    <span class="code">HONInAppBanner</span> is currently suppressed only on tab 1 (Workout). It appears on Progress (tag 2) and Advanced/Insights (tag 3), where it overlaps analytics content. Banner notifications are relevant when the user can act on them; on a read-only analytics tab they are distracting and compete with chart data visually.
+  </div>
+
+  <div class="section-label">Fix</div>
+  <ul class="solution-list">
+    <li>Change the banner display condition from <span class="code">selectedTab != 1</span> to <span class="code">selectedTab == 0 || selectedTab &gt; 3</span></li>
+    <li>This shows the banner only on Home (0) and Trainer/Settings (4+); suppresses on Workout (1), Progress (2), Advanced/Insights (3)</li>
+    <li>After NAV-001 lands, verify tab indices still match and update condition if needed</li>
+  </ul>
+  <div class="file-ref">iOSApp/App/ContentView.swift · HONInAppBanner display condition · selectedTab guard</div>
+</div>
+
+<!-- NAV-006 -->
+<div class="issue" data-id="NAV-006" data-priority="p2" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">NAV-006</span>
+      <span class="badge badge-p2">P2 · WATCH</span>
+      <span class="badge badge-open" id="status-NAV-006">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">WorkoutPlanEngine ignores weeklyVolume param — region trained ≥3× this week is never deprioritized</div>
+
+  <div class="section-label">Problem</div>
+  <div class="section-text">
+    <span class="code">WorkoutPlanEngine</span> accepts a <span class="code">weeklyVolume: [BodyRegion: Int]</span> parameter in its signature but does not use it in exercise selection. A user who has already trained chest 3 times this week will receive a plan that recommends chest training again with no warning, potentially driving overtraining.
+  </div>
+
+  <div class="section-label">Proposed Fix</div>
+  <ul class="solution-list">
+    <li>After the candidate exercise list is built, scan <span class="code">weeklyVolume</span> for any region with count ≥ 3</li>
+    <li>Move exercises for that region to the end of the candidate list (deprioritize, not remove — user may still choose them)</li>
+    <li>If a deprioritized region is selected, append a warning to the coach note: e.g. "You've already trained [region] 3× this week — consider prioritizing recovery."</li>
+    <li>Threshold of 3 is a starting constant; make it a named constant for easy tuning</li>
+  </ul>
+  <div class="file-ref">iOSApp/Engines/WorkoutPlanEngine.swift · weeklyVolume param · exercise candidate selection</div>
+</div>
+
+<!-- NAV-007 -->
+<div class="issue" data-id="NAV-007" data-priority="p2" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">NAV-007</span>
+      <span class="badge badge-p2">P3 · WATCH</span>
+      <span class="badge badge-open" id="status-NAV-007">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">RecoveryTrendContent sparkline falls back to 14-day data when history &lt; 5 points — 2–4 day users see wrong data</div>
+
+  <div class="section-label">Problem</div>
+  <div class="section-text">
+    <span class="code">RecoveryTrendContent</span> falls back to a 14-day <span class="code">trendData</span> window when the user has fewer than 5 readiness history points. A new user with 2–4 days of history has actual readiness scores available but sees a generic 14-day fallback view instead. The fallback threshold of &lt;5 is too high.
+  </div>
+
+  <div class="section-label">Fix</div>
+  <ul class="solution-list">
+    <li>Lower the sparkline fallback threshold from <span class="code">&lt; 5</span> to <span class="code">&lt; 2</span></li>
+    <li>Users with 2+ readiness history points see their actual score history</li>
+    <li>Only users with 0–1 points fall back to the generic 14-day view</li>
+    <li>Verify the sparkline renders without visual artifacts at 2–3 data points (minimum viable line)</li>
+  </ul>
+  <div class="file-ref">iOSApp/Views/Progress/ · RecoveryTrendContent · sparkline threshold constant</div>
+</div>
+
+<!-- NAV-008 -->
+<div class="issue" data-id="NAV-008" data-priority="p2" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">NAV-008</span>
+      <span class="badge badge-p2">P2 · WATCH</span>
+      <span class="badge badge-open" id="status-NAV-008">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">Progress and Advanced tabs lack differentiation language — users don't know what each tab is for</div>
+
+  <div class="section-label">Problem</div>
+  <div class="section-text">
+    Both Progress and Advanced (StrengthLabView) cover analytics, but they answer different questions at different depths. Without subtitle language, users must explore both to understand the distinction. This friction is especially pronounced after the NAV-001 restructure, where Advanced becomes a drill-down level from Progress.
+  </div>
+
+  <div class="section-label">Fix</div>
+  <ul class="solution-list">
+    <li><strong>Progress subtitle:</strong> "Your training at a glance" — rendered as a single line below the <span class="code">NavigationTitle</span> in <span class="code">SimpleProgressView</span></li>
+    <li><strong>Advanced subtitle:</strong> "Full analytics for every session." — rendered as a single line below the <span class="code">NavigationTitle</span> in <span class="code">StrengthLabView</span></li>
+    <li>Use <span class="code">HONTheme.textSecondary</span> style; 13px; no icon</li>
+    <li>After NAV-001 lands, revisit whether the Advanced subtitle is still needed (it becomes a push view, not a tab)</li>
+  </ul>
+  <div class="file-ref">iOSApp/Views/Progress/SimpleProgressView.swift · NavigationTitle area · iOSApp/Views/Progress/StrengthLabView.swift · NavigationTitle area</div>
+</div>
+
+<!-- NAV-009 -->
+<div class="issue" data-id="NAV-009" data-priority="p1" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">NAV-009</span>
+      <span class="badge badge-p1">P1 · BLOCK</span>
+      <span class="badge badge-open" id="status-NAV-009">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">Combine Advanced analytics (StrengthLabView) and Insights into a single unified view — two analytics tabs create user confusion</div>
+
+  <div class="section-label">Problem</div>
+  <div class="section-text">
+    The current 6-tab layout has both a Progress tab (workout history, consistency, PRs) and an Advanced/Insights tab (StrengthLabView: composite score, e1RM analytics, decay model). Two tabs answering overlapping questions about "how am I doing" creates ambiguity: users don't know which tab to open, and data is split across both. The result is confusion and underuse of both views.
+  </div>
+
+  <div class="section-label">Proposed Unification</div>
+  <ul class="solution-list">
+    <li>Merge StrengthLabView content and any standalone Insights content into a single view</li>
+    <li>The unified view is the analytics depth level reachable from Progress via "Full Analytics →" (see NAV-001) — it is not a separate tab</li>
+    <li>Content hierarchy: Progress (overview, 5 categories) → Full Analytics (StrengthLabView merged with Insights, all depth content)</li>
+    <li>Decide what "Insights" means explicitly before merging: if Insights = coach-generated observations (from EmergentInsightEngine), those belong in Full Analytics as a dedicated section</li>
+    <li>Coordinate with NAV-001 — this item defines the content of the unified analytics view that NAV-001 makes a drill-down</li>
+  </ul>
+
+  <div class="section-label">Acceptance Criteria</div>
+  <ul class="solution-list">
+    <li>No standalone Insights tab and no standalone Advanced tab in the final 5-tab layout</li>
+    <li>All StrengthLabView content and all Insights content accessible from a single drill-down view reached via Progress</li>
+    <li>Clear section separation within the unified view: "Strength Analytics", "Insights &amp; Coaching", "History"</li>
+    <li>No analytics content orphaned or removed — only reorganized</li>
+  </ul>
+  <div class="file-ref">iOSApp/App/ContentView.swift · iOSApp/Views/Progress/StrengthLabView.swift · iOSApp/Engines/EmergentInsightEngine.swift · iOSApp/Views/Progress/SimpleProgressView.swift</div>
+</div>
+
+<!-- ─────────────────────────────────────────── -->
 <div class="tally">
   <h3>Quick Reference</h3>
   <div class="tally-grid" id="tally-grid">
@@ -2250,6 +2510,7 @@
     <div class="tally-item">HealthKit/HRV <span id="count-hrv">—</span></div>
     <div class="tally-item">Cardio <span id="count-cardio">—</span></div>
     <div class="tally-item">UX · Info Arch <span id="count-ux">—</span></div>
+    <div class="tally-item">Nav &amp; Progress <span id="count-nav">—</span></div>
   </div>
 </div>
 
@@ -2328,6 +2589,7 @@ function updateStats() {
   document.getElementById('count-hrv').textContent      = document.querySelectorAll('[data-id^="H-"]').length;
   document.getElementById('count-cardio').textContent   = document.querySelectorAll('[data-id^="C-"]').length;
   document.getElementById('count-ux').textContent       = document.querySelectorAll('[data-id^="UX-"]').length;
+  document.getElementById('count-nav').textContent      = document.querySelectorAll('[data-id^="NAV-"]').length;
 }
 
 // ── Filter buttons ──────────────────────────────────────────────────────────
