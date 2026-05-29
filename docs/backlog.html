@@ -1961,25 +1961,30 @@
 </div>
 
 <!-- C-004 -->
-<div class="issue" data-id="C-004" data-priority="p1" data-status="open">
+<div class="issue" data-id="C-004" data-priority="p1" data-status="in-progress">
   <div class="issue-header">
-    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <button class="issue-check" onclick="cycleStatus(this)">◑</button>
     <div class="issue-meta">
       <span class="issue-id">C-004</span>
       <span class="badge badge-p1">P1</span>
-      <span class="badge badge-open" id="status-C-004">Open</span>
+      <span class="badge badge-progress" id="status-C-004">In Progress</span>
     </div>
   </div>
-  <div class="issue-title">Cardio sessions not included in ReadinessEngine frequency and consecutive-day calculations</div>
+  <div class="issue-title">Cardio sessions not fully included in ReadinessEngine frequency and consecutive-day calculations</div>
+
+  <div class="section-label">Audit Finding (2026-05-29)</div>
+  <div class="section-text">
+    Partially implemented. <span class="code">ReadinessEngine.swift</span> L51 and L62 already accept a <span class="code">cardioLog</span> parameter and reference it at L225. However, the consecutive-day streak and frequency modifier logic may not fully weight cardio sessions equally to strength sessions. The parameter is plumbed but the internal accounting may be incomplete — verify that <span class="code">computeBaseline()</span> and the consecutive-day modifier use the combined activity timeline.
+  </div>
 
   <div class="section-label">Problem</div>
   <div class="section-text">
-    <span class="code">ReadinessEngine.compute(log:)</span> receives only the strength <span class="code">workoutLog</span>. A user who does 3 cardio sessions and 2 strength sessions per week appears to the readiness engine as a 2-session/week user. Their readiness baseline, frequency modifier, and consecutive-day fatigue calculations are all computed from incomplete data. This produces inaccurate readiness scores: the engine may recommend high-intensity training when the user is actually fatigued from cardio, or flag a "gap" when the user has been active every day.
+    A user who does 3 cardio sessions and 2 strength sessions per week may still appear as a 2-session/week user in some readiness calculations. Consecutive-day fatigue calculations from incomplete data produce inaccurate readiness scores: the engine may recommend high-intensity training when the user is actually fatigued from cardio, or flag a "gap" when the user has been active every day.
   </div>
 
   <div class="section-label">Note</div>
   <div class="section-text">
-    <span class="code">HONHabitEngine</span> already handles this correctly — it checks all activity dates (cardio + strength) for lapse detection. <span class="code">ReadinessEngine</span> needs the same treatment.
+    <span class="code">HONHabitEngine</span> already handles this correctly — it checks all activity dates (cardio + strength) for lapse detection. <span class="code">ReadinessEngine</span> has the parameter but needs verification that all modifiers use it.
   </div>
 
   <div class="section-label">Requirements</div>
