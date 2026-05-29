@@ -338,7 +338,7 @@
     <div class="divider-line"></div>
   </div>
   <h1>Product Backlog</h1>
-  <div class="subtitle">Last updated: 2026-05-28 · Sprint completed · Tap checkbox to cycle status · Open → In Progress → Done</div>
+  <div class="subtitle">Last updated: 2026-05-29 · Tap checkbox to cycle status · Open → In Progress → Done</div>
 </div>
 
 <div class="stats">
@@ -368,7 +368,7 @@
       <span class="issue-id">B-001</span>
       <span class="badge badge-p1">P1</span>
       <span class="badge badge-confirmed">Confirmed</span>
-      <span class="badge badge-done" id="status-B-001">Done</span>
+      <span class="badge badge-open" id="status-B-001">Open</span>
     </div>
   </div>
   <div class="issue-title">Decimal overflow in weight field (lbs mode)</div>
@@ -395,7 +395,7 @@
       <span class="issue-id">B-002</span>
       <span class="badge badge-p1">P1</span>
       <span class="badge badge-confirmed">Confirmed</span>
-      <span class="badge badge-done" id="status-B-002">Done</span>
+      <span class="badge badge-open" id="status-B-002">Open</span>
     </div>
   </div>
   <div class="issue-title">"FAIL" pill overflows reps fraction field layout</div>
@@ -422,7 +422,7 @@
       <span class="issue-id">B-003</span>
       <span class="badge badge-p0">P0</span>
       <span class="badge badge-confirmed">Confirmed</span>
-      <span class="badge badge-done" id="status-B-003">Done</span>
+      <span class="badge badge-open" id="status-B-003">Open</span>
     </div>
   </div>
   <div class="issue-title">Coaching note contradicts weight suggestion (readiness vs. progression systems not coordinated)</div>
@@ -455,7 +455,7 @@
       <span class="issue-id">B-004</span>
       <span class="badge badge-p1">P1</span>
       <span class="badge badge-confirmed">Confirmed</span>
-      <span class="badge badge-done" id="status-B-004">Done</span>
+      <span class="badge badge-open" id="status-B-004">Open</span>
     </div>
   </div>
   <div class="issue-title">All sets get the same suggested weight — warm-up sets ignored</div>
@@ -488,7 +488,7 @@
       <span class="issue-id">B-005</span>
       <span class="badge badge-p1">P1</span>
       <span class="badge badge-confirmed">Confirmed</span>
-      <span class="badge badge-done" id="status-B-005">Done</span>
+      <span class="badge badge-open" id="status-B-005">Open</span>
     </div>
   </div>
   <div class="issue-title">Share prompt should be a tap on the finish screen, not a system notification</div>
@@ -521,7 +521,7 @@
       <span class="issue-id">B-006</span>
       <span class="badge badge-p0">P0</span>
       <span class="badge badge-confirmed">Confirmed</span>
-      <span class="badge badge-done" id="status-B-006">Done</span>
+      <span class="badge badge-open" id="status-B-006">Open</span>
     </div>
   </div>
   <div class="issue-title">RPE: numeric scale is confusing; should use words; last set complete button should be the RPE selector (one tap for both)</div>
@@ -563,7 +563,7 @@
       <span class="issue-id">B-007</span>
       <span class="badge badge-p2">P2</span>
       <span class="badge badge-confirmed">Confirmed</span>
-      <span class="badge badge-done" id="status-B-007">Done</span>
+      <span class="badge badge-open" id="status-B-007">Open</span>
     </div>
   </div>
   <div class="issue-title">Finish screen message has insufficient variety — same message repeats weekly</div>
@@ -596,10 +596,10 @@
       <span class="issue-id">B-008a</span>
       <span class="badge badge-p1">P1</span>
       <span class="badge badge-confirmed">Confirmed</span>
-      <span class="badge badge-done" id="status-B-008a">Done</span>
+      <span class="badge badge-open" id="status-B-008a">Open</span>
     </div>
   </div>
-  <div class="issue-title">"Short gap" message fires for exercise-specific gap, but reads as a session-level gap to the user</div>
+  <div class="issue-title">"Short gap" / "Long gap" message fires on exercise rotation, not on missed workout days — trigger logic is wrong</div>
 
   <div class="section-label">What the User Saw</div>
   <div class="section-text">
@@ -608,16 +608,22 @@
 
   <div class="section-label">Root Cause</div>
   <div class="section-text">
-    <span class="code">WorkoutNarrativeEngine</span> computes <span class="code">historyKey</span> per-exercise: if that specific exercise hasn't been done in 7–13 days, it's "Short Gap." This is exercise-level recency, not session-level recency. A user doing chest/shoulders yesterday but now doing back exercises will trigger "Short Gap" for back exercises — but the phrase bank likely says something like "You're back" which reads as a general workout return message. The user didn't take a break from training — they took a break from THAT exercise.
+    <span class="code">WorkoutNarrativeEngine</span> computes <span class="code">historyKey</span> per-exercise: if that specific exercise hasn't been done in 7–13 days, it's "Short Gap." This is exercise-level recency, not session-level recency. A user on a normal push/pull/legs split will bench press every 7 days by design — every bench session will trigger "Short Gap" even though they've never missed a training day. A user who trains yesterday but rotates to a new movement today will see a gap message for that movement. The trigger is exercise rotation, not absence. It should only fire when the user actually skipped workout days.
+  </div>
+
+  <div class="section-label">Correct Behaviour</div>
+  <div class="section-text">
+    "Short Gap" and "Long Gap" should only appear when the user has genuinely missed training days — i.e., there were days they would have trained but didn't. The gap is about the user's attendance, not the exercise's rotation frequency.
   </div>
 
   <div class="section-label">Proposed Solution</div>
   <ul class="solution-list">
-    <li>Audit all "Short Gap" and "Long Gap" phrases in <span class="code">phrase_bank.json</span> — rewrite any that imply a general training absence to be exercise-specific: "It's been a while since you've done [exercise]" rather than "You're back"</li>
-    <li>In <span class="code">assembleSingle()</span>, prepend the exercise name to the history phrase context so any phrase naturally references the exercise, not the user's overall attendance</li>
-    <li>Consider adding a session-gap check: if <span class="code">daysSinceLastSession &lt; 3</span>, suppress "Short Gap" history phrases entirely regardless of exercise-level gap</li>
+    <li><strong>Primary fix — session-gap gate:</strong> In <span class="code">assembleSingle()</span>, before applying the history key, check <span class="code">daysSinceLastAnySession</span>. If the user has trained within the last 3 days (i.e., they are actively training and simply rotating exercises), force <span class="code">historyKey = "Normal"</span> and suppress the gap phrase entirely. The exercise gap is irrelevant if the user is showing up.</li>
+    <li><strong>Threshold logic:</strong> Gap phrases should only fire when BOTH conditions are true: (a) the exercise gap is ≥7 days, AND (b) the user's last workout session was ≥5 days ago. This ensures the message reflects real absence, not normal exercise rotation.</li>
+    <li><strong>Secondary fix — phrase audit:</strong> Any phrase in <span class="code">phrase_bank.json</span> under history keys "Short Gap" / "Long Gap" that implies a general workout return ("You're back", "Welcome back") must be rewritten to be exercise-specific: "It's been a while since you've done this one" — not a session-return message.</li>
+    <li>Pass <span class="code">daysSinceLastAnySession</span> into <span class="code">ExerciseAnalysis</span> or as a parameter to the assembly function so the gate has access to session-level context.</li>
   </ul>
-  <div class="file-ref">iOSApp/Engines/WorkoutNarrativeEngine.swift · historyKey ~L310 · phrase_bank.json · history keys</div>
+  <div class="file-ref">iOSApp/Engines/WorkoutNarrativeEngine.swift · historyKey ~L310 · assembleSingle() · phrase_bank.json · history keys</div>
 </div>
 
 <!-- B-008b -->
@@ -628,7 +634,7 @@
       <span class="issue-id">B-008b</span>
       <span class="badge badge-p1">P1</span>
       <span class="badge badge-confirmed">Confirmed</span>
-      <span class="badge badge-done" id="status-B-008b">Done</span>
+      <span class="badge badge-open" id="status-B-008b">Open</span>
     </div>
   </div>
   <div class="issue-title">Skipped exercises within a session are not acknowledged in coaching or session summary</div>
@@ -666,7 +672,7 @@
       <span class="issue-id">A-001</span>
       <span class="badge badge-p0">P0</span>
       <span class="badge badge-confirmed">Confirmed</span>
-      <span class="badge badge-done" id="status-A-001">Done</span>
+      <span class="badge badge-open" id="status-A-001">Open</span>
     </div>
   </div>
   <div class="issue-title">TrainerTabView is unreachable — not present in ContentView navigation</div>
@@ -693,7 +699,7 @@
       <span class="issue-id">A-002</span>
       <span class="badge badge-p0">P0</span>
       <span class="badge badge-confirmed">Confirmed</span>
-      <span class="badge badge-done" id="status-A-002">Done</span>
+      <span class="badge badge-open" id="status-A-002">Open</span>
     </div>
   </div>
   <div class="issue-title">WorkoutPlanEngine re-randomizes every SwiftUI render — plans are unstable</div>
@@ -720,7 +726,7 @@
       <span class="issue-id">A-003</span>
       <span class="badge badge-p1">P1</span>
       <span class="badge badge-confirmed">Confirmed</span>
-      <span class="badge badge-done" id="status-A-003">Done</span>
+      <span class="badge badge-open" id="status-A-003">Open</span>
     </div>
   </div>
   <div class="issue-title">Guided session save path drops targetWeight, targetReps, RPE, and toFailure</div>
@@ -746,7 +752,7 @@
       <span class="issue-id">A-004</span>
       <span class="badge badge-p1">P1</span>
       <span class="badge badge-confirmed">Confirmed</span>
-      <span class="badge badge-done" id="status-A-004">Done</span>
+      <span class="badge badge-open" id="status-A-004">Open</span>
     </div>
   </div>
   <div class="issue-title">muscleMassPercent field stores lean body mass (79.85%) but is labeled and used as muscle mass (range 10–65%)</div>
@@ -773,7 +779,7 @@
       <span class="issue-id">A-005</span>
       <span class="badge badge-p2">P2</span>
       <span class="badge badge-confirmed">Confirmed</span>
-      <span class="badge badge-done" id="status-A-005">Done</span>
+      <span class="badge badge-open" id="status-A-005">Open</span>
     </div>
   </div>
   <div class="issue-title">CLAUDE.md documents readiness baseline as 68 — actual code uses dynamic baseline 65 + min(15, sessions_last30d)</div>
@@ -803,7 +809,7 @@
     <div class="issue-meta">
       <span class="issue-id">P-001</span>
       <span class="badge badge-p1">P1</span>
-      <span class="badge badge-done" id="status-P-001">Done</span>
+      <span class="badge badge-open" id="status-P-001">Open</span>
     </div>
   </div>
   <div class="issue-title">Instrument plan skips and exercise completion — zero recommendation signal currently captured</div>
@@ -830,7 +836,7 @@
     <div class="issue-meta">
       <span class="issue-id">P-002</span>
       <span class="badge badge-p1">P1</span>
-      <span class="badge badge-done" id="status-P-002">Done</span>
+      <span class="badge badge-open" id="status-P-002">Open</span>
     </div>
   </div>
   <div class="issue-title">Add progressive overload weight calculation using exerciseHistoryCache</div>
@@ -849,7 +855,7 @@
     <div class="issue-meta">
       <span class="issue-id">P-003</span>
       <span class="badge badge-p2">P2</span>
-      <span class="badge badge-done" id="status-P-003">Done</span>
+      <span class="badge badge-open" id="status-P-003">Open</span>
     </div>
   </div>
   <div class="issue-title">Add TrainingGoal to UserProfile and wire into plan engine rep ranges and exercise composition</div>
@@ -868,7 +874,7 @@
     <div class="issue-meta">
       <span class="issue-id">P-004</span>
       <span class="badge badge-p2">P2</span>
-      <span class="badge badge-done" id="status-P-004">Done</span>
+      <span class="badge badge-open" id="status-P-004">Open</span>
     </div>
   </div>
   <div class="issue-title">Gap-aware plan generation — extended absence should reset intensity and region freshness</div>
@@ -892,7 +898,7 @@
       <span class="issue-id">T-001</span>
       <span class="badge badge-p1">P1</span>
       <span class="badge badge-confirmed">Confirmed</span>
-      <span class="badge badge-done" id="status-T-001">Done</span>
+      <span class="badge badge-open" id="status-T-001">Open</span>
     </div>
   </div>
   <div class="issue-title">Recovery plan is hardcoded to [core, arms, shoulders] — never adapts to the user</div>
@@ -928,7 +934,7 @@
       <span class="issue-id">T-002</span>
       <span class="badge badge-p1">P1</span>
       <span class="badge badge-confirmed">Confirmed</span>
-      <span class="badge badge-done" id="status-T-002">Done</span>
+      <span class="badge badge-open" id="status-T-002">Open</span>
     </div>
   </div>
   <div class="issue-title">Coach note is 3 hardcoded strings — no exercise-specific or user-specific context</div>
@@ -966,7 +972,7 @@
       <span class="issue-id">T-003</span>
       <span class="badge badge-p1">P1</span>
       <span class="badge badge-confirmed">Confirmed</span>
-      <span class="badge badge-done" id="status-T-003">Done</span>
+      <span class="badge badge-open" id="status-T-003">Open</span>
     </div>
   </div>
   <div class="issue-title">"Why this plan" brief missing from GuidedWorkoutPlanView — no reasoning shown to the user</div>
@@ -1006,7 +1012,7 @@
       <span class="issue-id">T-004</span>
       <span class="badge badge-p1">P1</span>
       <span class="badge badge-confirmed">Confirmed</span>
-      <span class="badge badge-done" id="status-T-004">Done</span>
+      <span class="badge badge-open" id="status-T-004">Open</span>
     </div>
   </div>
   <div class="issue-title">WorkoutNarrativeEngine not called in guided sessions — zero post-set coaching</div>
@@ -1043,7 +1049,7 @@
       <span class="issue-id">T-005</span>
       <span class="badge badge-p0">P0</span>
       <span class="badge badge-confirmed">Confirmed</span>
-      <span class="badge badge-done" id="status-T-005">Done</span>
+      <span class="badge badge-open" id="status-T-005">Open</span>
     </div>
   </div>
   <div class="issue-title">Pattern balance computed but ignored — push:pull imbalance never corrects plan split selection</div>
@@ -1082,7 +1088,7 @@
       <span class="issue-id">T-006</span>
       <span class="badge badge-p1">P1</span>
       <span class="badge badge-confirmed">Confirmed</span>
-      <span class="badge badge-done" id="status-T-006">Done</span>
+      <span class="badge badge-open" id="status-T-006">Open</span>
     </div>
   </div>
   <div class="issue-title">Stall detection computed but ignored — plateaued exercises prescribed indefinitely</div>
@@ -1120,7 +1126,7 @@
       <span class="issue-id">T-007</span>
       <span class="badge badge-p2">P2</span>
       <span class="badge badge-confirmed">Confirmed</span>
-      <span class="badge badge-done" id="status-T-007">Done</span>
+      <span class="badge badge-open" id="status-T-007">Open</span>
     </div>
   </div>
   <div class="issue-title">Alternate plan intensity hardcoded to moderate — not derived from readiness or goal</div>
@@ -1147,7 +1153,7 @@
     <div class="issue-meta">
       <span class="issue-id">T-008</span>
       <span class="badge badge-p2">P2</span>
-      <span class="badge badge-done" id="status-T-008">Done</span>
+      <span class="badge badge-open" id="status-T-008">Open</span>
     </div>
   </div>
   <div class="issue-title">No time budget — plans do not adapt to available session time</div>
@@ -1182,7 +1188,7 @@
     <div class="issue-meta">
       <span class="issue-id">T-009</span>
       <span class="badge badge-p1">P1</span>
-      <span class="badge badge-done" id="status-T-009">Done</span>
+      <span class="badge badge-open" id="status-T-009">Open</span>
     </div>
   </div>
   <div class="issue-title">No equipment profile — Trainer can prescribe exercises requiring unavailable equipment</div>
@@ -1223,7 +1229,7 @@
       <span class="issue-id">T-010</span>
       <span class="badge badge-p1">P1</span>
       <span class="badge badge-confirmed">Confirmed</span>
-      <span class="badge badge-done" id="status-T-010">Done</span>
+      <span class="badge badge-open" id="status-T-010">Open</span>
     </div>
   </div>
   <div class="issue-title">WorkoutPlanEngine does not receive AnalyticsResult or EmergentInsights — core intelligence gap</div>
@@ -1260,7 +1266,7 @@
       <span class="issue-id">T-011</span>
       <span class="badge badge-p1">P1</span>
       <span class="badge badge-confirmed">Confirmed</span>
-      <span class="badge badge-done" id="status-T-011">Done</span>
+      <span class="badge badge-open" id="status-T-011">Open</span>
     </div>
   </div>
   <div class="issue-title">Readiness factor breakdown not exposed in Trainer tab — score shown without context</div>
@@ -1297,7 +1303,7 @@
       <span class="issue-id">T-012</span>
       <span class="badge badge-p2">P2</span>
       <span class="badge badge-confirmed">Confirmed</span>
-      <span class="badge badge-done" id="status-T-012">Done</span>
+      <span class="badge badge-open" id="status-T-012">Open</span>
     </div>
   </div>
   <div class="issue-title">EmergentInsight outputs not connected to Trainer — 6 advanced signals computed but never used for planning</div>
@@ -1332,7 +1338,7 @@
     <div class="issue-meta">
       <span class="issue-id">T-013</span>
       <span class="badge badge-p2">P2</span>
-      <span class="badge badge-done" id="status-T-013">Done</span>
+      <span class="badge badge-open" id="status-T-013">Open</span>
     </div>
   </div>
   <div class="issue-title">Strongest day routing — high-performance day not flagged in Trainer when it would most affect load decision</div>
@@ -1360,7 +1366,7 @@
     <div class="issue-meta">
       <span class="issue-id">T-014</span>
       <span class="badge badge-p2">P2</span>
-      <span class="badge badge-done" id="status-T-014">Done</span>
+      <span class="badge badge-open" id="status-T-014">Open</span>
     </div>
   </div>
   <div class="issue-title">Per-exercise intelligence not shown on plan cards — slopePerWeek and isPlateau invisible to user</div>
@@ -1399,7 +1405,7 @@
     <div class="issue-meta">
       <span class="issue-id">V-001</span>
       <span class="badge badge-p0">P0 · Priority Fix</span>
-      <span class="badge badge-done" id="status-V-001">Done</span>
+      <span class="badge badge-open" id="status-V-001">Open</span>
     </div>
   </div>
   <div class="issue-title">Weekly volume tracking per muscle group missing — recommendation engine can prescribe overtraining within 4–6 weeks</div>
@@ -1438,7 +1444,7 @@
     <div class="issue-meta">
       <span class="issue-id">V-002</span>
       <span class="badge badge-p1">P1</span>
-      <span class="badge badge-done" id="status-V-002">Done</span>
+      <span class="badge badge-open" id="status-V-002">Open</span>
     </div>
   </div>
   <div class="issue-title">Deload logic missing — no detection or suggestion after 4–6 weeks of consistent training</div>
@@ -1476,7 +1482,7 @@
       <span class="issue-id">V-003</span>
       <span class="badge badge-p1">P1</span>
       <span class="badge badge-confirmed">Confirmed</span>
-      <span class="badge badge-done" id="status-V-003">Done</span>
+      <span class="badge badge-open" id="status-V-003">Open</span>
     </div>
   </div>
   <div class="issue-title">Cold-start plan shows empty weight fields — no RPE cap or bodyweight fallback for first session</div>
@@ -1514,7 +1520,7 @@
     <div class="issue-meta">
       <span class="issue-id">N-001</span>
       <span class="badge badge-p1">P1</span>
-      <span class="badge badge-done" id="status-N-001">Done</span>
+      <span class="badge badge-open" id="status-N-001">Open</span>
     </div>
   </div>
   <div class="issue-title">Narrative engine has no streak or comeback context — a 30-day streak user gets the same voice as a first-timer</div>
@@ -1549,7 +1555,7 @@
     <div class="issue-meta">
       <span class="issue-id">N-002</span>
       <span class="badge badge-p1">P1 · High Leverage</span>
-      <span class="badge badge-done" id="status-N-002">Done</span>
+      <span class="badge badge-open" id="status-N-002">Open</span>
     </div>
   </div>
   <div class="issue-title">Celebration copy is transactional, not identity-affirming — research shows identity framing significantly outperforms achievement framing for retention</div>
@@ -1585,7 +1591,7 @@
     <div class="issue-meta">
       <span class="issue-id">N-003</span>
       <span class="badge badge-p2">P2</span>
-      <span class="badge badge-done" id="status-N-003">Done</span>
+      <span class="badge badge-open" id="status-N-003">Open</span>
     </div>
   </div>
   <div class="issue-title">Prescription-led narrative reads as mechanical — reflection should come before prescription</div>
@@ -1613,7 +1619,7 @@
     <div class="issue-meta">
       <span class="issue-id">N-004</span>
       <span class="badge badge-p1">P1</span>
-      <span class="badge badge-done" id="status-N-004">Done</span>
+      <span class="badge badge-open" id="status-N-004">Open</span>
     </div>
   </div>
   <div class="issue-title">No session-level narrative arc — multi-exercise narrative is concatenation, not composition</div>
@@ -1648,7 +1654,7 @@
     <div class="issue-meta">
       <span class="issue-id">N-005</span>
       <span class="badge badge-p0">P0 · Highest Leverage</span>
-      <span class="badge badge-done" id="status-N-005">Done</span>
+      <span class="badge badge-open" id="status-N-005">Open</span>
     </div>
   </div>
   <div class="issue-title">Feel rating not integrated into post-workout narrative — user says "Brutal" and app ignores it entirely</div>
@@ -1687,13 +1693,13 @@
 <div class="section-heading">Architecture · Additional</div>
 
 <!-- B-009 -->
-<div class="issue" data-id="B-009" data-priority="p1" data-status="done">
+<div class="issue" data-id="B-009" data-priority="p1" data-status="open">
   <div class="issue-header">
     <button class="issue-check" onclick="cycleStatus(this)">✓</button>
     <div class="issue-meta">
       <span class="issue-id">B-009</span>
       <span class="badge badge-p1">P1</span>
-      <span class="badge badge-done" id="status-B-009">Done</span>
+      <span class="badge badge-open" id="status-B-009">Open</span>
     </div>
   </div>
   <div class="issue-title">WorkoutFeelBar VStack in ZStack(alignment: .bottom) does not safe-area-pad — home indicator overlap on iPhone 14+</div>
@@ -1714,13 +1720,13 @@
 </div>
 
 <!-- A-006 -->
-<div class="issue" data-id="A-006" data-priority="p2" data-status="done">
+<div class="issue" data-id="A-006" data-priority="p2" data-status="open">
   <div class="issue-header">
     <button class="issue-check" onclick="cycleStatus(this)">✓</button>
     <div class="issue-meta">
       <span class="issue-id">A-006</span>
       <span class="badge badge-p2">P2</span>
-      <span class="badge badge-done" id="status-A-006">Done</span>
+      <span class="badge badge-open" id="status-A-006">Open</span>
     </div>
   </div>
   <div class="issue-title">SeedStore @Observable with large workoutLog causes full re-render of ExerciseCard list on every set completion</div>
@@ -1757,7 +1763,7 @@
     <div class="issue-meta">
       <span class="issue-id">H-001</span>
       <span class="badge badge-p2">P2</span>
-      <span class="badge badge-done" id="status-H-001">Done</span>
+      <span class="badge badge-open" id="status-H-001">Open</span>
     </div>
   </div>
   <div class="issue-title">HRV not stamped to session at the right time — morning reading used for evening session</div>
@@ -1784,7 +1790,7 @@
     <div class="issue-meta">
       <span class="issue-id">H-002</span>
       <span class="badge badge-p2">P2</span>
-      <span class="badge badge-done" id="status-H-002">Done</span>
+      <span class="badge badge-open" id="status-H-002">Open</span>
     </div>
   </div>
   <div class="issue-title">HRV 3-day trend not used — single reading vs. baseline misses chronic fatigue signal</div>
@@ -1811,7 +1817,7 @@
     <div class="issue-meta">
       <span class="issue-id">H-003</span>
       <span class="badge badge-p2">P2</span>
-      <span class="badge badge-done" id="status-H-003">Done</span>
+      <span class="badge badge-open" id="status-H-003">Open</span>
     </div>
   </div>
   <div class="issue-title">Population HRV fallback thresholds (55ms / 65ms) are systematically wrong for athletes and older users before calibration</div>
@@ -1833,6 +1839,173 @@
 </div>
 
 <!-- ─────────────────────────────────────────── -->
+<div class="section-heading">Cardio Integration</div>
+
+<!-- C-001 -->
+<div class="issue" data-id="C-001" data-priority="p0" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">C-001</span>
+      <span class="badge badge-p0">P0</span>
+      <span class="badge badge-open" id="status-C-001">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">Cardio session completion has no celebration splash — second-class experience vs. strength workouts</div>
+
+  <div class="section-label">Problem</div>
+  <div class="section-text">
+    When a strength workout finishes, the user sees <span class="code">CelebrationOverlay</span> with streak milestones, comeback detection, PR acknowledgement, and the feel selector sheet. When a cardio session finishes, the user lands on <span class="code">CardioSessionSummaryView</span> — a plain stats screen. No celebration, no streak milestone, no comeback message, no identity-level acknowledgement. The experience communicates that finishing a cardio session is a lesser accomplishment. It is not.
+  </div>
+
+  <div class="section-label">Current Completion Flow (CardioSessionView.swift)</div>
+  <div class="section-text">
+    <span class="code">finishSession()</span> creates a <span class="code">CardioLogEntry</span>, calls <span class="code">store.saveCardioSession(entry)</span> and <span class="code">health.saveCardioSession(entry)</span>, then sets <span class="code">completedEntry</span> which swaps the view to <span class="code">CardioSessionSummaryView</span>. No celebration queue is built, no <span class="code">CelebrationOverlay</span> is shown. The feel selector is also in a different position — inline buttons inside the summary view rather than the modal sheet used for strength.
+  </div>
+
+  <div class="section-label">Requirements</div>
+  <ul class="solution-list">
+    <li>After <span class="code">finishSession()</span> saves the entry, run the same celebration queue logic currently in <span class="code">WorkoutTabView.buildCelebrationQueue()</span> — or extract it into a shared function on <span class="code">SeedStore</span> / a utility that both flows can call</li>
+    <li>Comeback detection: check gap between current cardio finish time and the last activity (cardio OR strength log, whichever is more recent). If ≥7 days, set <span class="code">isComeback = true</span> and surface the comeback celebration</li>
+    <li>Streak milestones: cardio sessions count toward the weekly streak the same as strength sessions — the celebration should fire the same streak milestone messages</li>
+    <li>Show <span class="code">CelebrationOverlay</span> (or equivalent) with the same visual language, same animation, same message quality as strength workouts</li>
+    <li>Feel selector: replace inline feel buttons in <span class="code">CardioSessionSummaryView</span> with the same <span class="code">FeelSelectorSheet</span> modal used by strength. Present it before the summary appears, not embedded inside it. Store via a new <span class="code">store.updateCardioFeel()</span> or unify feel storage</li>
+    <li>Summary view remains — but it appears AFTER the celebration flow, not instead of it</li>
+  </ul>
+
+  <div class="section-label">Acceptance Criteria</div>
+  <ul class="solution-list">
+    <li>Finishing a cardio session shows the same <span class="code">CelebrationOverlay</span> (or visually equivalent) as finishing a strength workout</li>
+    <li>Comeback message fires when gap from last any-activity ≥7 days</li>
+    <li>Streak milestones fire on the same conditions as strength (weekly count including cardio sessions)</li>
+    <li>Feel selector is a modal sheet, not inline buttons — same interaction as strength completion</li>
+    <li>No regression in strength workout completion flow</li>
+  </ul>
+  <div class="file-ref">iOSApp/Features/Cardio/CardioSessionView.swift · finishSession() (AMRAP ~L299, EMOM ~L702) · CardioSessionSummaryView · iOSApp/App/WorkoutTabView.swift · buildCelebrationQueue() · iOSApp/Design/CelebrationSystem.swift</div>
+</div>
+
+<!-- C-002 -->
+<div class="issue" data-id="C-002" data-priority="p1" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">C-002</span>
+      <span class="badge badge-p1">P1</span>
+      <span class="badge badge-open" id="status-C-002">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">Cardio sessions have no coaching narrative — WorkoutNarrativeEngine is never called</div>
+
+  <div class="section-label">Problem</div>
+  <div class="section-text">
+    Strength workouts receive per-set coaching text from <span class="code">WorkoutNarrativeEngine</span> — effort acknowledgement, weight progression notes, motivational context. Cardio workouts receive no coaching language at any point: not during the session, not at completion, not in the summary. The coaching voice that defines H.O.N.'s identity is completely absent for cardio users.
+  </div>
+
+  <div class="section-label">Requirements</div>
+  <ul class="solution-list">
+    <li><strong>End-of-session coaching note:</strong> <span class="code">CardioSessionSummaryView</span> should display one coaching sentence generated from session data. Inputs available: total rounds completed, duration, exercise count, feel rating. Example outputs: "6 rounds in 20 minutes. That's solid work." / "You pushed through the full circuit. Note how you feel — that's your baseline."</li>
+    <li>This does not require a full <span class="code">CardioNarrativeEngine</span> — a lightweight phrase function using the same phrase bank infrastructure (pick() + rotation window) is sufficient for v1</li>
+    <li>Inputs to the phrase function: <span class="code">roundsCompleted</span>, <span class="code">durationMinutes</span>, <span class="code">circuitType</span> (AMRAP/EMOM), <span class="code">feel</span> (if captured)</li>
+    <li><strong>In-session coaching (EMOM only):</strong> At each minute transition (when exercise changes), surface a one-line encouragement. The EMOM flow already has a minute-transition event at ~L616 — add a coaching line to the UI at that point. Keep it short: "Keep moving." / "Good. Next."</li>
+    <li>All phrases must match the H.O.N. voice: spare, direct, identity-affirming. No cheerleading. Consistent with <span class="code">phrase_bank.json</span> tone.</li>
+    <li>Add a <span class="code">cardio</span> section to <span class="code">phrase_bank.json</span> with at least 10 end-of-session phrases and 6 in-session transition phrases</li>
+  </ul>
+
+  <div class="section-label">Acceptance Criteria</div>
+  <ul class="solution-list">
+    <li><span class="code">CardioSessionSummaryView</span> shows exactly one coaching sentence below the stats — never empty, never generic</li>
+    <li>Phrase rotation prevents the same phrase appearing in consecutive cardio sessions (same rotation window mechanism as strength)</li>
+    <li>EMOM minute-transition UI shows a one-line in-session coaching note</li>
+    <li>Coaching language passes a tone review against the H.O.N. voice guidelines</li>
+  </ul>
+  <div class="file-ref">iOSApp/Features/Cardio/CardioSessionView.swift · CardioSessionSummaryView · minute transition ~L616 · iOSApp/Engines/WorkoutNarrativeEngine.swift · phrase_bank.json</div>
+</div>
+
+<!-- C-003 -->
+<div class="issue" data-id="C-003" data-priority="p1" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">C-003</span>
+      <span class="badge badge-p1">P1</span>
+      <span class="badge badge-open" id="status-C-003">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">Countdown timer flashes during 3-2-1 start sequence in both AMRAP and EMOM cardio views</div>
+
+  <div class="section-label">Problem</div>
+  <div class="section-text">
+    The 3-2-1 countdown at the start of a cardio circuit flashes visually as the numbers change. Both the AMRAP countdown (CardioSessionView.swift ~L108) and the EMOM countdown (~L402) use <span class="code">.animation(.easeInOut(duration: 0.4), value: countdownValue)</span> combined with <span class="code">.contentTransition(.numericText())</span>. When <span class="code">countdownValue</span> triggers a state update, the combined animation may fire multiple times or conflict with a view re-render, producing a flash rather than a clean number transition.
+  </div>
+
+  <div class="section-label">Root Cause (likely)</div>
+  <div class="section-text">
+    <span class="code">.animation(_:value:)</span> and <span class="code">.contentTransition(.numericText())</span> are applied together. The <span class="code">contentTransition</span> modifier handles the digit-change animation internally; the outer <span class="code">.animation</span> modifier may be triggering a duplicate animation on the parent container, causing the flash. Additionally, any state update unrelated to <span class="code">countdownValue</span> that causes the view to re-render during the countdown could reset or re-fire the animation.
+  </div>
+
+  <div class="section-label">Proposed Fix</div>
+  <ul class="solution-list">
+    <li>Remove <span class="code">.animation(.easeInOut(duration: 0.4), value: countdownValue)</span> from the countdown number view and rely solely on <span class="code">.contentTransition(.numericText())</span> combined with a <span class="code">withAnimation</span> block wrapping the <span class="code">countdownValue</span> state update at the call site</li>
+    <li>Ensure the countdown overlay is isolated in its own view struct so unrelated state updates in the parent view do not cause re-renders during the countdown</li>
+    <li>Fix applies to both AMRAP (~L108) and EMOM (~L402) — they share the same pattern</li>
+    <li>Verify fix on a physical device, not just Simulator — animation flashing is often only visible on device</li>
+  </ul>
+
+  <div class="section-label">Acceptance Criteria</div>
+  <ul class="solution-list">
+    <li>3-2-1 countdown transitions cleanly with no flash on physical iPhone</li>
+    <li>Fix applied to both AMRAP and EMOM countdown paths</li>
+    <li>No regression in session resume path (countdown skip when restoring saved session)</li>
+  </ul>
+  <div class="file-ref">iOSApp/Features/Cardio/CardioSessionView.swift · AMRAP countdown ~L108 · EMOM countdown ~L402 · countdownValue state updates</div>
+</div>
+
+<!-- C-004 -->
+<div class="issue" data-id="C-004" data-priority="p1" data-status="in-progress">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">◑</button>
+    <div class="issue-meta">
+      <span class="issue-id">C-004</span>
+      <span class="badge badge-p1">P1</span>
+      <span class="badge badge-progress" id="status-C-004">In Progress</span>
+    </div>
+  </div>
+  <div class="issue-title">Cardio sessions not fully included in ReadinessEngine frequency and consecutive-day calculations</div>
+
+  <div class="section-label">Audit Finding (2026-05-29)</div>
+  <div class="section-text">
+    Partially implemented. <span class="code">ReadinessEngine.swift</span> L51 and L62 already accept a <span class="code">cardioLog</span> parameter and reference it at L225. However, the consecutive-day streak and frequency modifier logic may not fully weight cardio sessions equally to strength sessions. The parameter is plumbed but the internal accounting may be incomplete — verify that <span class="code">computeBaseline()</span> and the consecutive-day modifier use the combined activity timeline.
+  </div>
+
+  <div class="section-label">Problem</div>
+  <div class="section-text">
+    A user who does 3 cardio sessions and 2 strength sessions per week may still appear as a 2-session/week user in some readiness calculations. Consecutive-day fatigue calculations from incomplete data produce inaccurate readiness scores: the engine may recommend high-intensity training when the user is actually fatigued from cardio, or flag a "gap" when the user has been active every day.
+  </div>
+
+  <div class="section-label">Note</div>
+  <div class="section-text">
+    <span class="code">HONHabitEngine</span> already handles this correctly — it checks all activity dates (cardio + strength) for lapse detection. <span class="code">ReadinessEngine</span> has the parameter but needs verification that all modifiers use it.
+  </div>
+
+  <div class="section-label">Requirements</div>
+  <ul class="solution-list">
+    <li>Pass combined activity dates (strength + cardio) to <span class="code">ReadinessEngine.compute()</span>, or add a <span class="code">cardioLog: [CardioLogEntry]</span> parameter and merge dates internally</li>
+    <li>Frequency modifier, consecutive active days, and days-since-last calculations should use the combined activity timeline</li>
+    <li>Volume/intensity modifiers remain strength-only (cardio volume is measured differently and should not be combined into the same scale)</li>
+    <li>Update <span class="code">SeedStore.refreshAnalytics()</span> to pass <span class="code">cardioLog</span> when calling <span class="code">ReadinessEngine.compute()</span></li>
+  </ul>
+
+  <div class="section-label">Acceptance Criteria</div>
+  <ul class="solution-list">
+    <li>A user who did cardio yesterday and strength today does not see a "days since last session" gap in readiness</li>
+    <li>Consecutive active day count increments for cardio days</li>
+    <li>Readiness baseline reflects true training frequency (cardio + strength combined)</li>
+    <li>No regression in strength-only readiness calculation</li>
+  </ul>
+  <div class="file-ref">iOSApp/Engines/ReadinessEngine.swift · compute(log:) · iOSApp/Engines/SeedStore.swift · refreshAnalytics() · iOSApp/Models/Models.swift · CardioLogEntry</div>
+</div>
+
+<!-- ─────────────────────────────────────────── -->
 <div class="section-heading">UX · Information Architecture</div>
 
 <!-- UX-001 -->
@@ -1842,7 +2015,7 @@
     <div class="issue-meta">
       <span class="issue-id">UX-001</span>
       <span class="badge badge-p1">P1</span>
-      <span class="badge badge-done" id="status-UX-001">Done</span>
+      <span class="badge badge-open" id="status-UX-001">Open</span>
     </div>
   </div>
   <div class="issue-title">Progress page — earn-your-place chart reduction, 5 question-named categories with tight scope, and contextual inline signals (no separate "alerts" section)</div>
@@ -1949,7 +2122,7 @@
     <div class="issue-meta">
       <span class="issue-id">UX-002</span>
       <span class="badge badge-p2">P2</span>
-      <span class="badge badge-done" id="status-UX-002">Done</span>
+      <span class="badge badge-open" id="status-UX-002">Open</span>
     </div>
   </div>
   <div class="issue-title">User-selectable charts: goal-based filtering preferred over a chart checkbox picker</div>
@@ -2004,6 +2177,323 @@
   <div class="file-ref">iOSApp/Views/Progress/ProgressView.swift · iOSApp/Models/Models.swift (UserProfile.goal) · iOSApp/Views/Settings/SettingsView.swift · iOSApp/Engines/SeedStore.swift</div>
 </div>
 
+<!-- UX-003 -->
+<div class="issue" data-id="UX-003" data-priority="p1" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">UX-003</span>
+      <span class="badge badge-p1">P1</span>
+      <span class="badge badge-open" id="status-UX-003">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">Secondary views are raw number dumps — no context, no voice, no visual hierarchy</div>
+
+  <div class="section-label">Problem</div>
+  <div class="section-text">
+    Drill-down sheets, session summaries, completion screens, and detail views throughout the app present numbers without meaning. A user sees "102.5 kg · 5 reps" with no indication of whether that's a PR, a regression, a plateau, or unremarkable. They see a list of sets with no sentence that says what it means. The H.O.N. voice — spare, direct, identity-affirming — is present in phrases during a workout but disappears the moment a user goes one level deeper. Secondary views feel like spreadsheet exports attached to a premium app.
+  </div>
+
+  <div class="section-label">Affected Views</div>
+  <ul class="solution-list">
+    <li><strong>Lift drill-down sheet</strong> (tapped from Progress "Am I getting stronger?") — shows e1RM history chart and raw set log with no contextual sentence. No "this is your best week in 6 weeks", no plateau callout in plain language, no suggested next step at the top.</li>
+    <li><strong>Tier progression sheet</strong> (tapped from "How strong am I?") — shows tier label and ratio with no motivating context. No indication of how close the user is to the next tier or what reaching it would mean.</li>
+    <li><strong>CardioSessionSummaryView</strong> — rounds, duration, exercise count as standalone numbers. No coaching sentence. No acknowledgement that this was harder or easier than last time.</li>
+    <li><strong>Session recap</strong> (tapped from consistency strip) — lists exercises and sets logged with no narrative. A user looking back at a session sees a ledger, not a story.</li>
+    <li><strong>Recovery sparkline detail</strong> — shows readiness factors as a list of values with no explanatory sentence tying them together. "Sleep: 6.5h · HR: 58bpm · Volume: high" communicates nothing about the combined effect.</li>
+    <li><strong>Pattern balance expanded list</strong> — set counts per movement with no interpretation. "Carry: 0 sets" appears without the implication that this is a gap worth addressing.</li>
+  </ul>
+
+  <div class="section-label">What Secondary Views Should Do</div>
+  <ul class="solution-list">
+    <li><strong>One lead sentence per screen</strong> — every drill-down opens with a single sentence that interprets the most important number. Not a label. A statement: "Your squat has added 12.5 kg in the last 8 weeks." or "You haven't trained carries in 3 weeks — the only gap in your pattern."</li>
+    <li><strong>Relative context on every key number</strong> — numbers should be anchored to a reference point: "102.5 kg (your best in 6 weeks)", "74% readiness (your 30-day average is 71%)", "6 rounds (you hit 5 last time)". Context makes the number meaningful. Without it, the number is noise.</li>
+    <li><strong>Visual hierarchy — one dominant number</strong> — not all numbers are equal. The most important number on each screen should be visually dominant (larger, full opacity, centre-weighted). Supporting stats are smaller, muted, secondary. Currently every stat gets the same visual weight, so nothing is the point.</li>
+    <li><strong>The H.O.N. voice does not stop at the workout</strong> — the coaching language that makes the in-workout experience feel considered must carry into every screen. Secondary views are not utility screens — they are the moment a user reflects on their progress. That moment deserves the same intentionality as the moment they log a set.</li>
+    <li><strong>Actionable exit</strong> — where a view implies a next action ("your squat is stalled — try a variation next session"), it should surface a one-line suggestion at the bottom. Not a CTA button — a sentence.</li>
+  </ul>
+
+  <div class="section-label">Design Principles for Implementation</div>
+  <ul class="solution-list">
+    <li>Lead sentence: generated from structured data, not hardcoded. Use the same phrase-bank infrastructure as WorkoutNarrativeEngine. Each view type has its own phrase category.</li>
+    <li>Relative anchoring: every displayed number has a <span class="code">context: String?</span> annotation — computed at the call site, displayed as secondary text below or beside the number. Nil = no context = don't show. Never show a context string that says "no data".</li>
+    <li>Visual hierarchy: use <span class="code">HONTheme.textPrimary</span> at full size for the lead number only; supporting stats use <span class="code">HONTheme.textSecondary</span> at 80% scale. One dominant number per screen, not five equal ones.</li>
+    <li>Voice: all generated sentences must pass the H.O.N. tone check — direct, spare, no cheerleading. "12.5 kg added in 8 weeks" not "Amazing progress! You've been crushing it!"</li>
+  </ul>
+
+  <div class="section-label">Acceptance Criteria</div>
+  <ul class="solution-list">
+    <li>Every drill-down sheet opens with a lead sentence (never a number, never a label, never empty)</li>
+    <li>Every key metric displayed in a secondary view has a context annotation showing its reference point</li>
+    <li>Each screen has one visually dominant number; all others are secondary weight</li>
+    <li>CardioSessionSummaryView includes a coaching sentence generated from session data</li>
+    <li>Lift drill-down sheet includes PR flag ("personal best"), plateau flag if applicable, and suggested next target at top — before the chart</li>
+    <li>No secondary view shows a plain number list without at least one interpretive sentence</li>
+    <li>All generated text passes H.O.N. voice review — no cheerleading, no generic encouragement</li>
+  </ul>
+  <div class="file-ref">iOSApp/Views/Progress/ (all drill-down sheets) · iOSApp/Features/Cardio/CardioSessionView.swift · CardioSessionSummaryView · iOSApp/Design/HONTheme.swift · iOSApp/Engines/WorkoutNarrativeEngine.swift (phrase infrastructure) · phrase_bank.json</div>
+</div>
+
+<!-- ─────────────────────────────────────────── -->
+<div class="section-heading">Navigation &amp; Progress Views</div>
+
+<!-- NAV-001 -->
+<div class="issue" data-id="NAV-001" data-priority="p1" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">NAV-001</span>
+      <span class="badge badge-p1">P1 · BLOCK</span>
+      <span class="badge badge-open" id="status-NAV-001">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">Reduce tab count from 6 to 5 — Settings to gear icon, Advanced merged as Progress drill-down, Trainer promoted</div>
+
+  <div class="section-label">Problem</div>
+  <div class="section-text">
+    Six tabs exceed the cognitive load a bottom tab bar should carry. Settings (visited rarely) occupies a permanent tab. Advanced analytics (StrengthLabView) is structurally separate from Progress despite answering the same user questions. Trainer is buried at position 4 despite being a differentiated feature worth surfacing.
+  </div>
+
+  <div class="section-label">Proposed Architecture</div>
+  <ul class="solution-list">
+    <li><strong>Remove Settings tab</strong> — move to gear icon in HomeView toolbar (NavigationStack push to SettingsView)</li>
+    <li><strong>Merge Advanced (StrengthLabView)</strong> — accessible as a NavigationStack push from the bottom of SimpleProgressView via a "Full Analytics →" row. Not a tab; a depth level.</li>
+    <li><strong>Resulting 5 tabs:</strong> Home · Workout · Progress · Insights · Trainer (Trainer promoted from position 4)</li>
+    <li>Tag assignments: Home(0) · Workout(1) · Progress(2) · Insights(3) · Trainer(4)</li>
+  </ul>
+
+  <div class="section-label">Acceptance Criteria</div>
+  <ul class="solution-list">
+    <li>Tab bar shows exactly 5 items; Settings tab removed</li>
+    <li>Gear icon in HomeView toolbar opens SettingsView via NavigationStack push</li>
+    <li>"Full Analytics →" row at bottom of Progress opens StrengthLabView within the same NavigationStack</li>
+    <li>Trainer is reachable as a primary tab (not buried)</li>
+    <li>No regression: all Settings functionality accessible from gear icon path</li>
+  </ul>
+  <div class="file-ref">iOSApp/App/ContentView.swift · iOSApp/Views/Home/HomeView.swift · iOSApp/Views/Progress/SimpleProgressView.swift · iOSApp/Views/Progress/StrengthLabView.swift</div>
+</div>
+
+<!-- NAV-002 -->
+<div class="issue" data-id="NAV-002" data-priority="p1" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">NAV-002</span>
+      <span class="badge badge-p1">P1 · FIX</span>
+      <span class="badge badge-open" id="status-NAV-002">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">Align section title format between Progress and Advanced — question format with "?" missing from Advanced</div>
+
+  <div class="section-label">Problem</div>
+  <div class="section-text">
+    SimpleProgressView uses question-format section titles: "Am I Getting Stronger?", "How Strong Am I?", "How Do I Train?", etc. StrengthLabView (Advanced) uses the same category names but without the question mark: "Am I Getting Stronger", "How Strong Am I". When these views are navigated together (as per NAV-001), the inconsistency is jarring and undermines the question-framing design language.
+  </div>
+
+  <div class="section-label">Fix</div>
+  <ul class="solution-list">
+    <li>Audit all section title strings in <span class="code">StrengthLabView.swift</span></li>
+    <li>Append "?" to any title that matches a SimpleProgressView question category</li>
+    <li>One-pass find-and-replace; no logic changes</li>
+  </ul>
+  <div class="file-ref">iOSApp/Views/Progress/StrengthLabView.swift · iOSApp/Views/Progress/SimpleProgressView.swift</div>
+</div>
+
+<!-- NAV-003 -->
+<div class="issue" data-id="NAV-003" data-priority="p1" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">NAV-003</span>
+      <span class="badge badge-p1">P1 · FIX</span>
+      <span class="badge badge-open" id="status-NAV-003">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">Cardio section visibility logic inconsistent between Progress and Advanced views</div>
+
+  <div class="section-label">Problem</div>
+  <div class="section-text">
+    <span class="code">SimpleProgressView</span> hides the cardio section when <span class="code">store.userProfile.goal == .strength</span> even when <span class="code">cardioLog</span> is non-empty. <span class="code">StrengthLabView</span> shows cardio whenever <span class="code">cardioLog</span> is non-empty, ignoring the goal setting. A user with goal=.strength who has logged cardio sees cardio data in Advanced but not in Progress — inconsistent and confusing.
+  </div>
+
+  <div class="section-label">Fix</div>
+  <ul class="solution-list">
+    <li>Change the cardio section guard in <span class="code">SimpleProgressView</span> from <span class="code">goal != .strength</span> to <span class="code">!store.cardioLog.isEmpty</span></li>
+    <li>Verify <span class="code">StrengthLabView</span> already uses <span class="code">!store.cardioLog.isEmpty</span> (no change needed if so)</li>
+    <li>Result: cardio section appears whenever the user has cardio data, regardless of goal — data-driven, not goal-gated</li>
+  </ul>
+  <div class="file-ref">iOSApp/Views/Progress/SimpleProgressView.swift · cardio section guard · iOSApp/Views/Progress/StrengthLabView.swift</div>
+</div>
+
+<!-- NAV-004 -->
+<div class="issue" data-id="NAV-004" data-priority="p1" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">NAV-004</span>
+      <span class="badge badge-p1">P1 · FIX</span>
+      <span class="badge badge-open" id="status-NAV-004">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">ConsistencyDotGrid renders most-recent week at top — reverses calendar convention (oldest should be first)</div>
+
+  <div class="section-label">Problem</div>
+  <div class="section-text">
+    <span class="code">ConsistencyDotGrid</span> iterates weeks with week 0 (most recent) at the top and oldest at the bottom. Every calendar, date picker, and timeline UI the user encounters in daily life runs oldest-first (top) to newest-last (bottom). The reversed order requires mental reorientation every time a user reads the grid.
+  </div>
+
+  <div class="section-label">Fix</div>
+  <ul class="solution-list">
+    <li>Reverse the weeks array in the <span class="code">ForEach</span> that renders the grid rows: <span class="code">ForEach(weeks.reversed(), id: \.self) { ... }</span></li>
+    <li>One-line change; no data model changes required</li>
+    <li>Verify the week labels (if any) also update to reflect reversed order</li>
+  </ul>
+  <div class="file-ref">iOSApp/Views/Progress/ · ConsistencyDotGrid · ForEach weeks loop</div>
+</div>
+
+<!-- NAV-005 -->
+<div class="issue" data-id="NAV-005" data-priority="p2" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">NAV-005</span>
+      <span class="badge badge-p2">P2 · WATCH</span>
+      <span class="badge badge-open" id="status-NAV-005">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">HONInAppBanner appears on Progress and Advanced tabs — should be suppressed there</div>
+
+  <div class="section-label">Problem</div>
+  <div class="section-text">
+    <span class="code">HONInAppBanner</span> is currently suppressed only on tab 1 (Workout). It appears on Progress (tag 2) and Advanced/Insights (tag 3), where it overlaps analytics content. Banner notifications are relevant when the user can act on them; on a read-only analytics tab they are distracting and compete with chart data visually.
+  </div>
+
+  <div class="section-label">Fix</div>
+  <ul class="solution-list">
+    <li>Change the banner display condition from <span class="code">selectedTab != 1</span> to <span class="code">selectedTab == 0 || selectedTab &gt; 3</span></li>
+    <li>This shows the banner only on Home (0) and Trainer/Settings (4+); suppresses on Workout (1), Progress (2), Advanced/Insights (3)</li>
+    <li>After NAV-001 lands, verify tab indices still match and update condition if needed</li>
+  </ul>
+  <div class="file-ref">iOSApp/App/ContentView.swift · HONInAppBanner display condition · selectedTab guard</div>
+</div>
+
+<!-- NAV-006 -->
+<div class="issue" data-id="NAV-006" data-priority="p2" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">NAV-006</span>
+      <span class="badge badge-p2">P2 · WATCH</span>
+      <span class="badge badge-open" id="status-NAV-006">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">WorkoutPlanEngine ignores weeklyVolume param — region trained ≥3× this week is never deprioritized</div>
+
+  <div class="section-label">Problem</div>
+  <div class="section-text">
+    <span class="code">WorkoutPlanEngine</span> accepts a <span class="code">weeklyVolume: [BodyRegion: Int]</span> parameter in its signature but does not use it in exercise selection. A user who has already trained chest 3 times this week will receive a plan that recommends chest training again with no warning, potentially driving overtraining.
+  </div>
+
+  <div class="section-label">Proposed Fix</div>
+  <ul class="solution-list">
+    <li>After the candidate exercise list is built, scan <span class="code">weeklyVolume</span> for any region with count ≥ 3</li>
+    <li>Move exercises for that region to the end of the candidate list (deprioritize, not remove — user may still choose them)</li>
+    <li>If a deprioritized region is selected, append a warning to the coach note: e.g. "You've already trained [region] 3× this week — consider prioritizing recovery."</li>
+    <li>Threshold of 3 is a starting constant; make it a named constant for easy tuning</li>
+  </ul>
+  <div class="file-ref">iOSApp/Engines/WorkoutPlanEngine.swift · weeklyVolume param · exercise candidate selection</div>
+</div>
+
+<!-- NAV-007 -->
+<div class="issue" data-id="NAV-007" data-priority="p2" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">NAV-007</span>
+      <span class="badge badge-p2">P3 · WATCH</span>
+      <span class="badge badge-open" id="status-NAV-007">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">RecoveryTrendContent sparkline falls back to 14-day data when history &lt; 5 points — 2–4 day users see wrong data</div>
+
+  <div class="section-label">Problem</div>
+  <div class="section-text">
+    <span class="code">RecoveryTrendContent</span> falls back to a 14-day <span class="code">trendData</span> window when the user has fewer than 5 readiness history points. A new user with 2–4 days of history has actual readiness scores available but sees a generic 14-day fallback view instead. The fallback threshold of &lt;5 is too high.
+  </div>
+
+  <div class="section-label">Fix</div>
+  <ul class="solution-list">
+    <li>Lower the sparkline fallback threshold from <span class="code">&lt; 5</span> to <span class="code">&lt; 2</span></li>
+    <li>Users with 2+ readiness history points see their actual score history</li>
+    <li>Only users with 0–1 points fall back to the generic 14-day view</li>
+    <li>Verify the sparkline renders without visual artifacts at 2–3 data points (minimum viable line)</li>
+  </ul>
+  <div class="file-ref">iOSApp/Views/Progress/ · RecoveryTrendContent · sparkline threshold constant</div>
+</div>
+
+<!-- NAV-008 -->
+<div class="issue" data-id="NAV-008" data-priority="p2" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">NAV-008</span>
+      <span class="badge badge-p2">P2 · WATCH</span>
+      <span class="badge badge-open" id="status-NAV-008">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">Progress and Advanced tabs lack differentiation language — users don't know what each tab is for</div>
+
+  <div class="section-label">Problem</div>
+  <div class="section-text">
+    Both Progress and Advanced (StrengthLabView) cover analytics, but they answer different questions at different depths. Without subtitle language, users must explore both to understand the distinction. This friction is especially pronounced after the NAV-001 restructure, where Advanced becomes a drill-down level from Progress.
+  </div>
+
+  <div class="section-label">Fix</div>
+  <ul class="solution-list">
+    <li><strong>Progress subtitle:</strong> "Your training at a glance" — rendered as a single line below the <span class="code">NavigationTitle</span> in <span class="code">SimpleProgressView</span></li>
+    <li><strong>Advanced subtitle:</strong> "Full analytics for every session." — rendered as a single line below the <span class="code">NavigationTitle</span> in <span class="code">StrengthLabView</span></li>
+    <li>Use <span class="code">HONTheme.textSecondary</span> style; 13px; no icon</li>
+    <li>After NAV-001 lands, revisit whether the Advanced subtitle is still needed (it becomes a push view, not a tab)</li>
+  </ul>
+  <div class="file-ref">iOSApp/Views/Progress/SimpleProgressView.swift · NavigationTitle area · iOSApp/Views/Progress/StrengthLabView.swift · NavigationTitle area</div>
+</div>
+
+<!-- NAV-009 -->
+<div class="issue" data-id="NAV-009" data-priority="p1" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">NAV-009</span>
+      <span class="badge badge-p1">P1 · BLOCK</span>
+      <span class="badge badge-open" id="status-NAV-009">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">Combine Advanced analytics (StrengthLabView) and Insights into a single unified view — two analytics tabs create user confusion</div>
+
+  <div class="section-label">Problem</div>
+  <div class="section-text">
+    The current 6-tab layout has both a Progress tab (workout history, consistency, PRs) and an Advanced/Insights tab (StrengthLabView: composite score, e1RM analytics, decay model). Two tabs answering overlapping questions about "how am I doing" creates ambiguity: users don't know which tab to open, and data is split across both. The result is confusion and underuse of both views.
+  </div>
+
+  <div class="section-label">Proposed Unification</div>
+  <ul class="solution-list">
+    <li>Merge StrengthLabView content and any standalone Insights content into a single view</li>
+    <li>The unified view is the analytics depth level reachable from Progress via "Full Analytics →" (see NAV-001) — it is not a separate tab</li>
+    <li>Content hierarchy: Progress (overview, 5 categories) → Full Analytics (StrengthLabView merged with Insights, all depth content)</li>
+    <li>Decide what "Insights" means explicitly before merging: if Insights = coach-generated observations (from EmergentInsightEngine), those belong in Full Analytics as a dedicated section</li>
+    <li>Coordinate with NAV-001 — this item defines the content of the unified analytics view that NAV-001 makes a drill-down</li>
+  </ul>
+
+  <div class="section-label">Acceptance Criteria</div>
+  <ul class="solution-list">
+    <li>No standalone Insights tab and no standalone Advanced tab in the final 5-tab layout</li>
+    <li>All StrengthLabView content and all Insights content accessible from a single drill-down view reached via Progress</li>
+    <li>Clear section separation within the unified view: "Strength Analytics", "Insights &amp; Coaching", "History"</li>
+    <li>No analytics content orphaned or removed — only reorganized</li>
+  </ul>
+  <div class="file-ref">iOSApp/App/ContentView.swift · iOSApp/Views/Progress/StrengthLabView.swift · iOSApp/Engines/EmergentInsightEngine.swift · iOSApp/Views/Progress/SimpleProgressView.swift</div>
+</div>
+
 <!-- ─────────────────────────────────────────── -->
 <div class="tally">
   <h3>Quick Reference</h3>
@@ -2018,7 +2508,9 @@
     <div class="tally-item">Narrative <span id="count-narrative">—</span></div>
     <div class="tally-item">Volume/Science <span id="count-volume">—</span></div>
     <div class="tally-item">HealthKit/HRV <span id="count-hrv">—</span></div>
+    <div class="tally-item">Cardio <span id="count-cardio">—</span></div>
     <div class="tally-item">UX · Info Arch <span id="count-ux">—</span></div>
+    <div class="tally-item">Nav &amp; Progress <span id="count-nav">—</span></div>
   </div>
 </div>
 
@@ -2095,7 +2587,9 @@ function updateStats() {
   document.getElementById('count-narrative').textContent= document.querySelectorAll('[data-id^="N-"]').length;
   document.getElementById('count-volume').textContent   = document.querySelectorAll('[data-id^="V-"]').length;
   document.getElementById('count-hrv').textContent      = document.querySelectorAll('[data-id^="H-"]').length;
+  document.getElementById('count-cardio').textContent   = document.querySelectorAll('[data-id^="C-"]').length;
   document.getElementById('count-ux').textContent       = document.querySelectorAll('[data-id^="UX-"]').length;
+  document.getElementById('count-nav').textContent      = document.querySelectorAll('[data-id^="NAV-"]').length;
 }
 
 // ── Filter buttons ──────────────────────────────────────────────────────────

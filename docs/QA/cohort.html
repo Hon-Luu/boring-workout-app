@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H.O.N. — User Cohort</title>
+<style>
+  :root {
+    --bg:       #111111;
+    --card:     #1c1c1e;
+    --border:   rgba(255,255,255,0.07);
+    --amber:    #f59e0b;
+    --positive: #34d399;
+    --negative: #f87171;
+    --warning:  #fbbf24;
+    --muted:    rgba(255,255,255,0.4);
+    --text:     rgba(255,255,255,0.88);
+    --text2:    rgba(255,255,255,0.55);
+    --blue:     #60a5fa;
+    --purple:   #a78bfa;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 32px 20px 64px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .header { margin-bottom: 36px; }
+  .header-top {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .logo {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber);
+  }
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--amber), transparent);
+    opacity: 0.3;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    color: var(--text);
+  }
+  .subtitle {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+
+  .stats {
+    display: flex;
+    gap: 6px;
+    margin: 20px 0 28px;
+    flex-wrap: wrap;
+  }
+  .stat-pill {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.04em;
+  }
+  .stat-total   { background: rgba(255,255,255,0.08); color: var(--text2); }
+  .stat-amber   { background: rgba(245,158,11,0.15);  color: var(--amber); }
+  .stat-green   { background: rgba(52,211,153,0.15);  color: var(--positive); }
+  .stat-red     { background: rgba(248,113,113,0.15); color: var(--negative); }
+  .stat-blue    { background: rgba(96,165,250,0.15);  color: var(--blue); }
+  .stat-purple  { background: rgba(167,139,250,0.15); color: var(--purple); }
+
+  .section-heading {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-heading::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover  { border-color: var(--amber); color: var(--amber); }
+  .filter-btn.active { background: var(--amber); border-color: var(--amber); color: #111; }
+
+  .persona-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .persona {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    transition: border-color 0.2s;
+  }
+  .persona:hover { border-color: rgba(255,255,255,0.14); }
+  .persona.edge  { border-left: 3px solid var(--warning); }
+  .persona.bad-actor { border-left: 3px solid var(--negative); }
+
+  .persona-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  .persona-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+  }
+
+  .persona-id-block { flex: 1; }
+
+  .persona-id {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    letter-spacing: 0.08em;
+    color: var(--amber);
+    background: rgba(245,158,11,0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 4px;
+  }
+
+  .persona-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  .persona-tagline {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 2px;
+  }
+
+  .badge-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+
+  .badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .badge-beginner   { background: rgba(96,165,250,0.15);  color: var(--blue); }
+  .badge-intermediate { background: rgba(245,158,11,0.15); color: var(--amber); }
+  .badge-advanced   { background: rgba(52,211,153,0.15);  color: var(--positive); }
+  .badge-elite      { background: rgba(167,139,250,0.15); color: var(--purple); }
+  .badge-edge       { background: rgba(251,191,36,0.15);  color: var(--warning); }
+  .badge-bad-actor  { background: rgba(248,113,113,0.15); color: var(--negative); }
+  .badge-normal     { background: rgba(255,255,255,0.08); color: var(--text2); }
+  .badge-high       { background: rgba(248,113,113,0.2);  color: #fca5a5; }
+  .badge-medium     { background: rgba(251,191,36,0.2);   color: #fcd34d; }
+  .badge-low        { background: rgba(255,255,255,0.1);  color: var(--text2); }
+
+  .persona-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 20px;
+  }
+
+  @media (max-width: 600px) {
+    .persona-fields { grid-template-columns: 1fr; }
+  }
+
+  .field { }
+  .field-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 2px;
+  }
+  .field-value {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+  .field-value.highlight { color: var(--text); }
+
+  .field-full {
+    grid-column: 1 / -1;
+  }
+
+  .quirk-box {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: rgba(245,158,11,0.06);
+    border: 1px solid rgba(245,158,11,0.15);
+    border-radius: 8px;
+  }
+  .quirk-box .field-label { color: var(--amber); }
+  .quirk-box .field-value { color: var(--text); font-size: 13px; }
+
+  .friction-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 4px;
+  }
+  .friction-list li {
+    font-size: 12px;
+    color: var(--text2);
+    padding: 2px 0 2px 14px;
+    position: relative;
+  }
+  .friction-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--negative);
+    font-size: 10px;
+    top: 3px;
+  }
+
+  .sim-role {
+    margin-top: 12px;
+    padding: 8px 14px;
+    background: rgba(96,165,250,0.06);
+    border: 1px solid rgba(96,165,250,0.12);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--blue);
+    line-height: 1.5;
+  }
+
+  .separator {
+    height: 1px;
+    background: var(--border);
+    margin: 28px 0;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+  }
+  .stat-card-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin-bottom: 8px;
+  }
+  .stat-card-items {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .stat-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--text2);
+  }
+  .stat-card-row .count {
+    font-weight: 700;
+    color: var(--text);
+    font-size: 13px;
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 20px 14px 48px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <span class="logo">H.O.N.</span>
+    <div class="divider-line"></div>
+  </div>
+  <h1>User Cohort</h1>
+  <div class="subtitle">22 personas for simulation &amp; UAT · Statistically representative of real-world gym app users · Last updated: 2026-05-29</div>
+</div>
+
+<div class="stats">
+  <span class="stat-pill stat-total">22 total</span>
+  <span class="stat-pill stat-amber">16 normal</span>
+  <span class="stat-pill stat-red">4 edge case</span>
+  <span class="stat-pill stat-red">2 bad actor</span>
+  <span class="stat-pill stat-blue">9 male · 10 female · 2 NB · 1 ND</span>
+  <span class="stat-pill stat-green">13 gym · 6 home · 3 both</span>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-card-label">Fitness Level</div>
+    <div class="stat-card-items">
+      <div class="stat-card-row"><span>Beginner</span><span class="count">6</span></div>
+      <div class="stat-card-row"><span>Intermediate</span><span class="count">9</span></div>
+      <div class="stat-card-row"><span>Advanced</span><span class="count">5</span></div>
+      <div class="stat-card-row"><span>Elite</span><span class="count">2</span></div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-label">Primary Goal</div>
+    <div class="stat-card-items">
+      <div class="stat-card-row"><span>Aesthetics</span><span class="count">5</span></div>
+      <div class="stat-card-row"><span>Strength/Perf.</span><span class="count">5</span></div>
+      <div class="stat-card-row"><span>Health/Longevity</span><span class="count">5</span></div>
+      <div class="stat-card-row"><span>Weight Loss</span><span class="count">3</span></div>
+      <div class="stat-card-row"><span>Sport-Specific</span><span class="count">2</span></div>
+      <div class="stat-card-row"><span>Mental Health</span><span class="count">2</span></div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-label">Training Frequency</div>
+    <div class="stat-card-items">
+      <div class="stat-card-row"><span>1–2x/week</span><span class="count">5</span></div>
+      <div class="stat-card-row"><span>3–4x/week</span><span class="count">10</span></div>
+      <div class="stat-card-row"><span>5–7x/week</span><span class="count">7</span></div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-label">Tech Comfort</div>
+    <div class="stat-card-items">
+      <div class="stat-card-row"><span>Low</span><span class="count">5</span></div>
+      <div class="stat-card-row"><span>Medium</span><span class="count">9</span></div>
+      <div class="stat-card-row"><span>High</span><span class="count">8</span></div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-label">Equipment Access</div>
+    <div class="stat-card-items">
+      <div class="stat-card-row"><span>Gym</span><span class="count">13</span></div>
+      <div class="stat-card-row"><span>Home / Limited</span><span class="count">6</span></div>
+      <div class="stat-card-row"><span>Both</span><span class="count">3</span></div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-label">Persona Type</div>
+    <div class="stat-card-items">
+      <div class="stat-card-row"><span>Normal</span><span class="count">16</span></div>
+      <div class="stat-card-row"><span>Edge Case</span><span class="count">4</span></div>
+      <div class="stat-card-row"><span>Bad Actor</span><span class="count">2</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="filters">
+  <button class="filter-btn active" onclick="filterPersonas('all', this)">All 22</button>
+  <button class="filter-btn" onclick="filterPersonas('high', this)">High Priority</button>
+  <button class="filter-btn" onclick="filterPersonas('edge', this)">Edge Cases</button>
+  <button class="filter-btn" onclick="filterPersonas('bad-actor', this)">Bad Actors</button>
+  <button class="filter-btn" onclick="filterPersonas('beginner', this)">Beginners</button>
+  <button class="filter-btn" onclick="filterPersonas('advanced', this)">Advanced+</button>
+</div>
+
+<div class="persona-grid" id="persona-grid">
+
+<!-- U-01 -->
+<div class="persona normal" data-type="normal" data-level="intermediate" data-priority="high">
+  <div class="persona-header">
+    <div class="persona-avatar">💪</div>
+    <div class="persona-id-block">
+      <div class="persona-id">U-01</div>
+      <div class="persona-name">Marcus Rivera</div>
+      <div class="persona-tagline">34 · Male · Software Engineer</div>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-intermediate">Intermediate</span>
+    <span class="badge badge-normal">Normal</span>
+    <span class="badge badge-high">High Priority</span>
+  </div>
+  <div class="persona-fields">
+    <div class="field">
+      <div class="field-label">Primary Goal</div>
+      <div class="field-value">Aesthetics / body recomposition</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Training Frequency</div>
+      <div class="field-value">4x/week · Push-pull-legs split</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Equipment Access</div>
+      <div class="field-value">Commercial gym</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Tech Comfort</div>
+      <div class="field-value highlight">High — logs everything meticulously</div>
+    </div>
+    <div class="field field-full">
+      <div class="field-label">Logging Behavior</div>
+      <div class="field-value">Logs every set immediately. Adjusts reps in the app before starting the set. Uses the trainer tab weekly. Reads coaching notes carefully. Sometimes opens app mid-set to log while resting.</div>
+    </div>
+  </div>
+  <div class="quirk-box">
+    <div class="field-label">Notable Trait</div>
+    <div class="field-value">Refreshes the trainer tab after every single workout expecting a new plan. Gets frustrated if suggestions feel stale or don't account for yesterday's session.</div>
+  </div>
+  <div class="field" style="margin-top:12px">
+    <div class="field-label">Likely Friction Points</div>
+    <ul class="friction-list">
+      <li>Trainer plan not updating frequently enough</li>
+      <li>Weight suggestions lagging after a deload week</li>
+      <li>Coaching narrative feels repetitive by week 3</li>
+    </ul>
+  </div>
+  <div class="sim-role">Simulation Role: Representative "power user" — finds subtle logic bugs in progression and narrative rotation that casual users miss.</div>
+</div>
+
+<!-- U-02 -->
+<div class="persona normal" data-type="normal" data-level="beginner" data-priority="high">
+  <div class="persona-header">
+    <div class="persona-avatar">🌱</div>
+    <div class="persona-id-block">
+      <div class="persona-id">U-02</div>
+      <div class="persona-name">Priya Nair</div>
+      <div class="persona-tagline">28 · Female · Marketing Manager</div>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-beginner">Beginner</span>
+    <span class="badge badge-normal">Normal</span>
+    <span class="badge badge-high">High Priority</span>
+  </div>
+  <div class="persona-fields">
+    <div class="field">
+      <div class="field-label">Primary Goal</div>
+      <div class="field-value">Weight loss + building a habit</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Training Frequency</div>
+      <div class="field-value">3x/week · Full-body</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Equipment Access</div>
+      <div class="field-value">Commercial gym (new member)</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Tech Comfort</div>
+      <div class="field-value">Medium — comfortable with apps, confused by jargon</div>
+    </div>
+    <div class="field field-full">
+      <div class="field-label">Logging Behavior</div>
+      <div class="field-value">Logs after each set, sometimes forgetting to start the timer. Misses logging the last exercise of a session when she's tired. Ignores RPE — doesn't know what it means. Frequently reads the progress tab.</div>
+    </div>
+  </div>
+  <div class="quirk-box">
+    <div class="field-label">Notable Trait</div>
+    <div class="field-value">Abandons sessions 20% of the time when she hits an unfamiliar machine. Represents the "I didn't know how to do it" dropout pattern.</div>
+  </div>
+  <div class="field" style="margin-top:12px">
+    <div class="field-label">Likely Friction Points</div>
+    <ul class="friction-list">
+      <li>Unfamiliar exercise names with no guidance</li>
+      <li>Onboarding flow too long or confusing</li>
+      <li>Empty states on progress page feel discouraging</li>
+      <li>No explanation of what RPE means</li>
+    </ul>
+  </div>
+  <div class="sim-role">Simulation Role: True beginner. Tests whether the app is usable with zero fitness background and surfaces onboarding/UX gaps invisible to experienced users.</div>
+</div>
+
+<!-- U-03 -->
+<div class="persona normal" data-type="normal" data-level="advanced" data-priority="high">
+  <div class="persona-header">
+    <div class="persona-avatar">🏋️</div>
+    <div class="persona-id-block">
+      <div class="persona-id">U-03</div>
+      <div class="persona-name">Jake Kowalski</div>
+      <div class="persona-tagline">22 · Male · College Student (Kinesiology)</div>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-advanced">Advanced</span>
+    <span class="badge badge-normal">Normal</span>
+    <span class="badge badge-high">High Priority</span>
+  </div>
+  <div class="persona-fields">
+    <div class="field">
+      <div class="field-label">Primary Goal</div>
+      <div class="field-value">Powerlifting competition prep</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Training Frequency</div>
+      <div class="field-value">5x/week · Conjugate-adjacent</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Equipment Access</div>
+      <div class="field-value">University strength facility</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Tech Comfort</div>
+      <div class="field-value highlight">High — tests apps deliberately</div>
+    </div>
+    <div class="field field-full">
+      <div class="field-label">Logging Behavior</div>
+      <div class="field-value">Logs every set with exact weights and reps. Always logs RPE (6–9 range). Adds drop sets. Logs in kg. Will push app to log 6+ sets per exercise. Cross-references app suggestions with his own spreadsheet.</div>
+    </div>
+  </div>
+  <div class="quirk-box">
+    <div class="field-label">Notable Trait</div>
+    <div class="field-value">Notices immediately if the e1RM formula gives wrong numbers. Will call out incorrect weight suggestions publicly. Treats the app like an audit target.</div>
+  </div>
+  <div class="field" style="margin-top:12px">
+    <div class="field-label">Likely Friction Points</div>
+    <ul class="friction-list">
+      <li>e1RM formula accuracy (Epley vs Mayhew boundary)</li>
+      <li>No periodization-aware programming</li>
+      <li>Weight suggestions too conservative for advanced progression</li>
+    </ul>
+  </div>
+  <div class="sim-role">Simulation Role: Precision stress-tester for all calculation logic. If the math is wrong, Jake finds it within a session.</div>
+</div>
+
+<!-- U-04 -->
+<div class="persona normal" data-type="normal" data-level="intermediate" data-priority="high">
+  <div class="persona-header">
+    <div class="persona-avatar">⏱️</div>
+    <div class="persona-id-block">
+      <div class="persona-id">U-04</div>
+      <div class="persona-name">Diana Chen</div>
+      <div class="persona-tagline">41 · Female · VP of Product, Tech Startup</div>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-intermediate">Intermediate</span>
+    <span class="badge badge-normal">Normal</span>
+    <span class="badge badge-high">High Priority</span>
+  </div>
+  <div class="persona-fields">
+    <div class="field">
+      <div class="field-label">Primary Goal</div>
+      <div class="field-value">Health/longevity + stress management</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Training Frequency</div>
+      <div class="field-value">3x/week but often cuts to 2x</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Equipment Access</div>
+      <div class="field-value">Gym near office + hotel gyms when traveling</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Tech Comfort</div>
+      <div class="field-value highlight">High — evaluates apps critically as a PM</div>
+    </div>
+    <div class="field field-full">
+      <div class="field-label">Logging Behavior</div>
+      <div class="field-value">Gets 60% through a session, then gets a work Slack and abandons. Logs the sets she completed, closes the session as incomplete. Returns next day expecting context. Uses the trainer tab on Sunday evenings to plan her week.</div>
+    </div>
+  </div>
+  <div class="quirk-box">
+    <div class="field-label">Notable Trait</div>
+    <div class="field-value">She has a PM's eye — if onboarding is 1 step too long or a CTA is ambiguous, she'll document it. She abandons sessions mid-workout regularly. Tests the "interrupted workout" recovery path constantly.</div>
+  </div>
+  <div class="field" style="margin-top:12px">
+    <div class="field-label">Likely Friction Points</div>
+    <ul class="friction-list">
+      <li>Incomplete session handling and state recovery</li>
+      <li>Session abandonment leaves stale active workout</li>
+      <li>Readiness score during travel weeks (no sleep data)</li>
+    </ul>
+  </div>
+  <div class="sim-role">Simulation Role: Tests interrupted flows, travel-mode behavior, and articulates UX issues with precision that surfaces product-level gaps.</div>
+</div>
+
+<!-- U-05 -->
+<div class="persona normal" data-type="normal" data-level="advanced" data-priority="medium">
+  <div class="persona-header">
+    <div class="persona-avatar">🔥</div>
+    <div class="persona-id-block">
+      <div class="persona-id">U-05</div>
+      <div class="persona-name">Tyler "T-Bone" Washington</div>
+      <div class="persona-tagline">27 · Male · Personal Trainer / Influencer</div>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-advanced">Advanced</span>
+    <span class="badge badge-normal">Normal</span>
+    <span class="badge badge-medium">Med Priority</span>
+  </div>
+  <div class="persona-fields">
+    <div class="field">
+      <div class="field-label">Primary Goal</div>
+      <div class="field-value">Aesthetics + content creation</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Training Frequency</div>
+      <div class="field-value">6x/week · Bro split, ignores recovery cues</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Equipment Access</div>
+      <div class="field-value">Full commercial gym</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Tech Comfort</div>
+      <div class="field-value">High — but dismisses "smart" suggestions</div>
+    </div>
+    <div class="field field-full">
+      <div class="field-label">Logging Behavior</div>
+      <div class="field-value">Logs chest 3x/week. Dismisses every readiness warning. Never uses rest day recommendations. Skips the feel-good selector and goes straight to the next session. Uses the app primarily for tracking PRs and showing clients.</div>
+    </div>
+  </div>
+  <div class="quirk-box">
+    <div class="field-label">Notable Trait</div>
+    <div class="field-value">The "gym bro" override pattern. Validates whether the app degrades gracefully when all recovery signals are ignored — does it stay useful or become annoying?</div>
+  </div>
+  <div class="field" style="margin-top:12px">
+    <div class="field-label">Likely Friction Points</div>
+    <ul class="friction-list">
+      <li>Persistent recovery warnings he ignores (notification fatigue)</li>
+      <li>Readiness score stuck low despite feeling fine</li>
+      <li>Trainer tab gives too-conservative plans</li>
+    </ul>
+  </div>
+  <div class="sim-role">Simulation Role: Tests the app's behavior when all coaching is ignored. Validates that dismissible warnings don't block core functionality.</div>
+</div>
+
+<!-- U-06 -->
+<div class="persona normal" data-type="normal" data-level="beginner" data-priority="high">
+  <div class="persona-header">
+    <div class="persona-avatar">🦴</div>
+    <div class="persona-id-block">
+      <div class="persona-id">U-06</div>
+      <div class="persona-name">Sandra Kowalczyk</div>
+      <div class="persona-tagline">58 · Female · Retired Teacher</div>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-beginner">Beginner</span>
+    <span class="badge badge-normal">Normal</span>
+    <span class="badge badge-high">High Priority</span>
+  </div>
+  <div class="persona-fields">
+    <div class="field">
+      <div class="field-label">Primary Goal</div>
+      <div class="field-value">Bone density / osteoporosis prevention</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Training Frequency</div>
+      <div class="field-value">2x/week · Resistance training (new)</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Equipment Access</div>
+      <div class="field-value">Senior fitness center, some home dumbbells</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Tech Comfort</div>
+      <div class="field-value">Low — uses iPhone but avoids complexity</div>
+    </div>
+    <div class="field field-full">
+      <div class="field-label">Logging Behavior</div>
+      <div class="field-value">Logs carefully with reading glasses. Taps things accidentally. Uses only light weights (5–15 lbs). Very low reps (6–8). Checks the progress tab every session. Worried about "doing it wrong." Never uses advanced features.</div>
+    </div>
+  </div>
+  <div class="quirk-box">
+    <div class="field-label">Notable Trait</div>
+    <div class="field-value">Her weight range (2.5–15 lbs) is at the floor of the equipment scale, near dumbbell edge cases. Represents the 55+ demographic that fitness apps consistently underserve.</div>
+  </div>
+  <div class="field" style="margin-top:12px">
+    <div class="field-label">Likely Friction Points</div>
+    <ul class="friction-list">
+      <li>Tap targets too small</li>
+      <li>Weight increment steps too large (can't select 7.5 lbs easily)</li>
+      <li>Progress page overwhelming with no explanation</li>
+      <li>Font sizes too small without Dynamic Type</li>
+    </ul>
+  </div>
+  <div class="sim-role">Simulation Role: Accessibility and low-complexity UX. Tests Dynamic Type, tap target size, and whether the app works for users who train at light resistance.</div>
+</div>
+
+<!-- U-07 -->
+<div class="persona normal" data-type="normal" data-level="intermediate" data-priority="high">
+  <div class="persona-header">
+    <div class="persona-avatar">🌙</div>
+    <div class="persona-id-block">
+      <div class="persona-id">U-07</div>
+      <div class="persona-name">Amara Osei</div>
+      <div class="persona-tagline">31 · Female · Night-Shift ICU Nurse</div>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-intermediate">Intermediate</span>
+    <span class="badge badge-normal">Normal</span>
+    <span class="badge badge-high">High Priority</span>
+  </div>
+  <div class="persona-fields">
+    <div class="field">
+      <div class="field-label">Primary Goal</div>
+      <div class="field-value">Mental health + stress resilience</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Training Frequency</div>
+      <div class="field-value">2–3x/week · Highly irregular schedule</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Equipment Access</div>
+      <div class="field-value">Gym (goes at unusual hours: 7am, 11pm)</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Tech Comfort</div>
+      <div class="field-value">Medium — relies on phone heavily at work</div>
+    </div>
+    <div class="field field-full">
+      <div class="field-label">Logging Behavior</div>
+      <div class="field-value">Logs thoroughly when motivated, disappears for 10–14 days during difficult shifts. Her workout timestamps are irregular — 2am sessions after a night shift. Sleep data from Apple Watch shows poor HRV during work weeks.</div>
+    </div>
+  </div>
+  <div class="quirk-box">
+    <div class="field-label">Notable Trait</div>
+    <div class="field-value">Irregular sleep/HRV data creates noisy readiness scores. Her comeback cadence is predictable but long — tests the short/long gap messaging system multiple times per month.</div>
+  </div>
+  <div class="field" style="margin-top:12px">
+    <div class="field-label">Likely Friction Points</div>
+    <ul class="friction-list">
+      <li>Readiness score too sensitive to sleep variance</li>
+      <li>Gap messaging triggering on normal shift-work patterns</li>
+      <li>Streak breaks during a 12-day stretch of night shifts</li>
+    </ul>
+  </div>
+  <div class="sim-role">Simulation Role: Tests readiness engine with irregular HRV/sleep data and validates that gap messaging cadence is empathetic, not nagging, for shift workers.</div>
+</div>
+
+<!-- U-08 -->
+<div class="persona normal" data-type="normal" data-level="intermediate" data-priority="medium">
+  <div class="persona-header">
+    <div class="persona-avatar">🎖️</div>
+    <div class="persona-id-block">
+      <div class="persona-id">U-08</div>
+      <div class="persona-name">Frank "Gunny" Harrington</div>
+      <div class="persona-tagline">62 · Male · Retired Army Staff Sergeant</div>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-intermediate">Intermediate</span>
+    <span class="badge badge-normal">Normal</span>
+    <span class="badge badge-medium">Med Priority</span>
+  </div>
+  <div class="persona-fields">
+    <div class="field">
+      <div class="field-label">Primary Goal</div>
+      <div class="field-value">Maintaining strength / fighting decline</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Training Frequency</div>
+      <div class="field-value">4x/week · Old-school split</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Equipment Access</div>
+      <div class="field-value">Veteran's rec center gym</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Tech Comfort</div>
+      <div class="field-value">Low — resistant to app prompts and suggestions</div>
+    </div>
+    <div class="field field-full">
+      <div class="field-label">Logging Behavior</div>
+      <div class="field-value">Logs every session. Compares current performance obsessively to his baseline at age 35. Gets frustrated when the app can't show multi-year trajectory. Dismisses coaching notes as "soft." Will not use the feel selector.</div>
+    </div>
+  </div>
+  <div class="quirk-box">
+    <div class="field-label">Notable Trait</div>
+    <div class="field-value">Constantly references his younger self. The strength decay model is very personal to him — he wants to know exactly how much he's lost, not a motivational spin. Tests whether the app handles aging users with honesty.</div>
+  </div>
+  <div class="field" style="margin-top:12px">
+    <div class="field-label">Likely Friction Points</div>
+    <ul class="friction-list">
+      <li>No multi-year historical baseline to compare to</li>
+      <li>Strength decay framing feels demotivating</li>
+      <li>Coaching tone too casual / too gentle</li>
+    </ul>
+  </div>
+  <div class="sim-role">Simulation Role: Long-tenured older male user who tests data longevity, strength decay display, and whether the coaching voice alienates non-millennial demographics.</div>
+</div>
+
+<!-- U-09 -->
+<div class="persona normal" data-type="normal" data-level="elite" data-priority="medium">
+  <div class="persona-header">
+    <div class="persona-avatar">⚡</div>
+    <div class="persona-id-block">
+      <div class="persona-id">U-09</div>
+      <div class="persona-name">Zoë Marchetti</div>
+      <div class="persona-tagline">25 · Female · Competitive CrossFit Athlete</div>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-elite">Elite</span>
+    <span class="badge badge-edge">Edge Case</span>
+    <span class="badge badge-high">High Priority</span>
+  </div>
+  <div class="persona-fields">
+    <div class="field">
+      <div class="field-label">Primary Goal</div>
+      <div class="field-value">Sport-specific performance (CrossFit)</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Training Frequency</div>
+      <div class="field-value">2x/day, 6 days/week (AM strength + PM metcon)</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Equipment Access</div>
+      <div class="field-value">CrossFit box + commercial gym</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Tech Comfort</div>
+      <div class="field-value">High — uses multiple training apps simultaneously</div>
+    </div>
+    <div class="field field-full">
+      <div class="field-label">Logging Behavior</div>
+      <div class="field-value">Logs 2 sessions per day. Creates multiple workout entries on the same calendar date. Logs Olympic lifts (snatch, clean &amp; jerk) at high weights. High RPE (8–10) on every session. Very high volume — 8–12 sets per exercise.</div>
+    </div>
+  </div>
+  <div class="quirk-box">
+    <div class="field-label">Notable Trait</div>
+    <div class="field-value">Two sessions per day stresses the data model: same-day entries, readiness engine with consistently high fatigue, and volume calculations that exceed typical upper bounds.</div>
+  </div>
+  <div class="field" style="margin-top:12px">
+    <div class="field-label">Likely Friction Points</div>
+    <ul class="friction-list">
+      <li>Two sessions same day — date grouping logic in progress view</li>
+      <li>Readiness engine always shows low (she overrides it)</li>
+      <li>e1RM at very high reps (>15) excluded — she trains that range</li>
+    </ul>
+  </div>
+  <div class="sim-role">Simulation Role: Volume/frequency edge case. Two daily sessions test date grouping, same-day log display, and readiness accuracy under sustained elite load.</div>
+</div>
+
+<!-- U-10 -->
+<div class="persona normal" data-type="normal" data-level="beginner" data-priority="medium">
+  <div class="persona-header">
+    <div class="persona-avatar">🏠</div>
+    <div class="persona-id-block">
+      <div class="persona-id">U-10</div>
+      <div class="persona-name">Keisha Thompson</div>
+      <div class="persona-tagline">35 · Female · Stay-at-Home Parent (3 kids)</div>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-beginner">Beginner</span>
+    <span class="badge badge-normal">Normal</span>
+    <span class="badge badge-medium">Med Priority</span>
+  </div>
+  <div class="persona-fields">
+    <div class="field">
+      <div class="field-label">Primary Goal</div>
+      <div class="field-value">Weight loss + energy levels</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Training Frequency</div>
+      <div class="field-value">3x/week · 30-min sessions during nap time</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Equipment Access</div>
+      <div class="field-value">Home only — adjustable dumbbells + resistance bands</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Tech Comfort</div>
+      <div class="field-value">Medium — comfortable but distracted constantly</div>
+    </div>
+    <div class="field field-full">
+      <div class="field-label">Logging Behavior</div>
+      <div class="field-value">Gets interrupted mid-session by kids. Often logs 2 sets and then nothing for 15 minutes. Heavy use of the home screen. Never uses the trainer tab — too overwhelming. Only uses dumbbells, never barbells.</div>
+    </div>
+  </div>
+  <div class="quirk-box">
+    <div class="field-label">Notable Trait</div>
+    <div class="field-value">Dumbbell-only user who frequently interrupts sessions. Tests whether partial sessions are saved properly and whether home equipment limitations are handled gracefully by the trainer.</div>
+  </div>
+  <div class="field" style="margin-top:12px">
+    <div class="field-label">Likely Friction Points</div>
+    <ul class="friction-list">
+      <li>Equipment filter not persisting between sessions</li>
+      <li>Partial session logging leaves confusing history</li>
+      <li>Trainer suggests gym exercises despite home setting</li>
+    </ul>
+  </div>
+  <div class="sim-role">Simulation Role: Home equipment + interrupted session pattern. Tests equipment persistence and whether the app recovers gracefully from mid-session interruptions.</div>
+</div>
+
+<!-- U-11 -->
+<div class="persona normal" data-type="normal" data-level="beginner" data-priority="high">
+  <div class="persona-header">
+    <div class="persona-avatar">🦯</div>
+    <div class="persona-id-block">
+      <div class="persona-id">U-11</div>
+      <div class="persona-name">Robert Finley</div>
+      <div class="persona-tagline">67 · Male · Retired Accountant (Hip Replacement, 8 mo. ago)</div>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-beginner">Beginner</span>
+    <span class="badge badge-edge">Edge Case</span>
+    <span class="badge badge-high">High Priority</span>
+  </div>
+  <div class="persona-fields">
+    <div class="field">
+      <div class="field-label">Primary Goal</div>
+      <div class="field-value">Post-surgical recovery + general mobility</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Training Frequency</div>
+      <div class="field-value">2x/week · PT-prescribed exercises only</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Equipment Access</div>
+      <div class="field-value">Rehab clinic + home resistance bands</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Tech Comfort</div>
+      <div class="field-value">Low — needs reading glasses, slow tapper</div>
+    </div>
+    <div class="field field-full">
+      <div class="field-label">Logging Behavior</div>
+      <div class="field-value">Logs band-only exercises with very low weights. Logs single-leg exercises at body weight. Has 0kg entries. Misses sessions when pain flares. Logs recovery notes in the wrong fields. Does not understand what "compound" means.</div>
+    </div>
+  </div>
+  <div class="quirk-box">
+    <div class="field-label">Notable Trait</div>
+    <div class="field-value">Zero-weight and bodyweight logging edge case. An 8-month gap before app use, then sparse entries — tests cold-start analytics, missing data handling, and the oldest user in the cohort's accessibility needs.</div>
+  </div>
+  <div class="field" style="margin-top:12px">
+    <div class="field-label">Likely Friction Points</div>
+    <ul class="friction-list">
+      <li>0 kg entries — does the app accept them?</li>
+      <li>No meaningful analytics with 2 sessions/week light loads</li>
+      <li>Readiness score irrelevant given his context</li>
+      <li>Dynamic Type + VoiceOver — likely relies on them</li>
+    </ul>
+  </div>
+  <div class="sim-role">Simulation Role: Oldest user, post-surgical rehab context. Tests zero-weight logging, accessibility compliance, and whether the app is usable by users the target demo ignores.</div>
+</div>
+
+<!-- U-12 -->
+<div class="persona normal" data-type="normal" data-level="intermediate" data-priority="high">
+  <div class="persona-header">
+    <div class="persona-avatar">📱</div>
+    <div class="persona-id-block">
+      <div class="persona-id">U-12</div>
+      <div class="persona-name">Jade Nakamura</div>
+      <div class="persona-tagline">24 · Female · TikTok Fitness Content Creator (280K followers)</div>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-intermediate">Intermediate</span>
+    <span class="badge badge-normal">Normal</span>
+    <span class="badge badge-high">High Priority</span>
+  </div>
+  <div class="persona-fields">
+    <div class="field">
+      <div class="field-label">Primary Goal</div>
+      <div class="field-value">Aesthetics + content material</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Training Frequency</div>
+      <div class="field-value">5x/week · Glute/hypertrophy focus</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Equipment Access</div>
+      <div class="field-value">Premium gym (films workouts)</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Tech Comfort</div>
+      <div class="field-value highlight">High — will share app UI on TikTok</div>
+    </div>
+    <div class="field field-full">
+      <div class="field-label">Logging Behavior</div>
+      <div class="field-value">Screenshots the app mid-session. Will post any UI bug publicly within hours. Uses every feature within 48 hours of install. Will test edge cases unintentionally by exploring the UI rapidly. Shares coaching phrases verbatim in videos.</div>
+    </div>
+  </div>
+  <div class="quirk-box">
+    <div class="field-label">Notable Trait</div>
+    <div class="field-value">Public bug amplifier. Any visual glitch, embarrassing error message, or logic mistake she encounters will be seen by her 280K followers before the team knows it exists. Highest reputational risk in the cohort.</div>
+  </div>
+  <div class="field" style="margin-top:12px">
+    <div class="field-label">Likely Friction Points</div>
+    <ul class="friction-list">
+      <li>Any visible UI bug or placeholder text</li>
+      <li>Awkward or cringe coaching phrases</li>
+      <li>Share/export functionality if missing</li>
+      <li>App icon and visual polish at screenshot quality</li>
+    </ul>
+  </div>
+  <div class="sim-role">Simulation Role: Reputation canary. Stress-tests visual quality, phrase bank language, and polish. The persona most likely to cause viral public embarrassment from a minor bug.</div>
+</div>
+
+<!-- U-13 -->
+<div class="persona normal" data-type="normal" data-level="intermediate" data-priority="medium">
+  <div class="persona-header">
+    <div class="persona-avatar">😰</div>
+    <div class="persona-id-block">
+      <div class="persona-id">U-13</div>
+      <div class="persona-name">Owen Park</div>
+      <div class="persona-tagline">26 · Male · PhD Student (Computer Science)</div>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-intermediate">Intermediate</span>
+    <span class="badge badge-normal">Normal</span>
+    <span class="badge badge-medium">Med Priority</span>
+  </div>
+  <div class="persona-fields">
+    <div class="field">
+      <div class="field-label">Primary Goal</div>
+      <div class="field-value">Anxiety management / mental health</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Training Frequency</div>
+      <div class="field-value">3–4x/week · Consistent but mood-dependent</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Equipment Access</div>
+      <div class="field-value">University rec center</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Tech Comfort</div>
+      <div class="field-value highlight">Very high — will inspect app behavior methodically</div>
+    </div>
+    <div class="field field-full">
+      <div class="field-label">Logging Behavior</div>
+      <div class="field-value">Uses the app as a mood stabilizer. Skips logging during high-anxiety periods (exam weeks). Returns to the app as part of re-establishing routine. Cares deeply about whether the readiness score "understands" his context. Reads every coaching note word by word.</div>
+    </div>
+  </div>
+  <div class="quirk-box">
+    <div class="field-label">Notable Trait</div>
+    <div class="field-value">His gap patterns follow academic calendar stress cycles. He's hyper-attuned to whether the coaching voice is supportive vs. judgmental. A single dismissive phrase can break the habit loop.</div>
+  </div>
+  <div class="field" style="margin-top:12px">
+    <div class="field-label">Likely Friction Points</div>
+    <ul class="friction-list">
+      <li>Comeback messaging that sounds like pressure or guilt</li>
+      <li>Streak mechanics creating anxiety when broken</li>
+      <li>Progress page showing decline during exam months</li>
+    </ul>
+  </div>
+  <div class="sim-role">Simulation Role: Mental health use case. Tests whether the emotional register of coaching language is supportive and whether streak mechanics are anxiety-inducing or empowering.</div>
+</div>
+
+<!-- U-14 -->
+<div class="persona normal" data-type="normal" data-level="elite" data-priority="medium">
+  <div class="persona-header">
+    <div class="persona-avatar">⚽</div>
+    <div class="persona-id-block">
+      <div class="persona-id">U-14</div>
+      <div class="persona-name">Alejandro Vargas</div>
+      <div class="persona-tagline">23 · Male · Semi-Pro Soccer Player</div>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-elite">Elite</span>
+    <span class="badge badge-normal">Normal</span>
+    <span class="badge badge-medium">Med Priority</span>
+  </div>
+  <div class="persona-fields">
+    <div class="field">
+      <div class="field-label">Primary Goal</div>
+      <div class="field-value">Injury prevention + sport-specific strength</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Training Frequency</div>
+      <div class="field-value">5x/week (gym 3x, pitch sessions 2x)</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Equipment Access</div>
+      <div class="field-value">Club facility + home</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Tech Comfort</div>
+      <div class="field-value">Medium — uses many sports apps</div>
+    </div>
+    <div class="field field-full">
+      <div class="field-label">Logging Behavior</div>
+      <div class="field-value">Only logs gym sessions, not pitch work. Uses the app to track bilateral strength imbalances — will note left/right asymmetries in comments. Very interested in injury-risk indicators. Trains heavily in-season, deloads out-of-season.</div>
+    </div>
+  </div>
+  <div class="quirk-box">
+    <div class="field-label">Notable Trait</div>
+    <div class="field-value">Seasonal training patterns (heavy 9 months, near-zero 3 months) stress the long-gap and strength decay models more than any other persona.</div>
+  </div>
+  <div class="field" style="margin-top:12px">
+    <div class="field-label">Likely Friction Points</div>
+    <ul class="friction-list">
+      <li>Strength decay model during 3-month off-season</li>
+      <li>No sport-specific exercise categorization</li>
+      <li>App doesn't distinguish gym vs. field training sessions</li>
+    </ul>
+  </div>
+  <div class="sim-role">Simulation Role: Seasonal training pattern. Tests strength decay over extended off-season gaps and whether the app handles elite-athlete deloads gracefully.</div>
+</div>
+
+<!-- U-15 -->
+<div class="persona normal" data-type="normal" data-level="advanced" data-priority="medium">
+  <div class="persona-header">
+    <div class="persona-avatar">🏃</div>
+    <div class="persona-id-block">
+      <div class="persona-id">U-15</div>
+      <div class="persona-name">Monica Adebayo</div>
+      <div class="persona-tagline">38 · Female · Personal Trainer (own clients)</div>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-advanced">Advanced</span>
+    <span class="badge badge-normal">Normal</span>
+    <span class="badge badge-medium">Med Priority</span>
+  </div>
+  <div class="persona-fields">
+    <div class="field">
+      <div class="field-label">Primary Goal</div>
+      <div class="field-value">Strength + staying current with coaching tools</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Training Frequency</div>
+      <div class="field-value">4x/week · Own periodized programming</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Equipment Access</div>
+      <div class="field-value">Gym (works there)</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Tech Comfort</div>
+      <div class="field-value highlight">High — evaluates apps from a coaching perspective</div>
+    </div>
+    <div class="field field-full">
+      <div class="field-label">Logging Behavior</div>
+      <div class="field-value">Logs her own training only. Evaluates whether the coaching narrative aligns with NSCA/CSCS principles. Critically examines progression logic. Will recommend or reject the app to her clients based on her experience.</div>
+    </div>
+  </div>
+  <div class="quirk-box">
+    <div class="field-label">Notable Trait</div>
+    <div class="field-value">Has professional standards for what correct coaching looks like. Any advice contradicting established exercise science she'll flag immediately — and not download the app for clients.</div>
+  </div>
+  <div class="field" style="margin-top:12px">
+    <div class="field-label">Likely Friction Points</div>
+    <ul class="friction-list">
+      <li>Progression logic not following periodization principles</li>
+      <li>Coaching narrative oversimplifying complex topics</li>
+      <li>No way to override app suggestions with her own plan</li>
+    </ul>
+  </div>
+  <div class="sim-role">Simulation Role: Professional credibility check. Tests whether the coaching intelligence passes scrutiny from someone with formal exercise science knowledge.</div>
+</div>
+
+<!-- U-16 -->
+<div class="persona normal" data-type="normal" data-level="intermediate" data-priority="low">
+  <div class="persona-header">
+    <div class="persona-avatar">👻</div>
+    <div class="persona-id-block">
+      <div class="persona-id">U-16</div>
+      <div class="persona-name">Chris Danforth</div>
+      <div class="persona-tagline">33 · Non-binary · Freelance Photographer</div>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-intermediate">Intermediate</span>
+    <span class="badge badge-edge">Edge Case</span>
+    <span class="badge badge-medium">Med Priority</span>
+  </div>
+  <div class="persona-fields">
+    <div class="field">
+      <div class="field-label">Primary Goal</div>
+      <div class="field-value">General fitness / undefined</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Training Frequency</div>
+      <div class="field-value">Sporadic — 3x/week then nothing for 6–8 weeks</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Equipment Access</div>
+      <div class="field-value">Gym membership (uses it sporadically)</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Tech Comfort</div>
+      <div class="field-value">Medium</div>
+    </div>
+    <div class="field field-full">
+      <div class="field-label">Logging Behavior</div>
+      <div class="field-value">The "ghost." Trains 3x/week for 3 weeks, then vanishes for 6–8 weeks. Returns as if nothing happened. Doesn't respond to comeback messaging. Has 4–5 multi-month gaps per year. Never reviews progress. Uses the app only during active phases.</div>
+    </div>
+  </div>
+  <div class="quirk-box">
+    <div class="field-label">Notable Trait</div>
+    <div class="field-value">Recurring long-gap pattern (6–8 weeks, multiple times per year). Tests whether the app handles extended re-engagement gracefully and whether the strength decay model is accurate after months of inactivity.</div>
+  </div>
+  <div class="field" style="margin-top:12px">
+    <div class="field-label">Likely Friction Points</div>
+    <ul class="friction-list">
+      <li>Long-gap messaging triggering repeatedly (annoying)</li>
+      <li>Strength decay estimates wildly off after 8 weeks</li>
+      <li>Progress charts mostly empty — discouraging</li>
+    </ul>
+  </div>
+  <div class="sim-role">Simulation Role: Churn-and-return pattern. Tests re-engagement flows, strength decay accuracy after long inactivity, and whether the app makes returning feel welcoming vs. shameful.</div>
+</div>
+
+<!-- U-17 -->
+<div class="persona normal" data-type="normal" data-level="beginner" data-priority="medium">
+  <div class="persona-header">
+    <div class="persona-avatar">🌿</div>
+    <div class="persona-id-block">
+      <div class="persona-id">U-17</div>
+      <div class="persona-name">Layla Hassan</div>
+      <div class="persona-tagline">45 · Female · Middle School Science Teacher</div>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-beginner">Beginner</span>
+    <span class="badge badge-normal">Normal</span>
+    <span class="badge badge-medium">Med Priority</span>
+  </div>
+  <div class="persona-fields">
+    <div class="field">
+      <div class="field-label">Primary Goal</div>
+      <div class="field-value">General health / longevity</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Training Frequency</div>
+      <div class="field-value">2–3x/week · Full-body</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Equipment Access</div>
+      <div class="field-value">School rec facility + home bands</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Tech Comfort</div>
+      <div class="field-value">Low — occasional smartphone user</div>
+    </div>
+    <div class="field field-full">
+      <div class="field-label">Logging Behavior</div>
+      <div class="field-value">Inconsistent logger. Sometimes forgets to start a session, then logs retroactively. Gets confused by the active workout state — left an active workout open for 3 days once. Rarely explores beyond the home screen.</div>
+    </div>
+  </div>
+  <div class="quirk-box">
+    <div class="field-label">Notable Trait</div>
+    <div class="field-value">Leaving an active workout open for days. Tests stale active workout state recovery and whether the app prompts for cleanup after an orphaned session.</div>
+  </div>
+  <div class="field" style="margin-top:12px">
+    <div class="field-label">Likely Friction Points</div>
+    <ul class="friction-list">
+      <li>Stale active workout blocking new session start</li>
+      <li>Retroactive logging UX not intuitive</li>
+      <li>Home screen overwhelming for casual users</li>
+    </ul>
+  </div>
+  <div class="sim-role">Simulation Role: Casual low-engagement user. Tests stale state recovery, session management for non-power-users, and whether the home screen communicates value without effort.</div>
+</div>
+
+<!-- U-18 -->
+<div class="persona normal" data-type="normal" data-level="intermediate" data-priority="low">
+  <div class="persona-header">
+    <div class="persona-avatar">🚴</div>
+    <div class="persona-id-block">
+      <div class="persona-id">U-18</div>
+      <div class="persona-name">Sam Okafor</div>
+      <div class="persona-tagline">29 · Non-binary · UX Designer</div>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-intermediate">Intermediate</span>
+    <span class="badge badge-normal">Normal</span>
+    <span class="badge badge-low">Low Priority</span>
+  </div>
+  <div class="persona-fields">
+    <div class="field">
+      <div class="field-label">Primary Goal</div>
+      <div class="field-value">Aesthetics + stress relief</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Training Frequency</div>
+      <div class="field-value">3x/week · Balanced push/pull/cardio</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Equipment Access</div>
+      <div class="field-value">Gym + cycling commute</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Tech Comfort</div>
+      <div class="field-value highlight">Very high — will critique every pixel</div>
+    </div>
+    <div class="field field-full">
+      <div class="field-label">Logging Behavior</div>
+      <div class="field-value">Regular, consistent logger. Takes screenshots of UI inconsistencies. Notices misaligned elements, inconsistent spacing, and color deviations immediately. Uses Dynamic Type at accessibility large font sizes. Switches between light/dark environments mentally.</div>
+    </div>
+  </div>
+  <div class="quirk-box">
+    <div class="field-label">Notable Trait</div>
+    <div class="field-value">Evaluates the visual design at a professional UX level. Will notice things like inconsistent corner radii, wrong text styles, and touch target violations that no one else reports.</div>
+  </div>
+  <div class="field" style="margin-top:12px">
+    <div class="field-label">Likely Friction Points</div>
+    <ul class="friction-list">
+      <li>Any visual inconsistency in the design system</li>
+      <li>Accessibility violations (tap targets, contrast)</li>
+      <li>Layout breaking at accessibility font sizes</li>
+    </ul>
+  </div>
+  <div class="sim-role">Simulation Role: Visual QA and accessibility canary. A professional UX eye on every screen — surfaces design debt and WCAG violations.</div>
+</div>
+
+<!-- U-19 -->
+<div class="persona normal" data-type="normal" data-level="intermediate" data-priority="low">
+  <div class="persona-header">
+    <div class="persona-avatar">🥗</div>
+    <div class="persona-id-block">
+      <div class="persona-id">U-19</div>
+      <div class="persona-name">Hannah Bergström</div>
+      <div class="persona-tagline">52 · Female · Nutritionist / Wellness Coach</div>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-intermediate">Intermediate</span>
+    <span class="badge badge-normal">Normal</span>
+    <span class="badge badge-low">Low Priority</span>
+  </div>
+  <div class="persona-fields">
+    <div class="field">
+      <div class="field-label">Primary Goal</div>
+      <div class="field-value">Health/longevity + professional evaluation</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Training Frequency</div>
+      <div class="field-value">3x/week · Low-moderate intensity</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Equipment Access</div>
+      <div class="field-value">Both gym and home</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Tech Comfort</div>
+      <div class="field-value">Medium</div>
+    </div>
+    <div class="field field-full">
+      <div class="field-label">Logging Behavior</div>
+      <div class="field-value">Uses the app as a client recommendation test. Trains at moderate weights (not trying to PR). Interested in how the app handles HealthKit integrations. Checks if the app's coaching aligns with holistic wellness principles. Keeps sessions to 45 minutes strictly.</div>
+    </div>
+  </div>
+  <div class="quirk-box">
+    <div class="field-label">Notable Trait</div>
+    <div class="field-value">Evaluates HealthKit integration rigorously — will check whether Apple Health data is read/written correctly and whether permissions are scoped minimally.</div>
+  </div>
+  <div class="field" style="margin-top:12px">
+    <div class="field-label">Likely Friction Points</div>
+    <ul class="friction-list">
+      <li>HealthKit data not reflecting in readiness correctly</li>
+      <li>Coaching language using diet-related phrasing (not her domain)</li>
+      <li>No integration with nutrition/sleep context</li>
+    </ul>
+  </div>
+  <div class="sim-role">Simulation Role: HealthKit and wellness integration evaluator. Tests data sync accuracy and whether the app's coaching stays in its lane.</div>
+</div>
+
+<!-- U-20 -->
+<div class="persona normal" data-type="normal" data-level="intermediate" data-priority="low">
+  <div class="persona-header">
+    <div class="persona-avatar">🏢</div>
+    <div class="persona-id-block">
+      <div class="persona-id">U-20</div>
+      <div class="persona-name">Bernard Okonkwo</div>
+      <div class="persona-tagline">47 · Male · Investment Banker (travels 3x/month)</div>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-intermediate">Intermediate</span>
+    <span class="badge badge-normal">Normal</span>
+    <span class="badge badge-low">Low Priority</span>
+  </div>
+  <div class="persona-fields">
+    <div class="field">
+      <div class="field-label">Primary Goal</div>
+      <div class="field-value">Maintaining fitness during heavy travel schedule</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Training Frequency</div>
+      <div class="field-value">2–4x/week (highly variable by travel)</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Equipment Access</div>
+      <div class="field-value">Both — home gym + hotel gyms of varying quality</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Tech Comfort</div>
+      <div class="field-value">High — but minimal time for app exploration</div>
+    </div>
+    <div class="field field-full">
+      <div class="field-label">Logging Behavior</div>
+      <div class="field-value">Uses quick-swap equipment constantly as hotel gyms vary. Logs during travel with whatever equipment is available. Sessions 20–40 min when traveling, 60–75 min at home. Timezone changes — logs at unusual local times.</div>
+    </div>
+  </div>
+  <div class="quirk-box">
+    <div class="field-label">Notable Trait</div>
+    <div class="field-value">The equipment quick-swap path is his primary interaction. Tests whether equipment context resets cleanly between sessions and whether the app handles timezone-shifted log timestamps correctly.</div>
+  </div>
+  <div class="field" style="margin-top:12px">
+    <div class="field-label">Likely Friction Points</div>
+    <ul class="friction-list">
+      <li>Equipment not persisting appropriately between travel/home</li>
+      <li>Timezone-shifted sessions appearing on wrong dates</li>
+      <li>Progress trends skewed by hotel-gym variation</li>
+    </ul>
+  </div>
+  <div class="sim-role">Simulation Role: Travel and equipment variation tester. Exercises the quick-swap path and validates timezone/date handling for globally mobile users.</div>
+</div>
+
+<!-- U-21 (Bad Actor) -->
+<div class="persona bad-actor" data-type="bad-actor" data-level="intermediate" data-priority="high">
+  <div class="persona-header">
+    <div class="persona-avatar">⚠️</div>
+    <div class="persona-id-block">
+      <div class="persona-id">U-21</div>
+      <div class="persona-name">Jordan "Max Input" Reeves</div>
+      <div class="persona-tagline">19 · Male (non-disclosed) · College Freshman</div>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-bad-actor">Bad Actor</span>
+    <span class="badge badge-edge">Edge Case</span>
+    <span class="badge badge-high">High Priority</span>
+  </div>
+  <div class="persona-fields">
+    <div class="field">
+      <div class="field-label">Primary Goal</div>
+      <div class="field-value">Gaming the app / seeing what breaks</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Training Frequency</div>
+      <div class="field-value">Logs fake sessions daily</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Equipment Access</div>
+      <div class="field-value">Irrelevant — inputs are fabricated</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Tech Comfort</div>
+      <div class="field-value highlight">High — deliberately adversarial</div>
+    </div>
+    <div class="field field-full">
+      <div class="field-label">Logging Behavior</div>
+      <div class="field-value">Logs 999 kg bench press. Enters 0 reps on sets. Logs 100 sets in one session. Enters negative RPE values. Tries to log sets before starting a session. Logs 200+ sessions in one calendar month. Tries string injection in text fields. Will probe every input boundary.</div>
+    </div>
+  </div>
+  <div class="quirk-box">
+    <div class="field-label">Notable Trait</div>
+    <div class="field-value">Systematically tests every input validation boundary. Represents the tail of malicious/curious users who will crash the app intentionally. Every crash he finds is a crash a normal user could hit accidentally.</div>
+  </div>
+  <div class="field" style="margin-top:12px">
+    <div class="field-label">Likely Friction Points</div>
+    <ul class="friction-list">
+      <li>No input validation → app crash or corrupted data</li>
+      <li>Analytics breaking on extreme values</li>
+      <li>e1RM returning NaN or infinity on boundary inputs</li>
+      <li>Array out-of-bounds on 100-set sessions</li>
+    </ul>
+  </div>
+  <div class="sim-role">Simulation Role: Input validation adversary. Every crash he finds represents a real crash risk for real users. Tests robustness of all data entry paths.</div>
+</div>
+
+<!-- U-22 (Bad Actor) -->
+<div class="persona bad-actor" data-type="bad-actor" data-level="intermediate" data-priority="medium">
+  <div class="persona-header">
+    <div class="persona-avatar">🎭</div>
+    <div class="persona-id-block">
+      <div class="persona-id">U-22</div>
+      <div class="persona-name">Casey "Streak Farmer" Holloway</div>
+      <div class="persona-tagline">31 · Female · Aspiring Influencer</div>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-bad-actor">Bad Actor</span>
+    <span class="badge badge-edge">Edge Case</span>
+    <span class="badge badge-medium">Med Priority</span>
+  </div>
+  <div class="persona-fields">
+    <div class="field">
+      <div class="field-label">Primary Goal</div>
+      <div class="field-value">Gaming streaks and PRs for screenshots</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Training Frequency</div>
+      <div class="field-value">7x/week (fake) — 1x/week (real)</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Equipment Access</div>
+      <div class="field-value">Real gym but logs from the couch</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Tech Comfort</div>
+      <div class="field-value">Medium — social media savvy</div>
+    </div>
+    <div class="field field-full">
+      <div class="field-label">Logging Behavior</div>
+      <div class="field-value">Logs fake workouts daily to maintain streak. Sets fake PRs (200 kg squat) to see what the celebration looks like. Logs 1 real set per "session." Tries to inflate readiness score by logging fake data. Screenshots streak milestones to post online. Actual training: once a week, 20 minutes.</div>
+    </div>
+  </div>
+  <div class="quirk-box">
+    <div class="field-label">Notable Trait</div>
+    <div class="field-value">The Goodhart's Law user — optimizes for the metric, not the behavior. Tests whether gamification mechanics (streaks, PRs) are meaningful or gameable. Reveals whether social sharing of milestones has any verification.</div>
+  </div>
+  <div class="field" style="margin-top:12px">
+    <div class="field-label">Likely Friction Points</div>
+    <ul class="friction-list">
+      <li>Fake PRs triggering celebrations at absurd values</li>
+      <li>Daily 1-set sessions counting as full workouts for streak</li>
+      <li>Analytics becoming meaningless from fake data</li>
+      <li>Readiness engine confused by contradictory signal (high volume, no fatigue)</li>
+    </ul>
+  </div>
+  <div class="sim-role">Simulation Role: Gamification integrity tester. Reveals whether engagement mechanics are meaningful or trivially gameable — important for long-term product credibility.</div>
+</div>
+
+</div><!-- end persona-grid -->
+
+<script>
+function filterPersonas(type, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const cards = document.querySelectorAll('.persona');
+  cards.forEach(card => {
+    if (type === 'all') {
+      card.style.display = '';
+    } else if (type === 'high') {
+      card.style.display = card.dataset.priority === 'high' ? '' : 'none';
+    } else if (type === 'edge') {
+      card.style.display = card.dataset.type === 'edge' ? '' : 'none';
+    } else if (type === 'bad-actor') {
+      card.style.display = card.dataset.type === 'bad-actor' ? '' : 'none';
+    } else if (type === 'beginner') {
+      card.style.display = card.dataset.level === 'beginner' ? '' : 'none';
+    } else if (type === 'advanced') {
+      card.style.display = (card.dataset.level === 'advanced' || card.dataset.level === 'elite') ? '' : 'none';
+    }
+  });
+}
+</script>
+
+</body>
+</html>

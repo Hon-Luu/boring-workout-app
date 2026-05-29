@@ -1,0 +1,1640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H.O.N. — Simulation Protocol</title>
+<style>
+  :root {
+    --bg:       #111111;
+    --card:     #1c1c1e;
+    --border:   rgba(255,255,255,0.07);
+    --amber:    #f59e0b;
+    --positive: #34d399;
+    --negative: #f87171;
+    --warning:  #fbbf24;
+    --muted:    rgba(255,255,255,0.4);
+    --text:     rgba(255,255,255,0.88);
+    --text2:    rgba(255,255,255,0.55);
+    --blue:     #60a5fa;
+    --purple:   #a78bfa;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 32px 20px 64px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .header { margin-bottom: 36px; }
+  .header-top {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .logo {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber);
+  }
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--amber), transparent);
+    opacity: 0.3;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    color: var(--text);
+  }
+  .subtitle {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+
+  .section-heading {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin: 32px 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-heading::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .intro-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 28px;
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.7;
+    border-left: 3px solid var(--amber);
+  }
+
+  /* Scenario cards */
+  .scenario {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 14px;
+    transition: border-color 0.2s;
+  }
+  .scenario:hover { border-color: rgba(255,255,255,0.14); }
+
+  .scenario-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .scenario-id {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    letter-spacing: 0.08em;
+    color: var(--amber);
+    background: rgba(245,158,11,0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .scenario-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+    flex: 1;
+  }
+
+  .badge-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+
+  .badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .badge-time   { background: rgba(96,165,250,0.15); color: var(--blue); }
+  .badge-amber  { background: rgba(245,158,11,0.15); color: var(--amber); }
+  .badge-green  { background: rgba(52,211,153,0.15); color: var(--positive); }
+
+  .scenario-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 20px;
+    margin-bottom: 12px;
+  }
+  @media (max-width: 600px) {
+    .scenario-grid { grid-template-columns: 1fr; }
+  }
+
+  .field-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 3px;
+  }
+  .field-value {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+
+  .field-full { grid-column: 1 / -1; }
+
+  .step-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 4px;
+    counter-reset: steps;
+  }
+  .step-list li {
+    font-size: 13px;
+    color: var(--text2);
+    padding: 4px 0 4px 26px;
+    position: relative;
+    line-height: 1.5;
+    counter-increment: steps;
+  }
+  .step-list li::before {
+    content: counter(steps);
+    position: absolute;
+    left: 0;
+    top: 4px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(245,158,11,0.15);
+    color: var(--amber);
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'SF Mono', monospace;
+  }
+
+  .criteria-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  @media (max-width: 600px) {
+    .criteria-grid { grid-template-columns: 1fr; }
+  }
+
+  .criteria-box {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .criteria-pass {
+    background: rgba(52,211,153,0.06);
+    border: 1px solid rgba(52,211,153,0.15);
+    color: var(--positive);
+  }
+  .criteria-fail {
+    background: rgba(248,113,113,0.06);
+    border: 1px solid rgba(248,113,113,0.15);
+    color: var(--negative);
+  }
+  .criteria-box .criteria-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    opacity: 0.8;
+  }
+
+  .uid-list {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+  .uid-chip {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(245,158,11,0.1);
+    color: var(--amber);
+    letter-spacing: 0.06em;
+  }
+  .uid-chip.secondary {
+    background: rgba(255,255,255,0.06);
+    color: var(--text2);
+  }
+
+  /* Matrix table */
+  .matrix-wrapper {
+    overflow-x: auto;
+    margin: 0 -4px;
+    padding: 0 4px;
+    border-radius: 10px;
+  }
+
+  .matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    min-width: 700px;
+  }
+
+  .matrix-table th {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text2);
+    padding: 8px 4px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    background: var(--card);
+  }
+
+  .matrix-table th.row-header {
+    text-align: left;
+    padding-left: 10px;
+    min-width: 90px;
+  }
+
+  .matrix-table td {
+    padding: 6px 4px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 10px;
+  }
+
+  .matrix-table td.row-header {
+    text-align: left;
+    padding-left: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    font-family: 'SF Mono', monospace;
+    color: var(--amber);
+    white-space: nowrap;
+  }
+
+  .matrix-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .cell-high {
+    background: rgba(245,158,11,0.2);
+    color: var(--amber);
+    border-radius: 3px;
+    font-weight: 700;
+    font-size: 9px;
+  }
+  .cell-low {
+    color: rgba(255,255,255,0.18);
+    font-size: 9px;
+  }
+  .cell-empty { color: transparent; }
+
+  /* Results template */
+  .template-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    margin-top: 16px;
+  }
+
+  .template-field {
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .template-field:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+  .template-field-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 6px;
+  }
+  .template-field-placeholder {
+    font-size: 13px;
+    color: rgba(255,255,255,0.2);
+    font-style: italic;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px dashed rgba(255,255,255,0.1);
+    border-radius: 6px;
+    line-height: 1.5;
+  }
+
+  .separator {
+    height: 1px;
+    background: var(--border);
+    margin: 28px 0;
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 20px 14px 48px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <span class="logo">H.O.N.</span>
+    <div class="divider-line"></div>
+  </div>
+  <h1>Simulation Protocol</h1>
+  <div class="subtitle">20 scenarios · Cohort × scenario priority matrix · Results capture template · Last updated: 2026-05-29</div>
+</div>
+
+<!-- Section 1: How to run -->
+<div class="section-heading">Section 1 — How to Run Simulations</div>
+<div class="intro-card">
+Simulations are structured manual test runs that replicate real user behavior end-to-end, from first launch through long-term feature interaction. Each run assigns one cohort member (from <a href="cohort.html" style="color:var(--amber)">cohort.html</a>) to one scenario, then follows the step-by-step instructions exactly as that persona would behave — not as a developer. The tester adopts the persona's technical comfort level, logging habits, and emotional context. Runs are done on a physical device or the iOS Simulator with a fresh or seeded data state as specified. Results are captured using the template in Section 4 and filed in <code style="font-family:monospace;font-size:12px;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">docs/uat/</code>. Prioritize the 10 highlighted combos in the matrix first; run secondary combos as time permits. A scenario is only considered complete when success criteria are verified, not just when the steps are finished.
+</div>
+
+<!-- Section 2: Scenarios -->
+<div class="section-heading">Section 2 — 20 Simulation Scenarios</div>
+
+<!-- SIM-01 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SIM-01</div>
+    <div class="scenario-title">First Open &amp; Onboarding — Profile Setup, Goals, Equipment</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 10–15 min</span>
+    <span class="badge badge-amber">Trigger: Fresh install</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Onboarding completion rate, clarity of goal/equipment selection, profile save persistence, time-to-first-value under 3 minutes.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">App installed fresh, no prior data. Reset simulator or delete app and reinstall from build.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Launch app fresh. Note time to first interactive screen.</li>
+        <li>Complete onboarding as the assigned persona: select gender, age, fitness level, primary goal.</li>
+        <li>Select equipment type that matches persona's access.</li>
+        <li>Complete profile setup (name, bodyweight if prompted).</li>
+        <li>Note any confusing labels, ambiguous options, or missing choices.</li>
+        <li>Reach the home screen. Note total elapsed time from cold launch.</li>
+        <li>Background the app and reopen. Verify onboarding does not repeat.</li>
+        <li>Check that profile data persisted correctly in Settings tab.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-06</span>
+        <span class="uid-chip">U-11</span>
+        <span class="uid-chip">U-13</span>
+        <span class="uid-chip secondary">U-01</span>
+        <span class="uid-chip secondary">U-17</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Onboarding complete in &lt;3 min. All selections persist. Home screen loads with correct persona context. No repeat onboarding on relaunch.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Onboarding &gt;5 min. Any selection lost on relaunch. Crash during flow. Missing equipment options for persona's setup.
+    </div>
+  </div>
+</div>
+
+<!-- SIM-02 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SIM-02</div>
+    <div class="scenario-title">First Workout — Empty Start, No History</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 15–20 min</span>
+    <span class="badge badge-amber">Trigger: First session ever</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Cold-start workout usability, zero-history state handling, first set logging, coaching narrative on first ever set, session completion and celebration.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">Immediately after onboarding (SIM-01) or seeded with profile-only state (no workout log).</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Navigate to Workout tab. Note what the empty state shows.</li>
+        <li>Start a new workout without using a template.</li>
+        <li>Add 3 exercises that match the persona's equipment access.</li>
+        <li>Log 3 sets per exercise — varied reps and weight.</li>
+        <li>Note whether coaching narrative appears after first set. Read it as the persona would.</li>
+        <li>Log RPE on at least one set (if persona would). Note if RPE is discoverable.</li>
+        <li>Complete the workout. Note post-session screen and any celebration.</li>
+        <li>Navigate to Progress tab. Verify session appears in history.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-06</span>
+        <span class="uid-chip">U-10</span>
+        <span class="uid-chip">U-11</span>
+        <span class="uid-chip secondary">U-01</span>
+        <span class="uid-chip secondary">U-17</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Session completable with zero prior knowledge. Coaching narrative appears after first set. Post-session celebration fires. Session visible in Progress tab immediately.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Any blocking UX requiring prior knowledge. Coaching narrative absent. Crash. Session not persisted. Celebration not firing on first-ever completion.
+    </div>
+  </div>
+</div>
+
+<!-- SIM-03 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SIM-03</div>
+    <div class="scenario-title">Second Workout Same Week — Previous Session Data Visible</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 15 min</span>
+    <span class="badge badge-amber">Trigger: 2nd session within 7 days</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Previous session data displayed correctly, weight suggestions appearing, coaching narrative references prior session, readiness score updated.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">At least 1 session logged. Start a second session with 2–4 of the same exercises as the first.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Open Workout tab. Note if home screen shows "last session" context.</li>
+        <li>Start new workout. Add the same primary lift as session 1.</li>
+        <li>Verify last session's sets are shown as reference (weight/reps from prior session).</li>
+        <li>Log the first set. Verify weight suggestion appears and is reasonable.</li>
+        <li>Log 3 sets per exercise. Accept suggested weights for 2 exercises, override for 1.</li>
+        <li>Complete session. Check if coaching narrative references progress vs. last session.</li>
+        <li>Navigate to StrengthLab tab. Verify new e1RM data is plotted.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-01</span>
+        <span class="uid-chip">U-03</span>
+        <span class="uid-chip">U-07</span>
+        <span class="uid-chip secondary">U-02</span>
+        <span class="uid-chip secondary">U-15</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Prior session data visible as reference. Weight suggestion present and within ±20% of prior weight. Coaching narrative contextually appropriate. e1RM updates in StrengthLab.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      No prior session data shown. Weight suggestion absent or wildly off. Coaching narrative generic/ignores context. StrengthLab not updated.
+    </div>
+  </div>
+</div>
+
+<!-- SIM-04 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SIM-04</div>
+    <div class="scenario-title">Trainer Tab — Cold Start with No History</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 10 min</span>
+    <span class="badge badge-amber">Trigger: First visit to Trainer tab</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Trainer tab graceful empty state, plan generation from profile-only data, plan quality and relevance with zero history.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">User profile complete, 0–1 workout sessions logged.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Navigate to Trainer tab immediately after onboarding (no sessions yet).</li>
+        <li>Note the empty state: is there a generated plan or a "not enough data" message?</li>
+        <li>If a plan is generated, evaluate: does it match the persona's goal and equipment?</li>
+        <li>Check coach notes — are they generic or personalized?</li>
+        <li>Log 1 session. Return to Trainer tab. Note if plan updates.</li>
+        <li>Tap into plan details. Verify exercises match persona's equipment access.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-06</span>
+        <span class="uid-chip">U-10</span>
+        <span class="uid-chip secondary">U-01</span>
+        <span class="uid-chip secondary">U-17</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Trainer tab has a usable state from day 1. Plan (or placeholder) is goal-appropriate. No crash on zero-history state. Equipment constraint respected.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Crash or blank screen. Plan suggests equipment persona doesn't have. Generic filler plan with no persona relevance. Confusing empty state with no direction.
+    </div>
+  </div>
+</div>
+
+<!-- SIM-05 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SIM-05</div>
+    <div class="scenario-title">Trainer Tab — After 4 Weeks of Data (Rich History)</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 15 min</span>
+    <span class="badge badge-amber">Trigger: 12+ sessions logged, 4+ weeks elapsed</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Plan quality improvement with rich data, whether readiness state influences plan, adaptation to stalled exercises, coach notes specificity.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">Seed with 12–16 sessions over 28 days, varied exercises and progression. Use the seeded data script or manually log via UAT workflow.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Review trainer plan. Compare to a cold-start plan — is it more specific?</li>
+        <li>Check coach notes for references to specific exercises the user has done.</li>
+        <li>Simulate a tired persona (low readiness). Does the plan adjust intensity?</li>
+        <li>Identify one stalled exercise in the log. Does the trainer acknowledge or address it?</li>
+        <li>Check if suggested exercises vary from the user's existing routine (progressive overload)</li>
+        <li>Evaluate whether "today's hints" on Home tab aligns with trainer plan.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-01</span>
+        <span class="uid-chip">U-03</span>
+        <span class="uid-chip">U-15</span>
+        <span class="uid-chip secondary">U-05</span>
+        <span class="uid-chip secondary">U-08</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Plan is noticeably more specific with 4 weeks data vs. cold start. Coach notes reference actual exercise history. Low readiness produces lighter plan.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Plan is identical to cold-start plan. Coach notes are generic. Readiness state has no effect on plan. Stalled exercise not addressed at all.
+    </div>
+  </div>
+</div>
+
+<!-- SIM-06 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SIM-06</div>
+    <div class="scenario-title">First Cardio Session — Cardio Logging End-to-End</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 10 min</span>
+    <span class="badge badge-amber">Trigger: Any time after onboarding</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Cardio session creation, duration/distance/HR logging, cardio history persistence, and whether cardio appears correctly in progress view.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">User profile complete. No prior cardio sessions required.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Navigate to Workout tab. Find how to start a cardio session.</li>
+        <li>Start a running session. Log duration (30 min), distance, perceived effort.</li>
+        <li>Complete the cardio session. Note post-session screen.</li>
+        <li>Navigate to Progress tab. Verify cardio session appears in history.</li>
+        <li>Check Home tab — does readiness or today's hints update for cardio?</li>
+        <li>Start a second cardio session same day. Verify two sessions appear in log.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-14</span>
+        <span class="uid-chip">U-09</span>
+        <span class="uid-chip secondary">U-01</span>
+        <span class="uid-chip secondary">U-10</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Cardio session completable end-to-end. Session persists in history. No crash. Cardio data separated from strength data appropriately in Progress view.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Cardio session creation path not discoverable. Crash during logging. Cardio not persisted. Cardio session corrupts strength analytics.
+    </div>
+  </div>
+</div>
+
+<!-- SIM-07 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SIM-07</div>
+    <div class="scenario-title">Return After 2-Day Rest — Normal Recovery Gap</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 10 min</span>
+    <span class="badge badge-amber">Trigger: 48–54 hours since last session</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Home screen state after normal rest, readiness score after 2 days, absence of gap messaging (2 days is not a gap), correct last-session context display.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">Seed last session 48–54 hours ago. Do NOT trigger gap messaging (should only trigger at 7+ days).</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Open app with last session 2 days ago. Note Home tab state.</li>
+        <li>Verify NO "welcome back" or gap messaging appears.</li>
+        <li>Check readiness score — should reflect 2-day rest positively.</li>
+        <li>Start a new session. Verify prior session data available as reference.</li>
+        <li>Log 2 sets. Check that weight suggestions are continuous from prior session.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-01</span>
+        <span class="uid-chip">U-07</span>
+        <span class="uid-chip secondary">U-02</span>
+        <span class="uid-chip secondary">U-13</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      No gap message for 2-day rest. Readiness neutral-to-positive. Last session context displayed. Weight suggestions continuous.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Gap message fires at 2 days (false positive). Readiness score broken. Prior session data missing.
+    </div>
+  </div>
+</div>
+
+<!-- SIM-08 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SIM-08</div>
+    <div class="scenario-title">Return After 7-Day Gap — Short Gap Messaging Test</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 10 min</span>
+    <span class="badge badge-amber">Trigger: Exactly 7–13 days since last session</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Short gap comeback message quality, readiness score after one week off, tone of coaching language (supportive not guilt-inducing), weight suggestion conservatism.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">Seed last session 7–13 days ago. Short gap threshold crossing — gap message should fire exactly once.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Open app. Note whether Home tab shows any gap acknowledgment.</li>
+        <li>Note the exact text of the comeback message (screenshot it).</li>
+        <li>Evaluate tone: does it feel supportive or guilt-inducing for U-13 (anxiety)?</li>
+        <li>Start a new session. Note if suggestions are slightly conservative vs. pre-gap.</li>
+        <li>Complete session. Note if gap message clears or persists.</li>
+        <li>Reopen app same day. Verify gap message does NOT repeat.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-07</span>
+        <span class="uid-chip">U-13</span>
+        <span class="uid-chip">U-16</span>
+        <span class="uid-chip secondary">U-06</span>
+        <span class="uid-chip secondary">U-17</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Gap message fires once, correct threshold (7+ days). Tone is welcoming. Message does not repeat same day. Weight suggestions conservatively adjusted.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Gap message fires at wrong threshold. Message repeats after completion. Tone is guilt-inducing or dismissive. Wrong historyKey used ("Short Gap" vs "Long Gap" swap).
+    </div>
+  </div>
+</div>
+
+<!-- SIM-09 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SIM-09</div>
+    <div class="scenario-title">Return After 21+ Day Gap — Comeback Flow</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 15 min</span>
+    <span class="badge badge-amber">Trigger: 21+ days since last session</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Long gap comeback flow, strength decay model accuracy at 3+ weeks, "Long Gap" phrase bank key triggering correctly, readiness baseline reset, recommitment mechanics.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">Seed last session 21–45 days ago with good prior history (8+ sessions). This is the "Long Gap" historyKey threshold.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Open app. Note Home tab state — what does the app say about the long gap?</li>
+        <li>Screenshot the comeback message and evaluate it for U-16 (ghost user) tone fit.</li>
+        <li>Check StrengthLab tab — does strength decay model show estimated loss?</li>
+        <li>Navigate to trainer tab — does the plan account for the return-from-gap state?</li>
+        <li>Start a session. Note if weight suggestions are reduced from pre-gap levels.</li>
+        <li>Log 3 sets. Verify "Long Gap" historyKey triggers in coaching narrative (not "Short Gap").</li>
+        <li>Complete session. Note if a re-onboarding/recommitment moment is offered.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-16</span>
+        <span class="uid-chip">U-14</span>
+        <span class="uid-chip">U-08</span>
+        <span class="uid-chip secondary">U-07</span>
+        <span class="uid-chip secondary">U-13</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      "Long Gap" phrase bank key fires (not "Short Gap"). Strength decay displayed. Weight suggestions reduced. Comeback tone is welcoming. Trainer plan is appropriately conservative.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Wrong gap key fires. No strength decay display. Weight suggestions unchanged from pre-gap. Comeback message absent or uses wrong phrase bank key.
+    </div>
+  </div>
+</div>
+
+<!-- SIM-10 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SIM-10</div>
+    <div class="scenario-title">4-Week Streak Milestone — Celebration and Retention Mechanics</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 10 min</span>
+    <span class="badge badge-amber">Trigger: Completing a session on day 28 of continuous streak</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Streak milestone detection, celebration animation quality, milestone messaging content, streak display accuracy on Progress tab, whether milestone improves D30 retention signal.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">Seed 27 days of regular sessions (3–4x/week for 4 weeks). Complete session 28 to trigger the milestone.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Complete final session of week 4 streak (session #28+).</li>
+        <li>Note if any milestone celebration or acknowledgment fires.</li>
+        <li>Navigate to Progress tab. Verify streak count is correct.</li>
+        <li>Check Home tab — does it reflect the achievement?</li>
+        <li>Evaluate celebration quality: is it proportionate and non-cringe?</li>
+        <li>Skip 1 day. Return. Verify streak handling for a small gap in a long streak.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-01</span>
+        <span class="uid-chip">U-03</span>
+        <span class="uid-chip">U-22</span>
+        <span class="uid-chip secondary">U-05</span>
+        <span class="uid-chip secondary">U-13</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      4-week milestone acknowledged explicitly. Streak count correct on Progress tab. Celebration proportionate and not kitschy. Streak definition clearly documented behavior (not gamed by 1-set sessions).
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      No milestone acknowledgment. Wrong streak count. Celebration fires on wrong session. Streak gameable with 0-effort entries (U-22 scenario).
+    </div>
+  </div>
+</div>
+
+<!-- SIM-11 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SIM-11</div>
+    <div class="scenario-title">Weight Progression Decision — Is the Suggestion Correct?</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 15 min</span>
+    <span class="badge badge-amber">Trigger: 3+ sessions on same exercise</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Weight suggestion accuracy after successful and failed previous sets, Epley/Mayhew e1RM routing at rep boundaries, suggestion conservatism vs. aggressiveness for different fitness levels.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">3+ logged sessions for the same exercise with clean progression data. Test across rep ranges: 1 rep, 5 reps, 10 reps, 13 reps.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Start session. Add a "main lift" (squat, bench, or deadlift).</li>
+        <li>Note the weight suggestion for the first set. Is it appropriate for the persona?</li>
+        <li>Log a set of 10 reps (Epley range). Log next set of 13 reps (Mayhew range).</li>
+        <li>Verify e1RM calculation uses correct formula at boundary (10 vs. 11 reps).</li>
+        <li>Log a failed set (missed target reps). Note if next suggestion adjusts down.</li>
+        <li>Log a set exceeding target. Note if next suggestion increments up.</li>
+        <li>For U-03: cross-reference app e1RM with manual Epley calculation.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-03</span>
+        <span class="uid-chip">U-01</span>
+        <span class="uid-chip">U-15</span>
+        <span class="uid-chip secondary">U-08</span>
+        <span class="uid-chip secondary">U-05</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      e1RM matches manual calculation ±1%. Suggestion adjusts after failure/success. Epley used for 2–10 reps, Mayhew for 11–15 reps, exact at 1 rep. >15 reps returns 0 (excluded).
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      e1RM off by >2%. Wrong formula at rep boundary. Suggestion unchanged after failure. >15 reps returning non-zero e1RM. Suggestion off by >20% of expected value.
+    </div>
+  </div>
+</div>
+
+<!-- SIM-12 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SIM-12</div>
+    <div class="scenario-title">RPE Logging — Last Set as RPE Gate</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 10 min</span>
+    <span class="badge badge-amber">Trigger: Any session</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">RPE discoverability, RPE chip label accuracy (6–10 range), RPE-adjusted e1RM computation, RPE persisting correctly per set, RPE influencing readiness on next session.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">Any session with at least 1 completed set. Test RPE entry for both experienced (U-03) and beginner (U-02) personas.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Log a set. Find the RPE entry option. Note how many taps it requires.</li>
+        <li>Tap through all RPE values 6–10. Verify labels map to correct intensity words.</li>
+        <li>Select RPE 8 on a set with 5 reps at 100 kg. Verify RPE-adjusted e1RM differs from non-RPE e1RM.</li>
+        <li>Leave RPE blank on one set. Verify it defaults correctly (no crash, no assumed value).</li>
+        <li>Complete session with high RPE (9–10) on all sets. Check readiness next session.</li>
+        <li>As U-02 (beginner): is RPE clearly explained? Can she skip it without penalty?</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-03</span>
+        <span class="uid-chip">U-09</span>
+        <span class="uid-chip secondary">U-02</span>
+        <span class="uid-chip secondary">U-01</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      RPE 6–10 range enforced. Word chips map correctly. RPE-adjusted e1RM differs from plain e1RM. Blank RPE does not crash. High RPE session influences next-day readiness.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      RPE outside 6–10 accepted. Chip labels wrong. RPE has no effect on e1RM or readiness. Crash on blank RPE. Beginner with no RPE knowledge blocked from completing set.
+    </div>
+  </div>
+</div>
+
+<!-- SIM-13 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SIM-13</div>
+    <div class="scenario-title">Plateau Detection — Same Lift, 4+ Weeks, No Progress</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 15 min</span>
+    <span class="badge badge-amber">Trigger: 4+ weeks, same weight, same reps, no increase</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Plateau detection in analytics, "Stalled" historyKey triggering correctly, coaching narrative addressing plateau, trainer plan response to plateau, progress chart showing flat trend.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">Seed 8+ sessions over 4 weeks with identical weight/reps on one lift (e.g., 80 kg × 5 reps, every session, no change).</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Seed plateau data: 8 sessions, same lift, identical weight/reps.</li>
+        <li>Open app. Check Home tab — does it acknowledge the plateau?</li>
+        <li>Start a session for the stalled lift. Log first set.</li>
+        <li>Verify "Stalled" historyKey fires in coaching narrative (not "Normal").</li>
+        <li>Check Trainer tab — does it suggest a deload or variation to break the plateau?</li>
+        <li>Open StrengthLab. Verify flat e1RM trend is visible for this exercise.</li>
+        <li>Check progressTrend value in HomeCache — should reflect plateau state.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-01</span>
+        <span class="uid-chip">U-03</span>
+        <span class="uid-chip">U-08</span>
+        <span class="uid-chip secondary">U-15</span>
+        <span class="uid-chip secondary">U-05</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      "Stalled" historyKey fires in narrative. StrengthLab shows flat trend. Trainer tab acknowledges plateau. Home progressTrend reflects stall.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      "Normal" historyKey fires despite 4-week plateau. No coaching response. Trainer plan unchanged. StrengthLab shows upward trend on flat data.
+    </div>
+  </div>
+</div>
+
+<!-- SIM-14 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SIM-14</div>
+    <div class="scenario-title">Progress Page — First Time Reviewing Charts/Data</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 10 min</span>
+    <span class="badge badge-amber">Trigger: 5–10 sessions logged</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Progress tab readability with small dataset, chart clarity, streak display, PR detection and display, empty state handling for exercises with no data, cognitive load for beginner persona.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">5–10 sessions logged over 2–3 weeks. Mix of exercises, some with 1 session, some with 5+.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Navigate to Progress tab for the first time as the persona.</li>
+        <li>Note time to understand what you're looking at (beginner: should be &lt;30s).</li>
+        <li>Find the streak display. Verify count matches expected sessions.</li>
+        <li>Find the PR section. Verify PRs are correct (highest e1RM per exercise).</li>
+        <li>Navigate to an exercise chart. Verify trend line is plausible.</li>
+        <li>Find an exercise with only 1 session. Note how the chart handles sparse data.</li>
+        <li>As U-06 (beginner, older): is any element confusing or demotivating?</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-06</span>
+        <span class="uid-chip">U-13</span>
+        <span class="uid-chip secondary">U-01</span>
+        <span class="uid-chip secondary">U-17</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Beginner understands the page in &lt;30s. Streak and PR values correct. Charts readable with 5+ data points. Sparse charts handled gracefully (not blank crash).
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Page confusing to beginner. Wrong streak count. Wrong PR attribution. Chart crashes with 1 data point. Empty state shown with no explanation.
+    </div>
+  </div>
+</div>
+
+<!-- SIM-15 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SIM-15</div>
+    <div class="scenario-title">Interrupted Workout — Abandon Mid-Session</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 10 min</span>
+    <span class="badge badge-amber">Trigger: Active workout in progress</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Partial session data persistence, stale active workout state recovery, data integrity after abandon, whether partial session counts toward streak, clear abandon/save flow.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">Start an active workout with 2+ exercises logged. Simulate interruption: kill app, wait 5 min, reopen. Also test explicit abandon button.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Start a workout, log 2 exercises (3 sets each).</li>
+        <li>Force-quit the app (kill from app switcher). Reopen after 30 seconds.</li>
+        <li>Note whether active workout is restored or lost.</li>
+        <li>If restored: verify logged sets are still there.</li>
+        <li>Explicitly abandon the session using the UI abandon path.</li>
+        <li>Check if partial data was saved or discarded.</li>
+        <li>Start a NEW session the same day. Verify the abandoned session does not interfere.</li>
+        <li>Check Progress tab: does abandoned partial session appear in history?</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-04</span>
+        <span class="uid-chip">U-10</span>
+        <span class="uid-chip">U-17</span>
+        <span class="uid-chip secondary">U-07</span>
+        <span class="uid-chip secondary">U-02</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Active workout restored after kill. Logged sets intact. Abandon flow is clear and intentional. Partial session saved or cleanly discarded (not data corruption). New session starts cleanly.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Kill destroys logged sets. No active workout recovery. Stale session blocks new session start. Partial session causes UI bugs in Progress tab. Crash on abandon.
+    </div>
+  </div>
+</div>
+
+<!-- SIM-16 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SIM-16</div>
+    <div class="scenario-title">Extreme / Invalid Inputs — Validation and Robustness</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 20 min</span>
+    <span class="badge badge-amber">Trigger: Any session, adversarial inputs</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Input validation on all set fields, crash resilience at extreme values, analytics graceful degradation with invalid data, no NaN/Infinity in e1RM, no array overflows.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">Persona U-21 (max input). Test all boundary conditions systematically.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Log a set with weight = 999 kg. Note if accepted, rejected, or clamped.</li>
+        <li>Log a set with 0 reps. Note behavior.</li>
+        <li>Log a set with 0 kg (bodyweight). Note behavior (should be valid for U-11).</li>
+        <li>Log a set with 100 reps. Note e1RM calculation (should return 0, excluded).</li>
+        <li>Add 20 sets to a single exercise. Note if any crash or rendering issue.</li>
+        <li>Log 50 exercises in one session. Note performance and rendering.</li>
+        <li>Enter negative weight (if field allows). Note behavior.</li>
+        <li>Enter RPE = 11 (out of range). Note behavior.</li>
+        <li>Navigate to all analytics views after extreme data. Verify no NaN/crash.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-21</span>
+        <span class="uid-chip">U-11</span>
+        <span class="uid-chip secondary">U-03</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      No crash on any input. Invalid values rejected with clear error or silently clamped. Analytics show 0 or exclude data instead of NaN/Infinity. 0 kg accepted (bodyweight exercises).
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Any crash from boundary input. NaN or Infinity in any display field. Analytics broken after extreme data. Negative weight accepted and causing wrong e1RM. Array crash at high set count.
+    </div>
+  </div>
+</div>
+
+<!-- SIM-17 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SIM-17</div>
+    <div class="scenario-title">Settings and Profile Update — Data Persistence After Change</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 10 min</span>
+    <span class="badge badge-amber">Trigger: After 2+ sessions logged</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Profile field updates persisting, bodyweight change effect on strength scores, equipment preference update propagating correctly, data deletion working, no data loss on profile edit.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">2+ sessions logged. Modify profile: bodyweight, goal, equipment. Verify nothing breaks.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Navigate to Settings tab. Note all available profile fields.</li>
+        <li>Change bodyweight by +10 kg. Navigate to StrengthLab. Verify scores recalculate.</li>
+        <li>Change primary goal. Navigate to Trainer tab. Verify plan updates.</li>
+        <li>Change equipment setting from "gym" to "home." Navigate to Trainer tab.</li>
+        <li>Return to Settings. Verify all changes persisted after app background/foreground.</li>
+        <li>Test data deletion: delete one workout entry. Verify it's removed from all views.</li>
+        <li>Verify no crash after any Settings modification.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-04</span>
+        <span class="uid-chip">U-20</span>
+        <span class="uid-chip secondary">U-01</span>
+        <span class="uid-chip secondary">U-06</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      All profile edits persist after relaunch. Bodyweight change causes StrengthLab recalculation. Equipment change propagates to Trainer. Data deletion removes from all views.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Any edit lost on relaunch. Bodyweight change has no effect on scores. Equipment change not reflected in plans. Deletion leaves orphaned data in some views. Crash on any settings change.
+    </div>
+  </div>
+</div>
+
+<!-- SIM-18 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SIM-18</div>
+    <div class="scenario-title">Equipment Swap Mid-Workout — Quick-Swap Path</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 10 min</span>
+    <span class="badge badge-amber">Trigger: Active workout, different equipment needed</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Equipment quick-swap discoverability, correct variant selection, weight calculation after swap (dumbbell ×2 rule), exercise history continuity after swap, no crash during active session swap.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">Active workout with at least 1 barbell exercise. Simulate "barbells are taken" — swap to dumbbell variant.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Start session with barbell bench press. Log 1 set.</li>
+        <li>Trigger equipment swap: tap the equipment chip row for bench press.</li>
+        <li>Select "Dumbbell" as the alternative equipment.</li>
+        <li>Verify app resolves to dumbbell bench press as the best match.</li>
+        <li>Note if weight suggestion adjusts for dumbbell (should show per-hand weight).</li>
+        <li>Log 2 dumbbell sets. Complete session.</li>
+        <li>Check exercise history: are barbell and dumbbell sessions separate or merged?</li>
+        <li>Swap back to barbell next session. Verify prior barbell history is intact.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-20</span>
+        <span class="uid-chip">U-04</span>
+        <span class="uid-chip">U-10</span>
+        <span class="uid-chip secondary">U-01</span>
+        <span class="uid-chip secondary">U-15</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Equipment chip row visible and tappable. Correct variant resolved. Dumbbell weight shown as per-hand. Swap doesn't corrupt prior barbell history. No crash during swap.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Chip row not visible in active session. Wrong exercise variant selected. Dumbbell weight shown as bilateral (double-counts). Prior history corrupted. Crash during swap.
+    </div>
+  </div>
+</div>
+
+<!-- SIM-19 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SIM-19</div>
+    <div class="scenario-title">Long-Term User (90-Day) — Full Feature Review</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 30 min</span>
+    <span class="badge badge-amber">Trigger: 90 days, 35+ sessions logged</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Analytics accuracy with large dataset, StrengthLab decay model over 90 days, composite score validity, phrase bank exhaustion (no repeats), memory performance with large log.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">Seed 35–50 sessions over 90 days with realistic progression. Variety of exercises, some PRs, some plateaus, one 14-day gap.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Review all 6 tabs. Note any performance lag with large dataset.</li>
+        <li>Check StrengthLab: verify composite strength score is plausible for persona.</li>
+        <li>Verify strength decay model shows 14-day gap correctly in timeline.</li>
+        <li>Log a new session. Note if coaching narrative has repeated any phrase from this session's prior sets.</li>
+        <li>Open Trainer tab. Verify plan reflects 90-day history sophistication.</li>
+        <li>Measure analytics refresh time: should be &lt;500ms background.</li>
+        <li>Check exerciseHistoryCache cap: top 20 sessions per exercise correctly capped.</li>
+        <li>Check memory usage. Note any ANR or slow tab switches.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-01</span>
+        <span class="uid-chip">U-03</span>
+        <span class="uid-chip">U-09</span>
+        <span class="uid-chip secondary">U-08</span>
+        <span class="uid-chip secondary">U-15</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      All tabs &lt;100ms switch. Analytics refresh &lt;500ms. No phrase repeats in same session. exerciseHistoryCache correctly capped at 20. Memory &lt;150MB. Composite score plausible.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Any tab switch &gt;500ms. Phrase repeat in same session. Memory &gt;200MB. Composite score unrealistic (0 or 999). Crash with large dataset.
+    </div>
+  </div>
+</div>
+
+<!-- SIM-20 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SIM-20</div>
+    <div class="scenario-title">Bad Actor Scenario — Fake PRs, Gaming Streak, Logging Without Training</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 15 min</span>
+    <span class="badge badge-amber">Trigger: Deliberate gamification abuse</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Gamification integrity, whether fake PRs trigger celebrations at absurd values, whether minimal-effort sessions count as full streak entries, analytics resilience to manipulated data.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">Personas U-21 and U-22. Test both input abuse (U-21) and engagement gaming (U-22).</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Log a "PR" at 300 kg squat × 1 rep. Note if celebration fires.</li>
+        <li>Log 30 days of "sessions" each containing 1 set of 1 rep at 1 kg. Note streak count.</li>
+        <li>Check if 1-set sessions count as full workouts in analytics.</li>
+        <li>Open StrengthLab with mixed real and fake data. Note composite score sanity.</li>
+        <li>Verify that fake PRs don't permanently corrupt the "best performance" cache.</li>
+        <li>Delete all fake sessions. Verify analytics recalculates correctly to real baseline.</li>
+        <li>Check: does a 30-day streak of 1-set sessions look meaningfully different from a 30-day streak of real sessions?</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-21</span>
+        <span class="uid-chip">U-22</span>
+        <span class="uid-chip secondary">U-03</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      App does not crash on absurd PRs. Gamification mechanics have reasonable thresholds (or are documented as intentionally gameable). Analytics recovers correctly after fake data deletion.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Crash on extreme PR. Analytics permanently corrupted by fake data (not recoverable). 300 kg PR fires same celebration as a real 10-rep PR. Streak indistinguishable between real and gamed sessions.
+    </div>
+  </div>
+</div>
+
+<!-- Section 3: Matrix -->
+<div class="section-heading">Section 3 — Cohort × Scenario Priority Matrix</div>
+<p style="font-size:13px;color:var(--text2);margin-bottom:16px;">Amber = high priority (run first). Dim dot = run if time permits. Empty = skip. 10 highest-priority combos are marked ★.</p>
+
+<div class="matrix-wrapper">
+<table class="matrix-table">
+<thead>
+<tr>
+  <th class="row-header">User ↓ / SIM →</th>
+  <th>01</th><th>02</th><th>03</th><th>04</th><th>05</th>
+  <th>06</th><th>07</th><th>08</th><th>09</th><th>10</th>
+  <th>11</th><th>12</th><th>13</th><th>14</th><th>15</th>
+  <th>16</th><th>17</th><th>18</th><th>19</th><th>20</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td class="row-header">U-01</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-high">★</td><td class="cell-low">·</td><td class="cell-high">H</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-high">H</td>
+  <td class="cell-high">H</td><td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">U-02</td>
+  <td class="cell-high">★</td><td class="cell-high">★</td><td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">U-03</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-high">H</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-high">★</td><td class="cell-high">H</td><td class="cell-high">H</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-high">H</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">U-04</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-high">★</td>
+  <td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-high">H</td><td class="cell-low">·</td><td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">U-06</td>
+  <td class="cell-high">★</td><td class="cell-high">H</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">U-07</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-high">★</td><td class="cell-high">H</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">U-09</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-high">H</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">U-10</td>
+  <td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-high">H</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-low">·</td><td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">U-11</td>
+  <td class="cell-high">★</td><td class="cell-high">★</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-high">H</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">U-13</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-high">★</td><td class="cell-high">H</td><td class="cell-high">H</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">U-16</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">U-20</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-high">★</td><td class="cell-low">·</td><td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">U-21</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-high">★</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-high">H</td>
+</tr>
+<tr>
+  <td class="row-header">U-22</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-high">H</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-high">★</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p style="font-size:11px;color:var(--text2);margin-top:10px;">★ = one of the 10 highest-priority combos &nbsp;·&nbsp; H = high priority &nbsp;·&nbsp; · = run if time permits</p>
+
+<!-- Section 4: Results Capture -->
+<div class="section-heading">Section 4 — Results Capture Template</div>
+<p style="font-size:13px;color:var(--text2);margin-bottom:16px;">Copy this template for each simulation run. File in <code style="font-family:monospace;font-size:12px;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">docs/uat/</code> with filename <code style="font-family:monospace;font-size:12px;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">SIMxx-Uxx-YYYY-MM-DD.md</code>. Or use the <code style="font-family:monospace;font-size:12px;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">uat</code> command for quick entries.</p>
+
+<div class="template-card">
+  <div class="template-field">
+    <div class="template-field-label">Run Metadata</div>
+    <div class="template-field-placeholder">Scenario: SIM-__ · Persona: U-__ · Tester: [name] · Date: YYYY-MM-DD · Device: [iPhone model / Simulator] · Build: [commit SHA or build number]</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Data Seed State</div>
+    <div class="template-field-placeholder">Describe the initial data state: fresh install, seeded sessions (how many, over what period), any prior test runs that may have left data.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Persona Behavioral Notes</div>
+    <div class="template-field-placeholder">How did you embody the persona? What technical comfort level did you simulate? Any deliberate behaviors from the persona's logging profile?</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Steps Completed</div>
+    <div class="template-field-placeholder">List each step and whether it completed as expected. Note any deviations. Example: "Step 3 — weight suggestion not visible; had to scroll down to find it."</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Pass / Fail Verdict</div>
+    <div class="template-field-placeholder">PASS / FAIL / PARTIAL — with one sentence explaining the verdict.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Bugs Found</div>
+    <div class="template-field-placeholder">List each bug: description, reproduction steps, severity (P0/P1/P2), file reference if known. "None found" is a valid entry.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">UX Observations</div>
+    <div class="template-field-placeholder">Non-bug observations: confusing flows, unexpected behavior that isn't a bug, tone/language feedback, anything that would have confused the real persona.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Screenshots / Evidence</div>
+    <div class="template-field-placeholder">Attach paths to relevant screenshots (use ./scripts/hon-simulate to capture). Reference specific screen state if describing a visual bug.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Follow-Up Actions</div>
+    <div class="template-field-placeholder">Any items to add to BACKLOG.md, UAT_INBOX.md, or items needing engineering follow-up. Cross-reference by backlog ID if known.</div>
+  </div>
+</div>
+
+</body>
+</html>
