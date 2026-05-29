@@ -599,7 +599,7 @@
       <span class="badge badge-open" id="status-B-008a">Open</span>
     </div>
   </div>
-  <div class="issue-title">"Short gap" message fires for exercise-specific gap, but reads as a session-level gap to the user</div>
+  <div class="issue-title">"Short gap" / "Long gap" message fires on exercise rotation, not on missed workout days — trigger logic is wrong</div>
 
   <div class="section-label">What the User Saw</div>
   <div class="section-text">
@@ -608,16 +608,22 @@
 
   <div class="section-label">Root Cause</div>
   <div class="section-text">
-    <span class="code">WorkoutNarrativeEngine</span> computes <span class="code">historyKey</span> per-exercise: if that specific exercise hasn't been done in 7–13 days, it's "Short Gap." This is exercise-level recency, not session-level recency. A user doing chest/shoulders yesterday but now doing back exercises will trigger "Short Gap" for back exercises — but the phrase bank likely says something like "You're back" which reads as a general workout return message. The user didn't take a break from training — they took a break from THAT exercise.
+    <span class="code">WorkoutNarrativeEngine</span> computes <span class="code">historyKey</span> per-exercise: if that specific exercise hasn't been done in 7–13 days, it's "Short Gap." This is exercise-level recency, not session-level recency. A user on a normal push/pull/legs split will bench press every 7 days by design — every bench session will trigger "Short Gap" even though they've never missed a training day. A user who trains yesterday but rotates to a new movement today will see a gap message for that movement. The trigger is exercise rotation, not absence. It should only fire when the user actually skipped workout days.
+  </div>
+
+  <div class="section-label">Correct Behaviour</div>
+  <div class="section-text">
+    "Short Gap" and "Long Gap" should only appear when the user has genuinely missed training days — i.e., there were days they would have trained but didn't. The gap is about the user's attendance, not the exercise's rotation frequency.
   </div>
 
   <div class="section-label">Proposed Solution</div>
   <ul class="solution-list">
-    <li>Audit all "Short Gap" and "Long Gap" phrases in <span class="code">phrase_bank.json</span> — rewrite any that imply a general training absence to be exercise-specific: "It's been a while since you've done [exercise]" rather than "You're back"</li>
-    <li>In <span class="code">assembleSingle()</span>, prepend the exercise name to the history phrase context so any phrase naturally references the exercise, not the user's overall attendance</li>
-    <li>Consider adding a session-gap check: if <span class="code">daysSinceLastSession &lt; 3</span>, suppress "Short Gap" history phrases entirely regardless of exercise-level gap</li>
+    <li><strong>Primary fix — session-gap gate:</strong> In <span class="code">assembleSingle()</span>, before applying the history key, check <span class="code">daysSinceLastAnySession</span>. If the user has trained within the last 3 days (i.e., they are actively training and simply rotating exercises), force <span class="code">historyKey = "Normal"</span> and suppress the gap phrase entirely. The exercise gap is irrelevant if the user is showing up.</li>
+    <li><strong>Threshold logic:</strong> Gap phrases should only fire when BOTH conditions are true: (a) the exercise gap is ≥7 days, AND (b) the user's last workout session was ≥5 days ago. This ensures the message reflects real absence, not normal exercise rotation.</li>
+    <li><strong>Secondary fix — phrase audit:</strong> Any phrase in <span class="code">phrase_bank.json</span> under history keys "Short Gap" / "Long Gap" that implies a general workout return ("You're back", "Welcome back") must be rewritten to be exercise-specific: "It's been a while since you've done this one" — not a session-return message.</li>
+    <li>Pass <span class="code">daysSinceLastAnySession</span> into <span class="code">ExerciseAnalysis</span> or as a parameter to the assembly function so the gate has access to session-level context.</li>
   </ul>
-  <div class="file-ref">iOSApp/Engines/WorkoutNarrativeEngine.swift · historyKey ~L310 · phrase_bank.json · history keys</div>
+  <div class="file-ref">iOSApp/Engines/WorkoutNarrativeEngine.swift · historyKey ~L310 · assembleSingle() · phrase_bank.json · history keys</div>
 </div>
 
 <!-- B-008b -->
@@ -1833,6 +1839,168 @@
 </div>
 
 <!-- ─────────────────────────────────────────── -->
+<div class="section-heading">Cardio Integration</div>
+
+<!-- C-001 -->
+<div class="issue" data-id="C-001" data-priority="p0" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">C-001</span>
+      <span class="badge badge-p0">P0</span>
+      <span class="badge badge-open" id="status-C-001">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">Cardio session completion has no celebration splash — second-class experience vs. strength workouts</div>
+
+  <div class="section-label">Problem</div>
+  <div class="section-text">
+    When a strength workout finishes, the user sees <span class="code">CelebrationOverlay</span> with streak milestones, comeback detection, PR acknowledgement, and the feel selector sheet. When a cardio session finishes, the user lands on <span class="code">CardioSessionSummaryView</span> — a plain stats screen. No celebration, no streak milestone, no comeback message, no identity-level acknowledgement. The experience communicates that finishing a cardio session is a lesser accomplishment. It is not.
+  </div>
+
+  <div class="section-label">Current Completion Flow (CardioSessionView.swift)</div>
+  <div class="section-text">
+    <span class="code">finishSession()</span> creates a <span class="code">CardioLogEntry</span>, calls <span class="code">store.saveCardioSession(entry)</span> and <span class="code">health.saveCardioSession(entry)</span>, then sets <span class="code">completedEntry</span> which swaps the view to <span class="code">CardioSessionSummaryView</span>. No celebration queue is built, no <span class="code">CelebrationOverlay</span> is shown. The feel selector is also in a different position — inline buttons inside the summary view rather than the modal sheet used for strength.
+  </div>
+
+  <div class="section-label">Requirements</div>
+  <ul class="solution-list">
+    <li>After <span class="code">finishSession()</span> saves the entry, run the same celebration queue logic currently in <span class="code">WorkoutTabView.buildCelebrationQueue()</span> — or extract it into a shared function on <span class="code">SeedStore</span> / a utility that both flows can call</li>
+    <li>Comeback detection: check gap between current cardio finish time and the last activity (cardio OR strength log, whichever is more recent). If ≥7 days, set <span class="code">isComeback = true</span> and surface the comeback celebration</li>
+    <li>Streak milestones: cardio sessions count toward the weekly streak the same as strength sessions — the celebration should fire the same streak milestone messages</li>
+    <li>Show <span class="code">CelebrationOverlay</span> (or equivalent) with the same visual language, same animation, same message quality as strength workouts</li>
+    <li>Feel selector: replace inline feel buttons in <span class="code">CardioSessionSummaryView</span> with the same <span class="code">FeelSelectorSheet</span> modal used by strength. Present it before the summary appears, not embedded inside it. Store via a new <span class="code">store.updateCardioFeel()</span> or unify feel storage</li>
+    <li>Summary view remains — but it appears AFTER the celebration flow, not instead of it</li>
+  </ul>
+
+  <div class="section-label">Acceptance Criteria</div>
+  <ul class="solution-list">
+    <li>Finishing a cardio session shows the same <span class="code">CelebrationOverlay</span> (or visually equivalent) as finishing a strength workout</li>
+    <li>Comeback message fires when gap from last any-activity ≥7 days</li>
+    <li>Streak milestones fire on the same conditions as strength (weekly count including cardio sessions)</li>
+    <li>Feel selector is a modal sheet, not inline buttons — same interaction as strength completion</li>
+    <li>No regression in strength workout completion flow</li>
+  </ul>
+  <div class="file-ref">iOSApp/Features/Cardio/CardioSessionView.swift · finishSession() (AMRAP ~L299, EMOM ~L702) · CardioSessionSummaryView · iOSApp/App/WorkoutTabView.swift · buildCelebrationQueue() · iOSApp/Design/CelebrationSystem.swift</div>
+</div>
+
+<!-- C-002 -->
+<div class="issue" data-id="C-002" data-priority="p1" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">C-002</span>
+      <span class="badge badge-p1">P1</span>
+      <span class="badge badge-open" id="status-C-002">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">Cardio sessions have no coaching narrative — WorkoutNarrativeEngine is never called</div>
+
+  <div class="section-label">Problem</div>
+  <div class="section-text">
+    Strength workouts receive per-set coaching text from <span class="code">WorkoutNarrativeEngine</span> — effort acknowledgement, weight progression notes, motivational context. Cardio workouts receive no coaching language at any point: not during the session, not at completion, not in the summary. The coaching voice that defines H.O.N.'s identity is completely absent for cardio users.
+  </div>
+
+  <div class="section-label">Requirements</div>
+  <ul class="solution-list">
+    <li><strong>End-of-session coaching note:</strong> <span class="code">CardioSessionSummaryView</span> should display one coaching sentence generated from session data. Inputs available: total rounds completed, duration, exercise count, feel rating. Example outputs: "6 rounds in 20 minutes. That's solid work." / "You pushed through the full circuit. Note how you feel — that's your baseline."</li>
+    <li>This does not require a full <span class="code">CardioNarrativeEngine</span> — a lightweight phrase function using the same phrase bank infrastructure (pick() + rotation window) is sufficient for v1</li>
+    <li>Inputs to the phrase function: <span class="code">roundsCompleted</span>, <span class="code">durationMinutes</span>, <span class="code">circuitType</span> (AMRAP/EMOM), <span class="code">feel</span> (if captured)</li>
+    <li><strong>In-session coaching (EMOM only):</strong> At each minute transition (when exercise changes), surface a one-line encouragement. The EMOM flow already has a minute-transition event at ~L616 — add a coaching line to the UI at that point. Keep it short: "Keep moving." / "Good. Next."</li>
+    <li>All phrases must match the H.O.N. voice: spare, direct, identity-affirming. No cheerleading. Consistent with <span class="code">phrase_bank.json</span> tone.</li>
+    <li>Add a <span class="code">cardio</span> section to <span class="code">phrase_bank.json</span> with at least 10 end-of-session phrases and 6 in-session transition phrases</li>
+  </ul>
+
+  <div class="section-label">Acceptance Criteria</div>
+  <ul class="solution-list">
+    <li><span class="code">CardioSessionSummaryView</span> shows exactly one coaching sentence below the stats — never empty, never generic</li>
+    <li>Phrase rotation prevents the same phrase appearing in consecutive cardio sessions (same rotation window mechanism as strength)</li>
+    <li>EMOM minute-transition UI shows a one-line in-session coaching note</li>
+    <li>Coaching language passes a tone review against the H.O.N. voice guidelines</li>
+  </ul>
+  <div class="file-ref">iOSApp/Features/Cardio/CardioSessionView.swift · CardioSessionSummaryView · minute transition ~L616 · iOSApp/Engines/WorkoutNarrativeEngine.swift · phrase_bank.json</div>
+</div>
+
+<!-- C-003 -->
+<div class="issue" data-id="C-003" data-priority="p1" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">C-003</span>
+      <span class="badge badge-p1">P1</span>
+      <span class="badge badge-open" id="status-C-003">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">Countdown timer flashes during 3-2-1 start sequence in both AMRAP and EMOM cardio views</div>
+
+  <div class="section-label">Problem</div>
+  <div class="section-text">
+    The 3-2-1 countdown at the start of a cardio circuit flashes visually as the numbers change. Both the AMRAP countdown (CardioSessionView.swift ~L108) and the EMOM countdown (~L402) use <span class="code">.animation(.easeInOut(duration: 0.4), value: countdownValue)</span> combined with <span class="code">.contentTransition(.numericText())</span>. When <span class="code">countdownValue</span> triggers a state update, the combined animation may fire multiple times or conflict with a view re-render, producing a flash rather than a clean number transition.
+  </div>
+
+  <div class="section-label">Root Cause (likely)</div>
+  <div class="section-text">
+    <span class="code">.animation(_:value:)</span> and <span class="code">.contentTransition(.numericText())</span> are applied together. The <span class="code">contentTransition</span> modifier handles the digit-change animation internally; the outer <span class="code">.animation</span> modifier may be triggering a duplicate animation on the parent container, causing the flash. Additionally, any state update unrelated to <span class="code">countdownValue</span> that causes the view to re-render during the countdown could reset or re-fire the animation.
+  </div>
+
+  <div class="section-label">Proposed Fix</div>
+  <ul class="solution-list">
+    <li>Remove <span class="code">.animation(.easeInOut(duration: 0.4), value: countdownValue)</span> from the countdown number view and rely solely on <span class="code">.contentTransition(.numericText())</span> combined with a <span class="code">withAnimation</span> block wrapping the <span class="code">countdownValue</span> state update at the call site</li>
+    <li>Ensure the countdown overlay is isolated in its own view struct so unrelated state updates in the parent view do not cause re-renders during the countdown</li>
+    <li>Fix applies to both AMRAP (~L108) and EMOM (~L402) — they share the same pattern</li>
+    <li>Verify fix on a physical device, not just Simulator — animation flashing is often only visible on device</li>
+  </ul>
+
+  <div class="section-label">Acceptance Criteria</div>
+  <ul class="solution-list">
+    <li>3-2-1 countdown transitions cleanly with no flash on physical iPhone</li>
+    <li>Fix applied to both AMRAP and EMOM countdown paths</li>
+    <li>No regression in session resume path (countdown skip when restoring saved session)</li>
+  </ul>
+  <div class="file-ref">iOSApp/Features/Cardio/CardioSessionView.swift · AMRAP countdown ~L108 · EMOM countdown ~L402 · countdownValue state updates</div>
+</div>
+
+<!-- C-004 -->
+<div class="issue" data-id="C-004" data-priority="p1" data-status="open">
+  <div class="issue-header">
+    <button class="issue-check" onclick="cycleStatus(this)">✓</button>
+    <div class="issue-meta">
+      <span class="issue-id">C-004</span>
+      <span class="badge badge-p1">P1</span>
+      <span class="badge badge-open" id="status-C-004">Open</span>
+    </div>
+  </div>
+  <div class="issue-title">Cardio sessions not included in ReadinessEngine frequency and consecutive-day calculations</div>
+
+  <div class="section-label">Problem</div>
+  <div class="section-text">
+    <span class="code">ReadinessEngine.compute(log:)</span> receives only the strength <span class="code">workoutLog</span>. A user who does 3 cardio sessions and 2 strength sessions per week appears to the readiness engine as a 2-session/week user. Their readiness baseline, frequency modifier, and consecutive-day fatigue calculations are all computed from incomplete data. This produces inaccurate readiness scores: the engine may recommend high-intensity training when the user is actually fatigued from cardio, or flag a "gap" when the user has been active every day.
+  </div>
+
+  <div class="section-label">Note</div>
+  <div class="section-text">
+    <span class="code">HONHabitEngine</span> already handles this correctly — it checks all activity dates (cardio + strength) for lapse detection. <span class="code">ReadinessEngine</span> needs the same treatment.
+  </div>
+
+  <div class="section-label">Requirements</div>
+  <ul class="solution-list">
+    <li>Pass combined activity dates (strength + cardio) to <span class="code">ReadinessEngine.compute()</span>, or add a <span class="code">cardioLog: [CardioLogEntry]</span> parameter and merge dates internally</li>
+    <li>Frequency modifier, consecutive active days, and days-since-last calculations should use the combined activity timeline</li>
+    <li>Volume/intensity modifiers remain strength-only (cardio volume is measured differently and should not be combined into the same scale)</li>
+    <li>Update <span class="code">SeedStore.refreshAnalytics()</span> to pass <span class="code">cardioLog</span> when calling <span class="code">ReadinessEngine.compute()</span></li>
+  </ul>
+
+  <div class="section-label">Acceptance Criteria</div>
+  <ul class="solution-list">
+    <li>A user who did cardio yesterday and strength today does not see a "days since last session" gap in readiness</li>
+    <li>Consecutive active day count increments for cardio days</li>
+    <li>Readiness baseline reflects true training frequency (cardio + strength combined)</li>
+    <li>No regression in strength-only readiness calculation</li>
+  </ul>
+  <div class="file-ref">iOSApp/Engines/ReadinessEngine.swift · compute(log:) · iOSApp/Engines/SeedStore.swift · refreshAnalytics() · iOSApp/Models/Models.swift · CardioLogEntry</div>
+</div>
+
+<!-- ─────────────────────────────────────────── -->
 <div class="section-heading">UX · Information Architecture</div>
 
 <!-- UX-001 -->
@@ -2018,6 +2186,7 @@
     <div class="tally-item">Narrative <span id="count-narrative">—</span></div>
     <div class="tally-item">Volume/Science <span id="count-volume">—</span></div>
     <div class="tally-item">HealthKit/HRV <span id="count-hrv">—</span></div>
+    <div class="tally-item">Cardio <span id="count-cardio">—</span></div>
     <div class="tally-item">UX · Info Arch <span id="count-ux">—</span></div>
   </div>
 </div>
@@ -2095,6 +2264,7 @@ function updateStats() {
   document.getElementById('count-narrative').textContent= document.querySelectorAll('[data-id^="N-"]').length;
   document.getElementById('count-volume').textContent   = document.querySelectorAll('[data-id^="V-"]').length;
   document.getElementById('count-hrv').textContent      = document.querySelectorAll('[data-id^="H-"]').length;
+  document.getElementById('count-cardio').textContent   = document.querySelectorAll('[data-id^="C-"]').length;
   document.getElementById('count-ux').textContent       = document.querySelectorAll('[data-id^="UX-"]').length;
 }
 
