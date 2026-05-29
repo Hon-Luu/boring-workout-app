@@ -1471,8 +1471,12 @@ private struct WorkoutFeelBar: View {
             .foregroundStyle(.secondary)
         }
         .padding(.vertical, 10)
-        .padding(.bottom, 8)
-        .background(.regularMaterial)
+        .padding(.bottom)
+        .background {
+            Rectangle()
+                .fill(.regularMaterial)
+                .ignoresSafeArea(edges: .bottom)
+        }
     }
 }
 

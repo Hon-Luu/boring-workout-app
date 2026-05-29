@@ -64,26 +64,18 @@ struct ContentView: View {
                 .tabItem { Label("Progress", systemImage: "chart.line.uptrend.xyaxis") }
                 .tag(2)
 
-            ProgressView()
-                .tabItem { Label("Advanced", systemImage: "waveform.path.ecg") }
-                .tag(3)
-
-            ExerciseInsightsView(goToSettings: { selectedTab = 6 })
+            ExerciseInsightsView()
                 .tabItem { Label("Insights", systemImage: "chart.dots.scatter") }
-                .tag(4)
+                .tag(3)
 
             TrainerTabView()
                 .tabItem { Label("Trainer", systemImage: "figure.strengthtraining.traditional") }
-                .tag(5)
-
-            SettingsView()
-                .tabItem { Label("Settings", systemImage: "gearshape.fill") }
-                .tag(6)
+                .tag(4)
         }
         .tint(HONTheme.accent)
         .preferredColorScheme(prefersDarkMode ? .dark : .light)
         .overlay(alignment: .top) {
-            if let msg = habitEngine.inAppMessage, selectedTab != 1 {
+            if let msg = habitEngine.inAppMessage, selectedTab == 0 || selectedTab >= 4 {
                 HONInAppBanner(message: msg) { habitEngine.dismissInAppMessage() }
                     .padding(.top, 8)
                     .transition(.move(edge: .top).combined(with: .opacity))

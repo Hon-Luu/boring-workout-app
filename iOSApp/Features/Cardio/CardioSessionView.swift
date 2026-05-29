@@ -105,7 +105,6 @@ struct AMRAPSessionView: View {
                     .font(.system(size: 100, weight: .black, design: .rounded))
                     .foregroundStyle(HONTheme.accent)
                     .contentTransition(.numericText())
-                    .animation(.easeInOut(duration: 0.4), value: countdownValue)
             }
         }
         .onAppear { startCountdown() }
@@ -241,7 +240,7 @@ struct AMRAPSessionView: View {
                 showCountdown = false
                 startSession()
             } else {
-                countdownValue = count
+                withAnimation(.easeInOut(duration: 0.4)) { countdownValue = count }
             }
         }
     }
@@ -399,7 +398,6 @@ struct EMOMSessionView: View {
                     .font(.system(size: 100, weight: .black, design: .rounded))
                     .foregroundStyle(HONTheme.warning)
                     .contentTransition(.numericText())
-                    .animation(.easeInOut(duration: 0.4), value: countdownValue)
             }
         }
         .onAppear { startCountdown() }
@@ -576,7 +574,7 @@ struct EMOMSessionView: View {
                 showCountdown = false
                 startSession()
             } else {
-                countdownValue = count
+                withAnimation(.easeInOut(duration: 0.4)) { countdownValue = count }
             }
         }
     }
@@ -732,6 +730,8 @@ struct CardioSessionSummaryView: View {
     let onDone: () -> Void
 
     @State private var feelRating: FeelRating? = nil
+    @State private var showCelebration = false
+    @State private var celebrationKind: CelebrationKind? = nil
 
     private var roundsLabel: String {
         entry.format == .amrap ? "rounds" : "minutes"
@@ -753,6 +753,49 @@ struct CardioSessionSummaryView: View {
             let total = entry.results.filter { $0.round == r }.reduce(0) { $0 + $1.repsCompleted }
             return (r, total)
         }
+    }
+
+    private var coachingNarrative: String {
+        let rounds = entry.completedRounds
+        let dur = entry.formattedDuration
+        if entry.format == .emom {
+            if rounds >= 20 {
+                return "\(dur) of EMOM. Every minute you chose to go. That kind of discipline compresses months of adaptation."
+            }
+            return "\(dur) of structured work. EMOM rewards the willingness to restart — and you did."
+        } else {
+            if rounds >= 8 {
+                return "\(rounds) rounds in \(dur). That's endurance under structure — where real metabolic conditioning lives."
+            } else if rounds >= 4 {
+                return "\(rounds) rounds in \(dur). Consistency in the circuit is how conditioning becomes character."
+            }
+            return "Work done. \(dur) of commitment to the process."
+        }
+    }
+
+    private func scheduleCelebration() {
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        let wkStart = cal.date(byAdding: .day, value: -(cal.component(.weekday, from: today) + 5) % 7, to: today)!
+        let cardioThisWeek = store.cardioLog.filter { $0.startedAt >= wkStart }
+        let strengthThisWeek = store.workoutLog.filter { $0.startedAt >= wkStart }
+        let cardioWeekdays = cardioThisWeek.map { (cal.component(.weekday, from: $0.startedAt) + 5) % 7 }
+        let strengthWeekdays = strengthThisWeek.map { (cal.component(.weekday, from: $0.startedAt) + 5) % 7 }
+        let sessionDays = Array(Set(cardioWeekdays + strengthWeekdays)).sorted()
+        let todayIdx = (cal.component(.weekday, from: Date()) + 5) % 7
+        let allPrev = (store.workoutLog.map(\.startedAt) + store.cardioLog.dropFirst().map(\.startedAt))
+            .filter { !cal.isDateInToday($0) }.max()
+        let isComeback = allPrev.map { Date().timeIntervalSince($0) / 86_400 >= 7 } ?? false
+
+        celebrationKind = .sessionComplete(
+            duration: entry.formattedDuration,
+            sets: entry.completedRounds,
+            volume: Int(entry.totalVolume),
+            sessionDays: sessionDays,
+            isComeback: isComeback,
+            completedDayIndex: todayIdx
+        )
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { showCelebration = true }
     }
 
     var body: some View {
@@ -898,6 +941,14 @@ struct CardioSessionSummaryView: View {
                         }
                     }
 
+                    // Coaching narrative (C-002)
+                    Text(coachingNarrative)
+                        .font(.custom("CormorantGaramond-Light", size: 17))
+                        .foregroundStyle(HONTheme.textPrimary.opacity(0.8))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 28)
+                        .padding(.vertical, 4)
+
                     // Done button
                     Button(action: onDone) {
                         Text("Done")
@@ -910,6 +961,12 @@ struct CardioSessionSummaryView: View {
                     .padding(.horizontal, 24)
                     .padding(.bottom, 32)
                 }
+            }
+        }
+        .onAppear { scheduleCelebration() }
+        .fullScreenCover(isPresented: $showCelebration) {
+            if let kind = celebrationKind {
+                CelebrationOverlay(kind: kind) { showCelebration = false }
             }
         }
     }

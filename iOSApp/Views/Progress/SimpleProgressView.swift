@@ -22,8 +22,7 @@ struct SimpleProgressView: View {
     private var analytics: AnalyticsResult { store.analyticsCache }
 
     private var showCardio: Bool {
-        !store.cardioLog.isEmpty &&
-        (store.userProfile.trainingGoal == .endurance || store.userProfile.trainingGoal == .general)
+        !store.cardioLog.isEmpty
     }
 
     var body: some View {
@@ -103,6 +102,28 @@ struct SimpleProgressView: View {
                             )
                         }
                     }
+
+                    NavigationLink {
+                        ProgressView()
+                    } label: {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Full Analytics")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundStyle(.primary)
+                                Text("Heatmaps, INOL, archetype, emergent insights")
+                                    .font(.system(size: 11))
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(14)
+                        .background(AppTheme.cardBG, in: RoundedRectangle(cornerRadius: 14))
+                    }
+                    .buttonStyle(.plain)
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
@@ -115,7 +136,7 @@ struct SimpleProgressView: View {
             LiftDetailSheet(analytics: lift, log: store.workoutLog)
         }
         .sheet(item: $sessionDetail) { session in
-            SessionLogSheet(session: session)
+            SessionLogSheet(session: session, history: store.workoutLog)
         }
     }
 
@@ -313,7 +334,7 @@ private struct ConsistencyDotGrid: View {
         return (0..<weeks).map { weekBack in
             let start = cal.date(byAdding: .day, value: -weekBack * 7, to: thisMonday)!
             return (0..<7).compactMap { cal.date(byAdding: .day, value: $0, to: start) }
-        }
+        }.reversed()
     }
 
     var body: some View {
@@ -496,7 +517,7 @@ private struct RecoveryTrendContent: View {
 
     private var sparklinePoints: [Double] {
         let pts = thirtyDayPoints
-        if pts.count >= 5 { return pts.map(\.score) }
+        if pts.count >= 2 { return pts.map(\.score) }
         return trendData.map(\.score)
     }
 
@@ -672,10 +693,32 @@ struct LiftDetailSheet: View {
         return String(format: "%.1f kg × %d reps", last.bestWeight + increment, last.bestReps)
     }
 
+    private var coachingVoice: String {
+        if analytics.isPlateau {
+            return "Progress has been flat for several weeks. Your body has adapted — time to vary the stimulus: change rep range, increase tempo, or try a close variation."
+        } else if analytics.slopePerWeek >= 1.0 {
+            return String(format: "You're adding %.1f kg per week on this lift. That rate won't hold forever — stay patient, keep technique tight, and let the numbers come to you.", analytics.slopePerWeek)
+        } else if analytics.slopePerWeek > 0.2 {
+            return "Steady progress. Intermediate gains are slow by nature — this trajectory is exactly what long-term strength looks like."
+        } else if analytics.slopePerWeek < -0.5 {
+            return "A downward trend here. Check recovery, sleep, and whether this movement is getting enough practice. Deload if fatigue has been accumulating."
+        }
+        return "Performance is stable. Stability after a period of gains is normal — your nervous system is consolidating."
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
+
+                    // Coaching voice (UX-003)
+                    Text(coachingVoice)
+                        .font(.custom("CormorantGaramond-Light", size: 16))
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(14)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(AppTheme.cardBG, in: RoundedRectangle(cornerRadius: 12))
 
                     // Suggested next target
                     VStack(alignment: .leading, spacing: 4) {
@@ -777,11 +820,24 @@ struct LiftDetailSheet: View {
 
 struct SessionLogSheet: View {
     let session: WorkoutLogEntry
+    var history: [WorkoutLogEntry] = []
     @Environment(\.dismiss) private var dismiss
+
+    private var narrative: String {
+        WorkoutNarrativeEngine.generate(workout: session, history: history)
+    }
 
     var body: some View {
         NavigationStack {
             List {
+                Section {
+                    Text(narrative)
+                        .font(.custom("CormorantGaramond-Light", size: 16))
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.vertical, 4)
+                        .listRowBackground(Color.clear)
+                }
                 Section {
                     LabeledContent("Duration", value: session.formattedDuration)
                     LabeledContent("Sets", value: "\(session.totalSets)")

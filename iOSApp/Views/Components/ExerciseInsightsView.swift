@@ -50,6 +50,24 @@ struct ExerciseInsightsView: View {
                     ContentUnavailableView.search(text: searchText)
                 } else {
                     List {
+                        Section {
+                            NavigationLink {
+                                ProgressView()
+                            } label: {
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text("Full Analytics Dashboard")
+                                            .font(.system(.body).weight(.semibold))
+                                        Text("Heatmaps · INOL · archetype · emerging signals")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    Spacer()
+                                }
+                            }
+                            .listRowBackground(AppTheme.cardBG)
+                        }
+
                         ForEach(filtered, id: \.exercise.id) { item in
                             NavigationLink {
                                 ExerciseInsightDetailView(

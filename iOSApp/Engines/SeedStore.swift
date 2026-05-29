@@ -399,8 +399,11 @@ class SeedStore {
         guard activeWorkout != nil,
               exerciseIndex < activeWorkout!.exercises.count,
               setIndex < activeWorkout!.exercises[exerciseIndex].sets.count else { return }
-        activeWorkout!.exercises[exerciseIndex].sets[setIndex].isCompleted = true
-        activeWorkout!.exercises[exerciseIndex].sets[setIndex].completedAt = Date()
+        // A-006: batch both mutations into one @Observable assignment to avoid double re-render
+        var workout = activeWorkout!
+        workout.exercises[exerciseIndex].sets[setIndex].isCompleted = true
+        workout.exercises[exerciseIndex].sets[setIndex].completedAt = Date()
+        activeWorkout = workout
         saveActiveWorkout()
     }
 

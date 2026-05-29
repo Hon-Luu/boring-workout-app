@@ -544,7 +544,17 @@ struct HomeView: View {
                 }
             }
             Spacer()
-            weatherBadge
+            VStack(alignment: .trailing, spacing: 8) {
+                NavigationLink {
+                    SettingsView()
+                } label: {
+                    Image(systemName: "gearshape")
+                        .font(.system(size: 18, weight: .regular))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 32, height: 32)
+                }
+                weatherBadge
+            }
         }
     }
 

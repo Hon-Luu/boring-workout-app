@@ -42,6 +42,12 @@ struct ProgressView: View {
                     if !store.isLoaded {
                         ProgressLoadingSkeleton()
                     } else {
+                        Text("Deep analytics — charts, INOL, archetype, emergent signals")
+                            .font(.system(size: 12))
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.bottom, 4)
+
                         DashboardHeroCard(
                             composite:         store.analyticsCache.compositeScore,
                             strengthScore:     store.analyticsCache.strengthScore.compositeScore,
@@ -56,7 +62,7 @@ struct ProgressView: View {
 
                         // Progressive overload intelligence: hero position per review board
                         CollapsibleDashSection(
-                            title: "Am I Getting Stronger",
+                            title: "Am I Getting Stronger?",
                             icon: "chart.line.uptrend.xyaxis",
                             isExpanded: $strongerExpanded
                         ) {
@@ -64,7 +70,7 @@ struct ProgressView: View {
                         }
 
                         CollapsibleDashSection(
-                            title: "Where Am I",
+                            title: "Where Am I?",
                             icon: "mappin.circle.fill",
                             isExpanded: $whereExpanded
                         ) {
@@ -76,7 +82,7 @@ struct ProgressView: View {
                         }
 
                         CollapsibleDashSection(
-                            title: "How Do I Train",
+                            title: "How Do I Train?",
                             icon: "dumbbell.fill",
                             isExpanded: $howExpanded
                         ) {
@@ -85,7 +91,7 @@ struct ProgressView: View {
 
                         if !store.cardioLog.isEmpty {
                             CollapsibleDashSection(
-                                title: "Cardio Performance",
+                                title: "How Is My Cardio?",
                                 icon: "bolt.heart.fill",
                                 isExpanded: $cardioExpanded
                             ) {
@@ -94,7 +100,7 @@ struct ProgressView: View {
                         }
 
                         CollapsibleDashSection(
-                            title: "Recovery Signals",
+                            title: "How Am I Recovering?",
                             icon: "waveform.path.ecg",
                             isExpanded: $whatExpanded
                         ) {
@@ -116,7 +122,7 @@ struct ProgressView: View {
 
                         if !insights.isEmpty {
                             CollapsibleDashSection(
-                                title: "Emergent Insights",
+                                title: "What Is Emerging?",
                                 icon: "sparkles",
                                 isExpanded: $insightsExpanded
                             ) {

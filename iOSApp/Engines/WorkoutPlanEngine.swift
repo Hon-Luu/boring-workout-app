@@ -72,8 +72,10 @@ struct WorkoutPlanEngine {
             insightNotes.append("Rate how you feel before starting — your mood-exercise correlation is high.")
         }
 
+        let sessionCount = weeklySessionCountByRegion(log: log)
+
         var primary   = makePlan(exercises: exercises, log: log, lastPerf: lastPerformance,
-                                 focus: primarySplit(fresh: fresh, stale: stale, weeklyVolume: weeklyVolume, analytics: analytics),
+                                 focus: primarySplit(fresh: fresh, stale: stale, weeklyVolume: weeklyVolume, weeklySessionCount: sessionCount, analytics: analytics),
                                  intensity: effectiveIntensity, recentExIds: recentExIds, analytics: analytics,
                                  readiness: readiness, goal: goal, availableEquipment: availableEquipment,
                                  timeBudgetMinutes: timeBudgetMinutes, extraNotes: insightNotes)
@@ -84,7 +86,7 @@ struct WorkoutPlanEngine {
             }
         }()
         var alternate = makePlan(exercises: exercises, log: log, lastPerf: lastPerformance,
-                                 focus: alternateSplit(fresh: fresh, stale: stale, weeklyVolume: weeklyVolume),
+                                 focus: alternateSplit(fresh: fresh, stale: stale, weeklyVolume: weeklyVolume, weeklySessionCount: sessionCount),
                                  intensity: alternateIntensity, recentExIds: recentExIds, analytics: analytics,
                                  readiness: readiness, goal: goal, availableEquipment: availableEquipment,
                                  timeBudgetMinutes: timeBudgetMinutes, extraNotes: insightNotes)
@@ -128,9 +130,13 @@ struct WorkoutPlanEngine {
 
     private static func primarySplit(fresh: [BodyRegion], stale: [BodyRegion],
                                       weeklyVolume: [BodyRegion: Int] = [:],
+                                      weeklySessionCount: [BodyRegion: Int] = [:],
                                       analytics: AnalyticsResult? = nil) -> [BodyRegion] {
         // V-001: exclude regions at ≥20 sets this week from primary plan
-        let capped = Set(weeklyVolume.filter { $0.value >= 20 }.keys)
+        // NAV-006: also exclude regions trained ≥3 times this week
+        let volumeCapped = Set(weeklyVolume.filter { $0.value >= 20 }.keys)
+        let freqCapped   = Set(weeklySessionCount.filter { $0.value >= 3 }.keys)
+        let capped       = volumeCapped.union(freqCapped)
         let freshFiltered = fresh.filter { !capped.contains($0) }
         let staleFiltered = stale.filter { !capped.contains($0) }
 
@@ -166,9 +172,12 @@ struct WorkoutPlanEngine {
     }
 
     private static func alternateSplit(fresh: [BodyRegion], stale: [BodyRegion],
-                                       weeklyVolume: [BodyRegion: Int] = [:]) -> [BodyRegion] {
-        // V-001: exclude regions at ≥20 sets this week
-        let capped = Set(weeklyVolume.filter { $0.value >= 20 }.keys)
+                                       weeklyVolume: [BodyRegion: Int] = [:],
+                                       weeklySessionCount: [BodyRegion: Int] = [:]) -> [BodyRegion] {
+        // V-001: exclude regions at ≥20 sets this week; NAV-006: exclude ≥3 sessions
+        let volumeCapped = Set(weeklyVolume.filter { $0.value >= 20 }.keys)
+        let freqCapped   = Set(weeklySessionCount.filter { $0.value >= 3 }.keys)
+        let capped       = volumeCapped.union(freqCapped)
         let all = (fresh + stale).filter { !capped.contains($0) }
         if all.contains(.back) && all.contains(.legs)  { return [.back, .legs] }
         if all.contains(.chest) && all.contains(.core) { return [.chest, .core] }
@@ -386,6 +395,18 @@ struct WorkoutPlanEngine {
     }
 
     // MARK: - Helpers
+
+    /// Returns session count per body region in the current calendar week.
+    private static func weeklySessionCountByRegion(log: [WorkoutLogEntry]) -> [BodyRegion: Int] {
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        let weekStart = cal.date(byAdding: .day, value: -(cal.component(.weekday, from: today) + 5) % 7, to: today)!
+        let weekLog = log.filter { $0.startedAt >= weekStart }
+        return Dictionary(uniqueKeysWithValues: BodyRegion.allCases.map { region in
+            let count = weekLog.filter { $0.exercises.contains(where: { $0.exercise.bodyRegion == region }) }.count
+            return (region, count)
+        })
+    }
 
     /// Returns the number of calendar days since each body region was last trained.
     /// 99 = never trained.
