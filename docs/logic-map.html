@@ -364,6 +364,18 @@ const RULES = [
 // ── Render & Filter ──────────────────────────────────────────────────────────
 let activeFilter = 'all';
 
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+function cell(cls, inner) {
+  return `<td class="${cls}">${inner}</td>`;
+}
+
 function renderAll() {
   const tbody = document.getElementById('tbody');
   tbody.innerHTML = '';
@@ -371,15 +383,15 @@ function renderAll() {
     const tr = document.createElement('tr');
     tr.dataset.engine = r.e;
     tr.dataset.text = [r.id, r.cat, r.cond, r.res, r.els, r.thresh, r.file].join(' ').toLowerCase();
-    tr.innerHTML = `
-      <td><span class="rule-id">${r.id}</span></td>
-      <td><span class="engine-badge badge-${r.e}">${engineName(r.e)}</span></td>
-      <td><span class="cat-tag">${r.cat}</span></td>
-      <td class="cond">${r.cond}</td>
-      <td class="result">${r.res}</td>
-      <td class="els">${r.els}</td>
-      <td class="thresh">${r.thresh}</td>
-      <td class="fileref">${r.file}</td>`;
+    tr.innerHTML =
+      cell('', `<span class="rule-id">${esc(r.id)}</span>`) +
+      cell('', `<span class="engine-badge badge-${esc(r.e)}">${esc(engineName(r.e))}</span>`) +
+      cell('', `<span class="cat-tag">${esc(r.cat)}</span>`) +
+      cell('cond', esc(r.cond)) +
+      cell('result', esc(r.res)) +
+      cell('els', esc(r.els)) +
+      cell('thresh', esc(r.thresh)) +
+      cell('fileref', esc(r.file));
     tbody.appendChild(tr);
   });
   applyFilters();
