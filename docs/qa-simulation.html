@@ -1,0 +1,2001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H.O.N. — QA Simulation Scenarios</title>
+<style>
+  :root {
+    --bg:       #111111;
+    --card:     #1c1c1e;
+    --border:   rgba(255,255,255,0.07);
+    --amber:    #f59e0b;
+    --positive: #34d399;
+    --negative: #f87171;
+    --warning:  #fbbf24;
+    --muted:    rgba(255,255,255,0.4);
+    --text:     rgba(255,255,255,0.88);
+    --text2:    rgba(255,255,255,0.55);
+    --blue:     #60a5fa;
+    --purple:   #a78bfa;
+    --orange:   #fb923c;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 32px 20px 64px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  /* ── Header ── */
+  .header { margin-bottom: 36px; }
+  .header-top {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .logo {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber);
+  }
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--amber), transparent);
+    opacity: 0.3;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    color: var(--text);
+  }
+  .subtitle {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+
+  /* ── Section headings ── */
+  .section-heading {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin: 36px 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-heading::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── Intro card ── */
+  .intro-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.7;
+    border-left: 3px solid var(--amber);
+  }
+
+  /* ── Progress summary bar ── */
+  .progress-summary {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .prog-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .prog-stat-value {
+    font-size: 22px;
+    font-weight: 300;
+    color: var(--text);
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .prog-stat-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text2);
+  }
+  .prog-stat-value.pass  { color: var(--positive); }
+  .prog-stat-value.fail  { color: var(--negative); }
+  .prog-stat-value.run   { color: var(--blue); }
+  .prog-divider { width: 1px; height: 32px; background: var(--border); }
+  .prog-bar-wrap {
+    flex: 1;
+    min-width: 140px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .prog-bar-track {
+    height: 4px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    overflow: hidden;
+    display: flex;
+    gap: 1px;
+  }
+  .prog-bar-pass {
+    height: 100%;
+    background: var(--positive);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+  .prog-bar-fail {
+    height: 100%;
+    background: var(--negative);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+  .prog-bar-label {
+    font-size: 10px;
+    color: var(--text2);
+    letter-spacing: 0.05em;
+  }
+
+  /* ── Filter chips ── */
+  .filter-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .filter-chip {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.03);
+    color: var(--text2);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    user-select: none;
+  }
+  .filter-chip:hover { background: rgba(255,255,255,0.07); color: var(--text); }
+  .filter-chip.active-all    { background: rgba(245,158,11,0.15);  color: var(--amber);    border-color: rgba(245,158,11,0.3); }
+  .filter-chip.active-unit   { background: rgba(96,165,250,0.15);  color: var(--blue);     border-color: rgba(96,165,250,0.3); }
+  .filter-chip.active-func   { background: rgba(52,211,153,0.15);  color: var(--positive); border-color: rgba(52,211,153,0.3); }
+  .filter-chip.active-integ  { background: rgba(167,139,250,0.15); color: var(--purple);   border-color: rgba(167,139,250,0.3); }
+  .filter-chip.active-system { background: rgba(245,158,11,0.15);  color: var(--amber);    border-color: rgba(245,158,11,0.3); }
+  .filter-chip.active-reg    { background: rgba(251,146,60,0.15);  color: var(--orange);   border-color: rgba(251,146,60,0.3); }
+  .filter-chip.active-smoke  { background: rgba(142,142,147,0.15); color: var(--muted);    border-color: rgba(142,142,147,0.3); }
+  .filter-chip.active-uat    { background: rgba(248,113,113,0.15); color: var(--negative); border-color: rgba(248,113,113,0.3); }
+
+  /* ── Scenario cards ── */
+  .scenario {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 14px;
+    transition: border-color 0.2s;
+  }
+  .scenario:hover { border-color: rgba(255,255,255,0.14); }
+  .scenario.hidden { display: none; }
+
+  .scenario-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .scenario-id {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    letter-spacing: 0.08em;
+    color: var(--amber);
+    background: rgba(245,158,11,0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+  .scenario-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+    flex: 1;
+  }
+  .scenario-status-wrap {
+    flex-shrink: 0;
+    margin-top: 0;
+  }
+  .status-select {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text2);
+    padding: 4px 8px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    outline: none;
+  }
+  .status-select:focus { border-color: rgba(255,255,255,0.2); }
+  .status-select.st-pass    { background: rgba(52,211,153,0.12);  color: var(--positive); border-color: rgba(52,211,153,0.25); }
+  .status-select.st-fail    { background: rgba(248,113,113,0.12); color: var(--negative); border-color: rgba(248,113,113,0.25); }
+  .status-select.st-blocked { background: rgba(245,158,11,0.12);  color: var(--amber);    border-color: rgba(245,158,11,0.25); }
+  .status-select.st-skip    { background: rgba(142,142,147,0.1);  color: var(--muted);    border-color: rgba(142,142,147,0.2); }
+
+  /* ── Badge ── */
+  .badge-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .badge-unit   { background: rgba(96,165,250,0.15);  color: var(--blue); }
+  .badge-func   { background: rgba(52,211,153,0.15);  color: var(--positive); }
+  .badge-integ  { background: rgba(167,139,250,0.15); color: var(--purple); }
+  .badge-system { background: rgba(245,158,11,0.15);  color: var(--amber); }
+  .badge-reg    { background: rgba(251,146,60,0.15);  color: var(--orange); }
+  .badge-smoke  { background: rgba(142,142,147,0.15); color: var(--muted); }
+  .badge-uat    { background: rgba(248,113,113,0.15); color: var(--negative); }
+  .badge-backlog { background: rgba(167,139,250,0.1); color: var(--purple); font-family: 'SF Mono', monospace; }
+
+  /* ── Scenario body grid ── */
+  .scenario-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 20px;
+    margin-bottom: 14px;
+  }
+  @media (max-width: 620px) { .scenario-body { grid-template-columns: 1fr; } }
+  .field-full { grid-column: 1 / -1; }
+
+  .field-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 4px;
+  }
+  .field-value {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.55;
+  }
+
+  /* ── Numbered step list ── */
+  .step-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 4px;
+    counter-reset: steps;
+  }
+  .step-list li {
+    font-size: 13px;
+    color: var(--text2);
+    padding: 4px 0 4px 28px;
+    position: relative;
+    line-height: 1.5;
+    counter-increment: steps;
+  }
+  .step-list li::before {
+    content: counter(steps);
+    position: absolute;
+    left: 0;
+    top: 5px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(245,158,11,0.15);
+    color: var(--amber);
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'SF Mono', monospace;
+  }
+
+  /* ── Bullet list (pass / fail) ── */
+  .dot-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 4px;
+  }
+  .dot-list li {
+    font-size: 12px;
+    color: var(--text2);
+    padding: 3px 0 3px 18px;
+    position: relative;
+    line-height: 1.5;
+  }
+  .dot-list.pass-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 9px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--positive);
+  }
+  .dot-list.fail-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 9px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--negative);
+  }
+
+  /* ── Pass / Fail criteria boxes ── */
+  .criteria-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  @media (max-width: 620px) { .criteria-grid { grid-template-columns: 1fr; } }
+
+  .criteria-box {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .criteria-pass {
+    background: rgba(52,211,153,0.06);
+    border: 1px solid rgba(52,211,153,0.15);
+  }
+  .criteria-fail {
+    background: rgba(248,113,113,0.06);
+    border: 1px solid rgba(248,113,113,0.15);
+  }
+  .criteria-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .criteria-pass .criteria-label { color: var(--positive); }
+  .criteria-fail .criteria-label { color: var(--negative); }
+
+  /* ── Matrix table ── */
+  .matrix-wrapper {
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    margin-top: 4px;
+  }
+  .matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    min-width: 680px;
+  }
+  .matrix-table th {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text2);
+    padding: 10px 8px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    background: var(--card);
+    white-space: nowrap;
+  }
+  .matrix-table th.row-header {
+    text-align: left;
+    padding-left: 14px;
+    min-width: 110px;
+  }
+  .matrix-table td {
+    padding: 7px 8px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 10px;
+    background: var(--bg);
+  }
+  .matrix-table td.row-header {
+    text-align: left;
+    padding-left: 14px;
+    font-size: 10px;
+    font-weight: 600;
+    font-family: 'SF Mono', monospace;
+    white-space: nowrap;
+    background: var(--card);
+  }
+  .matrix-table tr:last-child td { border-bottom: none; }
+  .matrix-table tr:hover td { background: rgba(255,255,255,0.025); }
+  .matrix-table tr:hover td.row-header { background: rgba(255,255,255,0.04); }
+
+  .cell-primary {
+    background: rgba(245,158,11,0.18) !important;
+    color: var(--amber);
+    border-radius: 3px;
+    font-weight: 700;
+  }
+  .cell-secondary {
+    background: rgba(96,165,250,0.1) !important;
+    color: var(--blue);
+    border-radius: 3px;
+    font-weight: 600;
+  }
+  .cell-none { color: rgba(255,255,255,0.12); }
+
+  /* ── Bug report template ── */
+  .template-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+  }
+  .template-field {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .template-field:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+  .template-field-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 6px;
+  }
+  .template-field-placeholder {
+    font-size: 13px;
+    color: rgba(255,255,255,0.18);
+    font-style: italic;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px dashed rgba(255,255,255,0.08);
+    border-radius: 6px;
+    line-height: 1.5;
+  }
+  .template-field-note {
+    font-size: 11px;
+    color: var(--text2);
+    margin-top: 5px;
+  }
+  .severity-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 8px;
+  }
+  @media (max-width: 520px) { .severity-row { grid-template-columns: 1fr 1fr; } }
+  .severity-chip {
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    line-height: 1.4;
+  }
+  .sev-p0 { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.2); }
+  .sev-p1 { background: rgba(251,146,60,0.1);  border: 1px solid rgba(251,146,60,0.2); }
+  .sev-p2 { background: rgba(245,158,11,0.1);  border: 1px solid rgba(245,158,11,0.2); }
+  .sev-p3 { background: rgba(142,142,147,0.1); border: 1px solid rgba(142,142,147,0.2); }
+  .sev-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    font-family: 'SF Mono', monospace;
+    display: block;
+    margin-bottom: 3px;
+  }
+  .sev-p0 .sev-label { color: var(--negative); }
+  .sev-p1 .sev-label { color: var(--orange); }
+  .sev-p2 .sev-label { color: var(--amber); }
+  .sev-p3 .sev-label { color: var(--muted); }
+  .sev-desc { font-size: 11px; color: var(--text2); }
+
+  /* ── LLM prompt card ── */
+  .prompt-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--purple);
+    border-radius: 14px;
+    padding: 24px 28px;
+  }
+  .prompt-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin-bottom: 10px;
+  }
+  .prompt-desc {
+    font-size: 13px;
+    color: var(--text2);
+    margin-bottom: 14px;
+    line-height: 1.6;
+  }
+  .prompt-body {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.75;
+    white-space: pre-wrap;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .prompt-note {
+    font-size: 11px;
+    color: var(--text2);
+    margin-top: 12px;
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  /* ── Inline code ── */
+  code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 11px;
+    background: rgba(255,255,255,0.07);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--text);
+  }
+
+  .separator {
+    height: 1px;
+    background: var(--border);
+    margin: 32px 0;
+  }
+
+  @media (max-width: 620px) {
+    body { padding: 20px 14px 48px; }
+    h1 { font-size: 18px; }
+    .progress-summary { gap: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════ HEADER -->
+<div class="header">
+  <div class="header-top">
+    <span class="logo">H.O.N.</span>
+    <div class="divider-line"></div>
+  </div>
+  <h1>QA Simulation Scenarios</h1>
+  <div class="subtitle">18 scenarios · QSIM-01 through QSIM-18 · Smoke · Unit · Functional · Integration · System · Regression · UAT · Last updated: 2026-05-30</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ INTRO -->
+<div class="intro-card">
+  This document is the canonical QA run sheet for H.O.N. Each scenario maps to a discrete testable behaviour in SeedStore, the engine layer, or the view layer. Scenarios are versioned by ID and must not be renumbered. Status is persisted in <code>localStorage</code> under key <code>hon_qa_simulation_status</code> and survives page refresh. Run scenarios in order during a sprint QA pass; run individual regression guards whenever the associated code area changes.
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ PROGRESS -->
+<div class="section-heading">Run Progress</div>
+
+<div class="progress-summary" id="progress-summary">
+  <div class="prog-stat">
+    <span class="prog-stat-value" id="stat-total">18</span>
+    <span class="prog-stat-label">Total</span>
+  </div>
+  <div class="prog-divider"></div>
+  <div class="prog-stat">
+    <span class="prog-stat-value run" id="stat-run">0</span>
+    <span class="prog-stat-label">Run</span>
+  </div>
+  <div class="prog-stat">
+    <span class="prog-stat-value pass" id="stat-pass">0</span>
+    <span class="prog-stat-label">Pass</span>
+  </div>
+  <div class="prog-stat">
+    <span class="prog-stat-value fail" id="stat-fail">0</span>
+    <span class="prog-stat-label">Fail</span>
+  </div>
+  <div class="prog-divider"></div>
+  <div class="prog-bar-wrap">
+    <div class="prog-bar-track">
+      <div class="prog-bar-pass" id="bar-pass" style="width:0%"></div>
+      <div class="prog-bar-fail" id="bar-fail" style="width:0%"></div>
+    </div>
+    <div class="prog-bar-label" id="bar-label">0 of 18 scenarios run</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ FILTER -->
+<div class="section-heading">Filter by Testing Type</div>
+
+<div class="filter-row" id="filter-row">
+  <span class="filter-chip active-all" data-filter="all" onclick="setFilter('all', this)">All</span>
+  <span class="filter-chip" data-filter="unit" onclick="setFilter('unit', this)">Unit</span>
+  <span class="filter-chip" data-filter="functional" onclick="setFilter('functional', this)">Functional</span>
+  <span class="filter-chip" data-filter="integration" onclick="setFilter('integration', this)">Integration</span>
+  <span class="filter-chip" data-filter="system" onclick="setFilter('system', this)">System</span>
+  <span class="filter-chip" data-filter="regression" onclick="setFilter('regression', this)">Regression</span>
+  <span class="filter-chip" data-filter="smoke" onclick="setFilter('smoke', this)">Smoke</span>
+  <span class="filter-chip" data-filter="uat" onclick="setFilter('uat', this)">UAT</span>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ SCENARIOS -->
+<div class="section-heading">Scenarios</div>
+
+<!-- ──────────────────────────────── QSIM-01 -->
+<div class="scenario" data-type="smoke" id="sc-01">
+  <div class="scenario-header">
+    <span class="scenario-id">QSIM-01</span>
+    <span class="scenario-title">Smoke run: cold launch gate</span>
+    <div class="scenario-status-wrap">
+      <select class="status-select" data-id="QSIM-01" onchange="saveStatus('QSIM-01', this)">
+        <option value="NOT RUN">NOT RUN</option>
+        <option value="PASS">PASS</option>
+        <option value="FAIL">FAIL</option>
+        <option value="BLOCKED">BLOCKED</option>
+        <option value="SKIP">SKIP</option>
+      </select>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-smoke">Smoke</span>
+  </div>
+  <div class="scenario-body">
+    <div>
+      <div class="field-label">Precondition</div>
+      <div class="field-value">Fresh simulator with no prior app data. App not installed or data container wiped via Simulator &gt; Device &gt; Erase All Content.</div>
+    </div>
+    <div>
+      <div class="field-label">Action Steps</div>
+      <ol class="step-list">
+        <li>Install and launch the app on a clean simulator.</li>
+        <li>Observe the initial render time from launch to first visible HomeView content.</li>
+        <li>Tap each of the 5 tabs (Home, Workout, Progress, Insights, Trainer) in sequence.</li>
+        <li>Return to HomeView and confirm no crash or blank screen.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="field-label field-full">Pass / Fail Criteria</div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      <ul class="dot-list pass-list">
+        <li>HomeView renders within 3 seconds of launch.</li>
+        <li>No crash or unhandled exception at any point.</li>
+        <li>All 5 tabs respond to tap and render without blank state.</li>
+        <li><code>SeedStore.isLoaded</code> transitions to <code>true</code> before first render.</li>
+      </ul>
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail indicators</div>
+      <ul class="dot-list fail-list">
+        <li>App crashes on launch or within first 10 seconds.</li>
+        <li>HomeView remains blank for more than 3 seconds.</li>
+        <li>Any tab tap produces a blank or spinner-only screen.</li>
+        <li>Console shows unhandled fatal errors on first launch.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────────────────────────── QSIM-02 -->
+<div class="scenario" data-type="unit" id="sc-02">
+  <div class="scenario-header">
+    <span class="scenario-id">QSIM-02</span>
+    <span class="scenario-title">Unit: e1RM formula boundary check</span>
+    <div class="scenario-status-wrap">
+      <select class="status-select" data-id="QSIM-02" onchange="saveStatus('QSIM-02', this)">
+        <option value="NOT RUN">NOT RUN</option>
+        <option value="PASS">PASS</option>
+        <option value="FAIL">FAIL</option>
+        <option value="BLOCKED">BLOCKED</option>
+        <option value="SKIP">SKIP</option>
+      </select>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-unit">Unit</span>
+  </div>
+  <div class="scenario-body">
+    <div>
+      <div class="field-label">Precondition</div>
+      <div class="field-value">Unit test target available. <code>SetRecord.e1RM(weight:reps:)</code> callable in isolation or via a logged workout session with specific rep counts.</div>
+    </div>
+    <div>
+      <div class="field-label">Action Steps</div>
+      <ol class="step-list">
+        <li>Log one set at 1 rep (e.g. 100 kg × 1).</li>
+        <li>Log one set at 10 reps (e.g. 100 kg × 10).</li>
+        <li>Log one set at 11 reps (e.g. 100 kg × 11).</li>
+        <li>Log one set at 15 reps (e.g. 100 kg × 15).</li>
+        <li>Log one set at 16 reps (e.g. 100 kg × 16).</li>
+        <li>Inspect the e1RM value surfaced per set in StrengthLabView or via unit test assertion.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="field-label field-full">Pass / Fail Criteria</div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      <ul class="dot-list pass-list">
+        <li>1 rep: e1RM equals the logged weight exactly (no formula applied).</li>
+        <li>2–10 reps: Epley formula used — <code>w × (1 + r/30)</code>.</li>
+        <li>11–15 reps: Mayhew formula used.</li>
+        <li>16+ reps: e1RM returns 0 (excluded from analytics).</li>
+      </ul>
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail indicators</div>
+      <ul class="dot-list fail-list">
+        <li>Epley applied to 11-rep set (off-by-one boundary error).</li>
+        <li>16-rep set contributes a nonzero e1RM to analytics.</li>
+        <li>1-rep set inflated by any formula multiplier.</li>
+        <li>Any formula mismatch at the exact boundary values 10 and 11.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────────────────────────── QSIM-03 -->
+<div class="scenario" data-type="functional" id="sc-03">
+  <div class="scenario-header">
+    <span class="scenario-id">QSIM-03</span>
+    <span class="scenario-title">Functional: drop set narrative path</span>
+    <div class="scenario-status-wrap">
+      <select class="status-select" data-id="QSIM-03" onchange="saveStatus('QSIM-03', this)">
+        <option value="NOT RUN">NOT RUN</option>
+        <option value="PASS">PASS</option>
+        <option value="FAIL">FAIL</option>
+        <option value="BLOCKED">BLOCKED</option>
+        <option value="SKIP">SKIP</option>
+      </select>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-func">Functional</span>
+  </div>
+  <div class="scenario-body">
+    <div>
+      <div class="field-label">Precondition</div>
+      <div class="field-value">Active workout session open with at least one exercise selected. One normal set already logged for that exercise.</div>
+    </div>
+    <div>
+      <div class="field-label">Action Steps</div>
+      <ol class="step-list">
+        <li>On the active workout screen, enable the drop set toggle for the current set.</li>
+        <li>Enter a lower weight and target reps for the drop set.</li>
+        <li>Complete the drop set (mark <code>isDropCompleted = true</code>).</li>
+        <li>Observe the coaching narrative text that appears after the set is completed.</li>
+        <li>Repeat the drop set completion 3–4 more times to verify phrase rotation.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="field-label field-full">Pass / Fail Criteria</div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      <ul class="dot-list pass-list">
+        <li>Narrative uses a phrase from the <code>"Drop Set — Completed"</code> bank slot (IDs 76–85).</li>
+        <li>The weight phrase slot is replaced by the drop-set modifier, not a standard weight phrase.</li>
+        <li>Subsequent completions rotate through IDs 76–85 without repeating consecutively.</li>
+        <li>No crash or empty narrative string returned.</li>
+      </ul>
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail indicators</div>
+      <ul class="dot-list fail-list">
+        <li>Narrative shows a generic weight phrase instead of a drop set phrase.</li>
+        <li>Empty or placeholder text rendered after drop set completion.</li>
+        <li>Same drop set phrase repeated on two consecutive completions.</li>
+        <li>App crashes when <code>isDropCompleted</code> is set to <code>true</code>.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────────────────────────── QSIM-04 -->
+<div class="scenario" data-type="integration" id="sc-04">
+  <div class="scenario-header">
+    <span class="scenario-id">QSIM-04</span>
+    <span class="scenario-title">Integration: refreshAnalytics() token race</span>
+    <div class="scenario-status-wrap">
+      <select class="status-select" data-id="QSIM-04" onchange="saveStatus('QSIM-04', this)">
+        <option value="NOT RUN">NOT RUN</option>
+        <option value="PASS">PASS</option>
+        <option value="FAIL">FAIL</option>
+        <option value="BLOCKED">BLOCKED</option>
+        <option value="SKIP">SKIP</option>
+      </select>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-integ">Integration</span>
+  </div>
+  <div class="scenario-body">
+    <div>
+      <div class="field-label">Precondition</div>
+      <div class="field-value">Active workout session with at least one exercise. Instrument the app or use console logging to observe which analytics token is committed. Optionally add a <code>print</code> statement in the background block's commit path.</div>
+    </div>
+    <div>
+      <div class="field-label">Action Steps</div>
+      <ol class="step-list">
+        <li>Complete 5 sets in rapid succession (within ~2 seconds) to trigger <code>refreshAnalytics()</code> five times.</li>
+        <li>Monitor the Xcode console for token commit messages.</li>
+        <li>After all completions settle, inspect <code>homeCache</code> values in HomeView.</li>
+        <li>Verify the UI reflects only the final state, not any intermediate state.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="field-label field-full">Pass / Fail Criteria</div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      <ul class="dot-list pass-list">
+        <li>Only the last-minted token's result is committed to <code>homeCache</code>.</li>
+        <li>HomeView updates once with final state; no mid-flight flicker.</li>
+        <li>Console shows at most one commit log entry (or multiple discarded entries with one final commit).</li>
+        <li>No race condition visible in UI (e.g., readiness score jumping between values).</li>
+      </ul>
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail indicators</div>
+      <ul class="dot-list fail-list">
+        <li>HomeView flickers through multiple intermediate readiness states.</li>
+        <li>Console shows a stale token result applied after the latest token's result.</li>
+        <li>Readiness score or today hints reflect a mid-sequence set count, not the final tally.</li>
+        <li>Any data corruption or crash during rapid set completion.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────────────────────────── QSIM-05 -->
+<div class="scenario" data-type="regression" id="sc-05">
+  <div class="scenario-header">
+    <span class="scenario-id">QSIM-05</span>
+    <span class="scenario-title">Regression: ConsistencyDotGrid ordering</span>
+    <div class="scenario-status-wrap">
+      <select class="status-select" data-id="QSIM-05" onchange="saveStatus('QSIM-05', this)">
+        <option value="NOT RUN">NOT RUN</option>
+        <option value="PASS">PASS</option>
+        <option value="FAIL">FAIL</option>
+        <option value="BLOCKED">BLOCKED</option>
+        <option value="SKIP">SKIP</option>
+      </select>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-reg">Regression</span>
+    <span class="badge badge-backlog">NAV-004</span>
+  </div>
+  <div class="scenario-body">
+    <div>
+      <div class="field-label">Precondition</div>
+      <div class="field-value">At least 30 days of workout log history. Workouts must span multiple calendar weeks so the grid is non-trivially populated. Use the scripted seed data or manually log workouts across 30+ days.</div>
+    </div>
+    <div>
+      <div class="field-label">Action Steps</div>
+      <ol class="step-list">
+        <li>Open the Progress tab.</li>
+        <li>Scroll to the ConsistencyDotGrid component.</li>
+        <li>Identify the leftmost/topmost dot and its associated date.</li>
+        <li>Identify the rightmost/bottommost dot and its associated date.</li>
+        <li>Confirm the temporal direction matches oldest-to-newest, left-to-right (or top-to-bottom).</li>
+      </ol>
+    </div>
+  </div>
+  <div class="field-label field-full">Pass / Fail Criteria</div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      <ul class="dot-list pass-list">
+        <li>Oldest workout date appears at the grid origin (top-left).</li>
+        <li>Newest workout date appears at the grid end (bottom-right or rightmost column).</li>
+        <li>Chronological order is consistent across all visible rows/columns.</li>
+        <li>NAV-004 regression: no recurrence of reverse-ordering bug.</li>
+      </ul>
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail indicators</div>
+      <ul class="dot-list fail-list">
+        <li>Newest date appears first (NAV-004 regression).</li>
+        <li>Dates are in random/non-chronological order.</li>
+        <li>Grid renders with all dots the same shade (no data distinction).</li>
+        <li>Crash when displaying 30+ day history in the grid.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────────────────────────── QSIM-06 -->
+<div class="scenario" data-type="functional" id="sc-06">
+  <div class="scenario-header">
+    <span class="scenario-id">QSIM-06</span>
+    <span class="scenario-title">Functional: equipment chip swap</span>
+    <div class="scenario-status-wrap">
+      <select class="status-select" data-id="QSIM-06" onchange="saveStatus('QSIM-06', this)">
+        <option value="NOT RUN">NOT RUN</option>
+        <option value="PASS">PASS</option>
+        <option value="FAIL">FAIL</option>
+        <option value="BLOCKED">BLOCKED</option>
+        <option value="SKIP">SKIP</option>
+      </select>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-func">Functional</span>
+  </div>
+  <div class="scenario-body">
+    <div>
+      <div class="field-label">Precondition</div>
+      <div class="field-value">Active workout containing barbell bench press (or any compound barbell exercise that has a dumbbell variant in the exercise database). A prior log entry for the dumbbell variant exists so <code>bestVariant</code> has history to match against.</div>
+    </div>
+    <div>
+      <div class="field-label">Action Steps</div>
+      <ol class="step-list">
+        <li>In ActiveWorkoutView, locate the <code>EquipmentChipRow</code> for the barbell exercise.</li>
+        <li>Confirm "Barbell" chip is shown as selected.</li>
+        <li>Tap the "Dumbbell" chip.</li>
+        <li>Confirm the exercise swaps to the best matching dumbbell variant via <code>bestVariant(equipment:matching:)</code>.</li>
+        <li>Inspect the weight field — it should reflect per-hand weight, and any displayed total should be ×2.</li>
+        <li>Swap back to barbell and confirm reverse swap works.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="field-label field-full">Pass / Fail Criteria</div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      <ul class="dot-list pass-list">
+        <li>Exercise name updates to the dumbbell variant immediately on tap.</li>
+        <li><code>Equipment.effectiveWeight(_:)</code> doubles the per-hand weight for bilateral display.</li>
+        <li><code>quickSwapEquipment</code> returns available chip options without O(n_log) cost on every render.</li>
+        <li>Reverse swap back to barbell restores the original exercise or best barbell match.</li>
+      </ul>
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail indicators</div>
+      <ul class="dot-list fail-list">
+        <li>Exercise name does not change after chip tap.</li>
+        <li>Weight displayed is not doubled for dumbbell (per-hand) selection.</li>
+        <li>App freezes or janks during chip row render (O(n_log) called per render).</li>
+        <li>Crash when no matching dumbbell variant exists in the exercise database.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────────────────────────── QSIM-07 -->
+<div class="scenario" data-type="system" id="sc-07">
+  <div class="scenario-header">
+    <span class="scenario-id">QSIM-07</span>
+    <span class="scenario-title">System: full new-user onboarding flow</span>
+    <div class="scenario-status-wrap">
+      <select class="status-select" data-id="QSIM-07" onchange="saveStatus('QSIM-07', this)">
+        <option value="NOT RUN">NOT RUN</option>
+        <option value="PASS">PASS</option>
+        <option value="FAIL">FAIL</option>
+        <option value="BLOCKED">BLOCKED</option>
+        <option value="SKIP">SKIP</option>
+      </select>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-system">System</span>
+  </div>
+  <div class="scenario-body">
+    <div>
+      <div class="field-label">Precondition</div>
+      <div class="field-value">Fresh install, no prior data. Simulator or device with no existing app data container.</div>
+    </div>
+    <div>
+      <div class="field-label">Action Steps</div>
+      <ol class="step-list">
+        <li>Launch the app and complete all onboarding screens (body weight, goals, experience level).</li>
+        <li>Navigate to the Workout tab and start a new workout.</li>
+        <li>Add 3 exercises (e.g., squat, bench press, row).</li>
+        <li>Log 3 sets for each exercise with weight and reps.</li>
+        <li>Complete the workout session.</li>
+        <li>Navigate to HomeView and observe the readiness score and today's hints.</li>
+        <li>Navigate to Progress tab and confirm the workout log entry appears.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="field-label field-full">Pass / Fail Criteria</div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      <ul class="dot-list pass-list">
+        <li>Onboarding completes without crash and <code>userProfile</code> is persisted.</li>
+        <li>Workout session completes and a <code>WorkoutLogEntry</code> is written to persistent store.</li>
+        <li>HomeView readiness updates after the first workout (no stale zero state).</li>
+        <li>Progress tab shows the new log entry with correct date, exercise count, and set count.</li>
+        <li>No errors in Xcode console during the entire flow.</li>
+      </ul>
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail indicators</div>
+      <ul class="dot-list fail-list">
+        <li>App crashes at any point during onboarding or first workout.</li>
+        <li>Workout log entry missing from Progress tab after session completion.</li>
+        <li>HomeView readiness still shows empty/zero state after first workout.</li>
+        <li><code>userProfile</code> not persisted — prompts onboarding again on next launch.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────────────────────────── QSIM-08 -->
+<div class="scenario" data-type="smoke" id="sc-08">
+  <div class="scenario-header">
+    <span class="scenario-id">QSIM-08</span>
+    <span class="scenario-title">Smoke: 500-entry log performance</span>
+    <div class="scenario-status-wrap">
+      <select class="status-select" data-id="QSIM-08" onchange="saveStatus('QSIM-08', this)">
+        <option value="NOT RUN">NOT RUN</option>
+        <option value="PASS">PASS</option>
+        <option value="FAIL">FAIL</option>
+        <option value="BLOCKED">BLOCKED</option>
+        <option value="SKIP">SKIP</option>
+      </select>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-smoke">Smoke</span>
+  </div>
+  <div class="scenario-body">
+    <div>
+      <div class="field-label">Precondition</div>
+      <div class="field-value">SeedStore seeded with 500 <code>WorkoutLogEntry</code> records spanning ~2 years. Use the scripted seed utility or inject mock data. Confirm record count before launching.</div>
+    </div>
+    <div>
+      <div class="field-label">Action Steps</div>
+      <ol class="step-list">
+        <li>Launch the app with the 500-entry seed.</li>
+        <li>Measure time from launch to <code>SeedStore.isLoaded = true</code> (via console or Instruments).</li>
+        <li>Navigate to all 5 tabs in order: Home, Workout, Progress, Insights, Trainer.</li>
+        <li>On Insights/StrengthLabView, scroll through all exercises.</li>
+        <li>Trigger a <code>refreshAnalytics()</code> by logging a new set; measure completion time.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="field-label field-full">Pass / Fail Criteria</div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      <ul class="dot-list pass-list">
+        <li><code>SeedStore.isLoaded</code> within 5 seconds of launch.</li>
+        <li>All 5 tabs load without dropped frames (60 fps maintained).</li>
+        <li><code>refreshAnalytics()</code> completes and commits within 200 ms.</li>
+        <li>No memory warnings in Instruments during navigation.</li>
+      </ul>
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail indicators</div>
+      <ul class="dot-list fail-list">
+        <li>Load time exceeds 5 seconds on a modern simulator.</li>
+        <li>Visible jank (dropped frames) during tab navigation or list scroll.</li>
+        <li><code>refreshAnalytics()</code> takes more than 200 ms for the 500-entry dataset.</li>
+        <li>Memory warning or OOM crash during performance run.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────────────────────────── QSIM-09 -->
+<div class="scenario" data-type="uat" id="sc-09">
+  <div class="scenario-header">
+    <span class="scenario-id">QSIM-09</span>
+    <span class="scenario-title">UAT: U-02 new user HomeView comprehension</span>
+    <div class="scenario-status-wrap">
+      <select class="status-select" data-id="QSIM-09" onchange="saveStatus('QSIM-09', this)">
+        <option value="NOT RUN">NOT RUN</option>
+        <option value="PASS">PASS</option>
+        <option value="FAIL">FAIL</option>
+        <option value="BLOCKED">BLOCKED</option>
+        <option value="SKIP">SKIP</option>
+      </select>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-uat">UAT</span>
+  </div>
+  <div class="scenario-body">
+    <div>
+      <div class="field-label">Precondition</div>
+      <div class="field-value">Cohort U-02 tester (new user, first week of use). App seeded with 3–5 days of beginner workout data so HomeView has populated readiness, today's hints, and a progress trend. Do not brief the tester on HomeView layout.</div>
+    </div>
+    <div>
+      <div class="field-label">Action Steps</div>
+      <ol class="step-list">
+        <li>Hand the device to the U-02 tester with HomeView visible.</li>
+        <li>Say: "Tell me what you see on this screen. What does this app think you should do today?"</li>
+        <li>Observe and time how long until the tester: (a) identifies the readiness score, (b) identifies today's exercise hints, (c) navigates to start a workout.</li>
+        <li>Record any confusion points or vocabulary that trips the tester up.</li>
+        <li>Ask the tester to rate clarity on a 1–5 scale after the session.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="field-label field-full">Pass / Fail Criteria</div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      <ul class="dot-list pass-list">
+        <li>Tester correctly identifies the readiness score and its meaning within 15 seconds.</li>
+        <li>Tester reads today's exercise hints without confusion about units or terminology.</li>
+        <li>Tester navigates to start a workout within 30 seconds without coaching prompts.</li>
+        <li>Tester rates clarity 4 or 5 out of 5.</li>
+      </ul>
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail indicators</div>
+      <ul class="dot-list fail-list">
+        <li>Tester cannot locate or interpret the readiness score without guidance.</li>
+        <li>Tester confused by fitness terminology in coaching note or today's hints.</li>
+        <li>Tester requires more than 30 seconds or a coaching prompt to navigate to workout.</li>
+        <li>Clarity rating of 3 or below — escalate to design review.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────────────────────────── QSIM-10 -->
+<div class="scenario" data-type="regression" id="sc-10">
+  <div class="scenario-header">
+    <span class="scenario-id">QSIM-10</span>
+    <span class="scenario-title">Regression: HONInAppBanner suppression</span>
+    <div class="scenario-status-wrap">
+      <select class="status-select" data-id="QSIM-10" onchange="saveStatus('QSIM-10', this)">
+        <option value="NOT RUN">NOT RUN</option>
+        <option value="PASS">PASS</option>
+        <option value="FAIL">FAIL</option>
+        <option value="BLOCKED">BLOCKED</option>
+        <option value="SKIP">SKIP</option>
+      </select>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-reg">Regression</span>
+    <span class="badge badge-backlog">NAV-005</span>
+  </div>
+  <div class="scenario-body">
+    <div>
+      <div class="field-label">Precondition</div>
+      <div class="field-value">No active workout session initially. HomeView visible with at least one notification/banner ready to display (e.g., readiness coaching note surfaced as a banner).</div>
+    </div>
+    <div>
+      <div class="field-label">Action Steps</div>
+      <ol class="step-list">
+        <li>On HomeView (tab 0), confirm <code>HONInAppBanner</code> is visible.</li>
+        <li>Navigate to Trainer tab (tab 1) — observe banner state.</li>
+        <li>Start an active workout on Workout tab (tab 2).</li>
+        <li>Navigate to Progress tab (tab 3) while workout is active.</li>
+        <li>Navigate to Insights tab (tab 4) while workout is active.</li>
+        <li>Return to HomeView (tab 0) while workout is active.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="field-label field-full">Pass / Fail Criteria</div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      <ul class="dot-list pass-list">
+        <li>Banner visible on HomeView (tab 0) when no active workout.</li>
+        <li>Banner suppressed on all tabs (1–4) during active workout.</li>
+        <li>Banner suppressed on HomeView (tab 0) during active workout.</li>
+        <li>NAV-005: no recurrence of banner showing during active session.</li>
+      </ul>
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail indicators</div>
+      <ul class="dot-list fail-list">
+        <li>Banner appears on any non-Home tab (tabs 1–4) regardless of workout state.</li>
+        <li>Banner appears on any tab during an active workout session (NAV-005 regression).</li>
+        <li>Banner disappears on HomeView when no workout is active (over-suppression).</li>
+        <li>Banner flickers in/out during tab transitions.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────────────────────────── QSIM-11 -->
+<div class="scenario" data-type="integration" id="sc-11">
+  <div class="scenario-header">
+    <span class="scenario-id">QSIM-11</span>
+    <span class="scenario-title">Integration: HealthKit permission denied</span>
+    <div class="scenario-status-wrap">
+      <select class="status-select" data-id="QSIM-11" onchange="saveStatus('QSIM-11', this)">
+        <option value="NOT RUN">NOT RUN</option>
+        <option value="PASS">PASS</option>
+        <option value="FAIL">FAIL</option>
+        <option value="BLOCKED">BLOCKED</option>
+        <option value="SKIP">SKIP</option>
+      </select>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-integ">Integration</span>
+  </div>
+  <div class="scenario-body">
+    <div>
+      <div class="field-label">Precondition</div>
+      <div class="field-value">HealthKit permissions denied for the app. Set via Settings &gt; Privacy &amp; Security &gt; Health on device, or deny during the system permission prompt on simulator launch. App has existing workout log data so ReadinessEngine has input to process.</div>
+    </div>
+    <div>
+      <div class="field-label">Action Steps</div>
+      <ol class="step-list">
+        <li>Deny all HealthKit read/write permissions for the app.</li>
+        <li>Launch the app (or relaunch after changing permissions).</li>
+        <li>Navigate to HomeView and observe the readiness section.</li>
+        <li>Wait for <code>SeedStore.isLoaded</code> to be <code>true</code>.</li>
+        <li>Check that ReadinessEngine returns a valid <code>ReadinessState</code> using only app-internal log data.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="field-label field-full">Pass / Fail Criteria</div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      <ul class="dot-list pass-list">
+        <li><code>ReadinessEngine.compute(log:)</code> returns a valid <code>ReadinessState</code> with a score 0–100.</li>
+        <li>A coaching note is displayed — not an error message or empty string.</li>
+        <li>No infinite spinner; HomeView fully renders within normal load time.</li>
+        <li>No crash related to HKHealthStore access denial.</li>
+      </ul>
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail indicators</div>
+      <ul class="dot-list fail-list">
+        <li>App crashes on HealthKit permission denial (unguarded HKStore call).</li>
+        <li>HomeView shows an infinite spinner when HealthKit is unavailable.</li>
+        <li>Readiness score returns nil or is absent from the UI.</li>
+        <li>Error message surfaced to the user referring to HealthKit directly.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────────────────────────── QSIM-12 -->
+<div class="scenario" data-type="functional" id="sc-12">
+  <div class="scenario-header">
+    <span class="scenario-id">QSIM-12</span>
+    <span class="scenario-title">Functional: routine creation and persistence</span>
+    <div class="scenario-status-wrap">
+      <select class="status-select" data-id="QSIM-12" onchange="saveStatus('QSIM-12', this)">
+        <option value="NOT RUN">NOT RUN</option>
+        <option value="PASS">PASS</option>
+        <option value="FAIL">FAIL</option>
+        <option value="BLOCKED">BLOCKED</option>
+        <option value="SKIP">SKIP</option>
+      </select>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-func">Functional</span>
+  </div>
+  <div class="scenario-body">
+    <div>
+      <div class="field-label">Precondition</div>
+      <div class="field-value">App launched with existing user profile. No routine named "Push Day" exists. Exercise database populated with standard compound lifts (bench press, shoulder press, tricep extension, dip variants).</div>
+    </div>
+    <div>
+      <div class="field-label">Action Steps</div>
+      <ol class="step-list">
+        <li>Navigate to the routines/templates section (Trainer tab or Settings).</li>
+        <li>Create a new routine named "Push Day".</li>
+        <li>Add 4 exercises to the routine.</li>
+        <li>Assign the routine to Monday (day index 2) and Thursday (day index 5).</li>
+        <li>Save the routine.</li>
+        <li>Force-quit the app and relaunch.</li>
+        <li>Navigate back to the routines list and open "Push Day".</li>
+      </ol>
+    </div>
+  </div>
+  <div class="field-label field-full">Pass / Fail Criteria</div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      <ul class="dot-list pass-list">
+        <li>"Push Day" routine persists after app restart.</li>
+        <li>All 4 exercises are present and in the correct order.</li>
+        <li><code>TemplateExercise.assignedDays</code> contains indices for Monday and Thursday.</li>
+        <li>Routine appears on HomeView today hints on Monday and Thursday.</li>
+      </ul>
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail indicators</div>
+      <ul class="dot-list fail-list">
+        <li>Routine missing after app restart (persistence failure).</li>
+        <li>Exercise count wrong or exercise order scrambled after reload.</li>
+        <li>Day assignments lost on restart (assignedDays empty array).</li>
+        <li>Crash during routine creation or save operation.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────────────────────────── QSIM-13 -->
+<div class="scenario" data-type="system" id="sc-13">
+  <div class="scenario-header">
+    <span class="scenario-id">QSIM-13</span>
+    <span class="scenario-title">System: app killed mid-workout recovery</span>
+    <div class="scenario-status-wrap">
+      <select class="status-select" data-id="QSIM-13" onchange="saveStatus('QSIM-13', this)">
+        <option value="NOT RUN">NOT RUN</option>
+        <option value="PASS">PASS</option>
+        <option value="FAIL">FAIL</option>
+        <option value="BLOCKED">BLOCKED</option>
+        <option value="SKIP">SKIP</option>
+      </select>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-system">System</span>
+  </div>
+  <div class="scenario-body">
+    <div>
+      <div class="field-label">Precondition</div>
+      <div class="field-value">Active workout session in progress. Two exercises fully logged with all sets completed. Third exercise in progress with 1 set logged out of 3.</div>
+    </div>
+    <div>
+      <div class="field-label">Action Steps</div>
+      <ol class="step-list">
+        <li>Start a workout and log 2 complete exercises (3 sets each).</li>
+        <li>Begin the 3rd exercise and log exactly 1 set.</li>
+        <li>Force-kill the app via the app switcher (swipe up to dismiss).</li>
+        <li>Relaunch the app.</li>
+        <li>Observe the state of the Workout tab and the workout log.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="field-label field-full">Pass / Fail Criteria</div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      <ul class="dot-list pass-list">
+        <li>Acceptable outcome A: active session restored with all 7 logged sets intact.</li>
+        <li>Acceptable outcome B: clean empty state — no partial workout shown, no corruption.</li>
+        <li>In either outcome, no data corruption visible in Progress tab history.</li>
+        <li>No crash on relaunch; <code>SeedStore.isLoaded</code> completes normally.</li>
+      </ul>
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail indicators</div>
+      <ul class="dot-list fail-list">
+        <li>App crashes on relaunch after mid-workout kill.</li>
+        <li>Partial workout data appears in Progress tab (incomplete log entry written).</li>
+        <li>Previously completed workouts corrupted or missing from history.</li>
+        <li>UI shows an inconsistent state (some sets from killed session, not others).</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────────────────────────── QSIM-14 -->
+<div class="scenario" data-type="uat" id="sc-14">
+  <div class="scenario-header">
+    <span class="scenario-id">QSIM-14</span>
+    <span class="scenario-title">UAT: U-03 comeback message tone</span>
+    <div class="scenario-status-wrap">
+      <select class="status-select" data-id="QSIM-14" onchange="saveStatus('QSIM-14', this)">
+        <option value="NOT RUN">NOT RUN</option>
+        <option value="PASS">PASS</option>
+        <option value="FAIL">FAIL</option>
+        <option value="BLOCKED">BLOCKED</option>
+        <option value="SKIP">SKIP</option>
+      </select>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-uat">UAT</span>
+  </div>
+  <div class="scenario-body">
+    <div>
+      <div class="field-label">Precondition</div>
+      <div class="field-value">Cohort U-03 tester (returning user, 30-day absence). Simulate a 30-day gap in the workout log by backdating all log entries or using the seed tool. Confirm <code>homeCache.readiness.coachingNote</code> is populated from the "Long Gap" history path before handing device to tester.</div>
+    </div>
+    <div>
+      <div class="field-label">Action Steps</div>
+      <ol class="step-list">
+        <li>Open HomeView for the tester with the 30-day gap simulation active.</li>
+        <li>Ask the tester to read the coaching note aloud.</li>
+        <li>Ask the tester: "How does this message make you feel about coming back to training?"</li>
+        <li>Have the tester rate the tone on a 5-point scale: 1 = Shaming/Guilt-inducing, 3 = Neutral, 5 = Supportive/Welcoming.</li>
+        <li>Record the verbatim coaching note text and the tester's rating.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="field-label field-full">Pass / Fail Criteria</div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      <ul class="dot-list pass-list">
+        <li>Tester rates tone as 3 (Neutral), 4, or 5 (Supportive) on the 5-point scale.</li>
+        <li>Tester does not use words like "guilty", "embarrassed", or "judged" in their verbal response.</li>
+        <li>The coaching note uses the "Long Gap" phrase path from <code>phrase_bank.json</code>.</li>
+        <li>Note is grammatically correct and free of placeholder text.</li>
+      </ul>
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail indicators</div>
+      <ul class="dot-list fail-list">
+        <li>Tester rates tone 1 or 2 (shaming/guilt-inducing) — escalate immediately to content review.</li>
+        <li>Coaching note is empty, generic (not gap-specific), or contains raw template keys.</li>
+        <li>Tester interprets message as a reprimand for not training.</li>
+        <li>"Long Gap" key missing from phrase bank (see also QSIM-15).</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────────────────────────── QSIM-15 -->
+<div class="scenario" data-type="regression" id="sc-15">
+  <div class="scenario-header">
+    <span class="scenario-id">QSIM-15</span>
+    <span class="scenario-title">Regression: phrase bank key sync</span>
+    <div class="scenario-status-wrap">
+      <select class="status-select" data-id="QSIM-15" onchange="saveStatus('QSIM-15', this)">
+        <option value="NOT RUN">NOT RUN</option>
+        <option value="PASS">PASS</option>
+        <option value="FAIL">FAIL</option>
+        <option value="BLOCKED">BLOCKED</option>
+        <option value="SKIP">SKIP</option>
+      </select>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-reg">Regression</span>
+  </div>
+  <div class="scenario-body">
+    <div>
+      <div class="field-label">Precondition</div>
+      <div class="field-value">Access to <code>phrase_bank.json</code> in the app bundle. This is a static file audit — no runtime app state required. Can be run as a CI pre-check or manually before any release.</div>
+    </div>
+    <div>
+      <div class="field-label">Action Steps</div>
+      <ol class="step-list">
+        <li>Open <code>phrase_bank.json</code> in the app bundle.</li>
+        <li>Search for key <code>"Short Gap"</code> under the <code>history</code> section.</li>
+        <li>Search for key <code>"Long Gap"</code> under the <code>history</code> section.</li>
+        <li>Search for key <code>"Stalled"</code> under the <code>history</code> section.</li>
+        <li>Search for key <code>"Drop Set — Completed"</code> under the <code>weight</code> section — confirm 10 phrases (IDs 76–85).</li>
+        <li>Search for key <code>"Build From Drop Set|Single"</code> under <code>whats_next</code>.</li>
+        <li>Search for key <code>"Use Drop Set Strategy|Single"</code> under <code>whats_next</code>.</li>
+        <li>Search for key <code>"To Failure"</code> under the <code>connective</code> section — confirm 10 phrases (IDs 105–114).</li>
+      </ol>
+    </div>
+  </div>
+  <div class="field-label field-full">Pass / Fail Criteria</div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      <ul class="dot-list pass-list">
+        <li>All 7 keys present with exact string match (case-sensitive, punctuation-sensitive).</li>
+        <li><code>"Drop Set — Completed"</code> contains exactly 10 phrase entries (IDs 76–85).</li>
+        <li><code>"To Failure"</code> contains exactly 10 phrase entries (IDs 105–114).</li>
+        <li>No stale or renamed keys that the engine no longer references.</li>
+      </ul>
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail indicators</div>
+      <ul class="dot-list fail-list">
+        <li>Any of the 7 keys absent — engine falls through to empty string (silent failure).</li>
+        <li>Key present but with wrong casing or punctuation (e.g. <code>"Drop Set - Completed"</code> vs <code>"Drop Set — Completed"</code>).</li>
+        <li>Fewer than 10 entries under drop set or to-failure keys.</li>
+        <li>Engine references a key not in the JSON (runtime nil lookup).</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────────────────────────── QSIM-16 -->
+<div class="scenario" data-type="functional" id="sc-16">
+  <div class="scenario-header">
+    <span class="scenario-id">QSIM-16</span>
+    <span class="scenario-title">Functional: strength decay floor</span>
+    <div class="scenario-status-wrap">
+      <select class="status-select" data-id="QSIM-16" onchange="saveStatus('QSIM-16', this)">
+        <option value="NOT RUN">NOT RUN</option>
+        <option value="PASS">PASS</option>
+        <option value="FAIL">FAIL</option>
+        <option value="BLOCKED">BLOCKED</option>
+        <option value="SKIP">SKIP</option>
+      </select>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-func">Functional</span>
+  </div>
+  <div class="scenario-body">
+    <div>
+      <div class="field-label">Precondition</div>
+      <div class="field-value">Workout log contains a log entry for a specific exercise (e.g., barbell squat at 140 kg × 5) dated exactly 120 days in the past. No more recent log entries for that exercise. Peak e1RM for that set should be calculable via Epley formula.</div>
+    </div>
+    <div>
+      <div class="field-label">Action Steps</div>
+      <ol class="step-list">
+        <li>Launch the app with the 120-day-old exercise log entry.</li>
+        <li>Navigate to Insights / StrengthLabView.</li>
+        <li>Locate the specific exercise (e.g., barbell squat).</li>
+        <li>Read the displayed current strength value and compare to the known peak e1RM.</li>
+        <li>Calculate expected floor: <code>peakE1RM × 0.50</code> (50% floor applies after 14 + sufficient decay days).</li>
+        <li>Verify displayed value equals or is no lower than the 50% floor.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="field-label field-full">Pass / Fail Criteria</div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      <ul class="dot-list pass-list">
+        <li>Displayed strength at 120 days equals exactly <code>peakE1RM × 0.50</code> (floor applied).</li>
+        <li>Value is not below 50% of peak e1RM under any circumstances.</li>
+        <li>Decay model: no decay days 0–14, then −0.7%/day, floor 50%.</li>
+        <li>StrengthLabView renders the exercise without crash or missing value.</li>
+      </ul>
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail indicators</div>
+      <ul class="dot-list fail-list">
+        <li>Displayed strength falls below 50% of peak e1RM (floor not applied).</li>
+        <li>Displayed strength shows 0 or nil for a 120-day-old log entry.</li>
+        <li>Decay rate applied to the first 14 days (no-decay window broken).</li>
+        <li>Crash or missing exercise in StrengthLabView for stale log entries.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────────────────────────── QSIM-17 -->
+<div class="scenario" data-type="system" id="sc-17">
+  <div class="scenario-header">
+    <span class="scenario-id">QSIM-17</span>
+    <span class="scenario-title">System: power user stress (90-day log, 20 exercises)</span>
+    <div class="scenario-status-wrap">
+      <select class="status-select" data-id="QSIM-17" onchange="saveStatus('QSIM-17', this)">
+        <option value="NOT RUN">NOT RUN</option>
+        <option value="PASS">PASS</option>
+        <option value="FAIL">FAIL</option>
+        <option value="BLOCKED">BLOCKED</option>
+        <option value="SKIP">SKIP</option>
+      </select>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-system">System</span>
+  </div>
+  <div class="scenario-body">
+    <div>
+      <div class="field-label">Precondition</div>
+      <div class="field-value">SeedStore loaded with 90 days of varied workout data covering 20+ distinct exercises. Data should include progressive overload trends, some stalls, and at least 3 exercises with 30+ log entries each. Ensure <code>exerciseHistoryCache</code> is populated with the 20-entry cap per exercise.</div>
+    </div>
+    <div>
+      <div class="field-label">Action Steps</div>
+      <ol class="step-list">
+        <li>Launch the app with the 90-day, 20-exercise dataset.</li>
+        <li>Navigate to Progress tab — scroll through full history list.</li>
+        <li>Navigate to Insights / StrengthLabView — scroll through all exercises; inspect decay values.</li>
+        <li>Navigate to Trainer tab — observe plan generation from <code>WorkoutPlanEngine</code>.</li>
+        <li>Return to Progress tab and open a specific log entry with 6+ exercises.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="field-label field-full">Pass / Fail Criteria</div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      <ul class="dot-list pass-list">
+        <li>All 3 views (Progress, Insights, Trainer) load without crash.</li>
+        <li>No stale cache data: strength values, readiness, and trends reflect the full 90-day log.</li>
+        <li><code>exerciseHistoryCache</code> correctly caps at 20 entries per exercise (newest-first).</li>
+        <li>Trainer plan reflects current readiness and last performance without stale data.</li>
+      </ul>
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail indicators</div>
+      <ul class="dot-list fail-list">
+        <li>Any of the 3 views crash with 90-day / 20-exercise dataset.</li>
+        <li>Stale cache data visible (e.g., strength value not reflecting recent log).</li>
+        <li>History cache shows more than 20 entries for any exercise (cap not enforced).</li>
+        <li>Trainer plan generates recommendations based on outdated last-performance data.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────────────────────────── QSIM-18 -->
+<div class="scenario" data-type="uat" id="sc-18">
+  <div class="scenario-header">
+    <span class="scenario-id">QSIM-18</span>
+    <span class="scenario-title">UAT: U-01 power user gear-icon settings discovery</span>
+    <div class="scenario-status-wrap">
+      <select class="status-select" data-id="QSIM-18" onchange="saveStatus('QSIM-18', this)">
+        <option value="NOT RUN">NOT RUN</option>
+        <option value="PASS">PASS</option>
+        <option value="FAIL">FAIL</option>
+        <option value="BLOCKED">BLOCKED</option>
+        <option value="SKIP">SKIP</option>
+      </select>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-uat">UAT</span>
+    <span class="badge badge-backlog">NAV-001</span>
+  </div>
+  <div class="scenario-body">
+    <div>
+      <div class="field-label">Precondition</div>
+      <div class="field-value">Cohort U-01 tester (power user, familiar with previous app version that had a dedicated Settings tab). Post-NAV-001 build: Settings tab removed; gear icon moved to HomeView toolbar. Tester has not been briefed on the navigation change.</div>
+    </div>
+    <div>
+      <div class="field-label">Action Steps</div>
+      <ol class="step-list">
+        <li>Hand the device to the U-01 tester on HomeView.</li>
+        <li>Say: "Without me telling you where it is, find Settings."</li>
+        <li>Start a 15-second timer.</li>
+        <li>Observe where the tester looks first — tab bar, swipe gestures, HomeView toolbar.</li>
+        <li>Stop timer when tester taps the gear icon or gives up.</li>
+        <li>Record time-to-find and first-look location.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="field-label field-full">Pass / Fail Criteria</div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      <ul class="dot-list pass-list">
+        <li>Tester locates the gear icon in HomeView toolbar within 15 seconds.</li>
+        <li>Tester does not express confusion or frustration about Settings moving.</li>
+        <li>NAV-001 UAT: confirms tab reduction to 5 tabs is acceptable to power users.</li>
+        <li>Settings view opens correctly from the gear icon tap.</li>
+      </ul>
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail indicators</div>
+      <ul class="dot-list fail-list">
+        <li>Tester cannot find Settings within 15 seconds — escalate to NAV-001 redesign discussion.</li>
+        <li>Tester expresses strong dissatisfaction with Settings relocation.</li>
+        <li>Gear icon not visible or tappable in HomeView toolbar (layout regression).</li>
+        <li>Settings view crashes or renders incorrectly when opened from toolbar.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="separator"></div>
+
+<!-- ═══════════════════════════════════════════════════════════ COVERAGE MATRIX -->
+<div class="section-heading">Testing Coverage Matrix</div>
+
+<div class="matrix-wrapper">
+  <table class="matrix-table">
+    <thead>
+      <tr>
+        <th class="row-header">Testing Type</th>
+        <th>UI Layer</th>
+        <th>Engine Layer</th>
+        <th>Model Layer</th>
+        <th>Persistence Layer</th>
+        <th>OS / Integration</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="row-header">Unit</td>
+        <td class="cell-none">—</td>
+        <td class="cell-primary">PRIMARY</td>
+        <td class="cell-primary">PRIMARY</td>
+        <td class="cell-none">—</td>
+        <td class="cell-none">—</td>
+      </tr>
+      <tr>
+        <td class="row-header">Functional</td>
+        <td class="cell-primary">PRIMARY</td>
+        <td class="cell-secondary">touch</td>
+        <td class="cell-secondary">touch</td>
+        <td class="cell-secondary">touch</td>
+        <td class="cell-none">—</td>
+      </tr>
+      <tr>
+        <td class="row-header">Integration</td>
+        <td class="cell-secondary">touch</td>
+        <td class="cell-primary">PRIMARY</td>
+        <td class="cell-secondary">touch</td>
+        <td class="cell-secondary">touch</td>
+        <td class="cell-primary">PRIMARY</td>
+      </tr>
+      <tr>
+        <td class="row-header">System</td>
+        <td class="cell-primary">PRIMARY</td>
+        <td class="cell-primary">PRIMARY</td>
+        <td class="cell-primary">PRIMARY</td>
+        <td class="cell-primary">PRIMARY</td>
+        <td class="cell-secondary">touch</td>
+      </tr>
+      <tr>
+        <td class="row-header">Regression</td>
+        <td class="cell-primary">PRIMARY</td>
+        <td class="cell-secondary">touch</td>
+        <td class="cell-secondary">touch</td>
+        <td class="cell-none">—</td>
+        <td class="cell-none">—</td>
+      </tr>
+      <tr>
+        <td class="row-header">Smoke</td>
+        <td class="cell-primary">PRIMARY</td>
+        <td class="cell-secondary">touch</td>
+        <td class="cell-none">—</td>
+        <td class="cell-secondary">touch</td>
+        <td class="cell-none">—</td>
+      </tr>
+      <tr>
+        <td class="row-header">UAT</td>
+        <td class="cell-primary">PRIMARY</td>
+        <td class="cell-none">—</td>
+        <td class="cell-none">—</td>
+        <td class="cell-none">—</td>
+        <td class="cell-none">—</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="separator"></div>
+
+<!-- ═══════════════════════════════════════════════════════════ SEVERITY DEFS -->
+<div class="section-heading">Severity Definitions</div>
+
+<div class="severity-row">
+  <div class="severity-chip sev-p0">
+    <span class="sev-label">P0 — Critical</span>
+    <span class="sev-desc">Crash, data loss, or complete feature unavailability. Blocks release. Requires immediate fix.</span>
+  </div>
+  <div class="severity-chip sev-p1">
+    <span class="sev-label">P1 — High</span>
+    <span class="sev-desc">Feature broken but app remains stable. No workaround available. Must fix before release.</span>
+  </div>
+  <div class="severity-chip sev-p2">
+    <span class="sev-label">P2 — Medium</span>
+    <span class="sev-desc">Degraded experience. Workaround exists. Fix in current or next sprint.</span>
+  </div>
+  <div class="severity-chip sev-p3">
+    <span class="sev-label">P3 — Low</span>
+    <span class="sev-desc">Cosmetic issue, minor copy error, or trivial UX inconsistency. Backlog candidate.</span>
+  </div>
+</div>
+
+<div class="separator"></div>
+
+<!-- ═══════════════════════════════════════════════════════════ BUG REPORT TEMPLATE -->
+<div class="section-heading">Bug Report Template</div>
+
+<div class="template-card">
+  <div class="template-field">
+    <div class="template-field-label">Bug ID</div>
+    <div class="template-field-placeholder">BUG-YYYY-MM-DD-NNN (auto-generated or sequential)</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Date</div>
+    <div class="template-field-placeholder">YYYY-MM-DD — date the bug was observed</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Tester</div>
+    <div class="template-field-placeholder">Tester name or cohort identifier (e.g., U-01, U-02, internal QA)</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Scenario</div>
+    <div class="template-field-placeholder">QSIM-XX — scenario ID where the bug was encountered (or "exploratory" if not from a scenario)</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Steps to Reproduce</div>
+    <div class="template-field-placeholder">1. [First step — include device/simulator model and iOS version]
+2. [Second step — be specific about UI element tapped or data entered]
+3. [Step where bug manifests — what was expected vs what happened]</div>
+    <div class="template-field-note">Include simulator name, iOS version, app build number, and any relevant SeedStore state (e.g., log entry count, active workout: yes/no).</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Expected Behaviour</div>
+    <div class="template-field-placeholder">Describe what the app should have done according to the scenario pass criteria or documented spec.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Actual Behaviour</div>
+    <div class="template-field-placeholder">Describe exactly what the app did. Include console output, crash logs, or screen recording filename if captured.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Severity</div>
+    <div class="template-field-placeholder">P0 / P1 / P2 / P3 — refer to severity definitions above. State your reasoning if non-obvious.</div>
+  </div>
+</div>
+
+<div class="separator"></div>
+
+<!-- ═══════════════════════════════════════════════════════════ LLM TRIAGE PROMPT -->
+<div class="section-heading">LLM Triage Prompt for Bug Reports</div>
+
+<div class="prompt-card">
+  <div class="prompt-label">LLM Pre-Triage — Paste into Claude or equivalent</div>
+  <div class="prompt-desc">
+    Use this prompt to get an initial triage assessment before filing a bug in the backlog. Paste the filled bug report template beneath the prompt. The model will identify the likely code area, suggest a severity rating, and propose a first debugging step.
+  </div>
+  <div class="prompt-body">You are a senior iOS engineer triaging a bug report for H.O.N., a SwiftUI fitness coaching app.
+
+Architecture context:
+- SeedStore is the sole @Observable data store. It owns: workoutLog, exercises (static), routines, activeWorkout, userProfile, lastPerformanceCache, exerciseHistoryCache, homeCache.
+- refreshAnalytics() uses a UUID token pattern — only the last in-flight call's result is committed to homeCache.
+- ReadinessEngine.compute(log:) produces ReadinessState (score 0-100, confidence, delta, coachingNote).
+- WorkoutNarrativeEngine generates post-set coaching text from phrase_bank.json via pick(), which rotates using UserDefaults.
+- SetRecord.e1RM(weight:reps:): Epley for 2-10 reps, Mayhew for 11-15, exact for 1 rep, 0 (excluded) for 16+.
+- Equipment.effectiveWeight(_:): dumbbell is per-hand (x2 for bilateral); barbell floors at 20kg.
+- Strength decay: peakE1RM * strengthRetentionFactor(daysSince) — no decay days 0-14, then -0.7%/day, floor 50%.
+- EquipmentChipRow calls quickSwapEquipment (O(n_exercises), safe per render) and bestVariant (O(n_log), called on tap only).
+- Phrase bank keys that must match exactly: "Short Gap", "Long Gap", "Stalled", "Drop Set — Completed", "Build From Drop Set|Single", "Use Drop Set Strategy|Single", "To Failure".
+
+Given the bug report below, provide:
+1. LIKELY CODE AREA: which file/engine/view is most likely responsible.
+2. SEVERITY ASSESSMENT: your recommended P0/P1/P2/P3 rating and rationale.
+3. FIRST DEBUGGING STEP: the single most targeted action to confirm root cause (e.g., add a breakpoint at X, check Y value in console, inspect Z in the data model).
+4. RELATED SCENARIOS: which QSIM IDs are relevant guards for this class of bug.
+
+--- BUG REPORT ---
+[Paste filled template here]</div>
+  <div class="prompt-note">Tip: attach the Xcode console output or crash log as additional context after the bug report for more precise triage.</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ SCRIPT -->
+<script>
+  const STORAGE_KEY = 'hon_qa_simulation_status';
+  const TOTAL = 18;
+
+  function loadStatuses() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function saveStatus(id, selectEl) {
+    const statuses = loadStatuses();
+    statuses[id] = selectEl.value;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(statuses));
+    applySelectStyle(selectEl);
+    updateProgress();
+  }
+
+  function applySelectStyle(sel) {
+    sel.className = 'status-select';
+    if (sel.value === 'PASS')    sel.classList.add('st-pass');
+    if (sel.value === 'FAIL')    sel.classList.add('st-fail');
+    if (sel.value === 'BLOCKED') sel.classList.add('st-blocked');
+    if (sel.value === 'SKIP')    sel.classList.add('st-skip');
+  }
+
+  function restoreStatuses() {
+    const statuses = loadStatuses();
+    document.querySelectorAll('.status-select').forEach(sel => {
+      const id = sel.dataset.id;
+      if (statuses[id]) {
+        sel.value = statuses[id];
+        applySelectStyle(sel);
+      }
+    });
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const statuses = loadStatuses();
+    let run = 0, pass = 0, fail = 0;
+    Object.values(statuses).forEach(v => {
+      if (v !== 'NOT RUN') run++;
+      if (v === 'PASS') pass++;
+      if (v === 'FAIL') fail++;
+    });
+    document.getElementById('stat-run').textContent  = run;
+    document.getElementById('stat-pass').textContent = pass;
+    document.getElementById('stat-fail').textContent = fail;
+
+    const passW = (pass / TOTAL * 100).toFixed(1);
+    const failW = (fail / TOTAL * 100).toFixed(1);
+    document.getElementById('bar-pass').style.width = passW + '%';
+    document.getElementById('bar-fail').style.width = failW + '%';
+    document.getElementById('bar-label').textContent =
+      run + ' of ' + TOTAL + ' scenarios run';
+  }
+
+  // Filter logic
+  let activeFilter = 'all';
+
+  function setFilter(type, chipEl) {
+    activeFilter = type;
+
+    // Reset all chip active classes
+    document.querySelectorAll('.filter-chip').forEach(c => {
+      c.className = 'filter-chip';
+    });
+
+    // Set active class on clicked chip
+    const classMap = {
+      all:         'active-all',
+      unit:        'active-unit',
+      functional:  'active-func',
+      integration: 'active-integ',
+      system:      'active-system',
+      regression:  'active-reg',
+      smoke:       'active-smoke',
+      uat:         'active-uat',
+    };
+    chipEl.classList.add(classMap[type] || 'active-all');
+
+    // Show/hide scenarios
+    document.querySelectorAll('.scenario').forEach(sc => {
+      if (type === 'all') {
+        sc.classList.remove('hidden');
+      } else {
+        const scType = sc.dataset.type;
+        if (scType === type) {
+          sc.classList.remove('hidden');
+        } else {
+          sc.classList.add('hidden');
+        }
+      }
+    });
+  }
+
+  // Init on load
+  document.addEventListener('DOMContentLoaded', function () {
+    restoreStatuses();
+  });
+</script>
+
+</body>
+</html>
