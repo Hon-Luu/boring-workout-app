@@ -1,0 +1,1853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H.O.N. — QA Review Criteria</title>
+<style>
+  :root {
+    --bg:       #111111;
+    --card:     #1c1c1e;
+    --border:   rgba(255,255,255,0.07);
+    --amber:    #f59e0b;
+    --positive: #34d399;
+    --negative: #f87171;
+    --warning:  #fbbf24;
+    --muted:    rgba(255,255,255,0.4);
+    --text:     rgba(255,255,255,0.88);
+    --text2:    rgba(255,255,255,0.55);
+    --blue:     #60a5fa;
+    --purple:   #a78bfa;
+    --orange:   #fb923c;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 32px 20px 64px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .header { margin-bottom: 36px; }
+  .header-top {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .logo {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber);
+  }
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--amber), transparent);
+    opacity: 0.3;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    color: var(--text);
+  }
+  .subtitle {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+
+  /* Progress bar */
+  .progress-wrap {
+    margin: 20px 0 8px;
+  }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text2);
+    margin-bottom: 6px;
+  }
+  .progress-label span:last-child {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: var(--positive);
+    font-weight: 700;
+  }
+  .progress-track {
+    height: 4px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(to right, var(--positive), #6ee7b7);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  /* Stats pills */
+  .stats {
+    display: flex;
+    gap: 6px;
+    margin: 16px 0 24px;
+    flex-wrap: wrap;
+  }
+  .stat-pill {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.04em;
+  }
+  .stat-total   { background: rgba(255,255,255,0.08); color: var(--text2); }
+  .stat-done    { background: rgba(52,211,153,0.15);  color: var(--positive); }
+  .stat-fail    { background: rgba(248,113,113,0.15); color: var(--negative); }
+  .stat-blocked { background: rgba(251,191,36,0.15);  color: var(--warning); }
+  .stat-todo    { background: rgba(255,255,255,0.06); color: var(--muted); }
+
+  /* Filter buttons */
+  .filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover  { border-color: var(--amber); color: var(--amber); }
+  .filter-btn.active { background: var(--amber); border-color: var(--amber); color: #111; }
+
+  /* Section heading */
+  .section-heading {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin: 32px 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-heading::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Category block */
+  .category-block {
+    margin-bottom: 24px;
+  }
+  .category-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    user-select: none;
+    padding: 10px 14px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    transition: border-color 0.15s;
+  }
+  .category-header:hover { border-color: rgba(255,255,255,0.12); }
+  .category-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.03em;
+  }
+  .category-count {
+    font-size: 11px;
+    color: var(--text2);
+    background: rgba(255,255,255,0.06);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .category-progress {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'SF Mono', monospace;
+    color: var(--positive);
+    margin-left: auto;
+    margin-right: 6px;
+  }
+  .category-chevron {
+    color: var(--text2);
+    font-size: 11px;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+  .category-block.collapsed .category-chevron { transform: rotate(-90deg); }
+  .category-block.collapsed .test-list { display: none; }
+
+  /* Test case */
+  .test-case {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transition: border-color 0.2s;
+  }
+  .test-case:hover { border-color: rgba(255,255,255,0.12); }
+  .test-case[data-status="pass"]    { border-left: 3px solid var(--positive); }
+  .test-case[data-status="fail"]    { border-left: 3px solid var(--negative); }
+  .test-case[data-status="blocked"] { border-left: 3px solid var(--warning); }
+  .test-case[data-status="skip"]    { border-left: 3px solid rgba(96,165,250,0.5); opacity: 0.6; }
+  .test-case[data-status="todo"]    { border-left: 3px solid rgba(255,255,255,0.15); }
+
+  .test-id {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    letter-spacing: 0.06em;
+    color: var(--amber);
+    background: rgba(245,158,11,0.1);
+    padding: 2px 7px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .test-body { flex: 1; min-width: 0; }
+
+  .test-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+
+  .test-detail {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.5;
+    margin-bottom: 6px;
+  }
+
+  .test-pass-criteria {
+    font-size: 11px;
+    color: rgba(52,211,153,0.8);
+    background: rgba(52,211,153,0.06);
+    border: 1px solid rgba(52,211,153,0.12);
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+
+  /* Status chip select */
+  .status-chip {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .chip-todo    { background: rgba(255,255,255,0.08); color: var(--text2); }
+  .chip-pass    { background: rgba(52,211,153,0.18);  color: var(--positive); }
+  .chip-fail    { background: rgba(248,113,113,0.25);  color: #fca5a5; }
+  .chip-blocked { background: rgba(251,191,36,0.18);  color: var(--warning); }
+  .chip-skip    { background: rgba(96,165,250,0.15);  color: var(--blue); }
+
+  code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 11px;
+    background: rgba(255,255,255,0.06);
+    padding: 1px 4px;
+    border-radius: 3px;
+  }
+
+  /* Gate section */
+  .gate-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+  .gate-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .gate-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 11px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .gate-item:last-child { border-bottom: none; }
+  .gate-num {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'SF Mono', monospace;
+    letter-spacing: 0.06em;
+    color: var(--amber);
+    background: rgba(245,158,11,0.1);
+    padding: 2px 7px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .gate-item .gate-desc { color: var(--text2); font-size: 12px; margin-top: 2px; }
+
+  /* Gate checkbox */
+  .gate-check {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    accent-color: var(--positive);
+    cursor: pointer;
+  }
+
+  /* Done card */
+  .done-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--positive);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-top: 16px;
+  }
+  .done-card h3 {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--positive);
+    margin-bottom: 14px;
+  }
+  .done-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .done-list li {
+    font-size: 13px;
+    color: var(--text2);
+    padding: 7px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    line-height: 1.5;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .done-list li:last-child { border-bottom: none; }
+  .done-bullet {
+    color: var(--positive);
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* LLM triage prompt */
+  .llm-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--purple);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-top: 16px;
+  }
+  .llm-card-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin-bottom: 8px;
+  }
+  .llm-card-desc {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .llm-prompt-block {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(167,139,250,0.18);
+    border-radius: 10px;
+    padding: 20px 22px;
+    font-family: 'SF Mono', 'Fira Code', 'Menlo', monospace;
+    font-size: 11.5px;
+    line-height: 1.8;
+    color: rgba(255,255,255,0.78);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .llm-placeholder {
+    color: var(--amber);
+    font-weight: 700;
+  }
+  .llm-section-label {
+    color: var(--purple);
+    font-weight: 700;
+  }
+
+  .separator {
+    height: 1px;
+    background: var(--border);
+    margin: 28px 0;
+  }
+
+  .tier-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin-bottom: 14px;
+  }
+  .tier-p1 { background: rgba(248,113,113,0.15); color: var(--negative); }
+  .tier-p2 { background: rgba(251,191,36,0.15);  color: var(--warning); }
+  .tier-p3 { background: rgba(96,165,250,0.15);  color: var(--blue); }
+
+  @media (max-width: 600px) {
+    body { padding: 20px 14px 48px; }
+    .test-case { flex-direction: column; }
+    .llm-card { padding: 18px 16px; }
+    .llm-prompt-block { padding: 14px; font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <span class="logo">H.O.N.</span>
+    <div class="divider-line"></div>
+  </div>
+  <h1>QA Review Criteria</h1>
+  <div class="subtitle">56 test cases &middot; 7 categories &middot; Pre-release gates &middot; Definition of done &middot; LLM triage prompt &middot; Last updated: 2026-05-30</div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-label">
+    <span>Test completion</span>
+    <span id="progress-pct">0%</span>
+  </div>
+  <div class="progress-track">
+    <div class="progress-fill" id="progress-fill"></div>
+  </div>
+</div>
+
+<div class="stats">
+  <span class="stat-pill stat-total" id="stat-total">56 total</span>
+  <span class="stat-pill stat-done"  id="stat-done">— pass</span>
+  <span class="stat-pill stat-fail"  id="stat-fail">— fail</span>
+  <span class="stat-pill stat-blocked" id="stat-blocked">— blocked</span>
+  <span class="stat-pill stat-todo" id="stat-todo">— todo</span>
+</div>
+
+<div class="filters">
+  <button class="filter-btn active" onclick="filterTests('all', this)">All</button>
+  <button class="filter-btn" onclick="filterTests('todo', this)">Todo</button>
+  <button class="filter-btn" onclick="filterTests('pass', this)">Done</button>
+  <button class="filter-btn" onclick="filterTests('flagged', this)">Flagged</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION 1 — TEST CASES
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="section-heading">Section 1 — Test Cases</div>
+
+<!-- ── Category 1: Unit Testing ── -->
+<div class="category-block" id="cat-unit">
+  <div class="category-header" onclick="toggleCategory('cat-unit')">
+    <span class="category-title">1. Unit Testing</span>
+    <span class="category-count" id="count-unit">8 tests &middot; QA-001–QA-008</span>
+    <span class="category-progress" id="prog-unit">0/8</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case" data-id="QA-001" data-status="todo" data-cat="unit">
+      <div class="test-id">QA-001</div>
+      <div class="test-body">
+        <div class="test-title">e1RM formula routes correctly by rep count</div>
+        <div class="test-detail">
+          <code>SetRecord.e1RM(weight:reps:)</code> must route to three distinct formulas depending on rep count: Epley for 2–10 reps, Mayhew for 11–15 reps, exact weight for 1 rep, and 0 (excluded) for any rep count above 15. Test boundary values: 1, 2, 10, 11, 15, 16 reps. Confirm that a single-rep set returns the raw weight with no multiplier applied.
+        </div>
+        <div class="test-pass-criteria">Pass: Formula branch confirmed at each boundary. 1 rep returns exact weight. 16 reps returns 0. Epley and Mayhew produce numerically distinct results for the same weight/reps inputs in the 11–15 range.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-001" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-002" data-status="todo" data-cat="unit">
+      <div class="test-id">QA-002</div>
+      <div class="test-body">
+        <div class="test-title">Equipment.effectiveWeight doubles dumbbells, floors barbells at 20 kg</div>
+        <div class="test-detail">
+          <code>Equipment.effectiveWeight(_:)</code> applies two distinct adjustments. Dumbbell entries represent a per-hand weight — the effective bilateral total is weight multiplied by 2. Barbell entries floor at 20 kg (bar weight) regardless of the stored value. Verify both rules with explicit inputs: a 15 kg dumbbell entry should return 30, a 0 kg barbell entry should return 20.
+        </div>
+        <div class="test-pass-criteria">Pass: Dumbbell 15 kg input returns 30. Barbell 0 kg input returns 20. Other equipment types return the stored value unchanged. No integer overflow or rounding error.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-002" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-003" data-status="todo" data-cat="unit">
+      <div class="test-id">QA-003</div>
+      <div class="test-body">
+        <div class="test-title">ReadinessEngine produces score 0–100 with valid confidence and coachingNote</div>
+        <div class="test-detail">
+          <code>ReadinessEngine.compute(log:)</code> must return a <code>ReadinessState</code> with a score clamped to the 0–100 range, a non-empty <code>coachingNote</code>, a valid confidence value (0.0–1.0), and a non-nil delta. Test with: empty log, single-entry log, 7-day dense log, and a log where all sessions are older than 30 days.
+        </div>
+        <div class="test-pass-criteria">Pass: Score is within [0, 100] for all four input scenarios. <code>coachingNote</code> is non-empty in all cases. Confidence is within [0.0, 1.0]. No crash or nil result for any input.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-003" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-004" data-status="todo" data-cat="unit">
+      <div class="test-id">QA-004</div>
+      <div class="test-body">
+        <div class="test-title">WorkoutNarrativeEngine phrase rotation avoids repeats across consecutive sets</div>
+        <div class="test-detail">
+          The <code>pick()</code> function in <code>WorkoutNarrativeEngine</code> uses a UserDefaults rotation index per phrase-bank key to avoid returning the same phrase on consecutive calls. Simulate 10 consecutive calls to the same phrase-bank key and confirm no two adjacent results are identical. The rotation index must persist to UserDefaults and survive a simulated app relaunch.
+        </div>
+        <div class="test-pass-criteria">Pass: No two adjacent results from <code>pick()</code> are identical for the same key, given a bank with 3+ phrases. Rotation index is written to UserDefaults before the function returns. Index increments correctly and wraps at bank length.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-004" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-005" data-status="todo" data-cat="unit">
+      <div class="test-id">QA-005</div>
+      <div class="test-body">
+        <div class="test-title">SetRecord drop set fields persist correctly through encode/decode</div>
+        <div class="test-detail">
+          <code>SetRecord</code> has three drop-set fields: <code>isDropCompleted</code>, <code>dropWeight</code>, and <code>dropReps</code>. Construct a <code>SetRecord</code> with all three fields set to non-default values, encode to JSON via <code>JSONEncoder</code>, decode via <code>JSONDecoder</code>, and verify field equality. Also verify a <code>SetRecord</code> with no drop set values round-trips without error.
+        </div>
+        <div class="test-pass-criteria">Pass: Encoded/decoded <code>SetRecord</code> has identical <code>isDropCompleted</code>, <code>dropWeight</code>, and <code>dropReps</code> values. No data loss or type coercion. Nil/false defaults survive round-trip without becoming unexpected values.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-005" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-006" data-status="todo" data-cat="unit">
+      <div class="test-id">QA-006</div>
+      <div class="test-body">
+        <div class="test-title">strengthRetentionFactor: no decay for first 14 days, then -0.7%/day, floor 50%</div>
+        <div class="test-detail">
+          The strength decay model in <code>StrengthLabView</code> applies <code>peakE1RM * strengthRetentionFactor(daysSince)</code>. The retention factor must be 1.0 for 0–14 days, decrease by 0.007 per day from day 15 onward, and never fall below 0.5. Test at days 0, 14, 15, 50, 100, and 200.
+        </div>
+        <div class="test-pass-criteria">Pass: Days 0 and 14 return factor 1.0. Day 15 returns 0.993. Day 100 returns max(0.5, 1.0 - 0.007*(100-14)) = max(0.5, 0.398) = 0.5. Day 200 also returns 0.5 (floor). No value below 0.5 at any input.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-006" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-007" data-status="todo" data-cat="unit">
+      <div class="test-id">QA-007</div>
+      <div class="test-body">
+        <div class="test-title">HomeCache builds in a single O(n) log pass; both lookup caches populated</div>
+        <div class="test-detail">
+          <code>HomeCache.buildExerciseCaches(log:)</code> must populate both <code>lastPerformanceCache</code> and <code>exerciseHistoryCache</code> in a single traversal of the workout log. Verify with a synthetic log of 50 sessions across 10 exercises: both caches must be populated after a single call, all 10 exercises must have entries, and the function must not call any other cache-building function internally.
+        </div>
+        <div class="test-pass-criteria">Pass: After one call to <code>buildExerciseCaches</code>, both caches are non-empty. All exercise UUIDs present in the log appear as keys in both caches. No duplicate log traversal detectable via instrumentation.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-007" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-008" data-status="todo" data-cat="unit">
+      <div class="test-id">QA-008</div>
+      <div class="test-body">
+        <div class="test-title">WorkoutPlanEngine debounce token: only last in-flight result applied</div>
+        <div class="test-detail">
+          <code>refreshAnalytics()</code> mints a new <code>UUID</code> token on each call. The background block only commits its result if the token still matches when it returns to the main thread. Simulate three rapid consecutive calls and verify that only the result from the third call is applied. Earlier results must be discarded silently, not queued.
+        </div>
+        <div class="test-pass-criteria">Pass: Only the last result is committed when three calls fire in rapid succession. No intermediate result is observable on the main thread. No race condition or partial state from an earlier call leaks through.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-008" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+  </div>
+</div><!-- /cat-unit -->
+
+<!-- ── Category 2: Functional Testing ── -->
+<div class="category-block" id="cat-functional">
+  <div class="category-header" onclick="toggleCategory('cat-functional')">
+    <span class="category-title">2. Functional Testing</span>
+    <span class="category-count" id="count-functional">12 tests &middot; QA-009–QA-020</span>
+    <span class="category-progress" id="prog-functional">0/12</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case" data-id="QA-009" data-status="todo" data-cat="functional">
+      <div class="test-id">QA-009</div>
+      <div class="test-body">
+        <div class="test-title">Starting a workout creates an active session; tab badge appears</div>
+        <div class="test-detail">
+          Tapping "Start Workout" must set <code>SeedStore.activeWorkout</code> to a non-nil value and cause the Workout tab (tag 2) to display its active-session badge. The badge must remain visible when navigating to other tabs and return to the Workout tab.
+        </div>
+        <div class="test-pass-criteria">Pass: <code>activeWorkout</code> is non-nil immediately after start. Tab badge is visible on Workout tab. Badge persists across tab switches. Badge disappears after session is completed.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-009" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-010" data-status="todo" data-cat="functional">
+      <div class="test-id">QA-010</div>
+      <div class="test-body">
+        <div class="test-title">Logging a set updates completedSets count immediately</div>
+        <div class="test-detail">
+          After marking a set as completed in <code>ActiveWorkoutView</code>, <code>WorkoutExercise.completedSets</code> (computed: sets where <code>isCompleted == true</code>) must reflect the increment on the next render cycle without requiring a manual refresh. The count shown in the UI must match <code>completedSets.count</code>.
+        </div>
+        <div class="test-pass-criteria">Pass: Count increments immediately after set is marked complete. No stale value displayed. Decrementing (un-completing) a set also reflects immediately. Count matches the actual <code>completedSets</code> array length.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-010" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-011" data-status="todo" data-cat="functional">
+      <div class="test-id">QA-011</div>
+      <div class="test-body">
+        <div class="test-title">Drop set toggle sets isDropCompleted true and narrative includes drop-set phrase</div>
+        <div class="test-detail">
+          Toggling the drop set completion on a set must set <code>SetRecord.isDropCompleted = true</code>. The subsequent coaching narrative generated by <code>WorkoutNarrativeEngine</code> must include a phrase from the <code>"Drop Set — Completed"</code> key in <code>phrase_bank.json</code> (IDs 76–85). The weight slot in the narrative must be replaced by the drop-set modifier, not the standard weight phrase.
+        </div>
+        <div class="test-pass-criteria">Pass: <code>isDropCompleted</code> is true after toggle. Narrative output contains a phrase from the drop-set bank. The standard weight-slot phrase does not appear alongside the drop-set modifier.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-011" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-012" data-status="todo" data-cat="functional">
+      <div class="test-id">QA-012</div>
+      <div class="test-body">
+        <div class="test-title">Completing workout writes WorkoutLogEntry with correct startedAt / endedAt</div>
+        <div class="test-detail">
+          Tapping "Finish Workout" must append a <code>WorkoutLogEntry</code> to <code>SeedStore.workoutLog</code> with <code>startedAt</code> equal to the timestamp when the session was initiated and <code>endedAt</code> set to the current time. The duration derived from these two timestamps must be positive and plausible (greater than 0 seconds, less than 24 hours).
+        </div>
+        <div class="test-pass-criteria">Pass: New <code>WorkoutLogEntry</code> appears in <code>workoutLog</code> immediately. <code>startedAt</code> matches the session start time. <code>endedAt</code> is after <code>startedAt</code>. Duration is within [0, 86400] seconds.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-012" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-013" data-status="todo" data-cat="functional">
+      <div class="test-id">QA-013</div>
+      <div class="test-body">
+        <div class="test-title">Equipment chip row resolves correct bestVariant on tap</div>
+        <div class="test-detail">
+          <code>EquipmentChipRow</code> calls <code>onSelect: (Equipment) -> Void</code> on tap. The parent resolves the exercise via <code>SeedStore.bestVariant(equipment:matching:)</code>. Verify that selecting a different equipment type from the chip row swaps the current exercise to the correct variant — matching the chosen equipment and the same movement pattern — and that the swap is reflected in <code>activeWorkout</code> immediately.
+        </div>
+        <div class="test-pass-criteria">Pass: Tapping an equipment chip calls <code>bestVariant</code> with the correct arguments. The returned exercise has the matching equipment type. <code>activeWorkout</code> reflects the swapped exercise within one render cycle.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-013" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-014" data-status="todo" data-cat="functional">
+      <div class="test-id">QA-014</div>
+      <div class="test-body">
+        <div class="test-title">PR detection fires when new e1RM exceeds all prior e1RM for that exercise</div>
+        <div class="test-detail">
+          After completing a set whose computed e1RM exceeds the historical peak for that exercise (from <code>lastPerformanceCache</code> and <code>exerciseHistoryCache</code>), the PR detection logic must fire and surface a PR indicator in the UI. The PR must be exercise-specific and must not fire when the new e1RM is equal to (not strictly greater than) the prior peak.
+        </div>
+        <div class="test-pass-criteria">Pass: PR indicator appears when new e1RM strictly exceeds the historical peak. No false positive when equal to peak. No PR fires for an exercise with no prior log entries (first-ever set is not a PR by definition, or is explicitly marked as first-time).</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-014" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-015" data-status="todo" data-cat="functional">
+      <div class="test-id">QA-015</div>
+      <div class="test-body">
+        <div class="test-title">Routine creation, naming, and day-assignment persists across app restart</div>
+        <div class="test-detail">
+          Create a new <code>WorkoutTemplate</code> with a custom name and assign it to specific weekdays via <code>TemplateExercise.assignedDays</code>. Terminate and relaunch the app. Verify that the routine name, exercise list, and day assignments are all present and correct after relaunch.
+        </div>
+        <div class="test-pass-criteria">Pass: Routine name unchanged after relaunch. All assigned days preserved. All exercises in the template preserved with correct order. No duplicate entries introduced by the relaunch cycle.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-015" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-016" data-status="todo" data-cat="functional">
+      <div class="test-id">QA-016</div>
+      <div class="test-body">
+        <div class="test-title">HomeView readiness score updates after a new workout is logged</div>
+        <div class="test-detail">
+          After completing a workout session, <code>refreshAnalytics()</code> must be triggered and <code>homeCache.readiness</code> updated. The readiness score shown on <code>HomeView</code> must reflect the new score after the cache rebuild completes. Verify that the displayed value differs from the pre-workout score when the new session materially changes readiness inputs.
+        </div>
+        <div class="test-pass-criteria">Pass: Readiness score on HomeView updates within one <code>refreshAnalytics()</code> cycle after workout completion. No stale pre-workout score persists after the cache rebuild. Score change is visible without requiring a manual app restart.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-016" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-017" data-status="todo" data-cat="functional">
+      <div class="test-id">QA-017</div>
+      <div class="test-body">
+        <div class="test-title">Trainer tab generates plan only when readiness and last performance data are present</div>
+        <div class="test-detail">
+          <code>WorkoutPlanEngine</code> generates a <code>[GuidedWorkoutPlan]</code> from readiness state plus last performance cache. Verify that with no workout history, the Trainer tab shows an appropriate empty or onboarding state rather than an empty plan or crash. Once at least one workout exists, confirm a plan is generated.
+        </div>
+        <div class="test-pass-criteria">Pass: No crash on Trainer tab with empty log. Empty state is user-facing and informative. Plan is generated after at least one completed workout. Plan contains at least one exercise with associated sets.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-017" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-018" data-status="todo" data-cat="functional">
+      <div class="test-id">QA-018</div>
+      <div class="test-body">
+        <div class="test-title">Strength decay view shows correct 50% floor for exercises stale more than 100 days</div>
+        <div class="test-detail">
+          In <code>StrengthLabView</code>, exercises whose last logged session is more than 100 days in the past must display a retained strength value at exactly 50% of their peak e1RM. The decay formula must not produce values below 50% regardless of how many days have elapsed (200, 365, 500 days).
+        </div>
+        <div class="test-pass-criteria">Pass: An exercise with peak e1RM of 100 kg and last session 150 days ago displays 50 kg retained strength. No displayed value is below 50% of peak. The floor applies identically at 101, 200, and 500 days stale.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-018" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-019" data-status="todo" data-cat="functional">
+      <div class="test-id">QA-019</div>
+      <div class="test-body">
+        <div class="test-title">To-failure flag routes narrative to "To Failure" phrase slot (IDs 105–114)</div>
+        <div class="test-detail">
+          When <code>SetRecord.toFailure == true</code>, <code>ExerciseAnalysis.isToFailure</code> must be true and <code>assembleSingle</code> in <code>WorkoutNarrativeEngine</code> must replace the trend slot with a phrase from the <code>"To Failure"</code> key in <code>phrase_bank.json</code> (IDs 105–114). The standard trend phrase must not appear in the output when to-failure is active.
+        </div>
+        <div class="test-pass-criteria">Pass: Narrative for a to-failure set contains a phrase with ID in the 105–114 range. Standard trend phrase is absent. Narrative for a non-failure set does not include a to-failure phrase.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-019" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-020" data-status="todo" data-cat="functional">
+      <div class="test-id">QA-020</div>
+      <div class="test-body">
+        <div class="test-title">RPE field (6–10) influences e1RM when populated; ignored when blank</div>
+        <div class="test-detail">
+          <code>SetRecord.rpe</code> enables RPE-adjusted e1RM when set to a value in the 6–10 range. Verify that the adjusted e1RM differs from the unadjusted Epley/Mayhew result for the same weight and reps. When <code>rpe</code> is nil or 0, the unadjusted formula must be used without error.
+        </div>
+        <div class="test-pass-criteria">Pass: A set with RPE 8 produces a different e1RM than the same set with no RPE. RPE nil or 0 falls through to standard formula without crash. RPE values outside 6–10 are rejected or clamped.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-020" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+  </div>
+</div><!-- /cat-functional -->
+
+<!-- ── Category 3: Integration Testing ── -->
+<div class="category-block" id="cat-integration">
+  <div class="category-header" onclick="toggleCategory('cat-integration')">
+    <span class="category-title">3. Integration Testing</span>
+    <span class="category-count" id="count-integration">10 tests &middot; QA-021–QA-030</span>
+    <span class="category-progress" id="prog-integration">0/10</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case" data-id="QA-021" data-status="todo" data-cat="integration">
+      <div class="test-id">QA-021</div>
+      <div class="test-body">
+        <div class="test-title">SeedStore.isLoaded gate: ContentView renders nothing until background init completes</div>
+        <div class="test-detail">
+          On launch, <code>SeedStore</code> kicks off a background thread that loads persisted data, builds caches, and dispatches a batched update to the main thread before setting <code>isLoaded = true</code>. <code>ContentView</code> must render nothing (no tab bar, no content) while <code>isLoaded</code> is false. Confirm by adding an artificial delay to the init sequence and verifying a blank screen until the gate opens.
+        </div>
+        <div class="test-pass-criteria">Pass: ContentView shows no content while <code>isLoaded == false</code>. Tab bar and all views appear atomically when <code>isLoaded</code> becomes true. No mid-state flash of partial UI during the load window.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-021" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-022" data-status="todo" data-cat="integration">
+      <div class="test-id">QA-022</div>
+      <div class="test-body">
+        <div class="test-title">refreshAnalytics() token pattern: rapid consecutive calls apply only the last result</div>
+        <div class="test-detail">
+          Each call to <code>refreshAnalytics()</code> mints a new <code>UUID</code> token. The background block compares the token before committing to the main thread. Fire 5 rapid calls and verify that the final cache state reflects only the last call's result. Intermediate results must be discarded, not partially applied.
+        </div>
+        <div class="test-pass-criteria">Pass: After 5 rapid calls, the applied cache matches only the last call's inputs. No partial state from earlier calls is observable. The debounce does not introduce observable delay under normal (non-rapid) conditions.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-022" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-023" data-status="todo" data-cat="integration">
+      <div class="test-id">QA-023</div>
+      <div class="test-body">
+        <div class="test-title">exerciseHistoryCache capped at 20 entries per exercise; oldest entries dropped</div>
+        <div class="test-detail">
+          <code>exerciseHistoryCache</code> stores up to 20 history entries per exercise, newest-first. Log 25 sessions for the same exercise and verify that <code>exerciseHistoryCache[exerciseId]?.count == 20</code> and that the 5 oldest sessions are absent from the cache. The entries must remain newest-first after the cap is applied.
+        </div>
+        <div class="test-pass-criteria">Pass: Cache count does not exceed 20 for any exercise regardless of log size. The 20 retained entries are the 20 most recent. Order is newest-first within the array. No crash or corruption when log exceeds 20 entries per exercise.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-023" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-024" data-status="todo" data-cat="integration">
+      <div class="test-id">QA-024</div>
+      <div class="test-body">
+        <div class="test-title">lastPerformanceCache reflects most recent completed session, not active session</div>
+        <div class="test-detail">
+          During an active workout, <code>lastPerformanceCache</code> must continue to reflect the most recently <em>completed</em> session for each exercise, not the sets currently being logged in the active session. Verify by starting a workout, logging sets for an exercise, and checking that <code>lastPerformanceCache[exerciseId]</code> still points to the previous session's sets.
+        </div>
+        <div class="test-pass-criteria">Pass: <code>lastPerformanceCache</code> is unchanged during an active workout. After the workout is completed and <code>refreshAnalytics()</code> runs, the cache updates to reflect the newly completed session.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-024" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-025" data-status="todo" data-cat="integration">
+      <div class="test-id">QA-025</div>
+      <div class="test-body">
+        <div class="test-title">WorkoutPlanEngine reads weeklyVolume correctly — deprioritizes region with 3+ sessions</div>
+        <div class="test-detail">
+          <code>WorkoutPlanEngine</code> must deprioritize body regions that already have 3 or more sessions logged in the current 7-day window. Build a log with 3 upper-body sessions in the past 7 days and verify that the generated plan does not assign an upper-body exercise as the primary movement. The lower or unworked region must be prioritized.
+        </div>
+        <div class="test-pass-criteria">Pass: Plan generated after 3 upper-body sessions in 7 days does not lead with an upper-body compound movement. Volume balance logic reads from the actual log, not a cached approximation.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-025" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-026" data-status="todo" data-cat="integration">
+      <div class="test-id">QA-026</div>
+      <div class="test-body">
+        <div class="test-title">phrase_bank.json keys match engine constants exactly</div>
+        <div class="test-detail">
+          The following keys in <code>phrase_bank.json</code> must exactly match the string constants used in <code>WorkoutNarrativeEngine</code>: <code>"Short Gap"</code>, <code>"Long Gap"</code>, <code>"Stalled"</code> (under <code>history</code>), <code>"Drop Set — Completed"</code> (under <code>weight</code>), <code>"Build From Drop Set|Single"</code> and <code>"Use Drop Set Strategy|Single"</code> (under <code>whats_next</code>), and <code>"To Failure"</code> (under <code>connective</code>). Any key mismatch causes silent fallback or crash.
+        </div>
+        <div class="test-pass-criteria">Pass: All seven keys are present in phrase_bank.json at the correct nesting level. String values match engine constants character-for-character including punctuation and pipe characters. No key is missing, misspelled, or at the wrong nesting depth.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-026" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-027" data-status="todo" data-cat="integration">
+      <div class="test-id">QA-027</div>
+      <div class="test-body">
+        <div class="test-title">HealthKit data feeds ReadinessEngine without crashing when permissions denied</div>
+        <div class="test-detail">
+          When HealthKit permissions are denied or not yet requested, any HealthKit read that feeds <code>ReadinessEngine</code> must fail gracefully and return a degraded (lower confidence) readiness state rather than crashing or returning nil. Simulate by revoking HealthKit permissions in Settings and launching the app.
+        </div>
+        <div class="test-pass-criteria">Pass: No crash when HealthKit permissions are denied. <code>ReadinessEngine</code> returns a valid (possibly low-confidence) result. No empty or nil coaching note in the denied-permissions scenario. Error is not surfaced to the user as a modal alert.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-027" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-028" data-status="todo" data-cat="integration">
+      <div class="test-id">QA-028</div>
+      <div class="test-body">
+        <div class="test-title">SeedStore persistence layer round-trips WorkoutLogEntry without data loss</div>
+        <div class="test-detail">
+          Write a <code>WorkoutLogEntry</code> containing a <code>WorkoutExercise</code> with 5 <code>SetRecord</code> instances (at least one with drop set fields and one with RPE set) to the persistence layer. Force a reload from disk and verify that all fields — including nested <code>SetRecord</code> values — are byte-for-byte equal to the original.
+        </div>
+        <div class="test-pass-criteria">Pass: All fields of all nested types survive the round-trip. Drop set fields, RPE, toFailure, and velocityProfile data are preserved. No default-value substitution for optional fields that were explicitly set. No crash during encode or decode.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-028" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-029" data-status="todo" data-cat="integration">
+      <div class="test-id">QA-029</div>
+      <div class="test-body">
+        <div class="test-title">homeCache.todayHints reflects exercises assigned to the current weekday</div>
+        <div class="test-detail">
+          <code>homeCache.todayHints</code> must contain only exercises whose <code>TemplateExercise.assignedDays</code> includes the current weekday index (1–7, where 1 is Sunday). Assign exercises to specific days, then check <code>todayHints</code> on matching and non-matching days to verify correct filtering.
+        </div>
+        <div class="test-pass-criteria">Pass: Exercises assigned to today appear in <code>todayHints</code>. Exercises assigned only to other days do not appear. Empty array (not nil) when no exercises are assigned to today. Day index matches the iOS <code>Calendar.current.component(.weekday, from: Date())</code> convention.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-029" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-030" data-status="todo" data-cat="integration">
+      <div class="test-id">QA-030</div>
+      <div class="test-body">
+        <div class="test-title">CompositeStrengthEngine aggregates per-exercise scores using current bodyweight from userProfile</div>
+        <div class="test-detail">
+          <code>CompositeStrengthEngine</code> aggregates per-exercise scores from <code>StrengthScoreEngine</code> (which computes strength relative to bodyweight norms). Update <code>SeedStore.userProfile</code> bodyweight and re-run the composite calculation. Verify that the composite score changes in proportion to the bodyweight update.
+        </div>
+        <div class="test-pass-criteria">Pass: Composite score changes when bodyweight changes, given the same workout log. Score uses the most current <code>userProfile.bodyweight</code> at the time of calculation. No stale bodyweight value used after a profile update.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-030" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+  </div>
+</div><!-- /cat-integration -->
+
+<!-- ── Category 4: System Testing ── -->
+<div class="category-block" id="cat-system">
+  <div class="category-header" onclick="toggleCategory('cat-system')">
+    <span class="category-title">4. System Testing</span>
+    <span class="category-count" id="count-system">8 tests &middot; QA-031–QA-038</span>
+    <span class="category-progress" id="prog-system">0/8</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case" data-id="QA-031" data-status="todo" data-cat="system">
+      <div class="test-id">QA-031</div>
+      <div class="test-body">
+        <div class="test-title">Full new-user flow: onboard, first workout, complete, see updated HomeView readiness</div>
+        <div class="test-detail">
+          Starting from a clean install with no prior data: complete onboarding, start a workout, log at least one set, complete the workout, then navigate to HomeView. The readiness score must be visible and non-zero. The workout must appear in the progress history. No crash or blank screen at any step of the flow.
+        </div>
+        <div class="test-pass-criteria">Pass: All four steps complete without error. HomeView readiness score is visible and non-zero. Progress tab shows the new workout entry. No stale empty-state view persists after the first workout is completed.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-031" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-032" data-status="todo" data-cat="system">
+      <div class="test-id">QA-032</div>
+      <div class="test-body">
+        <div class="test-title">Power-user flow: 90-day log, 20+ exercises, 5 routines — all views load without crash</div>
+        <div class="test-detail">
+          Seed the store with a synthetic 90-day workout log (4 sessions/week, 20+ distinct exercises, 5 routines). Navigate through all 5 tabs, open drill-down views in StrengthLabView, and verify that no tab or view crashes. Particular attention on <code>StrengthAnalyticsEngine</code> and <code>CompositeStrengthEngine</code> with a full data set.
+        </div>
+        <div class="test-pass-criteria">Pass: All 5 tabs load without crash. StrengthLabView renders all exercises. No hang or visible jank during tab switch. Trainer tab generates a plan from the dense log. Progress tab shows a correct streak and history.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-032" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-033" data-status="todo" data-cat="system">
+      <div class="test-id">QA-033</div>
+      <div class="test-body">
+        <div class="test-title">App backgrounded mid-workout, then foregrounded — active session preserved exactly</div>
+        <div class="test-detail">
+          Start a workout, log 2 sets, then background the app for at least 60 seconds. Foreground the app and verify that <code>activeWorkout</code> is intact: the same exercises, the same logged sets, the same start time. No set is lost, duplicated, or reset.
+        </div>
+        <div class="test-pass-criteria">Pass: All logged sets are present after foregrounding. <code>startedAt</code> is unchanged. The workout timer (if shown) reflects the actual elapsed time including the background period. No duplicate sets.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-033" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-034" data-status="todo" data-cat="system">
+      <div class="test-id">QA-034</div>
+      <div class="test-body">
+        <div class="test-title">App killed mid-workout, then relaunched — active session recoverable or graceful loss</div>
+        <div class="test-detail">
+          Start a workout, log 2 sets, then force-quit the app from the app switcher. Relaunch and verify: either the active session is fully restored (preferred) or the session is cleanly absent with no orphaned data and a clear empty state. A partial or corrupted session state is a failure.
+        </div>
+        <div class="test-pass-criteria">Pass: On relaunch, either the full session is restored (preferred) or the state is cleanly reset with no stale <code>activeWorkout</code> reference. No crash on relaunch. No orphaned WorkoutLogEntry from the killed session.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-034" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-035" data-status="todo" data-cat="system">
+      <div class="test-id">QA-035</div>
+      <div class="test-body">
+        <div class="test-title">All 5 tabs navigable without crash on a fresh install (no data)</div>
+        <div class="test-detail">
+          On a fresh install with no workout log, no routines, and no user profile data, navigate to every tab and verify no crash, no blank-screen hang, and no misleading data display. Each tab must show an appropriate empty state or onboarding prompt.
+        </div>
+        <div class="test-pass-criteria">Pass: All 5 tabs load without crash. Each tab shows a meaningful empty state (not a blank card or zero-value chart). No nil-dereference from an empty log. StrengthLabView and Trainer tab handle the no-data case gracefully.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-035" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-036" data-status="todo" data-cat="system">
+      <div class="test-id">QA-036</div>
+      <div class="test-body">
+        <div class="test-title">Deleting all workout history resets all caches; views show empty states, not stale data</div>
+        <div class="test-detail">
+          Delete all entries from <code>workoutLog</code> and trigger <code>refreshAnalytics()</code>. All three caches (<code>lastPerformanceCache</code>, <code>exerciseHistoryCache</code>, <code>homeCache</code>) must be empty or reset to defaults. HomeView, StrengthLabView, and ProgressView must display empty states, not residual values from the cleared data.
+        </div>
+        <div class="test-pass-criteria">Pass: All caches are empty after log deletion and cache rebuild. No stale readiness score, PR marker, or chart data displayed. Views show empty states without crashing. Readiness score resets to default or 0.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-036" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-037" data-status="todo" data-cat="system">
+      <div class="test-id">QA-037</div>
+      <div class="test-body">
+        <div class="test-title">Dynamic type size change does not break layout on any tab</div>
+        <div class="test-detail">
+          Change the system text size to the largest accessibility size in iOS Settings (Accessibility &gt; Display &amp; Text Size &gt; Larger Text) and navigate all 5 tabs. Text must remain legible, cards must not overflow their bounds, and no UI element must be clipped or hidden by overflow. Return to the default size and verify no layout corruption.
+        </div>
+        <div class="test-pass-criteria">Pass: All tabs display without clipping or overflow at max accessibility text size. Critical UI elements (status chips, exercise names, set counts) remain legible. Layout adjusts gracefully rather than truncating silently.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-037" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-038" data-status="todo" data-cat="system">
+      <div class="test-id">QA-038</div>
+      <div class="test-body">
+        <div class="test-title">Offline use: no crash from network-dependent calls; app fully functional without connectivity</div>
+        <div class="test-detail">
+          Enable Airplane Mode and use the app for a full workout session including logging sets, completing the session, and viewing HomeView, StrengthLabView, and the Trainer tab. No feature that relies solely on local data must fail or crash. Any network-dependent feature must surface a non-crashing degraded state.
+        </div>
+        <div class="test-pass-criteria">Pass: All local-data features function identically in Airplane Mode. No crash, no timeout hang, no missing UI element caused by failed network calls. Any network-dependent feature shows a non-intrusive offline indicator rather than crashing.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-038" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+  </div>
+</div><!-- /cat-system -->
+
+<!-- ── Category 5: Regression Testing ── -->
+<div class="category-block" id="cat-regression">
+  <div class="category-header" onclick="toggleCategory('cat-regression')">
+    <span class="category-title">5. Regression Testing</span>
+    <span class="category-count" id="count-regression">6 tests &middot; QA-039–QA-044</span>
+    <span class="category-progress" id="prog-regression">0/6</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case" data-id="QA-039" data-status="todo" data-cat="regression">
+      <div class="test-id">QA-039</div>
+      <div class="test-body">
+        <div class="test-title">SourceKit false positives do not block xcodebuild — build passes clean</div>
+        <div class="test-detail">
+          SourceKit reports false positives for cross-file types (e.g., "Cannot find type X in scope") that do not correspond to real compilation errors. Running <code>xcodebuild -scheme workout -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build</code> must complete with 0 errors and 0 warnings. SourceKit diagnostics in the IDE are not a reliable signal and must not be used to gate this test.
+        </div>
+        <div class="test-pass-criteria">Pass: <code>xcodebuild</code> exits with code 0. Build log contains "BUILD SUCCEEDED". Zero error lines in the build output. SourceKit IDE warnings alone do not constitute a failure of this test case.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-039" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-040" data-status="todo" data-cat="regression">
+      <div class="test-id">QA-040</div>
+      <div class="test-body">
+        <div class="test-title">ConsistencyDotGrid renders oldest-first (NAV-004 fix) — verify on each release</div>
+        <div class="test-detail">
+          The <code>ConsistencyDotGrid</code> component must render workout consistency dots in oldest-to-newest order (left to right). This was fixed in NAV-004. Verify on each release that the order has not regressed by checking that the leftmost dot corresponds to the earliest date in the dataset and the rightmost to the most recent.
+        </div>
+        <div class="test-pass-criteria">Pass: Leftmost dot matches the oldest date in the consistency dataset. Rightmost dot matches the most recent date. Order is consistent across all tested data ranges (7-day, 30-day, 90-day).</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-040" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-041" data-status="todo" data-cat="regression">
+      <div class="test-id">QA-041</div>
+      <div class="test-body">
+        <div class="test-title">HONInAppBanner shows only on Home (tab 0), not during active workout (tab 2)</div>
+        <div class="test-detail">
+          <code>HONInAppBanner</code> must only appear when the user is on tab 0 (HomeView). During an active workout on tab 2, the banner must not appear, even if the underlying trigger condition is met. Navigate between tabs with an active workout running to verify suppression on tab 2.
+        </div>
+        <div class="test-pass-criteria">Pass: Banner is visible on tab 0 when trigger condition is met. Banner is absent on tabs 1–5 including during an active workout. Switching from tab 0 to tab 2 dismisses the banner immediately.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-041" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-042" data-status="todo" data-cat="regression">
+      <div class="test-id">QA-042</div>
+      <div class="test-body">
+        <div class="test-title">Cardio section visibility consistent between SimpleProgressView and StrengthLabView</div>
+        <div class="test-detail">
+          Cardio sessions must be visible in both <code>SimpleProgressView</code> and <code>StrengthLabView</code> or absent from both — their visibility must not diverge. Log a cardio session and verify it appears in both views. Remove all cardio sessions and verify neither view shows a stale cardio section.
+        </div>
+        <div class="test-pass-criteria">Pass: Cardio section appears in both views when cardio sessions exist. Cardio section is absent from both views when no cardio sessions are logged. No discrepancy in cardio session count between the two views.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-042" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-043" data-status="todo" data-cat="regression">
+      <div class="test-id">QA-043</div>
+      <div class="test-body">
+        <div class="test-title">Phrase bank rotation index (UserDefaults) does not corrupt after app update</div>
+        <div class="test-detail">
+          The phrase rotation index stored in UserDefaults must remain valid (within bounds of the phrase bank array) after an app update that changes phrase bank content. Simulate by modifying the phrase bank size and verifying that the stored index is clamped or reset to 0 if it would now be out-of-bounds.
+        </div>
+        <div class="test-pass-criteria">Pass: After a phrase bank size reduction, no out-of-bounds array access occurs. Rotation index is clamped to <code>min(storedIndex, bankSize - 1)</code> or reset to 0. No crash on first <code>pick()</code> call after an update.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-043" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-044" data-status="todo" data-cat="regression">
+      <div class="test-id">QA-044</div>
+      <div class="test-body">
+        <div class="test-title">exerciseHistoryCache rebuild after log edit does not include deleted sessions</div>
+        <div class="test-detail">
+          Delete a <code>WorkoutLogEntry</code> from <code>workoutLog</code> and trigger <code>refreshAnalytics()</code>. The rebuilt <code>exerciseHistoryCache</code> must not contain any sets from the deleted session. Verify for an exercise that appeared exclusively in the deleted session (cache entry should be absent) and one that appeared in both deleted and retained sessions (cache entry should reflect only retained sessions).
+        </div>
+        <div class="test-pass-criteria">Pass: Deleted session's sets are absent from <code>exerciseHistoryCache</code> after rebuild. An exercise present only in the deleted session has no cache entry. An exercise present in both deleted and retained sessions shows only the retained data.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-044" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+  </div>
+</div><!-- /cat-regression -->
+
+<!-- ── Category 6: Smoke Testing ── -->
+<div class="category-block" id="cat-smoke">
+  <div class="category-header" onclick="toggleCategory('cat-smoke')">
+    <span class="category-title">6. Smoke Testing</span>
+    <span class="category-count" id="count-smoke">6 tests &middot; QA-045–QA-050</span>
+    <span class="category-progress" id="prog-smoke">0/6</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case" data-id="QA-045" data-status="todo" data-cat="smoke">
+      <div class="test-id">QA-045</div>
+      <div class="test-body">
+        <div class="test-title">App launches to HomeView within 3 seconds on iPhone 15 simulator</div>
+        <div class="test-detail">
+          Cold-launch the app on an iPhone 15 simulator (or equivalent physical device) with a non-empty workout log and measure the time from process start to the first frame of HomeView being visible and interactive. The <code>SeedStore.isLoaded</code> gate must open within this window.
+        </div>
+        <div class="test-pass-criteria">Pass: HomeView is visible and the tab bar is interactive within 3 seconds of cold launch. The loading gate does not block the UI for more than 3 seconds. Measured on a simulator with a 50+ entry log, not an empty store.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-045" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-046" data-status="todo" data-cat="smoke">
+      <div class="test-id">QA-046</div>
+      <div class="test-body">
+        <div class="test-title">Start workout, log one set, complete workout — full critical path under 2 minutes</div>
+        <div class="test-detail">
+          A QA tester who knows the app must be able to navigate to the Workout tab, start a new session, select an exercise, log a single set with weight and reps, and complete the session — all within 2 minutes of starting the task. This smoke test is a proxy for critical-path friction, not just crash absence.
+        </div>
+        <div class="test-pass-criteria">Pass: Full path completed in under 2 minutes by a tester familiar with the app. No navigational dead end encountered. Session appears in workout history immediately after completion.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-046" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-047" data-status="todo" data-cat="smoke">
+      <div class="test-id">QA-047</div>
+      <div class="test-body">
+        <div class="test-title">No crash on cold launch with fresh install and no prior data</div>
+        <div class="test-detail">
+          Delete the app, reinstall from scratch, and launch. Verify that the app reaches a usable state (HomeView or onboarding) without any crash, hang, or blank screen. The empty-data state must be handled everywhere: no nil-dereference from empty <code>workoutLog</code>, <code>exercises</code>, or <code>routines</code>.
+        </div>
+        <div class="test-pass-criteria">Pass: App launches to a usable screen without crash. No force-unwrap failure from empty collections. Onboarding or HomeView is visible within 3 seconds. Tab bar is interactive.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-047" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-048" data-status="todo" data-cat="smoke">
+      <div class="test-id">QA-048</div>
+      <div class="test-body">
+        <div class="test-title">xcodebuild completes with 0 errors and 0 warnings on main branch</div>
+        <div class="test-detail">
+          Run <code>xcodebuild -scheme workout -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build</code> on the latest commit of the main branch. The build output must contain "BUILD SUCCEEDED" and zero error or warning lines. This must be verified before tagging any release candidate.
+        </div>
+        <div class="test-pass-criteria">Pass: <code>xcodebuild</code> exits with code 0. "BUILD SUCCEEDED" present in output. Zero lines matching <code>error:</code> or <code>warning:</code> in the build log. Verified on clean checkout of main, not a developer's local branch.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-048" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-049" data-status="todo" data-cat="smoke">
+      <div class="test-id">QA-049</div>
+      <div class="test-body">
+        <div class="test-title">All tab icons visible and tappable immediately after launch</div>
+        <div class="test-detail">
+          Immediately after the app reaches the visible HomeView state, all 5 tab bar items (Home, Workout, Progress, Insights, Trainer) must be visible with their correct icons and labels, and must respond to taps without delay. No tab must be in a disabled or loading state that prevents navigation.
+        </div>
+        <div class="test-pass-criteria">Pass: All 5 tab icons visible within 1 second of HomeView appearing. All tabs respond to tap immediately. No tab requires a wait before navigation. Tab labels match expected strings.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-049" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-050" data-status="todo" data-cat="smoke">
+      <div class="test-id">QA-050</div>
+      <div class="test-body">
+        <div class="test-title">SeedStore.isLoaded fires within 5 seconds on a device with a 500-entry log</div>
+        <div class="test-detail">
+          Seed the persistence layer with 500 <code>WorkoutLogEntry</code> records (approximately 2 years of data) and cold-launch the app on a physical device or high-fidelity simulator. <code>SeedStore.isLoaded</code> must transition to <code>true</code> within 5 seconds of launch, unblocking the ContentView render.
+        </div>
+        <div class="test-pass-criteria">Pass: <code>isLoaded</code> becomes true within 5 seconds with a 500-entry log. The UI becomes interactive within this window. Background init time is measured from app launch, not from first view appearance.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-050" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+  </div>
+</div><!-- /cat-smoke -->
+
+<!-- ── Category 7: UAT ── -->
+<div class="category-block" id="cat-uat">
+  <div class="category-header" onclick="toggleCategory('cat-uat')">
+    <span class="category-title">7. UAT — User Acceptance Testing</span>
+    <span class="category-count" id="count-uat">6 tests &middot; QA-051–QA-056</span>
+    <span class="category-progress" id="prog-uat">0/6</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case" data-id="QA-051" data-status="todo" data-cat="uat">
+      <div class="test-id">QA-051</div>
+      <div class="test-body">
+        <div class="test-title">U-01 (power user) completes a full training week without confusion or friction</div>
+        <div class="test-detail">
+          A power user (U-01 cohort: trains 4–5x/week, tracks weight and reps precisely, uses routines) must be able to log 5 full workout sessions across 7 days, review their progress on the Progress tab, and check their strength scores on StrengthLabView — all without needing external instruction or hitting a dead end.
+        </div>
+        <div class="test-pass-criteria">Pass: U-01 tester completes all 5 sessions without confusion. No feature they expect is hidden or absent. Progress and strength data are meaningful and accurate. No session is lost or corrupted during the week. Tester rates experience as frictionless.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-051" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-052" data-status="todo" data-cat="uat">
+      <div class="test-id">QA-052</div>
+      <div class="test-body">
+        <div class="test-title">U-02 (new user) understands what to do on HomeView within 30 seconds, no instruction</div>
+        <div class="test-detail">
+          A new user (U-02 cohort: first fitness app, no prior workout tracking experience) must independently identify the primary action on HomeView within 30 seconds of first seeing it, without verbal instruction or a tutorial. The readiness score, today's hints, and the workout start path must be self-evident from the UI alone.
+        </div>
+        <div class="test-pass-criteria">Pass: U-02 tester identifies the correct primary action (start workout or follow today's hint) within 30 seconds. Tester does not ask "what does this number mean?" about the readiness score without reading any supporting label. Observed, not self-reported.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-052" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-053" data-status="todo" data-cat="uat">
+      <div class="test-id">QA-053</div>
+      <div class="test-body">
+        <div class="test-title">U-03 (lapsed user, 30 days off) sees comeback message that does not feel shaming</div>
+        <div class="test-detail">
+          A lapsed user (U-03 cohort: previously active, 30-day gap) must see a coaching message on HomeView that acknowledges the gap without shame or guilt framing. The message must be actionable and forward-looking. The readiness score at 30 days off must reflect reduced confidence but not be catastrophically low in a way that discourages return.
+        </div>
+        <div class="test-pass-criteria">Pass: Coaching note for 30-day lapse uses forward-looking language. U-03 tester does not describe the message as shaming, guilt-inducing, or discouraging. Readiness score is below 100 but above 30. Message is distinct from the zero-data empty state.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-053" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-054" data-status="todo" data-cat="uat">
+      <div class="test-id">QA-054</div>
+      <div class="test-body">
+        <div class="test-title">U-04 (cardio-only user) finds cardio logging and progress without hitting dead ends</div>
+        <div class="test-detail">
+          A cardio-only user (U-04 cohort: runs, bikes, or does circuit training only — no barbell lifting) must be able to log a cardio session, complete it, and find their cardio history in the Progress tab without being routed into strength-only flows. The cardio path must not dead-end into a strength exercise picker or an empty StrengthLabView.
+        </div>
+        <div class="test-pass-criteria">Pass: U-04 tester finds cardio logging without assistance. Cardio session appears in history after completion. No dead-end strength screen blocks the cardio flow. StrengthLabView shows an appropriate empty or cardio-only state for this cohort.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-054" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-055" data-status="todo" data-cat="uat">
+      <div class="test-id">QA-055</div>
+      <div class="test-body">
+        <div class="test-title">UAT tester correctly interprets amber vs green colour semantics without explanation</div>
+        <div class="test-detail">
+          Show a UAT tester HomeView and StrengthLabView side-by-side with a mix of amber and green indicators. Ask them to explain what amber means versus green. The answer should map to the design system semantics: amber = attention/warning/in-progress, green = complete/good/positive. No explanation of the colour system should be given before the test.
+        </div>
+        <div class="test-pass-criteria">Pass: Tester correctly identifies amber as a cautionary or attention signal and green as a positive or complete signal without prior instruction. Tester does not confuse the two or interpret amber as purely negative (failure state).</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-055" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+    <div class="test-case" data-id="QA-056" data-status="todo" data-cat="uat">
+      <div class="test-id">QA-056</div>
+      <div class="test-body">
+        <div class="test-title">UAT tester finds Settings without a visible tab (post-NAV-001 gear icon in HomeView toolbar)</div>
+        <div class="test-detail">
+          Following NAV-001, Settings was moved out of the tab bar and into a gear icon in the HomeView toolbar. A UAT tester who has not been told about this change must be able to find Settings within 60 seconds of being asked to do so, without verbal guidance. The gear icon placement must be discoverable.
+        </div>
+        <div class="test-pass-criteria">Pass: Tester finds Settings within 60 seconds without guidance. Tester does not search the tab bar for a Settings tab. The gear icon is visible on HomeView without scrolling. Tapped gear icon opens SettingsView without error.</div>
+      </div>
+      <select class="status-chip chip-todo" data-id="QA-056" onchange="updateStatus(this)">
+        <option value="todo" selected>TODO</option>
+        <option value="pass">PASS</option>
+        <option value="fail">FAIL</option>
+        <option value="blocked">BLOCKED</option>
+        <option value="skip">SKIP</option>
+      </select>
+    </div>
+
+  </div>
+</div><!-- /cat-uat -->
+
+<div class="separator"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION 2 — PRE-RELEASE QA GATES
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="section-heading">Section 2 — Pre-Release QA Gates</div>
+
+<div class="gate-card">
+  <div class="tier-label tier-p1">P1 — Must pass before any release</div>
+  <ul class="gate-list">
+    <li class="gate-item">
+      <span class="gate-num">G-1</span>
+      <div>
+        <div>Zero crash rate across the full smoke suite (QA-045–QA-050)</div>
+        <div class="gate-desc">Any crash in the smoke path is an immediate release blocker regardless of severity classification. Crashes in non-smoke paths are P1 if reproducible, P2 if flaky.</div>
+      </div>
+    </li>
+    <li class="gate-item">
+      <span class="gate-num">G-2</span>
+      <div>
+        <div>All unit tests pass via <code>xcodebuild test</code> — zero failures, zero skipped due to environment issues</div>
+        <div class="gate-desc">QA-001 through QA-008 must all report pass. Test failures that are "expected" or "known" are not acceptable for release; they must be fixed or the feature must be reverted.</div>
+      </div>
+    </li>
+    <li class="gate-item">
+      <span class="gate-num">G-3</span>
+      <div>
+        <div>All P1 regression items green (QA-039, QA-040, QA-041, QA-043, QA-044)</div>
+        <div class="gate-desc">Regression tests that guard previously shipped fixes must be re-run on every release candidate. A regression in any of these items reverts the release until the fix is confirmed stable.</div>
+      </div>
+    </li>
+    <li class="gate-item">
+      <span class="gate-num">G-4</span>
+      <div>
+        <div>UAT sign-off from at least 2 distinct user cohorts (U-01 and one of U-02/U-03/U-04)</div>
+        <div class="gate-desc">Sign-off requires both cohorts to have completed their respective UAT scenarios without encountering a P1 issue. Written sign-off (email or UAT_INBOX.md entry) is required — verbal sign-off does not count.</div>
+      </div>
+    </li>
+    <li class="gate-item">
+      <span class="gate-num">G-5</span>
+      <div>
+        <div>No data loss in persistence round-trip tests (QA-028) — all fields survive encode/decode cycle</div>
+        <div class="gate-desc">Any field loss in the persistence layer is treated as P0 regardless of the field's apparent importance. Silent field loss is the most dangerous failure mode because it may not be immediately noticed by the user.</div>
+      </div>
+    </li>
+    <li class="gate-item">
+      <span class="gate-num">G-6</span>
+      <div>
+        <div>Performance: launch-to-usable under 3 seconds (QA-045); <code>refreshAnalytics()</code> under 200 ms on a 500-entry log (QA-050)</div>
+        <div class="gate-desc">Both thresholds are measured on the target device class (iPhone 15 or equivalent). Performance regressions of more than 20% relative to the last passing release are treated as P2 blockers and must be investigated before shipping.</div>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<div class="separator"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION 3 — DEFINITION OF DONE FOR QA
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="section-heading">Section 3 — Definition of Done for QA</div>
+
+<div class="done-card">
+  <h3>A release is QA-complete when all of the following are true</h3>
+  <ul class="done-list">
+    <li>
+      <span class="done-bullet">1.</span>
+      <span>All 56 test cases in Section 1 have a status of PASS or SKIP. No test case may be left in TODO, FAIL, or BLOCKED state at release time. SKIP requires a written justification recorded in the QA run notes (e.g., "feature not included in this release scope").</span>
+    </li>
+    <li>
+      <span class="done-bullet">2.</span>
+      <span>All 6 pre-release gates in Section 2 are confirmed passing. Gate confirmation must be signed off by the QA lead with a timestamp. Self-certification by the engineer who wrote the code is not acceptable for G-2 through G-5.</span>
+    </li>
+    <li>
+      <span class="done-bullet">3.</span>
+      <span><code>xcodebuild -scheme workout -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build</code> exits with code 0 and "BUILD SUCCEEDED" on the exact commit SHA being submitted for release. The build must not include any uncommitted changes.</span>
+    </li>
+    <li>
+      <span class="done-bullet">4.</span>
+      <span>The UAT inbox (<code>docs/UAT_INBOX.md</code>) has been reviewed and all unresolved UAT notes older than 7 days have been triaged: either resolved, converted to a backlog item, or explicitly deferred with a reason. No UAT note may remain "unreviewed" at release.</span>
+    </li>
+    <li>
+      <span class="done-bullet">5.</span>
+      <span>The <code>phrase_bank.json</code> key audit (QA-026) has been run against the current engine source and confirmed clean. This audit must be re-run whenever <code>WorkoutNarrativeEngine.swift</code> or <code>phrase_bank.json</code> is modified, not just at release time.</span>
+    </li>
+    <li>
+      <span class="done-bullet">6.</span>
+      <span>Regression tests QA-039 through QA-044 have been run on the release candidate build and all returned PASS. Results must be logged with the build number and run date. "It passed last time" does not substitute for a current run.</span>
+    </li>
+    <li>
+      <span class="done-bullet">7.</span>
+      <span>The QA run is documented: test case statuses are saved (this page's localStorage state or an exported snapshot), the run date, tester name, build number, and simulator/device configuration are recorded alongside the results.</span>
+    </li>
+  </ul>
+</div>
+
+<div class="separator"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION 4 — QA TRIAGE PROMPT FOR LLM
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="section-heading">Section 4 — QA Triage Prompt for LLM</div>
+
+<div class="llm-card">
+  <div class="llm-card-label">Parametric Bug Triage Prompt</div>
+  <div class="llm-card-desc">
+    Paste the following prompt into Claude or another LLM, replacing <code>[BUG REPORT]</code> with the raw bug description. The model will return: severity classification, affected architectural layer, reproduction steps, likely root cause, and suggested fix owner. This prompt is calibrated for the H.O.N. architecture — do not use a generic bug triage prompt.
+  </div>
+  <div class="llm-prompt-block"><span class="llm-section-label">SYSTEM CONTEXT</span>
+You are a QA triage assistant for H.O.N. (Habit Over Numbers), an iOS SwiftUI fitness coaching app.
+
+Architecture summary:
+- Single @Observable store: SeedStore. All persistent state lives here.
+- Key models: Exercise (static, UUID-stable), SetRecord (weight/reps/rpe/toFailure/dropSet fields), WorkoutLogEntry, WorkoutExercise, WorkoutTemplate.
+- Engines: ReadinessEngine, StrengthAnalyticsEngine, WorkoutNarrativeEngine, WorkoutPlanEngine, StrengthScoreEngine, CompositeStrengthEngine.
+- Three performance caches rebuilt by refreshAnalytics() on a background thread: lastPerformanceCache, exerciseHistoryCache, homeCache.
+- refreshAnalytics() uses a UUID token pattern — only the last in-flight result is applied.
+- SeedStore.isLoaded gates ContentView rendering; no UI until background init completes.
+- phrase_bank.json is loaded at runtime; key mismatches cause silent fallback, not crashes.
+- 5 tabs: Home (0), Workout (2), Progress (3), StrengthLab (4), Trainer (1). Settings is accessed via gear icon on HomeView toolbar (NAV-001).
+
+Severity definitions:
+- P0: Data loss, app crash on critical path, or release blocker.
+- P1: Incorrect data displayed, broken feature on primary path, regression in a previously fixed issue.
+- P2: Degraded UX, minor incorrect data, non-critical feature broken.
+- P3: Cosmetic, edge case, low-impact.
+
+Affected layer taxonomy:
+- Persistence: SeedStore encode/decode, disk read/write.
+- Cache: lastPerformanceCache, exerciseHistoryCache, homeCache, refreshAnalytics token.
+- Engine: Any of the 6 named engines.
+- View: SwiftUI rendering, layout, navigation, tab switching.
+- Model: SetRecord, WorkoutLogEntry, WorkoutExercise, Exercise, WorkoutTemplate.
+- Narrative: WorkoutNarrativeEngine, phrase_bank.json, pick() rotation.
+- Integration: Cross-layer data flow (e.g., engine reads stale cache, view reads wrong store property).
+
+<span class="llm-section-label">BUG REPORT</span>
+<span class="llm-placeholder">[BUG REPORT]</span>
+
+<span class="llm-section-label">REQUIRED OUTPUT — answer each section in order</span>
+
+1. SEVERITY
+   Classify as P0 / P1 / P2 / P3. State the single most important reason for the classification.
+
+2. AFFECTED LAYER
+   Pick one primary layer from the taxonomy above. If a second layer is implicated, name it as secondary.
+
+3. REPRODUCTION STEPS
+   Write the minimal numbered reproduction path. If the report lacks enough detail, state exactly what information is missing and stop — do not guess.
+
+4. LIKELY ROOT CAUSE
+   Name the most probable code location (file, function, or data path) based on the architecture summary. If two causes are plausible, rank them and explain the distinguishing test.
+
+5. SUGGESTED FIX OWNER
+   Choose one: Engine author, Persistence layer, View layer, QA (cannot reproduce — needs more info), or Product (expected behaviour disagreement). Briefly justify.
+</div>
+</div>
+
+<script>
+const STORAGE_KEY = 'hon_qa_review_status';
+
+const CAT_TOTALS = {
+  unit: 8, functional: 12, integration: 10,
+  system: 8, regression: 6, smoke: 6, uat: 6
+};
+
+function loadStatuses() {
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  document.querySelectorAll('.test-case').forEach(tc => {
+    const id = tc.dataset.id;
+    if (saved[id]) {
+      const sel = tc.querySelector('.status-chip');
+      sel.value = saved[id];
+      applyStatus(tc, sel, saved[id]);
+    }
+  });
+  updateStats();
+  updateCategoryBadges();
+}
+
+function updateStatus(selectEl) {
+  const tc = selectEl.closest('.test-case');
+  const id = tc.dataset.id;
+  const status = selectEl.value;
+  applyStatus(tc, selectEl, status);
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  saved[id] = status;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+  updateStats();
+  updateCategoryBadges();
+}
+
+function applyStatus(tc, sel, status) {
+  tc.dataset.status = status;
+  sel.className = 'status-chip chip-' + status;
+}
+
+function updateStats() {
+  const all = document.querySelectorAll('.test-case');
+  let todo = 0, pass = 0, fail = 0, blocked = 0, skip = 0;
+  all.forEach(tc => {
+    switch (tc.dataset.status) {
+      case 'todo':    todo++;    break;
+      case 'pass':    pass++;    break;
+      case 'fail':    fail++;    break;
+      case 'blocked': blocked++; break;
+      case 'skip':    skip++;    break;
+    }
+  });
+  const total = all.length;
+  const done = pass + skip;
+  const pct = total > 0 ? Math.round((pass / total) * 100) : 0;
+
+  document.getElementById('stat-total').textContent   = total + ' total';
+  document.getElementById('stat-done').textContent    = pass + ' pass';
+  document.getElementById('stat-fail').textContent    = fail + ' fail';
+  document.getElementById('stat-blocked').textContent = blocked + ' blocked';
+  document.getElementById('stat-todo').textContent    = todo + ' todo';
+
+  document.getElementById('progress-pct').textContent = pct + '%';
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+function updateCategoryBadges() {
+  const cats = ['unit','functional','integration','system','regression','smoke','uat'];
+  cats.forEach(cat => {
+    const items = document.querySelectorAll('.test-case[data-cat="' + cat + '"]');
+    let passed = 0;
+    items.forEach(tc => { if (tc.dataset.status === 'pass') passed++; });
+    const el = document.getElementById('prog-' + cat);
+    if (el) el.textContent = passed + '/' + items.length;
+  });
+}
+
+function filterTests(status, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.test-case').forEach(tc => {
+    if (status === 'all') {
+      tc.style.display = '';
+    } else if (status === 'flagged') {
+      tc.style.display = (tc.dataset.status === 'fail' || tc.dataset.status === 'blocked') ? '' : 'none';
+    } else {
+      tc.style.display = tc.dataset.status === status ? '' : 'none';
+    }
+  });
+}
+
+function toggleCategory(id) {
+  document.getElementById(id).classList.toggle('collapsed');
+}
+
+loadStatuses();
+</script>
+</body>
+</html>
