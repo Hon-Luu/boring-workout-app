@@ -1,0 +1,1743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H.O.N. — Growth Simulation Protocol</title>
+<style>
+  :root {
+    --bg:       #111111;
+    --card:     #1c1c1e;
+    --border:   rgba(255,255,255,0.07);
+    --amber:    #f59e0b;
+    --positive: #34d399;
+    --negative: #f87171;
+    --warning:  #fbbf24;
+    --muted:    rgba(255,255,255,0.4);
+    --text:     rgba(255,255,255,0.88);
+    --text2:    rgba(255,255,255,0.55);
+    --blue:     #60a5fa;
+    --purple:   #a78bfa;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 32px 20px 64px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .header { margin-bottom: 36px; }
+  .header-top {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .logo {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber);
+  }
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--amber), transparent);
+    opacity: 0.3;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    color: var(--text);
+  }
+  .subtitle {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+
+  .section-heading {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin: 32px 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-heading::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .intro-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 28px;
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.7;
+    border-left: 3px solid var(--amber);
+  }
+
+  /* Filter bar */
+  .filter-bar {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .filter-btn {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .filter-btn:hover {
+    background: rgba(255,255,255,0.05);
+    color: var(--text);
+  }
+  .filter-btn.active {
+    background: rgba(245,158,11,0.15);
+    color: var(--amber);
+    border-color: rgba(245,158,11,0.35);
+  }
+  .filter-btn.active-aso {
+    background: rgba(96,165,250,0.15);
+    color: var(--blue);
+    border-color: rgba(96,165,250,0.35);
+  }
+  .filter-btn.active-notif {
+    background: rgba(167,139,250,0.15);
+    color: var(--purple);
+    border-color: rgba(167,139,250,0.35);
+  }
+  .filter-btn.active-wom {
+    background: rgba(52,211,153,0.15);
+    color: var(--positive);
+    border-color: rgba(52,211,153,0.35);
+  }
+  .filter-btn.active-retention {
+    background: rgba(251,191,36,0.15);
+    color: var(--warning);
+    border-color: rgba(251,191,36,0.35);
+  }
+  .filter-btn.active-paywall {
+    background: rgba(248,113,113,0.15);
+    color: var(--negative);
+    border-color: rgba(248,113,113,0.35);
+  }
+
+  /* Scenario cards */
+  .scenario {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 14px;
+    transition: border-color 0.2s, opacity 0.2s;
+  }
+  .scenario:hover { border-color: rgba(255,255,255,0.14); }
+  .scenario.hidden { display: none; }
+
+  .scenario-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .scenario-id {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    letter-spacing: 0.08em;
+    color: var(--amber);
+    background: rgba(245,158,11,0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .scenario-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+    flex: 1;
+  }
+
+  .badge-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+
+  .badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .badge-time     { background: rgba(96,165,250,0.15);  color: var(--blue); }
+  .badge-amber    { background: rgba(245,158,11,0.15);  color: var(--amber); }
+  .badge-green    { background: rgba(52,211,153,0.15);  color: var(--positive); }
+  .badge-purple   { background: rgba(167,139,250,0.15); color: var(--purple); }
+  .badge-red      { background: rgba(248,113,113,0.15); color: var(--negative); }
+  .badge-warning  { background: rgba(251,191,36,0.15);  color: var(--warning); }
+  .badge-high     { background: rgba(245,158,11,0.22);  color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
+
+  .scenario-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 20px;
+    margin-bottom: 12px;
+  }
+  @media (max-width: 600px) {
+    .scenario-grid { grid-template-columns: 1fr; }
+  }
+
+  .field-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 3px;
+  }
+  .field-value {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+
+  .field-full { grid-column: 1 / -1; }
+
+  .step-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 4px;
+    counter-reset: steps;
+  }
+  .step-list li {
+    font-size: 13px;
+    color: var(--text2);
+    padding: 4px 0 4px 28px;
+    position: relative;
+    line-height: 1.5;
+    counter-increment: steps;
+  }
+  .step-list li::before {
+    content: counter(steps);
+    position: absolute;
+    left: 0;
+    top: 4px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(245,158,11,0.15);
+    color: var(--amber);
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'SF Mono', monospace;
+  }
+
+  .criteria-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  @media (max-width: 600px) {
+    .criteria-grid { grid-template-columns: 1fr; }
+  }
+
+  .criteria-box {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .criteria-pass {
+    background: rgba(52,211,153,0.06);
+    border: 1px solid rgba(52,211,153,0.15);
+    color: var(--positive);
+  }
+  .criteria-fail {
+    background: rgba(248,113,113,0.06);
+    border: 1px solid rgba(248,113,113,0.15);
+    color: var(--negative);
+  }
+  .criteria-box .criteria-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    opacity: 0.8;
+  }
+
+  .uid-list {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+  .uid-chip {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(245,158,11,0.1);
+    color: var(--amber);
+    letter-spacing: 0.06em;
+  }
+  .uid-chip.secondary {
+    background: rgba(255,255,255,0.06);
+    color: var(--text2);
+  }
+
+  /* Matrix */
+  .matrix-wrapper {
+    overflow-x: auto;
+    margin: 0 -4px;
+    padding: 0 4px;
+    border-radius: 10px;
+  }
+  .matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    min-width: 780px;
+  }
+  .matrix-table th {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text2);
+    padding: 8px 4px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    background: var(--card);
+  }
+  .matrix-table th.row-header {
+    text-align: left;
+    padding-left: 10px;
+    min-width: 100px;
+  }
+  .matrix-table td {
+    padding: 6px 4px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 10px;
+  }
+  .matrix-table td.row-header {
+    text-align: left;
+    padding-left: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    font-family: 'SF Mono', monospace;
+    color: var(--amber);
+    white-space: nowrap;
+  }
+  .matrix-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .cell-high {
+    background: rgba(245,158,11,0.2);
+    color: var(--amber);
+    border-radius: 3px;
+    font-weight: 700;
+    font-size: 9px;
+  }
+  .cell-low {
+    color: rgba(255,255,255,0.18);
+    font-size: 9px;
+  }
+  .cell-empty { color: transparent; }
+
+  /* Results template */
+  .template-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    margin-top: 16px;
+  }
+  .template-field {
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .template-field:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+  .template-field-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 6px;
+  }
+  .template-field-placeholder {
+    font-size: 13px;
+    color: rgba(255,255,255,0.22);
+    font-style: italic;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px dashed rgba(255,255,255,0.1);
+    border-radius: 6px;
+    line-height: 1.5;
+  }
+  .template-field-options {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+  .template-option {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    color: var(--text2);
+    cursor: default;
+  }
+  .template-option.pass  { border-color: rgba(52,211,153,0.3);  color: var(--positive); background: rgba(52,211,153,0.06); }
+  .template-option.fail  { border-color: rgba(248,113,113,0.3); color: var(--negative); background: rgba(248,113,113,0.06); }
+  .template-option.part  { border-color: rgba(251,191,36,0.3);  color: var(--warning);  background: rgba(251,191,36,0.06); }
+
+  /* LLM prompt card */
+  .prompt-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--purple);
+    border-radius: 14px;
+    padding: 24px;
+    margin-top: 16px;
+  }
+  .prompt-card .prompt-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--purple);
+    letter-spacing: 0.04em;
+    margin-bottom: 14px;
+  }
+  .prompt-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  @media (max-width: 600px) {
+    .prompt-inputs { grid-template-columns: 1fr; }
+  }
+  .prompt-input-block {
+    background: rgba(167,139,250,0.06);
+    border: 1px dashed rgba(167,139,250,0.2);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .prompt-input-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin-bottom: 4px;
+    opacity: 0.85;
+  }
+  .prompt-input-placeholder {
+    font-size: 12px;
+    color: rgba(255,255,255,0.22);
+    font-style: italic;
+    line-height: 1.4;
+  }
+  .prompt-output-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  @media (max-width: 600px) {
+    .prompt-output-grid { grid-template-columns: 1fr; }
+  }
+  .prompt-output-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .prompt-output-key {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--purple);
+    opacity: 0.8;
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding-top: 1px;
+    min-width: 120px;
+  }
+  .prompt-output-val {
+    font-size: 12px;
+    color: rgba(255,255,255,0.22);
+    font-style: italic;
+    line-height: 1.4;
+  }
+  .prompt-output-risk {
+    grid-column: 1 / -1;
+  }
+  .prompt-note {
+    font-size: 11px;
+    color: var(--text2);
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: rgba(167,139,250,0.06);
+    border-radius: 8px;
+    line-height: 1.5;
+  }
+
+  .separator {
+    height: 1px;
+    background: var(--border);
+    margin: 28px 0;
+  }
+
+  .inline-note {
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 20px 14px 48px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <span class="logo">H.O.N.</span>
+    <div class="divider-line"></div>
+  </div>
+  <h1>Growth Simulation Protocol</h1>
+  <div class="subtitle">15 growth scenarios &middot; Channel priority matrix &middot; Observation template &middot; LLM growth pre-triage &middot; Last updated: 2026-05-30</div>
+</div>
+
+<!-- ── Section 1: How to Run ── -->
+<div class="section-heading">Section 1 &mdash; How to Run</div>
+<div class="intro-card">
+  Growth simulations measure how well H.O.N. acquires, converts, and retains users through its natural product mechanics and store presence &mdash; not paid advertising. Each scenario places a tester in the shoes of a potential or existing user at a specific growth-critical moment: discovery, first impression, conversion decision, referral impulse, or re-engagement. The observer records what drives or blocks the desired behavior. Results feed directly into ASO copy, notification strategy, lifecycle triggers, and referral mechanics. High-priority runs (marked <strong style="color:var(--amber)">H</strong> in the matrix) should be completed before App Store submission.
+</div>
+
+<!-- ── Section 2: Scenarios ── -->
+<div class="section-heading">Section 2 &mdash; 15 Growth Scenarios</div>
+
+<div class="filter-bar">
+  <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">All (15)</button>
+  <button class="filter-btn" data-filter="aso" onclick="setFilter('aso', this)">ASO</button>
+  <button class="filter-btn" data-filter="notification" onclick="setFilter('notification', this)">Notifications</button>
+  <button class="filter-btn" data-filter="wom" onclick="setFilter('wom', this)">Word of Mouth</button>
+  <button class="filter-btn" data-filter="retention" onclick="setFilter('retention', this)">Retention</button>
+  <button class="filter-btn" data-filter="paywall" onclick="setFilter('paywall', this)">Paywall</button>
+</div>
+
+<!-- GSIM-01 -->
+<div class="scenario" data-channels="aso">
+  <div class="scenario-header">
+    <div class="scenario-id">GSIM-01</div>
+    <div class="scenario-title">App Store First Impression &mdash; 8-Second Test</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">5 min</span>
+    <span class="badge badge-amber">Trigger: App Store listing page</span>
+    <span class="badge badge-blue" style="background:rgba(96,165,250,0.15);color:var(--blue)">ASO Conversion</span>
+    <span class="badge badge-high">High Priority</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">In 8 seconds, does an unfamiliar person understand what H.O.N. is and want to download it?</div>
+    </div>
+    <div>
+      <div class="field-label">Priority Cohort</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-06</span>
+        <span class="uid-chip">U-13</span>
+        <span class="uid-chip">U-17</span>
+      </div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Open the App Store listing. Show it to a persona unfamiliar with H.O.N. for exactly 8 seconds, then close it.</li>
+        <li>Ask: "What is this app?"</li>
+        <li>Ask: "Who is it for?"</li>
+        <li>Ask: "Would you download it? Why or why not?"</li>
+        <li>Show it again for 30 seconds. Ask: "What would make you more likely to download?"</li>
+        <li>Note: did they read the title, subtitle, screenshots, or description first?</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Pass / Fail Criteria</div>
+      <div class="criteria-grid">
+        <div class="criteria-box criteria-pass">
+          <div class="criteria-label">Pass</div>
+          Person correctly describes H.O.N.'s core purpose and target user. At least half say they'd consider downloading.
+        </div>
+        <div class="criteria-box criteria-fail">
+          <div class="criteria-label">Fail</div>
+          Person is confused about what the app is, or says "another workout app."
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GSIM-02 -->
+<div class="scenario" data-channels="retention">
+  <div class="scenario-header">
+    <div class="scenario-id">GSIM-02</div>
+    <div class="scenario-title">Onboarding Speed Run</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">8 min</span>
+    <span class="badge badge-amber">Trigger: Fresh install</span>
+    <span class="badge badge-green">Time to First Value</span>
+    <span class="badge badge-high">High Priority</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">How long from install to first logged set? Where does momentum slow?</div>
+    </div>
+    <div>
+      <div class="field-label">Priority Cohort</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-13</span>
+        <span class="uid-chip">U-06</span>
+        <span class="uid-chip">U-17</span>
+      </div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Fresh install. Start timer.</li>
+        <li>Persona completes onboarding and logs their first set &mdash; with no coaching from observer.</li>
+        <li>Stop timer when first set is logged.</li>
+        <li>Ask: "Was there any step that felt unnecessary or confusing?"</li>
+        <li>Ask: "At any point did you want to give up?"</li>
+        <li>Note exact point where persona hesitated &gt;5 seconds.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Pass / Fail Criteria</div>
+      <div class="criteria-grid">
+        <div class="criteria-box criteria-pass">
+          <div class="criteria-label">Pass</div>
+          First set logged in &le;3 minutes. No step caused a hesitation &gt;10 seconds.
+        </div>
+        <div class="criteria-box criteria-fail">
+          <div class="criteria-label">Fail</div>
+          &gt;3 minutes, or persona expresses desire to quit at any point.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GSIM-03 -->
+<div class="scenario" data-channels="retention">
+  <div class="scenario-header">
+    <div class="scenario-id">GSIM-03</div>
+    <div class="scenario-title">HealthKit Permission Timing Reception</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">5 min</span>
+    <span class="badge badge-amber">Trigger: First launch — HealthKit permission</span>
+    <span class="badge badge-purple">Permission Opt-in Rate</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Does the timing of the HealthKit request feel earned or premature? Would the persona grant or deny?</div>
+    </div>
+    <div>
+      <div class="field-label">Priority Cohort</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-06</span>
+        <span class="uid-chip">U-13</span>
+        <span class="uid-chip">U-15</span>
+      </div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Fresh install. Navigate to the point where HealthKit permission appears.</li>
+        <li>Ask persona: "Before you answer &mdash; does this feel like the right moment to ask?"</li>
+        <li>Ask: "Do you understand what data this app will access?"</li>
+        <li>Ask: "Would you grant or deny, and why?"</li>
+        <li>Note: if permission was asked before any value was shown, record this as a timing failure.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Pass / Fail Criteria</div>
+      <div class="criteria-grid">
+        <div class="criteria-box criteria-pass">
+          <div class="criteria-label">Pass</div>
+          Persona grants permission. They feel the timing was logical (value was shown first).
+        </div>
+        <div class="criteria-box criteria-fail">
+          <div class="criteria-label">Fail</div>
+          Persona denies because "the app hasn't earned it yet" or they don't understand what data is accessed.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GSIM-04 -->
+<div class="scenario" data-channels="notification">
+  <div class="scenario-header">
+    <div class="scenario-id">GSIM-04</div>
+    <div class="scenario-title">Day-1 Re-engagement Notification</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">5 min</span>
+    <span class="badge badge-amber">Trigger: 20 hours post-install, no return</span>
+    <span class="badge badge-purple">D1 Re-engagement Rate</span>
+    <span class="badge badge-high">High Priority</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Would the persona tap the notification? Does it feel relevant to them specifically?</div>
+    </div>
+    <div>
+      <div class="field-label">Priority Cohort</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-13</span>
+        <span class="uid-chip">U-17</span>
+        <span class="uid-chip">U-15</span>
+      </div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Read the notification text aloud (or show it as a mock lock screen banner).</li>
+        <li>Ask: "Would you tap this? Why or why not?"</li>
+        <li>Ask: "Does this feel like it knows something about you, or is it generic?"</li>
+        <li>Ask: "Would you turn off notifications for this app after seeing this?"</li>
+        <li>Note: does the notification reference the user's goal or equipment?</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Pass / Fail Criteria</div>
+      <div class="criteria-grid">
+        <div class="criteria-box criteria-pass">
+          <div class="criteria-label">Pass</div>
+          Persona says they'd tap. Notification references their specific goal or context.
+        </div>
+        <div class="criteria-box criteria-fail">
+          <div class="criteria-label">Fail</div>
+          Persona says "I'd ignore this" or "I'd turn off notifications." Notification is generic ("Time to work out!").
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GSIM-05 -->
+<div class="scenario" data-channels="wom">
+  <div class="scenario-header">
+    <div class="scenario-id">GSIM-05</div>
+    <div class="scenario-title">Shareable PR Moment</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">8 min</span>
+    <span class="badge badge-amber">Trigger: Set that beats all-time e1RM</span>
+    <span class="badge badge-green">Word-of-Mouth Trigger</span>
+    <span class="badge badge-high">High Priority</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Is the PR visual state compelling enough that the persona would share it? Does the screenshot communicate the achievement to someone who doesn't use H.O.N.?</div>
+    </div>
+    <div>
+      <div class="field-label">Priority Cohort</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-01</span>
+        <span class="uid-chip">U-20</span>
+        <span class="uid-chip">U-09</span>
+        <span class="uid-chip">U-05</span>
+      </div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Seed exercise history. Persona logs the PR-triggering set.</li>
+        <li>Observe facial/body reaction to the PR treatment.</li>
+        <li>Ask: "Would you take a screenshot of this and share it?"</li>
+        <li>If yes: "Who would you send it to? What would you say?"</li>
+        <li>Show the PR screenshot to a third party (not the persona). Ask the third party: "What happened here?"</li>
+        <li>Note: does the third party understand it's a personal record without explanation?</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Pass / Fail Criteria</div>
+      <div class="criteria-grid">
+        <div class="criteria-box criteria-pass">
+          <div class="criteria-label">Pass</div>
+          Persona would share. Third party correctly identifies it as a PR without explanation.
+        </div>
+        <div class="criteria-box criteria-fail">
+          <div class="criteria-label">Fail</div>
+          Persona says "share what?" UI doesn't communicate the achievement clearly enough to share.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GSIM-06 -->
+<div class="scenario" data-channels="wom retention">
+  <div class="scenario-header">
+    <div class="scenario-id">GSIM-06</div>
+    <div class="scenario-title">Session 10 Milestone Reception</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">8 min</span>
+    <span class="badge badge-amber">Trigger: Persona completes session 10</span>
+    <span class="badge badge-green">Referral Trigger</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Is the milestone moment compelling enough to make a persona want to tell someone about the app?</div>
+    </div>
+    <div>
+      <div class="field-label">Priority Cohort</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-07</span>
+        <span class="uid-chip">U-13</span>
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-05</span>
+      </div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Seed 9 sessions. Persona logs session 10 and ends it.</li>
+        <li>Observe reaction to the milestone splash.</li>
+        <li>Ask: "How does this feel different from a regular session end?"</li>
+        <li>Ask: "Would you mention this app to anyone after this moment?"</li>
+        <li>Ask: "If yes &mdash; who specifically? What would you say?"</li>
+        <li>Note: does the milestone create enough of a "moment" to prompt organic sharing?</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Pass / Fail Criteria</div>
+      <div class="criteria-grid">
+        <div class="criteria-box criteria-pass">
+          <div class="criteria-label">Pass</div>
+          Persona identifies session 10 as meaningful. At least half say they'd mention the app to at least one specific person.
+        </div>
+        <div class="criteria-box criteria-fail">
+          <div class="criteria-label">Fail</div>
+          Persona is indifferent. "10 sessions is just 10 sessions."
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GSIM-07 -->
+<div class="scenario" data-channels="wom">
+  <div class="scenario-header">
+    <div class="scenario-id">GSIM-07</div>
+    <div class="scenario-title">Word-of-Mouth Prompt Reception</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">5 min</span>
+    <span class="badge badge-amber">Trigger: Post-PR or milestone referral prompt</span>
+    <span class="badge badge-green">Referral Mechanics</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Does the referral prompt feel earned and genuine, or like a product demand? Who specifically does the persona think of?</div>
+    </div>
+    <div>
+      <div class="field-label">Priority Cohort</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-07</span>
+        <span class="uid-chip">U-01</span>
+        <span class="uid-chip">U-09</span>
+        <span class="uid-chip">U-13</span>
+      </div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Show the referral prompt (or read it aloud) in context of a high-satisfaction moment.</li>
+        <li>Ask: "Who specifically comes to mind?"</li>
+        <li>Ask: "Would you actually reach out to them within 24 hours?"</li>
+        <li>Ask: "How would you describe H.O.N. to them in one sentence?"</li>
+        <li>Note: is the one-sentence description on-brand with H.O.N.'s positioning?</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Pass / Fail Criteria</div>
+      <div class="criteria-grid">
+        <div class="criteria-box criteria-pass">
+          <div class="criteria-label">Pass</div>
+          At least one specific person named. Persona would reach out within 24 hours. Their one-sentence description captures H.O.N.'s differentiator.
+        </div>
+        <div class="criteria-box criteria-fail">
+          <div class="criteria-label">Fail</div>
+          No one comes to mind. Prompt feels like a product demand. Description is generic ("a workout app").
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GSIM-08 -->
+<div class="scenario" data-channels="retention">
+  <div class="scenario-header">
+    <div class="scenario-id">GSIM-08</div>
+    <div class="scenario-title">App Store Review Request Reception</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">5 min</span>
+    <span class="badge badge-amber">Trigger: Post-PR or post-session-10 review request</span>
+    <span class="badge badge-blue" style="background:rgba(96,165,250,0.15);color:var(--blue)">Review Conversion Rate</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Does the timing feel earned? Does the persona tap to leave a review?</div>
+    </div>
+    <div>
+      <div class="field-label">Priority Cohort</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-05</span>
+        <span class="uid-chip">U-07</span>
+        <span class="uid-chip">U-01</span>
+        <span class="uid-chip">U-20</span>
+      </div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Trigger the review request at the specified moment.</li>
+        <li>Observe whether persona taps "Rate" or dismisses.</li>
+        <li>If they tap &mdash; note that they would actually leave a review.</li>
+        <li>If they dismiss &mdash; ask: "What would have made you more likely to rate?"</li>
+        <li>Ask: "Does the timing of this request feel right, or did it interrupt something?"</li>
+        <li>Note: was the moment genuinely high-satisfaction?</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Pass / Fail Criteria</div>
+      <div class="criteria-grid">
+        <div class="criteria-box criteria-pass">
+          <div class="criteria-label">Pass</div>
+          Persona taps to leave a review OR says they would have if they had a moment. Timing described as "natural" or "good timing."
+        </div>
+        <div class="criteria-box criteria-fail">
+          <div class="criteria-label">Fail</div>
+          Persona dismisses. Describes the request as "premature" or "disruptive."
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GSIM-09 -->
+<div class="scenario" data-channels="wom retention">
+  <div class="scenario-header">
+    <div class="scenario-id">GSIM-09</div>
+    <div class="scenario-title">Referral Source Onboarding &mdash; Friend Referral Path</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">8 min</span>
+    <span class="badge badge-amber">Trigger: "Heard from a friend" onboarding source</span>
+    <span class="badge badge-green">Referral Conversion</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Does the app acknowledge the referral source in a way that feels personal and warm?</div>
+    </div>
+    <div>
+      <div class="field-label">Priority Cohort</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-13</span>
+        <span class="uid-chip">U-17</span>
+        <span class="uid-chip">U-06</span>
+      </div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Fresh install. During onboarding, select "A friend told me" as the source.</li>
+        <li>Observe what happens &mdash; does the app acknowledge it?</li>
+        <li>Ask: "Did the app acknowledge that a friend sent you?"</li>
+        <li>Ask: "How did that make you feel about the app before you even started?"</li>
+        <li>If no acknowledgement: ask "Would a personal welcome have changed your first impression?"</li>
+        <li>Note: referral source ignored = growth opportunity missed.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Pass / Fail Criteria</div>
+      <div class="criteria-grid">
+        <div class="criteria-box criteria-pass">
+          <div class="criteria-label">Pass</div>
+          App acknowledges referral source with a specific line. Persona feels welcomed.
+        </div>
+        <div class="criteria-box criteria-fail">
+          <div class="criteria-label">Fail</div>
+          App treats the persona the same as any new user. No acknowledgement of referral source.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GSIM-10 -->
+<div class="scenario" data-channels="notification retention">
+  <div class="scenario-header">
+    <div class="scenario-id">GSIM-10</div>
+    <div class="scenario-title">7-Day Re-engagement Notification</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">5 min</span>
+    <span class="badge badge-amber">Trigger: 7-day inactive user, data-specific notification</span>
+    <span class="badge badge-purple">D7 Re-engagement</span>
+    <span class="badge badge-high">High Priority</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Does a data-specific notification outperform a generic one? Would the persona open the app?</div>
+    </div>
+    <div>
+      <div class="field-label">Priority Cohort</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-07</span>
+        <span class="uid-chip">U-08</span>
+        <span class="uid-chip">U-15</span>
+        <span class="uid-chip">U-10</span>
+      </div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Read two notifications to persona: (a) "Haven't trained in a while. Come back." (b) "[Their exercise] is ready for its next attempt."</li>
+        <li>Ask: "Which would you be more likely to tap?"</li>
+        <li>Ask: "Does either of these make you want to open the app right now?"</li>
+        <li>Ask: "What notification would you actually want to receive after 7 days away?"</li>
+        <li>Note: persona's ideal notification content vs. what we have.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Pass / Fail Criteria</div>
+      <div class="criteria-grid">
+        <div class="criteria-box criteria-pass">
+          <div class="criteria-label">Pass</div>
+          Persona prefers the data-specific notification. They'd open the app from it.
+        </div>
+        <div class="criteria-box criteria-fail">
+          <div class="criteria-label">Fail</div>
+          Persona prefers neither. "I'd turn off notifications for this app."
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GSIM-11 -->
+<div class="scenario" data-channels="paywall notification">
+  <div class="scenario-header">
+    <div class="scenario-id">GSIM-11</div>
+    <div class="scenario-title">Free Trial Expiry Notification &mdash; 24h Before</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">5 min</span>
+    <span class="badge badge-amber">Trigger: Notification 24h before trial expiry</span>
+    <span class="badge badge-red">Trial-to-Paid Conversion</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Does 24 hours feel like enough time to decide? Is the notification framing positive (what you get) or negative (what you'll lose)?</div>
+    </div>
+    <div>
+      <div class="field-label">Priority Cohort</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-17</span>
+        <span class="uid-chip">U-06</span>
+        <span class="uid-chip">U-15</span>
+      </div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Read the trial expiry notification.</li>
+        <li>Ask: "Does this give you enough time to decide?"</li>
+        <li>Ask: "Does this make you feel like you're about to lose something, or like you're being given a choice?"</li>
+        <li>Ask: "What would you do right now if you received this?"</li>
+        <li>Note: FOMO language vs. positive value framing.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Pass / Fail Criteria</div>
+      <div class="criteria-grid">
+        <div class="criteria-box criteria-pass">
+          <div class="criteria-label">Pass</div>
+          Persona feels they have enough time. Notification is positively framed. Majority would open the app to decide.
+        </div>
+        <div class="criteria-box criteria-fail">
+          <div class="criteria-label">Fail</div>
+          Persona says "24 hours isn't enough" or "this feels like pressure."
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GSIM-12 -->
+<div class="scenario" data-channels="retention">
+  <div class="scenario-header">
+    <div class="scenario-id">GSIM-12</div>
+    <div class="scenario-title">35-Day Lapse Win-Back &mdash; Self-Motivated Return</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">10 min</span>
+    <span class="badge badge-amber">Trigger: 35-day inactive, self-motivated open</span>
+    <span class="badge badge-warning">Comeback Experience Quality</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Does the app's comeback state create enough pull to re-engage a user who came back on their own?</div>
+    </div>
+    <div>
+      <div class="field-label">Priority Cohort</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-07</span>
+        <span class="uid-chip">U-10</span>
+        <span class="uid-chip">U-08</span>
+        <span class="uid-chip">U-15</span>
+      </div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Seed a 35-day gap (last session 35 days ago).</li>
+        <li>Open app. Observe HomeView comeback state.</li>
+        <li>Read the comeback message.</li>
+        <li>Ask: "Does this make you want to log a workout today?"</li>
+        <li>Ask: "Does this feel warm, or does it remind you of your absence?"</li>
+        <li>Ask: "What would you need to see to decide to stay?"</li>
+        <li>Note: does the comeback state make re-entry feel easy or effortful?</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Pass / Fail Criteria</div>
+      <div class="criteria-grid">
+        <div class="criteria-box criteria-pass">
+          <div class="criteria-label">Pass</div>
+          Persona says yes to working out today. Comeback state described as warm. Re-entry feels low-friction.
+        </div>
+        <div class="criteria-box criteria-fail">
+          <div class="criteria-label">Fail</div>
+          Persona says "maybe later" or feels the gap is highlighted in a negative way.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GSIM-13 -->
+<div class="scenario" data-channels="aso">
+  <div class="scenario-header">
+    <div class="scenario-id">GSIM-13</div>
+    <div class="scenario-title">App Store Search Discovery Competition</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">8 min</span>
+    <span class="badge badge-amber">Trigger: Search results for "workout tracker"</span>
+    <span class="badge badge-blue" style="background:rgba(96,165,250,0.15);color:var(--blue)">Search Result Competitiveness</span>
+    <span class="badge badge-high">High Priority</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">In a real search context, would a persona choose to tap on H.O.N. over competitors?</div>
+    </div>
+    <div>
+      <div class="field-label">Priority Cohort</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-17</span>
+        <span class="uid-chip">U-13</span>
+        <span class="uid-chip">U-06</span>
+      </div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Show search results page (mock or real) including H.O.N. and 4 competitors. Give persona 10 seconds to look at it.</li>
+        <li>Ask: "Which would you tap and why?"</li>
+        <li>If they don't choose H.O.N. first: "What about H.O.N. made it less attractive?"</li>
+        <li>Ask: "What does H.O.N.'s icon communicate to you?"</li>
+        <li>Ask: "What does the subtitle tell you that the others don't?"</li>
+        <li>Note: icon, subtitle, and first screenshot are the primary competitive signals.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Pass / Fail Criteria</div>
+      <div class="criteria-grid">
+        <div class="criteria-box criteria-pass">
+          <div class="criteria-label">Pass</div>
+          H.O.N. is in the persona's consideration set. They'd tap it. Icon and subtitle are competitive.
+        </div>
+        <div class="criteria-box criteria-fail">
+          <div class="criteria-label">Fail</div>
+          Persona consistently chooses a competitor. H.O.N.'s listing doesn't stand out in search.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GSIM-14 -->
+<div class="scenario" data-channels="retention wom">
+  <div class="scenario-header">
+    <div class="scenario-id">GSIM-14</div>
+    <div class="scenario-title">D30 Habit Reinforcement Moment</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">8 min</span>
+    <span class="badge badge-amber">Trigger: 30-day D30 reinforcement message</span>
+    <span class="badge badge-warning">Long-Term Retention Trigger</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Does the D30 message make the persona feel like a committed athlete, reinforcing the habit identity that keeps them coming back?</div>
+    </div>
+    <div>
+      <div class="field-label">Priority Cohort</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-07</span>
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-05</span>
+        <span class="uid-chip">U-13</span>
+      </div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Seed 30 days of activity. Show or read the D30 reinforcement message.</li>
+        <li>Ask: "How does this make you feel about your training?"</li>
+        <li>Ask: "Does this feel earned, or is 30 days not a significant milestone?"</li>
+        <li>Ask: "Does this change how you think about your workout routine?"</li>
+        <li>Ask: "Would you share this with someone?"</li>
+        <li>Note: does the message reference their actual training data (sessions, exercises, PRs)?</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Pass / Fail Criteria</div>
+      <div class="criteria-grid">
+        <div class="criteria-box criteria-pass">
+          <div class="criteria-label">Pass</div>
+          Persona uses identity-affirming language ("I'm actually a person who does this"). Message references specific data. They'd at least show it to one person.
+        </div>
+        <div class="criteria-box criteria-fail">
+          <div class="criteria-label">Fail</div>
+          Persona shrugs. "30 days isn't that long." Message doesn't reference their specific journey.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GSIM-15 -->
+<div class="scenario" data-channels="paywall retention">
+  <div class="scenario-header">
+    <div class="scenario-id">GSIM-15</div>
+    <div class="scenario-title">Free Tier Longevity &mdash; 60-Day No-Payment Experience</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">15 min</span>
+    <span class="badge badge-amber">Trigger: 60 days seeded usage, free tier only</span>
+    <span class="badge badge-red">Free Tier Genuine Value</span>
+    <span class="badge badge-high">High Priority</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">After 60 days without paying, does the free tier still feel genuinely useful? Does it create pull toward upgrading (not pressure)?</div>
+    </div>
+    <div>
+      <div class="field-label">Priority Cohort</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-17</span>
+        <span class="uid-chip">U-06</span>
+        <span class="uid-chip">U-15</span>
+        <span class="uid-chip">U-02</span>
+      </div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Seed 60 days of free-tier usage. Open app as that user.</li>
+        <li>Navigate all 5 tabs. Ask: "Does this still feel like a complete experience?"</li>
+        <li>Ask: "Is there anything you wish you had access to that you don't?"</li>
+        <li>Ask: "Do you feel like the app is deliberately limiting you, or are you genuinely happy with what you have?"</li>
+        <li>Ask: "If an upgrade option appeared right now, would you consider it? What would it need to offer?"</li>
+        <li>Note: deliberately crippled vs. naturally incomplete free tier.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Pass / Fail Criteria</div>
+      <div class="criteria-grid">
+        <div class="criteria-box criteria-pass">
+          <div class="criteria-label">Pass</div>
+          Free tier still feels genuinely useful at 60 days. User sees value in upgrading but doesn't feel forced.
+        </div>
+        <div class="criteria-box criteria-fail">
+          <div class="criteria-label">Fail</div>
+          User describes the free tier as "deliberately crippled" or says "I feel like I'm being pushed to pay."
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Section 3: Matrix ── -->
+<div class="section-heading">Section 3 &mdash; Cohort &times; Scenario Matrix</div>
+
+<div class="inline-note">
+  <strong style="color:var(--amber)">H</strong> = primary cohort for this scenario; observer should prioritize running this combination. All cohorts may observe any scenario; only H-marked cohorts are required for a valid result.
+</div>
+
+<div class="matrix-wrapper">
+  <table class="matrix-table">
+    <thead>
+      <tr>
+        <th class="row-header">Scenario</th>
+        <th>U-01</th>
+        <th>U-02</th>
+        <th>U-05</th>
+        <th>U-06</th>
+        <th>U-07</th>
+        <th>U-08</th>
+        <th>U-09</th>
+        <th>U-13</th>
+        <th>U-15</th>
+        <th>U-17</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="row-header">GSIM-01</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+      </tr>
+      <tr>
+        <td class="row-header">GSIM-02</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+      </tr>
+      <tr>
+        <td class="row-header">GSIM-03</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+      </tr>
+      <tr>
+        <td class="row-header">GSIM-04</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-high">H</td>
+        <td class="cell-high">H</td>
+      </tr>
+      <tr>
+        <td class="row-header">GSIM-05</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+      </tr>
+      <tr>
+        <td class="row-header">GSIM-06</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+      </tr>
+      <tr>
+        <td class="row-header">GSIM-07</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+      </tr>
+      <tr>
+        <td class="row-header">GSIM-08</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+      </tr>
+      <tr>
+        <td class="row-header">GSIM-09</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+      </tr>
+      <tr>
+        <td class="row-header">GSIM-10</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+      </tr>
+      <tr>
+        <td class="row-header">GSIM-11</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-high">H</td>
+      </tr>
+      <tr>
+        <td class="row-header">GSIM-12</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+      </tr>
+      <tr>
+        <td class="row-header">GSIM-13</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+      </tr>
+      <tr>
+        <td class="row-header">GSIM-14</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+      </tr>
+      <tr>
+        <td class="row-header">GSIM-15</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-low">&middot;</td>
+        <td class="cell-high">H</td>
+        <td class="cell-high">H</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ── Section 4: Results Template ── -->
+<div class="section-heading">Section 4 &mdash; Results Template</div>
+
+<div class="inline-note">One entry per scenario run. File completed entries in <code style="font-family:monospace;font-size:12px;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">docs/uat/</code> with filename format <code style="font-family:monospace;font-size:12px;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">GSIM-XX-U-YY-YYYY-MM-DD.md</code>.</div>
+
+<div class="template-card">
+  <div class="template-field">
+    <div class="template-field-label">Scenario</div>
+    <div class="template-field-placeholder">GSIM-## &mdash; [Scenario title]</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Persona</div>
+    <div class="template-field-placeholder">U-## &mdash; [Brief persona description, e.g. "first-timer, 28, gym novice"]</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Channel Tested</div>
+    <div class="template-field-placeholder">ASO / Notification / Word of Mouth / Retention / Paywall (select one or note if multiple channels were exercised)</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Behavior Observed</div>
+    <div class="template-field-placeholder">What did the persona actually do, step by step? Record verbatim reactions where possible. Note hesitations, facial expressions, or moments of confusion. Do not interpret yet — describe first.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Conversion Decision</div>
+    <div class="template-field-placeholder">Would they download / share / review / re-engage / pay? Record their exact words. If conditional ("maybe if..."), record the condition.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Key Friction Points</div>
+    <div class="template-field-placeholder">List each specific moment where momentum slowed or broke. Be precise: "hesitated at HealthKit permission prompt for ~12 seconds" not "seemed unsure at some point."</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">What Drove the Decision</div>
+    <div class="template-field-placeholder">What single factor was most responsible for the outcome? If positive: what created the pull? If negative: what was the blocker? Ask the persona directly if unclear.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Result</div>
+    <div class="template-field-options">
+      <span class="template-option pass">Pass</span>
+      <span class="template-option part">Partial</span>
+      <span class="template-option fail">Fail</span>
+    </div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Recommended Fix</div>
+    <div class="template-field-placeholder">One specific, actionable change that would move this result toward Pass. Tag the surface area: ASO copy / notification text / UI / onboarding flow / referral mechanics / paywall framing. If Pass, note what to preserve.</div>
+  </div>
+</div>
+
+<!-- ── Section 5: LLM Growth Pre-Triage ── -->
+<div class="section-heading">Section 5 &mdash; LLM Growth Pre-Triage Prompt</div>
+
+<div class="prompt-card">
+  <div class="prompt-title">Growth Pre-Triage &mdash; Paste into any LLM before running a growth simulation</div>
+
+  <div style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.5;">
+    Provide the three inputs below. The model will return a structured growth signal assessment that tells you which GSIM scenario to run first and whether any dark-pattern risk exists before you invest simulation time.
+  </div>
+
+  <div class="prompt-inputs">
+    <div class="prompt-input-block">
+      <div class="prompt-input-label">Input 1 — Feature or Moment</div>
+      <div class="prompt-input-placeholder">The specific feature, UI state, or product moment being evaluated (e.g. "PR celebration screen," "D7 re-engagement notification," "session 10 milestone splash").</div>
+    </div>
+    <div class="prompt-input-block">
+      <div class="prompt-input-label">Input 2 — User State</div>
+      <div class="prompt-input-placeholder">Where the user is in their lifecycle: new / D1 / D7 / D30 / lapsed / returning. Include any relevant context (first workout, trial expiring, long gap, etc.).</div>
+    </div>
+    <div class="prompt-input-block">
+      <div class="prompt-input-label">Input 3 — Growth Metric to Move</div>
+      <div class="prompt-input-placeholder">The specific metric this moment should improve: D1 re-engagement rate / D7 retention / trial-to-paid CVR / App Store review volume / referral rate / DAU / organic installs.</div>
+    </div>
+  </div>
+
+  <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--purple);margin-bottom:10px;opacity:0.85;">Expected Output</div>
+
+  <div class="prompt-output-grid">
+    <div class="prompt-output-row">
+      <div class="prompt-output-key">Word-of-Mouth Potential</div>
+      <div class="prompt-output-val">1–5 score. 5 = high shareability; 1 = internal loop only. Explain which element drives or limits organic spread.</div>
+    </div>
+    <div class="prompt-output-row">
+      <div class="prompt-output-key">Notification Opportunity</div>
+      <div class="prompt-output-val">Is this a trigger point for a personalized notification? If yes: what data should the notification reference to feel specific rather than generic?</div>
+    </div>
+    <div class="prompt-output-row">
+      <div class="prompt-output-key">ASO Keyword Angle</div>
+      <div class="prompt-output-val">What user intent or search phrase does this feature address? Recommend an ASO keyword or metadata angle if applicable.</div>
+    </div>
+    <div class="prompt-output-row">
+      <div class="prompt-output-key">Lifecycle Trigger Fit</div>
+      <div class="prompt-output-val">Which lifecycle stage does this best serve — acquisition, activation, retention, referral, or revenue? Is the current placement aligned with that stage?</div>
+    </div>
+    <div class="prompt-output-row">
+      <div class="prompt-output-key">Paywall Leverage</div>
+      <div class="prompt-output-val">If applicable: does this moment create natural pull toward an upgrade? Or does it risk feeling like a gate? Note if paywall is not applicable for the current context.</div>
+    </div>
+    <div class="prompt-output-row">
+      <div class="prompt-output-key">Recommended GSIM</div>
+      <div class="prompt-output-val">Which GSIM-## scenario should be run first based on these inputs, and with which cohort (U-##)? Brief rationale.</div>
+    </div>
+    <div class="prompt-output-row prompt-output-risk">
+      <div class="prompt-output-key">Dark Pattern Risk</div>
+      <div class="prompt-output-val">1–5 score where 5 = high risk. Flag if the mechanic uses urgency, FOMO, guilt, or social pressure in a way that could erode trust or generate negative reviews. If risk &ge; 3: name the specific pattern and recommend a reframe.</div>
+    </div>
+  </div>
+
+  <div class="prompt-note">
+    <strong style="color:var(--purple)">Usage note:</strong> This triage is pre-simulation, not a replacement for it. Use the output to prioritize which GSIM to run and to identify potential framing issues before they show up in persona observations. A low dark-pattern risk score does not mean the feature is effective &mdash; only that it's not manipulative. Run the recommended GSIM to validate actual behavior.
+  </div>
+</div>
+
+<script>
+  function setFilter(channel, btn) {
+    // Update button states
+    document.querySelectorAll('.filter-btn').forEach(function(b) {
+      b.classList.remove('active', 'active-aso', 'active-notif', 'active-wom', 'active-retention', 'active-paywall');
+    });
+
+    var activeClass = 'active';
+    if (channel === 'aso')         activeClass = 'active-aso';
+    else if (channel === 'notification') activeClass = 'active-notif';
+    else if (channel === 'wom')    activeClass = 'active-wom';
+    else if (channel === 'retention') activeClass = 'active-retention';
+    else if (channel === 'paywall') activeClass = 'active-paywall';
+
+    btn.classList.add(activeClass);
+
+    // Show/hide scenario cards
+    document.querySelectorAll('.scenario').forEach(function(card) {
+      if (channel === 'all') {
+        card.classList.remove('hidden');
+      } else {
+        var channels = (card.getAttribute('data-channels') || '').split(' ');
+        if (channels.indexOf(channel) !== -1) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      }
+    });
+
+    // Update count in "All" button
+    var allBtn = document.querySelector('[data-filter="all"]');
+    if (channel === 'all') {
+      allBtn.textContent = 'All (15)';
+    } else {
+      var visible = document.querySelectorAll('.scenario:not(.hidden)').length;
+      allBtn.textContent = 'All (15)';
+    }
+  }
+</script>
+
+</body>
+</html>
