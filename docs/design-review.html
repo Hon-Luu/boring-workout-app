@@ -1,0 +1,1817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H.O.N. — Design &amp; UX Review</title>
+<style>
+  :root {
+    --bg:       #111111;
+    --card:     #1c1c1e;
+    --border:   rgba(255,255,255,0.07);
+    --amber:    #f59e0b;
+    --positive: #34d399;
+    --negative: #f87171;
+    --warning:  #fbbf24;
+    --muted:    rgba(255,255,255,0.4);
+    --text:     rgba(255,255,255,0.88);
+    --text2:    rgba(255,255,255,0.55);
+    --blue:     #60a5fa;
+    --purple:   #a78bfa;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 32px 20px 64px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .header { margin-bottom: 36px; }
+  .header-top {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .logo {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber);
+  }
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--amber), transparent);
+    opacity: 0.3;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    color: var(--text);
+  }
+  .subtitle {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+
+  .section-heading {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin: 32px 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-heading::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .stats {
+    display: flex;
+    gap: 6px;
+    margin: 20px 0 28px;
+    flex-wrap: wrap;
+  }
+  .stat-pill {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.04em;
+  }
+  .stat-open    { background: rgba(248,113,113,0.15); color: var(--negative); }
+  .stat-pass    { background: rgba(52,211,153,0.15);  color: var(--positive); }
+  .stat-partial { background: rgba(251,191,36,0.15);  color: var(--warning); }
+  .stat-total   { background: rgba(255,255,255,0.08); color: var(--text2); }
+
+  .filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover  { border-color: var(--amber); color: var(--amber); }
+  .filter-btn.active { background: var(--amber); border-color: var(--amber); color: #111; }
+
+  /* Category block */
+  .category-block {
+    margin-bottom: 24px;
+  }
+  .category-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .category-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.04em;
+  }
+  .category-count {
+    font-size: 11px;
+    color: var(--text2);
+    background: rgba(255,255,255,0.06);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .category-chevron {
+    margin-left: auto;
+    color: var(--text2);
+    font-size: 11px;
+    transition: transform 0.2s;
+  }
+  .category-block.collapsed .category-chevron { transform: rotate(-90deg); }
+  .category-block.collapsed .test-list { display: none; }
+
+  /* Test case */
+  .test-case {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transition: border-color 0.2s;
+  }
+  .test-case:hover { border-color: rgba(255,255,255,0.12); }
+  .test-case.status-pass   { border-left: 3px solid var(--positive); }
+  .test-case.status-fail   { border-left: 3px solid var(--negative); }
+  .test-case.status-partial{ border-left: 3px solid var(--warning); }
+  .test-case.status-open   { border-left: 3px solid rgba(255,255,255,0.15); }
+
+  .test-id {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    letter-spacing: 0.06em;
+    color: var(--amber);
+    background: rgba(245,158,11,0.1);
+    padding: 2px 7px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .test-body { flex: 1; }
+
+  .test-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+
+  .test-detail {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.5;
+    margin-bottom: 6px;
+  }
+
+  .test-pass-criteria {
+    font-size: 11px;
+    color: rgba(52,211,153,0.8);
+    background: rgba(52,211,153,0.06);
+    border: 1px solid rgba(52,211,153,0.12);
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+
+  .status-select {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .status-open    { background: rgba(248,113,113,0.15); color: var(--negative); }
+  .status-pass    { background: rgba(52,211,153,0.15);  color: var(--positive); }
+  .status-fail    { background: rgba(248,113,113,0.3);  color: #fca5a5; }
+  .status-partial { background: rgba(251,191,36,0.15);  color: var(--warning); }
+
+  /* Metrics section */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 600px) {
+    .metrics-grid { grid-template-columns: 1fr; }
+  }
+
+  .metric-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .metric-card-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 12px;
+  }
+
+  .metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 12px;
+  }
+  .metric-row:last-child { border-bottom: none; }
+
+  .metric-name { color: var(--text2); flex: 1; line-height: 1.4; }
+  .metric-target {
+    font-weight: 700;
+    color: var(--text);
+    font-family: 'SF Mono', monospace;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .metric-target.positive { color: var(--positive); }
+  .metric-target.amber    { color: var(--amber); }
+  .metric-target.negative { color: var(--negative); }
+
+  /* Gate items */
+  .gate-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .gate-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 13px;
+    color: var(--text2);
+  }
+  .gate-item:last-child { border-bottom: none; }
+  .gate-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(248,113,113,0.15);
+    color: var(--negative);
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .done-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--positive);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-top: 16px;
+  }
+  .done-card p {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.8;
+  }
+
+  .separator {
+    height: 1px;
+    background: var(--border);
+    margin: 28px 0;
+  }
+
+  .tier-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin-bottom: 14px;
+  }
+  .tier-a { background: rgba(248,113,113,0.15); color: var(--negative); }
+  .tier-b { background: rgba(96,165,250,0.15);  color: var(--blue); }
+
+  /* LLM prompt card */
+  .llm-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--purple);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-top: 16px;
+  }
+  .llm-card-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin-bottom: 8px;
+  }
+  .llm-card-desc {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .llm-prompt-block {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(167,139,250,0.18);
+    border-radius: 10px;
+    padding: 20px 22px;
+    font-family: 'SF Mono', 'Fira Code', 'Menlo', monospace;
+    font-size: 11.5px;
+    line-height: 1.75;
+    color: rgba(255,255,255,0.78);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .llm-placeholder {
+    color: var(--amber);
+    font-weight: 700;
+  }
+  .llm-section-label {
+    color: var(--purple);
+    font-weight: 700;
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 20px 14px 48px; }
+    .test-case { flex-direction: column; }
+    .llm-card { padding: 18px 16px; }
+    .llm-prompt-block { padding: 14px 14px; font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <span class="logo">H.O.N.</span>
+    <div class="divider-line"></div>
+  </div>
+  <h1>Design &amp; UX Review</h1>
+  <div class="subtitle">72 must-pass design tests &middot; Design Gates &middot; UX KPIs &middot; Definition of Done &middot; LLM Critique Prompt &middot; Last updated: 2026-05-30</div>
+</div>
+
+<div class="stats">
+  <span class="stat-pill stat-total" id="stat-total">72 total</span>
+  <span class="stat-pill stat-open" id="stat-open">— open</span>
+  <span class="stat-pill stat-partial" id="stat-partial">— partial</span>
+  <span class="stat-pill stat-pass" id="stat-pass">— passed</span>
+</div>
+
+<div class="filters">
+  <button class="filter-btn active" onclick="filterTests('all', this)">All</button>
+  <button class="filter-btn" onclick="filterTests('open', this)">Open</button>
+  <button class="filter-btn" onclick="filterTests('pass', this)">Passed</button>
+  <button class="filter-btn" onclick="filterTests('fail', this)">Failed</button>
+  <button class="filter-btn" onclick="filterTests('partial', this)">Partial</button>
+</div>
+
+<!-- Section 1 -->
+<div class="section-heading">Section 1 — Must-Pass Design Test Cases</div>
+
+<!-- Category 1: Design System & Token Consistency -->
+<div class="category-block" id="cat-tokens">
+  <div class="category-header" onclick="toggleCategory('cat-tokens')">
+    <span style="font-size:14px">&#9670;</span>
+    <span class="category-title">1. Design System &amp; Token Consistency</span>
+    <span class="category-count">8 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="tokens">
+      <div class="test-id">DX-001</div>
+      <div class="test-body">
+        <div class="test-title">No Hardcoded Color Values Outside HONTheme.swift</div>
+        <div class="test-detail">All color values in views must reference HONTheme tokens. No hardcoded hex or rgba literals are permitted outside HONTheme.swift itself.</div>
+        <div class="test-pass-criteria">Pass: grep for hardcoded "#" or "Color(" literals in iOSApp/Views/ returns zero results (excluding HONTheme.swift itself).</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="tokens">
+      <div class="test-id">DX-002</div>
+      <div class="test-body">
+        <div class="test-title">Corner Radius Consistency Across Card Tiers</div>
+        <div class="test-detail">Primary cards use 14pt, chip/pill elements use 20pt, secondary cards use 10pt. No ad-hoc radius values exist outside these three tiers.</div>
+        <div class="test-pass-criteria">Pass: Xcode visual inspection of 3 different card types confirms correct radius at each tier. No mixed or intermediate values.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="tokens">
+      <div class="test-id">DX-003</div>
+      <div class="test-body">
+        <div class="test-title">4pt Spacing Grid — All Padding and Margin Values</div>
+        <div class="test-detail">All padding and margin values in Views/ are multiples of 4pt (4, 8, 12, 16, 20, 24, 28, 32). The only permitted exception is a 1pt divider line.</div>
+        <div class="test-pass-criteria">Pass: No spacing constant with a value not divisible by 4 (excluding 1pt divider lines). Audit confirms grid compliance across primary views.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="tokens">
+      <div class="test-id">DX-004</div>
+      <div class="test-body">
+        <div class="test-title">SF Symbol Weight Consistency Across All Tabs</div>
+        <div class="test-detail">All SF Symbols across the app use the same weight (regular or medium). No mixing of ultralight and bold icons on the same screen.</div>
+        <div class="test-pass-criteria">Pass: Visual inspection of all 5 tabs shows no obviously mismatched icon weights. No screen pairs ultralight and bold symbols side-by-side.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="tokens">
+      <div class="test-id">DX-005</div>
+      <div class="test-body">
+        <div class="test-title">Card Component Anatomy — Background, Border, Radius Unified</div>
+        <div class="test-detail">All card-style containers share the same background (--card #1c1c1e), border (rgba 255,255,255 0.07), and border-radius (14pt). No card deviates from this spec without explicit design intent.</div>
+        <div class="test-pass-criteria">Pass: ActiveWorkoutView, HomeView, and ProgressView cards all visually match. Border opacity and background color are identical across card instances.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="tokens">
+      <div class="test-id">DX-006</div>
+      <div class="test-body">
+        <div class="test-title">Empty State Design Language — Consistent Template</div>
+        <div class="test-detail">All empty states use the same template: icon (SF Symbol, muted), 2-line message, optional single CTA. No empty state is just blank white or black.</div>
+        <div class="test-pass-criteria">Pass: Trigger empty states on all 5 tabs; each shows consistent structure with muted icon, concise copy, and optional action. No blank screens.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="tokens">
+      <div class="test-id">DX-007</div>
+      <div class="test-body">
+        <div class="test-title">Opacity Hierarchy for Lead vs. Supporting Numbers</div>
+        <div class="test-detail">HONTheme.textPrimary used for lead numbers; HONTheme.textSecondary for supporting stats. No supporting stat rendered at full opacity alongside a primary number.</div>
+        <div class="test-pass-criteria">Pass: Visual check of HomeView readiness score card and ProgressView — dominant number at full opacity, supporting text visibly dimmer. No ambiguity about which value is primary.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="tokens">
+      <div class="test-id">DX-008</div>
+      <div class="test-body">
+        <div class="test-title">Divider Lines — 1pt Hairlines Only at Correct Opacity</div>
+        <div class="test-detail">Border divider lines use 1pt height only, rgba(255,255,255,0.07) only. No bolder dividers, no full-opacity rules, no decorative borders that deviate from this spec.</div>
+        <div class="test-pass-criteria">Pass: All section separators and list dividers are hairlines at the correct opacity. No 2pt or full-opacity dividers anywhere in the app.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 2: Typography & Text Hierarchy -->
+<div class="category-block" id="cat-type">
+  <div class="category-header" onclick="toggleCategory('cat-type')">
+    <span style="font-size:14px">&#84;</span>
+    <span class="category-title">2. Typography &amp; Text Hierarchy</span>
+    <span class="category-count">7 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="type">
+      <div class="test-id">DX-009</div>
+      <div class="test-body">
+        <div class="test-title">Single Dominant Element Per Screen — No Visual Competition</div>
+        <div class="test-detail">Each primary screen has exactly one visually dominant element (the hero number or hero title). No screen has two elements competing for visual dominance.</div>
+        <div class="test-pass-criteria">Pass: Squint test — on each of the 5 tab views, one element is immediately dominant; eye lands on it first. No screen fails the squint test with two equal-weight elements.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="type">
+      <div class="test-id">DX-010</div>
+      <div class="test-body">
+        <div class="test-title">Body Text Line Length ≤ 75 Characters on iPhone 17 Pro</div>
+        <div class="test-detail">Coaching notes and descriptions never run full-screen width without wrapping at a readable measure. Maximum 75 characters per line on 393pt display width.</div>
+        <div class="test-pass-criteria">Pass: Longest coaching note rendered on-screen wraps before 75 characters per line. Text is not edge-to-edge without horizontal padding.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="type">
+      <div class="test-id">DX-011</div>
+      <div class="test-body">
+        <div class="test-title">Three-Tier Type Scale — No Ambiguous Intermediate Sizes</div>
+        <div class="test-detail">Type scale is clearly three-tier: primary (15–17pt, weight 600), secondary (13pt, weight 400), tertiary/label (10–11pt, weight 600–700 uppercase). No intermediate size blurs the hierarchy.</div>
+        <div class="test-pass-criteria">Pass: Size picker in Accessibility Inspector confirms three distinct tiers. No font size falls between tiers without a clear role in the hierarchy.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="type">
+      <div class="test-id">DX-012</div>
+      <div class="test-body">
+        <div class="test-title">Monospace for Numeric Data, Proportional for Narrative Text</div>
+        <div class="test-detail">Monospace font (SF Mono or Fira Code) used for all numeric data: weight values, reps counts, e1RM values, readiness scores. Proportional font for all coaching/narrative text.</div>
+        <div class="test-pass-criteria">Pass: Weight field in ActiveWorkoutView uses monospace; coaching note below uses proportional. No numeric data displayed in proportional font that causes digit misalignment.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="type">
+      <div class="test-id">DX-013</div>
+      <div class="test-body">
+        <div class="test-title">Letter-Spacing Applied Only to Uppercase Labels</div>
+        <div class="test-detail">Letter-spacing (0.06–0.16em) applied only to uppercase labels. Normal body text and coaching narrative have no letter-spacing override.</div>
+        <div class="test-pass-criteria">Pass: Coaching text has no letter-spacing override; section labels have it. No body paragraph with tracking applied.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="type">
+      <div class="test-id">DX-014</div>
+      <div class="test-body">
+        <div class="test-title">Minimum 11pt for All Readable Content</div>
+        <div class="test-detail">Minimum 11pt for all readable content (labels, captions, badges). Nothing below 10pt except purely decorative elements. No micro-text that requires squinting to read.</div>
+        <div class="test-pass-criteria">Pass: Xcode Accessibility Inspector font-size scan shows nothing below 10pt. All labels, captions, and metadata are legible at arm's length.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="type">
+      <div class="test-id">DX-015</div>
+      <div class="test-body">
+        <div class="test-title">Line Height 1.4–1.6 for All Multi-Line Text</div>
+        <div class="test-detail">No compressed line height that makes multi-line coaching notes hard to read. Line spacing in the 1.4–1.6 range ensures adequate visual breathing room between lines.</div>
+        <div class="test-pass-criteria">Pass: A three-line coaching note is legible with visible leading between lines. No multi-line text block where lines appear to touch or overlap.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 3: Color & Visual Language -->
+<div class="category-block" id="cat-color">
+  <div class="category-header" onclick="toggleCategory('cat-color')">
+    <span style="font-size:14px">&#9632;</span>
+    <span class="category-title">3. Color &amp; Visual Language</span>
+    <span class="category-count">7 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="color">
+      <div class="test-id">DX-016</div>
+      <div class="test-body">
+        <div class="test-title">Amber Used Exclusively for Attention and Warning States</div>
+        <div class="test-detail">Amber (#f59e0b) is used exclusively for attention states (plateau, warning, in-progress). Never used as a decorative accent unrelated to a signal.</div>
+        <div class="test-pass-criteria">Pass: Every amber element on screen corresponds to either an active state, a warning, or a brand mark (logo). No amber used as decorative color.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="color">
+      <div class="test-id">DX-017</div>
+      <div class="test-body">
+        <div class="test-title">Green Used Exclusively for Positive and Complete States</div>
+        <div class="test-detail">Green (#34d399) used exclusively for positive/complete states (set completed, PR, streak milestone). Never used for neutral or decorative purposes.</div>
+        <div class="test-pass-criteria">Pass: Every green element maps to a positive event. No green used as a decorative accent, background, or neutral indicator.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="color">
+      <div class="test-id">DX-018</div>
+      <div class="test-body">
+        <div class="test-title">Red Reserved for Errors and Failure States Only</div>
+        <div class="test-detail">No red (#f87171) for neutral or instructional states. Red only for errors and failure states. It must never appear in a context a user could interpret as neutral feedback.</div>
+        <div class="test-pass-criteria">Pass: All uses of --negative color correspond to actual errors or failed test states. No red in informational copy, empty states, or guidance text.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="color">
+      <div class="test-id">DX-019</div>
+      <div class="test-body">
+        <div class="test-title">Three-Level Background Hierarchy Maintained</div>
+        <div class="test-detail">#111111 (page bg) → #1c1c1e (card bg) → rgba(255,255,255,0.04–0.06) (inline highlight). No card-on-card with the same background color creates a flat, unreadable layer.</div>
+        <div class="test-pass-criteria">Pass: HomeView shows visible layer separation between page and cards. Three distinct depth levels are perceptible on all primary screens.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="color">
+      <div class="test-id">DX-020</div>
+      <div class="test-body">
+        <div class="test-title">Semantic Color Rules Enforced — Plateau Amber, PR Green</div>
+        <div class="test-detail">Semantic color rule enforcement: exercise plateau treatment uses amber dashed line, PR uses green pip. No exceptions, no ad-hoc colors for these states.</div>
+        <div class="test-pass-criteria">Pass: Trigger both states (stalled lift + PR) and verify correct color treatment. No other color used for these two semantic states anywhere in the app.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="color">
+      <div class="test-id">DX-021</div>
+      <div class="test-body">
+        <div class="test-title">WCAG AA Contrast — Body Text and Secondary Text</div>
+        <div class="test-detail">All body text at rgba(255,255,255,0.88) on #111111 background. Secondary text (rgba 0.55) must meet minimum thresholds. Measure with Colour Contrast Analyser.</div>
+        <div class="test-pass-criteria">Pass: Primary text contrast ratio ≥ 4.5:1. Secondary text (rgba 0.55) meets ≥ 3:1 for large text contexts. No text fails WCAG AA at the default text size.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="color">
+      <div class="test-id">DX-022</div>
+      <div class="test-body">
+        <div class="test-title">No Pure White Text — All Text Uses rgba Values</div>
+        <div class="test-detail">No pure white (#ffffff) text in the app. All text uses rgba values to avoid harsh contrast that reads as unfinished or out-of-system.</div>
+        <div class="test-pass-criteria">Pass: grep for "Color.white" or "#ffffff" in Views/ returns zero instances (except possible system backgrounds outside app control).</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 4: Layout, Spacing & Density -->
+<div class="category-block" id="cat-layout">
+  <div class="category-header" onclick="toggleCategory('cat-layout')">
+    <span style="font-size:14px">&#9783;</span>
+    <span class="category-title">4. Layout, Spacing &amp; Density</span>
+    <span class="category-count">8 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="layout">
+      <div class="test-id">DX-023</div>
+      <div class="test-body">
+        <div class="test-title">Page Horizontal Margins — 20pt on All Primary Screens</div>
+        <div class="test-detail">Page horizontal margins are 20pt on all primary screens. Content never touches the screen edge. This margin is the minimum boundary for all primary content.</div>
+        <div class="test-pass-criteria">Pass: Measure left edge of first text element on HomeView, ProgressView, and ActiveWorkoutView — all ≥ 20pt from screen edge.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="layout">
+      <div class="test-id">DX-024</div>
+      <div class="test-body">
+        <div class="test-title">Card Internal Padding — 20pt Primary, 14–16pt Compact</div>
+        <div class="test-detail">Card internal padding is 20pt on all sides for primary cards, 14–16pt for compact cards. No card feels cramped or wastefully spacious relative to its content.</div>
+        <div class="test-pass-criteria">Pass: Tap the card background (not a button) on any card and measure inset with Accessibility Inspector. Primary cards confirm 20pt internal padding.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="layout">
+      <div class="test-id">DX-025</div>
+      <div class="test-body">
+        <div class="test-title">Minimum 44×44pt Tap Targets on All Interactive Elements</div>
+        <div class="test-detail">Elements visually smaller than 44×44pt must have expanded hit areas via .contentShape or padding. No interactive element is tappable only in a tiny visual region.</div>
+        <div class="test-pass-criteria">Pass: Xcode Accessibility Inspector shows no interactive element with a tap area below 44×44pt. RPE chips, set complete buttons, and increment arrows all meet the minimum.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="layout">
+      <div class="test-id">DX-026</div>
+      <div class="test-body">
+        <div class="test-title">Section Spacing — 28–32pt Between Major Sections, 12–16pt Within</div>
+        <div class="test-detail">28–32pt between major page sections, 12–16pt between items within a section. No section so tight that content feels cramped; no section so spaced that content feels disconnected.</div>
+        <div class="test-pass-criteria">Pass: Visual rhythm on ProgressView sections feels even and intentional. A designer unfamiliar with the app would describe the spacing as "deliberate" rather than "random."</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="layout">
+      <div class="test-id">DX-027</div>
+      <div class="test-body">
+        <div class="test-title">Safe Area Respected — No Content in Notch, Status Bar, or Home Indicator</div>
+        <div class="test-detail">No content in notch, status bar, or home indicator zones. SwiftUI .safeAreaInset or .ignoresSafeArea used correctly on all screens.</div>
+        <div class="test-pass-criteria">Pass: Rotate device (if landscape-compatible) and verify no content clipping. On iPhone 17 Pro, no content hidden behind Dynamic Island or home indicator area.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="layout">
+      <div class="test-id">DX-028</div>
+      <div class="test-body">
+        <div class="test-title">Active Workout Density — 3 Exercises Visible Without Overwhelm</div>
+        <div class="test-detail">With 3 exercises × 4 sets each visible simultaneously, the view does not feel overwhelming. Content prioritization is clear: current set is visually primary.</div>
+        <div class="test-pass-criteria">Pass: Load a 3-exercise workout and confirm visual hierarchy is preserved. Current exercise and current set are dominant; previous sets are secondary in visual weight.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="layout">
+      <div class="test-id">DX-029</div>
+      <div class="test-body">
+        <div class="test-title">Scroll Performance — No Jank with 50+ Sessions</div>
+        <div class="test-detail">No visible jank or dropped frames when scrolling a workout log with 50+ sessions. Performance must hold at typical scroll speed on the target device.</div>
+        <div class="test-pass-criteria">Pass: Add 50 dummy sessions via seed data. Scroll ProgressView at full speed. No visible frame drops perceptible to the naked eye.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="layout">
+      <div class="test-id">DX-030</div>
+      <div class="test-body">
+        <div class="test-title">Consistent List Item Height — No Unintended Row Height Variation</div>
+        <div class="test-detail">All list rows within a given component type have uniform height. No items taller than others due to content unless that variation is intentional and designed.</div>
+        <div class="test-pass-criteria">Pass: RPE set rows in ActiveWorkoutView are same height as non-RPE rows. RPE indicator does not cause row height expansion that breaks visual rhythm.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 5: Interaction Design & Motion -->
+<div class="category-block" id="cat-interaction">
+  <div class="category-header" onclick="toggleCategory('cat-interaction')">
+    <span style="font-size:14px">&#9654;</span>
+    <span class="category-title">5. Interaction Design &amp; Motion</span>
+    <span class="category-count">8 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="interaction">
+      <div class="test-id">DX-031</div>
+      <div class="test-body">
+        <div class="test-title">Set Completion Animation — Satisfying, &lt;300ms, Non-Blocking</div>
+        <div class="test-detail">The check on completing a set produces a satisfying visual response (scale animation, color fill, or similar). Animation duration under 300ms. Does not block interaction with adjacent sets.</div>
+        <div class="test-pass-criteria">Pass: Complete a set and verify animation completes within time budget with no input blocking. Adjacent set rows remain tappable during animation.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="interaction">
+      <div class="test-id">DX-032</div>
+      <div class="test-body">
+        <div class="test-title">Destructive Action Confirmation — Clear, Irreversible, Correctly Labeled</div>
+        <div class="test-detail">Any action that deletes data shows a confirmation dialog with: (a) clear description of what will be deleted, (b) irreversible framing, (c) destructive button labeled with the action ("Delete Workout"), not "OK".</div>
+        <div class="test-pass-criteria">Pass: Trigger workout deletion; confirm dialog anatomy matches spec. No destructive operation completes without a named confirmation button.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="interaction">
+      <div class="test-id">DX-033</div>
+      <div class="test-body">
+        <div class="test-title">Sheet Presentation — Bottom Animate, Correct Detent, Swipe-Dismissible</div>
+        <div class="test-detail">Sheets animate from bottom, correct detent for content height, swipe-to-dismiss works. No sheet that requires a Close button as the only dismissal method.</div>
+        <div class="test-pass-criteria">Pass: Open weight suggestion sheet, readiness drill-down, and pattern balance — all swipe-dismissible with a single downward swipe gesture.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="interaction">
+      <div class="test-id">DX-034</div>
+      <div class="test-body">
+        <div class="test-title">Haptic Feedback on Set Completion — Medium Impact Only</div>
+        <div class="test-detail">Haptic feedback on set completion produces UIImpactFeedbackGenerator medium impact. No haptic on navigation events (tab switches, sheet opens).</div>
+        <div class="test-pass-criteria">Pass: Physical iPhone; feel medium impact on set complete, no haptic on tab tap or sheet presentation. Haptic is intentional and proportional.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="interaction">
+      <div class="test-id">DX-035</div>
+      <div class="test-body">
+        <div class="test-title">Keyboard Handling — Correct Type, Dismiss on Outside Tap</div>
+        <div class="test-detail">Numeric keyboard for weight/reps fields, text keyboard for notes. Keyboard dismiss on tap outside field. No keyboard covering active input without scroll offset.</div>
+        <div class="test-pass-criteria">Pass: Tap weight field; numeric keyboard appears. Tap outside field; keyboard dismisses without navigating away. Active field is always visible above the keyboard.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="interaction">
+      <div class="test-id">DX-036</div>
+      <div class="test-body">
+        <div class="test-title">Loading States — No Spinner for Sub-300ms Operations</div>
+        <div class="test-detail">Operations completing in under 300ms show no spinner. Operations ≥ 300ms show a skeleton or subtle activity indicator. No full-screen blocking spinners for routine data loads.</div>
+        <div class="test-pass-criteria">Pass: Navigate between all 5 tabs; no spinner visible on any tab that has data. Only legitimately slow operations (plan generation) show a loading state.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="interaction">
+      <div class="test-id">DX-037</div>
+      <div class="test-body">
+        <div class="test-title">No Animation Fighting — Simultaneous Animations Do Not Conflict</div>
+        <div class="test-detail">Two simultaneous animations never conflict (e.g., tab switch + list insertion). No visual glitch or stuck animation state when interactions overlap.</div>
+        <div class="test-pass-criteria">Pass: Complete a set while simultaneously switching tabs — no visual glitch, no stuck animation state, no orphaned animated element left on screen.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="interaction">
+      <div class="test-id">DX-038</div>
+      <div class="test-body">
+        <div class="test-title">Validation Errors Appear Inline — No Modal Dialogs for Field Errors</div>
+        <div class="test-detail">Validation errors appear inline next to the field, not as modal alerts. Weight field with invalid input shows error inline. No modal dialog interrupts the workout flow for a field validation error.</div>
+        <div class="test-pass-criteria">Pass: Enter "0" in weight field; red inline error appears adjacent to field without a modal dialog. Field gets focus. User can correct immediately without dismissing anything.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 6: Navigation & Information Architecture -->
+<div class="category-block" id="cat-nav">
+  <div class="category-header" onclick="toggleCategory('cat-nav')">
+    <span style="font-size:14px">&#9135;</span>
+    <span class="category-title">6. Navigation &amp; Information Architecture</span>
+    <span class="category-count">8 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="nav">
+      <div class="test-id">DX-039</div>
+      <div class="test-body">
+        <div class="test-title">Tab Identity — Active Tab Unambiguously Visible at 2 Feet</div>
+        <div class="test-detail">Selected tab is clearly visually distinguished (filled icon + amber tint or similar). User always knows which tab is active without leaning in.</div>
+        <div class="test-pass-criteria">Pass: On each tab, the active tab indicator is unambiguously visible from 2 feet away on a physical device. No confusion about which tab is current.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="nav">
+      <div class="test-id">DX-040</div>
+      <div class="test-body">
+        <div class="test-title">Maximum 2 Sheet Levels — No Triple-Sheet Nesting</div>
+        <div class="test-detail">No user flow requires opening a sheet from within a sheet from within a sheet. Depth of 2 sheets maximum for any navigable flow.</div>
+        <div class="test-pass-criteria">Pass: Map all tap-through flows; confirm maximum nesting depth is 2 sheets. No flow requires a 3-level sheet stack to complete its task.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="nav">
+      <div class="test-id">DX-041</div>
+      <div class="test-body">
+        <div class="test-title">Back Button Shows Parent View Name, Not Generic "Back"</div>
+        <div class="test-detail">NavigationStack push views have a clearly labeled Back button. Back button label shows the parent view name ("Progress"), not just the word "Back."</div>
+        <div class="test-pass-criteria">Pass: Drill into a lift from ProgressView; back button shows "Progress" not a generic "Back" label. Parent context is always preserved in the navigation label.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="nav">
+      <div class="test-id">DX-042</div>
+      <div class="test-body">
+        <div class="test-title">Full Analytics Entry Point Visible Without Scrolling</div>
+        <div class="test-detail">Progress to Full Analytics entry point is visually discoverable without prompting. "Full Analytics" row or equivalent is visible without scrolling past primary content.</div>
+        <div class="test-pass-criteria">Pass: Open ProgressView with a new user (no prior knowledge); locate the Full Analytics entry point within 30 seconds unaided. It is above the fold.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="nav">
+      <div class="test-id">DX-043</div>
+      <div class="test-body">
+        <div class="test-title">Settings Gear Icon Recognizable Without Label</div>
+        <div class="test-detail">Settings gear icon in HomeView toolbar is recognizable as settings without a text label. The icon alone communicates its function to first-time users.</div>
+        <div class="test-pass-criteria">Pass: Show HomeView to 3 test users; all identify gear icon as settings without prompting. No user confusion about the icon's purpose.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="nav">
+      <div class="test-id">DX-044</div>
+      <div class="test-body">
+        <div class="test-title">All 5 Tabs Have Both Icon and Text Label</div>
+        <div class="test-detail">All 5 tabs have both icon and text label visible at default text size. Icon alone is insufficient for new users. No icon-only tab bar.</div>
+        <div class="test-pass-criteria">Pass: No tab is icon-only; every tab has a visible text label at default text size (not hidden by Dynamic Type at default).</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="nav">
+      <div class="test-id">DX-045</div>
+      <div class="test-body">
+        <div class="test-title">First-Time Progress Empty State — Informative, Not Blank</div>
+        <div class="test-detail">First-time user with zero sessions sees an empty state that explains what will appear here, not just a blank screen or a generic "No data" message.</div>
+        <div class="test-pass-criteria">Pass: Fresh install; navigate to Progress tab; empty state is present, informative, and on-brand. The user understands what this tab will show once they train.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="nav">
+      <div class="test-id">DX-046</div>
+      <div class="test-body">
+        <div class="test-title">Trainer Tab Purpose Clear Within 10 Seconds</div>
+        <div class="test-detail">New user understands what Trainer does within 10 seconds of opening it. Tab content, title, and layout communicate purpose immediately without requiring onboarding text.</div>
+        <div class="test-pass-criteria">Pass: Show a new user the Trainer tab; they can describe its purpose in one sentence within 10 seconds. No confusion about what the tab offers.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 7: Coaching Voice & Tone -->
+<div class="category-block" id="cat-voice">
+  <div class="category-header" onclick="toggleCategory('cat-voice')">
+    <span style="font-size:14px">&#9654;</span>
+    <span class="category-title">7. Coaching Voice &amp; Tone</span>
+    <span class="category-count">7 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="voice">
+      <div class="test-id">DX-047</div>
+      <div class="test-body">
+        <div class="test-title">Zero Cheerleading Phrases Anywhere in the App</div>
+        <div class="test-detail">No "Amazing!", "Crushing it!", "You're killing it!", "So proud of you!", "Beast mode!" anywhere in WorkoutNarrativeEngine, phrase_bank.json, HomeView, TrainerTabView, or any coach note. Not one instance.</div>
+        <div class="test-pass-criteria">Pass: Full text search across phrase_bank.json and all Swift files for exclamation-point phrases returns zero cheerleading instances. The word "amazing" does not appear in any coaching context.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="voice">
+      <div class="test-id">DX-048</div>
+      <div class="test-body">
+        <div class="test-title">Voice Consistency Across All 5 Coaching Surfaces</div>
+        <div class="test-detail">Open 5 different coaching outputs (post-set note, readiness note, trainer plan note, session summary, empty state copy). All 5 read as the same voice: spare, direct, specific.</div>
+        <div class="test-pass-criteria">Pass: Read all 5 aloud; no tonal whiplash between screens. A listener cannot identify which screen each phrase came from based on tone alone.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="voice">
+      <div class="test-id">DX-049</div>
+      <div class="test-body">
+        <div class="test-title">Coaching Language Is Specific — Not Generic for Any User</div>
+        <div class="test-detail">A coaching note that could apply to any user on any day for any exercise fails this test. Every note must reference specific data: exercise name, weight, rep count, or trend.</div>
+        <div class="test-pass-criteria">Pass: Generate 10 different coaching notes across varied exercise/rep/weight states; all 10 reference specific data. None could be pasted into a different user's session unchanged.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="voice">
+      <div class="test-id">DX-050</div>
+      <div class="test-body">
+        <div class="test-title">No Contradictory Coaching Within a Single Session</div>
+        <div class="test-detail">If readiness is low, the coaching does not simultaneously suggest pushing harder. Weight suggestion sheet and readiness note must reflect the same posture.</div>
+        <div class="test-pass-criteria">Pass: Set readiness to 55; verify coaching note recommends restraint; verify weight suggestion reflects the same posture (or is suppressed). No conflicting signals in the same session.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="voice">
+      <div class="test-id">DX-051</div>
+      <div class="test-body">
+        <div class="test-title">Identity-Affirming Framing — Athlete, Not Patient</div>
+        <div class="test-detail">Coaching language positions the user as an athlete building a habit, not a patient being monitored. "You've trained 4 days in a row" not "Your compliance was 80% this week."</div>
+        <div class="test-pass-criteria">Pass: Review all readiness notes and habit engine messages for clinical framing; none found. Every message speaks to a capable adult making deliberate choices.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="voice">
+      <div class="test-id">DX-052</div>
+      <div class="test-body">
+        <div class="test-title">Absence of Coaching Is Itself a Signal — No Filler Notes</div>
+        <div class="test-detail">When no urgent signal exists, the coach note section is absent (not a placeholder, not "All good!"). Silence is part of the voice system.</div>
+        <div class="test-pass-criteria">Pass: Set up a clean user state with no plateaus, good readiness, no gaps; coach note section does not appear on ProgressView. No filler text occupies the coaching slot.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="voice">
+      <div class="test-id">DX-053</div>
+      <div class="test-body">
+        <div class="test-title">Empty State Copy Maintains H.O.N. Voice — No "No Data Found"</div>
+        <div class="test-detail">No "No data found", "N/A", "—" as the primary message. Empty states have one line of on-brand copy that reflects the same spare, direct voice as coaching notes.</div>
+        <div class="test-pass-criteria">Pass: Trigger empty states on Progress (no sessions), Trainer (no plan yet), StrengthLab (no history); all show on-brand text. No database-style error messages visible.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 8: Human-Centered Design -->
+<div class="category-block" id="cat-hcd">
+  <div class="category-header" onclick="toggleCategory('cat-hcd')">
+    <span style="font-size:14px">&#9675;</span>
+    <span class="category-title">8. Human-Centered Design</span>
+    <span class="category-count">7 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="hcd">
+      <div class="test-id">DX-054</div>
+      <div class="test-body">
+        <div class="test-title">Time to First Workout — Under 3 Minutes from Cold Install</div>
+        <div class="test-detail">A new user with no prior knowledge can install, complete onboarding, and start logging their first exercise within 3 minutes. No guidance or verbal assistance permitted.</div>
+        <div class="test-pass-criteria">Pass: Observe 1 test user; time from app launch to first set logged is under 3 minutes without any assistance. Any friction point that causes them to pause counts against this test.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="hcd">
+      <div class="test-id">DX-055</div>
+      <div class="test-body">
+        <div class="test-title">Progressive Disclosure — Advanced Features Hidden by Default</div>
+        <div class="test-detail">RPE chips, drop set toggle, velocity profile, and other advanced features are not visible in the default set-logging UI. They become accessible only after an explicit action.</div>
+        <div class="test-pass-criteria">Pass: Fresh install to workout to new set row; no RPE, no drop set visible by default. Advanced features require a long press, expand, or toggle to reveal.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="hcd">
+      <div class="test-id">DX-056</div>
+      <div class="test-body">
+        <div class="test-title">Error Recovery Clear and Immediate — No Help Text Required</div>
+        <div class="test-detail">If a user tries to complete a set with weight of 0 or invalid reps, the error state is visually clear and the corrective action is obvious without reading any help text.</div>
+        <div class="test-pass-criteria">Pass: Submit a set with weight = 0; red inline error appears; field gets focus; no modal. User knows exactly what to do to fix it without reading instructions.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="hcd">
+      <div class="test-id">DX-057</div>
+      <div class="test-body">
+        <div class="test-title">Cognitive Load in Active Workout — Active Exercise Is Primary</div>
+        <div class="test-detail">With 3 exercises loaded, the active exercise is visually primary. Upcoming exercises are visible but clearly subordinate. User attention is directed to the right place.</div>
+        <div class="test-pass-criteria">Pass: Load a 3-exercise workout; the active exercise header/card is visually dominant; next exercises are muted in contrast or scale. Attention is unambiguous.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="hcd">
+      <div class="test-id">DX-058</div>
+      <div class="test-body">
+        <div class="test-title">User Control — All Data Editable, Deletable, or Reversible</div>
+        <div class="test-detail">The user can always edit, delete, or undo: a logged set, a completed workout, a saved routine. No data is ever silently committed with no recourse.</div>
+        <div class="test-pass-criteria">Pass: Complete a set, verify edit option available. Complete a workout, verify session appears in history with edit access. No permanent action without an escape path.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="hcd">
+      <div class="test-id">DX-059</div>
+      <div class="test-body">
+        <div class="test-title">Feedback Immediacy — Every Tap Responds Within 100ms</div>
+        <div class="test-detail">Every tap on an interactive element produces a visible response within 100ms (button highlight, state change, or navigation). No "dead tap" feeling on any interactive element.</div>
+        <div class="test-pass-criteria">Pass: Tap every button type across all 5 tabs; each responds visually within one frame. No button that appears unresponsive on the first tap.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="hcd">
+      <div class="test-id">DX-060</div>
+      <div class="test-body">
+        <div class="test-title">Defaults Are Correct for a Median User — No Configuration Required</div>
+        <div class="test-detail">Default weight unit matches device region, default rep target is 8–10, default rest timer is off (not required), RPE is off by default. The app works correctly out of the box for a median user.</div>
+        <div class="test-pass-criteria">Pass: Fresh install; log a workout; default values feel appropriate without any configuration. No user needs to change settings before their first session feels right.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 9: iOS Platform Conventions -->
+<div class="category-block" id="cat-platform">
+  <div class="category-header" onclick="toggleCategory('cat-platform')">
+    <span style="font-size:14px">&#63743;</span>
+    <span class="category-title">9. iOS Platform Conventions</span>
+    <span class="category-count">6 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="platform">
+      <div class="test-id">DX-061</div>
+      <div class="test-body">
+        <div class="test-title">Native Controls for Native Patterns — No Reimplemented System UI</div>
+        <div class="test-detail">Date pickers use iOS DatePicker, sliders use Slider, toggles use Toggle. No custom-reimplemented controls that fight iOS system behavior or look out of place on the platform.</div>
+        <div class="test-pass-criteria">Pass: Long-press any date input; iOS native picker appears with correct interaction model. All standard controls behave as iOS users expect them to.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="platform">
+      <div class="test-id">DX-062</div>
+      <div class="test-body">
+        <div class="test-title">Swipe Gesture Conflicts Resolved — Sheet vs. NavigationStack</div>
+        <div class="test-detail">NavigationStack back swipe and sheet swipe-to-dismiss do not conflict. Swiping left from a sheet does not accidentally trigger back navigation in the parent stack.</div>
+        <div class="test-pass-criteria">Pass: Open a sheet inside a NavigationStack view; swipe down dismisses sheet; swipe left on the underlying view navigates back correctly. No gesture ambiguity.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="platform">
+      <div class="test-id">DX-063</div>
+      <div class="test-body">
+        <div class="test-title">Long-Press Interactions Have a Tap Equivalent</div>
+        <div class="test-detail">No feature requires a long press as the only activation method. All long-press interactions have a tap-accessible equivalent (button, menu item, or toolbar icon).</div>
+        <div class="test-pass-criteria">Pass: List all long-press interactions; each has a tap-accessible equivalent. No feature is exclusively discoverable through a long press with no other affordance.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="platform">
+      <div class="test-id">DX-064</div>
+      <div class="test-body">
+        <div class="test-title">Dynamic Type Support — Accessibility Extra Large Renders Correctly</div>
+        <div class="test-detail">All text in the app scales correctly when iOS text size is set to Accessibility Extra Large. No text clipped, no overlapping elements, no layout breakage at maximum text size.</div>
+        <div class="test-pass-criteria">Pass: Set accessibility text size to maximum; navigate all 5 tabs; all text readable, no layout collisions, no truncated labels that lose meaning.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="platform">
+      <div class="test-id">DX-065</div>
+      <div class="test-body">
+        <div class="test-title">Dark Mode Only — No Light Mode Artifacts</div>
+        <div class="test-detail">No light mode artifacts, no UIColor.systemBackground rendering as white, no image assets that look wrong on dark backgrounds. The app is intentionally dark-only and never breaks.</div>
+        <div class="test-pass-criteria">Pass: Verify the app was not accidentally made light-mode-compatible; all screens render dark. No white flash during transitions.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="platform">
+      <div class="test-id">DX-066</div>
+      <div class="test-body">
+        <div class="test-title">Status Bar Style — Light Text on All Screens</div>
+        <div class="test-detail">Light (white text) status bar on all screens, consistent with dark app background. No screen shows dark status bar text on a dark background, which would make the time and indicators invisible.</div>
+        <div class="test-pass-criteria">Pass: Navigate all 5 primary screens; status bar always shows white clock/indicators. No screen inadvertently inverts to dark status bar.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 10: Emotional Design & Delight -->
+<div class="category-block" id="cat-delight">
+  <div class="category-header" onclick="toggleCategory('cat-delight')">
+    <span style="font-size:14px">&#9733;</span>
+    <span class="category-title">10. Emotional Design &amp; Delight</span>
+    <span class="category-count">6 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="delight">
+      <div class="test-id">DX-067</div>
+      <div class="test-body">
+        <div class="test-title">Workout Completion Splash — Session-Specific Content</div>
+        <div class="test-detail">Completing and ending a workout shows a full celebration state (not just a tab switch). The splash acknowledges the specific session: exercise count, duration, or a PR if set.</div>
+        <div class="test-pass-criteria">Pass: Complete a 3-set workout and end session; celebration screen appears with session-specific content before returning to home. Generic "Great job" is not acceptable.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="delight">
+      <div class="test-id">DX-068</div>
+      <div class="test-body">
+        <div class="test-title">PR Visual Moment — Clearly Distinct from Regular Set Completion</div>
+        <div class="test-detail">When a set is logged as a personal record, the visual treatment is clearly distinct from a regular set completion. Green pip, PR label, or similar — the user knows immediately this was special.</div>
+        <div class="test-pass-criteria">Pass: Log a PR set; visual treatment is visibly different from a normal set complete. No ambiguity about whether the set was a PR or ordinary.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="delight">
+      <div class="test-id">DX-069</div>
+      <div class="test-body">
+        <div class="test-title">Milestone Acknowledgement — Session 10, 25, 50, 100, 200, 365</div>
+        <div class="test-detail">Session 10, 25, 50, 100, 200, and 365 produce a distinct celebration. Not the same as a regular session completion. The milestone is named explicitly.</div>
+        <div class="test-pass-criteria">Pass: Seed log to 24 sessions; log session 25; milestone-specific splash appears with named milestone ("Session 25 — a quarter century" or equivalent). Regular completion splash does not appear instead.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="delight">
+      <div class="test-id">DX-070</div>
+      <div class="test-body">
+        <div class="test-title">Comeback Messaging — Warm and Non-Judgmental After 7+ Day Gap</div>
+        <div class="test-detail">After a gap of 7+ days, the app's first interaction acknowledges the return in a warm, non-judgmental tone. No "You've been away for 14 days" framing; instead: "Good to have you back."</div>
+        <div class="test-pass-criteria">Pass: Set last session date to 14 days ago; open app; HomeView shows a comeback message with no guilt framing, no day-count shaming, no implied failure.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="delight">
+      <div class="test-id">DX-071</div>
+      <div class="test-body">
+        <div class="test-title">Trainer Response Feels Considered — 0.5–1.5 Second Loading State</div>
+        <div class="test-detail">The AI-generated workout plan does not appear instantaneously. A brief animation or loading state (0.5–1.5 seconds) makes the response feel deliberate rather than automated.</div>
+        <div class="test-pass-criteria">Pass: Open Trainer tab with no existing plan; plan generation shows a loading state before content appears. Instant appearance with no loading state is a Fail.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="delight">
+      <div class="test-id">DX-072</div>
+      <div class="test-body">
+        <div class="test-title">App Icon Visual Language Matches In-App Design System</div>
+        <div class="test-detail">The app icon's visual language (color, form, weight) is consistent with the in-app design language. The icon feels like it belongs to the same product family as the UI.</div>
+        <div class="test-pass-criteria">Pass: Hold app icon next to HomeView screenshot; color palette and visual weight are consistent. No jarring mismatch in style, color, or design language between icon and UI.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<div class="separator"></div>
+
+<!-- Section 2: Design Quality Gates -->
+<div class="section-heading">Section 2 — Design Quality Gates</div>
+
+<div class="tier-label tier-a">Pre-Launch Design Gates (must pass before App Store submission)</div>
+<div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;">
+  <ul class="gate-list">
+    <li class="gate-item"><div class="gate-icon">!</div><span>Zero WCAG AA contrast failures on any primary text element</span></li>
+    <li class="gate-item"><div class="gate-icon">!</div><span>All critical path flows (onboarding &rarr; first workout, plan &rarr; guided session, progress &rarr; drill-down) observed by at least one person unfamiliar with the codebase</span></li>
+    <li class="gate-item"><div class="gate-icon">!</div><span>Full coaching voice audit: every string in phrase_bank.json reviewed against tone guide &mdash; no cheerleading, no clinical framing</span></li>
+    <li class="gate-item"><div class="gate-icon">!</div><span>Design system coverage &ge; 90%: at least 90% of color values in Views/ reference HONTheme tokens</span></li>
+    <li class="gate-item"><div class="gate-icon">!</div><span>Zero hardcoded color hex values outside HONTheme.swift</span></li>
+    <li class="gate-item"><div class="gate-icon">!</div><span>All 5 tab empty states reviewed and confirmed on-brand</span></li>
+    <li class="gate-item"><div class="gate-icon">!</div><span>Celebration splash and milestone moments reviewed on physical device (animations feel different on device vs. simulator)</span></li>
+  </ul>
+</div>
+
+<div class="tier-label tier-b">Design KPI Targets (measured at D7, D30)</div>
+
+<div class="metrics-grid">
+  <div class="metric-card">
+    <div class="metric-card-title">Task Completion</div>
+    <div class="metric-row"><span class="metric-name">First workout logged without help</span><span class="metric-target positive">&gt;85%</span></div>
+    <div class="metric-row"><span class="metric-name">Logging error rate (sets requiring correction)</span><span class="metric-target positive">&lt;5%</span></div>
+    <div class="metric-row"><span class="metric-name">Onboarding completion (reaches home)</span><span class="metric-target positive">&gt;90%</span></div>
+    <div class="metric-row"><span class="metric-name">Support requests citing UI confusion (D30)</span><span class="metric-target positive">&lt;2% MAU</span></div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-card-title">Perceived Quality</div>
+    <div class="metric-row"><span class="metric-name">"Feels premium" rating (1–5 scale, TestFlight)</span><span class="metric-target amber">&gt;4.0</span></div>
+    <div class="metric-row"><span class="metric-name">"Coaching felt relevant to my session"</span><span class="metric-target amber">&gt;75% agree</span></div>
+    <div class="metric-row"><span class="metric-name">NPS at D30</span><span class="metric-target amber">&gt;40</span></div>
+    <div class="metric-row"><span class="metric-name">"I knew what the app was for within 30 seconds"</span><span class="metric-target amber">&gt;90% agree</span></div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-card-title">Feature Engagement</div>
+    <div class="metric-row"><span class="metric-name">Progress tab viewed at least once/week</span><span class="metric-target positive">&gt;50%</span></div>
+    <div class="metric-row"><span class="metric-name">Trainer tab opened in first 7 days</span><span class="metric-target positive">&gt;40%</span></div>
+    <div class="metric-row"><span class="metric-name">StrengthLab drill-down used by D30</span><span class="metric-target amber">&gt;30%</span></div>
+    <div class="metric-row"><span class="metric-name">RPE logged at least once by D30</span><span class="metric-target amber">&gt;25%</span></div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-card-title">Retention Signal</div>
+    <div class="metric-row"><span class="metric-name">D7 retention</span><span class="metric-target positive">&gt;35%</span></div>
+    <div class="metric-row"><span class="metric-name">D30 retention</span><span class="metric-target positive">&gt;20%</span></div>
+    <div class="metric-row"><span class="metric-name">Sessions/week by week 4</span><span class="metric-target positive">&gt;3.0</span></div>
+    <div class="metric-row"><span class="metric-name">% reaching session 10</span><span class="metric-target positive">&gt;40%</span></div>
+  </div>
+</div>
+
+<div class="separator"></div>
+
+<!-- Section 3: Definition of Done -->
+<div class="section-heading">Section 3 — Definition of Done for Design</div>
+
+<div class="done-card">
+  <p>H.O.N. is done from a design standpoint when a person who has never seen the app can pick it up, understand what it does within 30 seconds of looking at the home screen, complete their first workout without any friction, receive coaching feedback that feels written for them specifically, and come back the next day because the experience left them feeling capable — not monitored. Done means no screen is a number dump, every secondary view opens with a sentence that interprets its most important data point, the coaching voice is consistent from the first set to the last drill-down sheet, celebrations feel earned rather than automatic, and the app's identity — spare, direct, honest — is present in every pixel. Done does not mean beautiful. It means purposeful. Every design decision exists because it serves the person holding the phone, not because it looked good in Figma.</p>
+</div>
+
+<div class="separator"></div>
+
+<!-- Section 4: LLM Design Critique Prompt -->
+<div class="section-heading">Section 4 — LLM Design Critique Prompt</div>
+
+<div class="llm-card">
+  <div class="llm-card-label">Design Review Tool &mdash; Parametric LLM Prompt</div>
+  <div class="llm-card-desc">Use this prompt to evaluate any screen of the H.O.N. app. Replace the placeholder fields with the screen name and a plain-language description or screenshot context. The output is structured feedback, not a checklist — it surfaces the most important design issue on that screen first, then works down in priority order.</div>
+  <div class="llm-prompt-block"><span class="llm-section-label">CONTEXT</span>
+You are reviewing a screen from H.O.N. (Habit Over Numbers), an iOS SwiftUI fitness coaching app. H.O.N. is dark mode only, uses a strict design token system (background #111111, card #1c1c1e, amber #f59e0b for signals, green #34d399 for positive states), and has a coaching voice that is spare, direct, and identity-affirming — never cheerleading, never clinical. The app has 5 tabs: Home, Workout, Progress, Insights, Trainer.
+
+<span class="llm-section-label">SCREEN UNDER REVIEW</span>
+Screen: <span class="llm-placeholder">[SCREEN NAME]</span>
+Context: <span class="llm-placeholder">[SCREEN DESCRIPTION OR SCREENSHOT CONTEXT — describe layout, visible elements, key interactions, and any data states shown]</span>
+
+<span class="llm-section-label">EVALUATION DIMENSIONS</span>
+Evaluate this screen across the following six dimensions. For each dimension, produce one paragraph of structured feedback. Lead with the most significant finding. Do not produce a checklist — write as a senior product designer giving a colleague a direct, useful critique.
+
+<span class="llm-section-label">1. Visual Hierarchy</span>
+Where does the eye land first? Is there a single dominant element? Does the information density match the user's task at this moment? Are supporting elements subordinate without being invisible? Does the layout communicate priority or just fill space?
+
+<span class="llm-section-label">2. Voice &amp; Tone</span>
+Read every piece of copy on this screen aloud. Does it sound like a knowledgeable friend or a generic app? Is any phrase something that could appear on any fitness app for any user? Does the language position the user as a capable athlete or as someone being managed? Is silence used appropriately (no filler copy where no copy is needed)?
+
+<span class="llm-section-label">3. Information Density</span>
+Is everything shown necessary at this moment in the user's flow? Is there data visible that the user cannot act on from this screen? Are there decisions the user needs to make that require information not shown? Does the screen respect the user's attention or tax it?
+
+<span class="llm-section-label">4. Platform Conventions</span>
+Does this screen behave as an iOS user expects? Are native patterns used correctly (sheets, navigation, gestures)? Are tap targets adequate? Does any element fight the platform rather than work with it? Would a user who has never seen this app know how to interact with it based on iOS familiarity alone?
+
+<span class="llm-section-label">5. Emotional Design</span>
+What does the user feel when they see this screen? Does the design build confidence or anxiety? Are moments of achievement acknowledged proportionally (not over-engineered, not ignored)? Does the screen feel like it belongs to a product that respects the user's time and identity?
+
+<span class="llm-section-label">6. Actionability</span>
+Can the user determine their next action within 3 seconds of arriving at this screen? Are primary actions visually prominent and secondary actions accessible but subordinate? Is there any dead end — a screen state where the user has no clear path forward? Is the most important action the easiest to take?
+
+<span class="llm-section-label">OUTPUT FORMAT</span>
+After the six dimension paragraphs, add:
+- PRIORITY ISSUE: One sentence naming the single most important design problem on this screen.
+- QUICK WIN: One specific, implementable change that would improve this screen most within a single engineering session.
+- HOLD: One element on this screen that is working correctly and should not be changed.</div>
+</div>
+
+<script>
+// Status persistence via localStorage
+const STORAGE_KEY = 'hon_design_review_status';
+
+function loadStatuses() {
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  document.querySelectorAll('.test-case').forEach(tc => {
+    const id = tc.querySelector('.test-id').textContent;
+    if (saved[id]) {
+      const sel = tc.querySelector('.status-select');
+      sel.value = saved[id];
+      applyStatus(tc, sel, saved[id]);
+    }
+  });
+  updateStats();
+}
+
+function updateStatus(selectEl) {
+  const tc = selectEl.closest('.test-case');
+  const id = tc.querySelector('.test-id').textContent;
+  const status = selectEl.value;
+  applyStatus(tc, selectEl, status);
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  saved[id] = status;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+  updateStats();
+}
+
+function applyStatus(tc, sel, status) {
+  tc.className = 'test-case status-' + status;
+  sel.className = 'status-select status-' + status;
+  tc.dataset.status = status;
+}
+
+function updateStats() {
+  const all = document.querySelectorAll('.test-case');
+  let open = 0, pass = 0, fail = 0, partial = 0;
+  all.forEach(tc => {
+    switch(tc.dataset.status) {
+      case 'open': open++; break;
+      case 'pass': pass++; break;
+      case 'fail': fail++; break;
+      case 'partial': partial++; break;
+    }
+  });
+  document.getElementById('stat-total').textContent = all.length + ' total';
+  document.getElementById('stat-open').textContent = (open + fail) + ' open/fail';
+  document.getElementById('stat-partial').textContent = partial + ' partial';
+  document.getElementById('stat-pass').textContent = pass + ' passed';
+}
+
+function filterTests(status, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.test-case').forEach(tc => {
+    if (status === 'all') {
+      tc.style.display = '';
+    } else {
+      tc.style.display = tc.dataset.status === status ? '' : 'none';
+    }
+  });
+}
+
+function toggleCategory(id) {
+  const block = document.getElementById(id);
+  block.classList.toggle('collapsed');
+}
+
+loadStatuses();
+</script>
+</body>
+</html>
