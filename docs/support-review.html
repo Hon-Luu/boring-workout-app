@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H.O.N. — Support &amp; Operations Review Criteria</title>
+<style>
+  :root {
+    --bg:       #111111;
+    --card:     #1c1c1e;
+    --border:   rgba(255,255,255,0.07);
+    --amber:    #f59e0b;
+    --positive: #34d399;
+    --negative: #f87171;
+    --warning:  #fbbf24;
+    --muted:    rgba(255,255,255,0.4);
+    --text:     rgba(255,255,255,0.88);
+    --text2:    rgba(255,255,255,0.55);
+    --blue:     #60a5fa;
+    --purple:   #a78bfa;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 32px 20px 64px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .header { margin-bottom: 36px; }
+  .header-top {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .logo {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber);
+  }
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--amber), transparent);
+    opacity: 0.3;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    color: var(--text);
+  }
+  .subtitle {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+
+  .section-heading {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin: 32px 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-heading::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .stats {
+    display: flex;
+    gap: 6px;
+    margin: 20px 0 28px;
+    flex-wrap: wrap;
+  }
+  .stat-pill {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.04em;
+  }
+  .stat-open    { background: rgba(248,113,113,0.15); color: var(--negative); }
+  .stat-pass    { background: rgba(52,211,153,0.15);  color: var(--positive); }
+  .stat-partial { background: rgba(251,191,36,0.15);  color: var(--warning); }
+  .stat-total   { background: rgba(255,255,255,0.08); color: var(--text2); }
+
+  .filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover  { border-color: var(--amber); color: var(--amber); }
+  .filter-btn.active { background: var(--amber); border-color: var(--amber); color: #111; }
+
+  /* Category block */
+  .category-block {
+    margin-bottom: 24px;
+  }
+  .category-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .category-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.04em;
+  }
+  .category-count {
+    font-size: 11px;
+    color: var(--text2);
+    background: rgba(255,255,255,0.06);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .category-chevron {
+    margin-left: auto;
+    color: var(--text2);
+    font-size: 11px;
+    transition: transform 0.2s;
+  }
+  .category-block.collapsed .category-chevron { transform: rotate(-90deg); }
+  .category-block.collapsed .test-list { display: none; }
+
+  /* Test case */
+  .test-case {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transition: border-color 0.2s;
+  }
+  .test-case:hover { border-color: rgba(255,255,255,0.12); }
+  .test-case.status-pass   { border-left: 3px solid var(--positive); }
+  .test-case.status-fail   { border-left: 3px solid var(--negative); }
+  .test-case.status-partial{ border-left: 3px solid var(--warning); }
+  .test-case.status-open   { border-left: 3px solid rgba(255,255,255,0.15); }
+
+  .test-id {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    letter-spacing: 0.06em;
+    color: var(--amber);
+    background: rgba(245,158,11,0.1);
+    padding: 2px 7px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .test-body { flex: 1; }
+
+  .test-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+
+  .test-detail {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.5;
+    margin-bottom: 6px;
+  }
+
+  .test-pass-criteria {
+    font-size: 11px;
+    color: rgba(52,211,153,0.8);
+    background: rgba(52,211,153,0.06);
+    border: 1px solid rgba(52,211,153,0.12);
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+
+  .status-select {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .status-open    { background: rgba(248,113,113,0.15); color: var(--negative); }
+  .status-pass    { background: rgba(52,211,153,0.15);  color: var(--positive); }
+  .status-fail    { background: rgba(248,113,113,0.3);  color: #fca5a5; }
+  .status-partial { background: rgba(251,191,36,0.15);  color: var(--warning); }
+
+  /* Metrics grid */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 640px) {
+    .metrics-grid { grid-template-columns: 1fr; }
+  }
+
+  .metric-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .metric-card-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 12px;
+  }
+  .metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 12px;
+  }
+  .metric-row:last-child { border-bottom: none; }
+  .metric-name { color: var(--text2); flex: 1; line-height: 1.4; }
+  .metric-target {
+    font-weight: 700;
+    color: var(--text);
+    font-family: 'SF Mono', monospace;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .metric-target.positive { color: var(--positive); }
+  .metric-target.amber    { color: var(--amber); }
+  .metric-target.negative { color: var(--negative); }
+
+  /* Gate list */
+  .gate-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .gate-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 13px;
+    color: var(--text2);
+  }
+  .gate-item:last-child { border-bottom: none; }
+  .gate-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(248,113,113,0.15);
+    color: var(--negative);
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .gate-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+
+  /* Done card */
+  .done-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--positive);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-top: 16px;
+  }
+  .done-card p {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.8;
+  }
+
+  /* LLM prompt card */
+  .prompt-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--amber);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-top: 16px;
+  }
+  .prompt-card-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 16px;
+  }
+  .prompt-block {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.7;
+    white-space: pre-wrap;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+  .prompt-section-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-top: 14px;
+    margin-bottom: 6px;
+  }
+  .output-item {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.6;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    display: flex;
+    gap: 10px;
+  }
+  .output-item:last-child { border-bottom: none; }
+  .output-num {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'SF Mono', monospace;
+    color: var(--amber);
+    min-width: 18px;
+    margin-top: 1px;
+  }
+
+  .separator {
+    height: 1px;
+    background: var(--border);
+    margin: 28px 0;
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 20px 14px 48px; }
+    .test-case { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <span class="logo">H.O.N.</span>
+    <div class="divider-line"></div>
+  </div>
+  <h1>Support &amp; Operations Review Criteria</h1>
+  <div class="subtitle">44 must-pass support criteria &middot; Crash triage gates &middot; Feedback loops &middot; SLA definitions &middot; Runbook readiness &middot; Definition of done &middot; Last updated: 2026-05-30</div>
+</div>
+
+<div class="stats">
+  <span class="stat-pill stat-total" id="stat-total">44 total</span>
+  <span class="stat-pill stat-open" id="stat-open">— open</span>
+  <span class="stat-pill stat-partial" id="stat-partial">— partial</span>
+  <span class="stat-pill stat-pass" id="stat-pass">— passed</span>
+</div>
+
+<div class="filters">
+  <button class="filter-btn active" onclick="filterTests('all', this)">All</button>
+  <button class="filter-btn" onclick="filterTests('open', this)">Open</button>
+  <button class="filter-btn" onclick="filterTests('pass', this)">Passed</button>
+  <button class="filter-btn" onclick="filterTests('fail', this)">Failed</button>
+  <button class="filter-btn" onclick="filterTests('partial', this)">Partial</button>
+</div>
+
+<!-- Section 1 -->
+<div class="section-heading">Section 1 — Must-Pass Support Criteria</div>
+
+<!-- Category 1: Crash Detection & Triage -->
+<div class="category-block" id="cat-crash">
+  <div class="category-header" onclick="toggleCategory('cat-crash')">
+    <span style="font-size:14px">&#9888;</span>
+    <span class="category-title">1. Crash Detection &amp; Triage</span>
+    <span class="category-count">7 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="crash">
+      <div class="test-id">SR-001</div>
+      <div class="test-body">
+        <div class="test-title">Crash Detection Pipeline</div>
+        <div class="test-detail">A method exists to detect crashes in production before users report them. Minimum: App Store Connect crash reports checked daily at a fixed time. Preferred: Crashlytics or equivalent integrated before launch.</div>
+        <div class="test-pass-criteria">Pass: crash detection method documented; responsible person named; checking cadence defined.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="crash">
+      <div class="test-id">SR-002</div>
+      <div class="test-body">
+        <div class="test-title">Crash Severity Matrix</div>
+        <div class="test-detail">Crashes are classified within 4 hours of detection. P0 = crash on launch OR any crash causing data loss. P1 = crash in core workout logging flow. P2 = crash in secondary views (StrengthLab, Trainer, Settings). P3 = rare edge-case crash affecting &lt;0.1% of sessions.</div>
+        <div class="test-pass-criteria">Pass: matrix documented; team can classify any crash in under 5 minutes using the matrix.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="crash">
+      <div class="test-id">SR-003</div>
+      <div class="test-body">
+        <div class="test-title">P0 Crash Response SLA</div>
+        <div class="test-detail">P0 crashes trigger: (1) engineering notification within 1 hour, (2) hotfix build in TestFlight within 4 hours, (3) App Store submission within 24 hours. On-call person defined for first 72 hours post-launch.</div>
+        <div class="test-pass-criteria">Pass: SLA documented; on-call person named and has push access to TestFlight and App Store Connect.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="crash">
+      <div class="test-id">SR-004</div>
+      <div class="test-body">
+        <div class="test-title">P1 Crash Response SLA</div>
+        <div class="test-detail">P1 crashes fixed in next release (&le;7 days) unless frequency exceeds 0.5% of sessions (then treat as P0). Frequency threshold is defined and measurable from App Store Connect.</div>
+        <div class="test-pass-criteria">Pass: SLA documented; frequency threshold defined and measurable from App Store Connect.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="crash">
+      <div class="test-id">SR-005</div>
+      <div class="test-body">
+        <div class="test-title">dSYM Symbolication</div>
+        <div class="test-detail">Debug symbols (dSYM files) archived for every App Store and TestFlight submission. Crash reports are symbolicated before triage — human-readable stack traces, not memory addresses. Archive process is documented and tested.</div>
+        <div class="test-pass-criteria">Pass: dSYM archive process documented; test by symbolicating a sample crash log from TestFlight; output is human-readable.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="crash">
+      <div class="test-id">SR-006</div>
+      <div class="test-body">
+        <div class="test-title">Crash Repro Kit</div>
+        <div class="test-detail">For any reported crash, the team uses a standard repro template: device model, iOS version, app version, approximate session count, what the user was doing, any custom data state. Template has been used in actual TestFlight investigations.</div>
+        <div class="test-pass-criteria">Pass: repro template exists; used in at least 3 TestFlight crash investigations; all required fields present.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="crash">
+      <div class="test-id">SR-007</div>
+      <div class="test-body">
+        <div class="test-title">User Communication for Widespread Crashes</div>
+        <div class="test-detail">If a crash affects &gt;1% of sessions, a user-facing acknowledgment exists within 48 hours: App Store review response, or response to any support emails received. Communication template written and voice-checked before sending.</div>
+        <div class="test-pass-criteria">Pass: communication template exists; named person is responsible for drafting within 48h; reviewed for H.O.N. voice before sending.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 2: User Feedback Intake -->
+<div class="category-block" id="cat-feedback">
+  <div class="category-header" onclick="toggleCategory('cat-feedback')">
+    <span style="font-size:14px">&#128172;</span>
+    <span class="category-title">2. User Feedback Intake</span>
+    <span class="category-count">7 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="feedback">
+      <div class="test-id">SR-008</div>
+      <div class="test-body">
+        <div class="test-title">Support Channel Operational</div>
+        <div class="test-detail">At least one support channel is live and monitored before launch: support email (from App Store listing) or in-app feedback. Channel tested with a real inbound message before submission. First-response SLA defined.</div>
+        <div class="test-pass-criteria">Pass: channel live; response tested end-to-end; first-response SLA defined (target: 24 hours).</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="feedback">
+      <div class="test-id">SR-009</div>
+      <div class="test-body">
+        <div class="test-title">App Store Review Monitoring</div>
+        <div class="test-detail">Reviews checked daily. Negative reviews (1–2 star) receive a personal response within 48 hours. Response is specific to the complaint, not templated. Monitoring calendar item exists to enforce the cadence.</div>
+        <div class="test-pass-criteria">Pass: monitoring calendar item exists; 48h SLA documented; at least 3 sample responses written that are distinct and on-brand.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="feedback">
+      <div class="test-id">SR-010</div>
+      <div class="test-body">
+        <div class="test-title">Review Response Voice</div>
+        <div class="test-detail">All App Store responses match H.O.N. voice: direct, human, specific. Zero instances of: "Dear valued customer", "We sincerely apologize for any inconvenience", "Please contact our support team." Response guide exists with 5 example responses; independently verified.</div>
+        <div class="test-pass-criteria">Pass: response guide exists with 5 example responses; an independent reviewer confirms all 5 pass the voice test.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="feedback">
+      <div class="test-id">SR-011</div>
+      <div class="test-body">
+        <div class="test-title">Feature Request Routing</div>
+        <div class="test-detail">User-submitted feature requests are captured, categorized (UX / coaching / analytics / new feature), and added to the product backlog within 7 days. Intake-to-backlog process is documented and tested with simulated requests.</div>
+        <div class="test-pass-criteria">Pass: intake &rarr; backlog process documented; tested with 3 simulated feature requests; all appear in backlog within the SLA.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="feedback">
+      <div class="test-id">SR-012</div>
+      <div class="test-body">
+        <div class="test-title">Feedback Synthesis</div>
+        <div class="test-detail">All qualitative feedback (reviews, emails) synthesized into themes monthly. Themes shared with product and content teams. Synthesis template covers: voice complaints, UX friction, feature requests, data concerns. Monthly calendar item scheduled.</div>
+        <div class="test-pass-criteria">Pass: synthesis template exists; monthly calendar item scheduled; covers all four feedback domains.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="feedback">
+      <div class="test-id">SR-013</div>
+      <div class="test-body">
+        <div class="test-title">Data Loss Protocol</div>
+        <div class="test-detail">If a user reports lost workout data, the support team has a documented response: (1) confirm data is local-only (no server backup), (2) explain iCloud backup behavior if applicable, (3) attempt recovery steps. Protocol tested with a simulated data-loss scenario.</div>
+        <div class="test-pass-criteria">Pass: data loss protocol exists; tested with a simulated data-loss scenario; response is honest about local-only storage.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="feedback">
+      <div class="test-id">SR-014</div>
+      <div class="test-body">
+        <div class="test-title">Sensitive Feedback Protocol</div>
+        <div class="test-detail">If a user reports fitness-related distress (injury, disordered eating signals, obsessive training language), the response: (1) does not give medical advice, (2) acknowledges the concern warmly, (3) provides a general referral to appropriate resources. Does not promote continued app use in this context.</div>
+        <div class="test-pass-criteria">Pass: protocol documented and reviewed by product; response does not promote continued app use in the context of distress.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 3: Known Issues Management -->
+<div class="category-block" id="cat-issues">
+  <div class="category-header" onclick="toggleCategory('cat-issues')">
+    <span style="font-size:14px">&#128196;</span>
+    <span class="category-title">3. Known Issues Management</span>
+    <span class="category-count">6 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="issues">
+      <div class="test-id">SR-015</div>
+      <div class="test-body">
+        <div class="test-title">Known Issues Log</div>
+        <div class="test-detail">A live document lists all known bugs with: ID, severity, affected versions, user-facing symptom, workaround (if any), fix version. Accessible to support team in under 30 seconds. Updated within the last sprint cycle.</div>
+        <div class="test-pass-criteria">Pass: log exists; updated within the last sprint cycle; support team can locate any issue by symptom description.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="issues">
+      <div class="test-id">SR-016</div>
+      <div class="test-body">
+        <div class="test-title">Workaround Documentation</div>
+        <div class="test-detail">Every P1 and P2 known issue has a user-facing workaround written in plain language — no technical jargon. All open P1/P2 backlog items have a workaround entry. Workarounds tested by a non-engineer to confirm they are followable.</div>
+        <div class="test-pass-criteria">Pass: all open P1/P2 backlog items have a workaround entry; workarounds tested by a non-engineer.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="issues">
+      <div class="test-id">SR-017</div>
+      <div class="test-body">
+        <div class="test-title">App Version Tagging</div>
+        <div class="test-detail">Every reported bug is tagged with the app version it was reported on. When a fix ships, the fix version is recorded. Support team can check in under 2 minutes whether a user-reported issue is from a fixed version.</div>
+        <div class="test-pass-criteria">Pass: version tagging process exists; all bugs in the log have version numbers; support team can check fix status by version.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="issues">
+      <div class="test-id">SR-018</div>
+      <div class="test-body">
+        <div class="test-title">Duplicate Detection</div>
+        <div class="test-detail">Before creating a new engineering ticket, support checks the known issues log and recent bug reports for duplicates. Deduplication check is a documented step in the bug intake process. Tested with simulated duplicate reports.</div>
+        <div class="test-pass-criteria">Pass: deduplication check is a documented step in the bug intake process; tested with 5 simulated duplicate reports.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="issues">
+      <div class="test-id">SR-019</div>
+      <div class="test-body">
+        <div class="test-title">Issue Closure Communication</div>
+        <div class="test-detail">When a bug is fixed and shipped, support proactively responds to all users who reported it (via App Store review reply or email), noting the fix is in the new version. Closure protocol documented and tested with one real closed TestFlight bug.</div>
+        <div class="test-pass-criteria">Pass: closure protocol documented; tested with one closed TestFlight bug; response sent to reporter.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="issues">
+      <div class="test-id">SR-020</div>
+      <div class="test-body">
+        <div class="test-title">Regression Escalation</div>
+        <div class="test-detail">If a previously fixed bug reappears, it is automatically escalated to the same priority level as the original (or P0 if any user data is at risk). Regression detection step exists in the QA process. Regression SLA documented.</div>
+        <div class="test-pass-criteria">Pass: regression detection step exists in the QA process; regression SLA documented.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 4: Operational Readiness -->
+<div class="category-block" id="cat-ops">
+  <div class="category-header" onclick="toggleCategory('cat-ops')">
+    <span style="font-size:14px">&#128295;</span>
+    <span class="category-title">4. Operational Readiness</span>
+    <span class="category-count">7 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="ops">
+      <div class="test-id">SR-021</div>
+      <div class="test-body">
+        <div class="test-title">Launch Day Runbook</div>
+        <div class="test-detail">Step-by-step runbook for launch day: who monitors crash reports, at what intervals, what constitutes a launch pause, who has authority to request a submission halt. Dry run completed 48 hours before submission. All named people have confirmed their responsibilities.</div>
+        <div class="test-pass-criteria">Pass: runbook exists; dry run completed 48 hours before submission; all named people have confirmed their responsibilities.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="ops">
+      <div class="test-id">SR-022</div>
+      <div class="test-body">
+        <div class="test-title">Escalation Tree</div>
+        <div class="test-detail">For each issue type (crash, data loss, voice complaint, HealthKit, billing if monetized): the escalation path is defined — support &rarr; engineering lead &rarr; PM &rarr; founder. Response time at each level defined. All named people have acknowledged their role.</div>
+        <div class="test-pass-criteria">Pass: escalation tree documented; all named people acknowledged their role.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="ops">
+      <div class="test-id">SR-023</div>
+      <div class="test-body">
+        <div class="test-title">On-Call Coverage</div>
+        <div class="test-detail">One person designated on-call for P0 crashes for the first 72 hours post-launch. This person has: App Store Connect access, TestFlight push access, and engineering contact. All access verified before launch day.</div>
+        <div class="test-pass-criteria">Pass: on-call schedule documented; on-call person has verified all required access before launch.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="ops">
+      <div class="test-id">SR-024</div>
+      <div class="test-body">
+        <div class="test-title">TestFlight Feedback Pipeline</div>
+        <div class="test-detail">TestFlight tester feedback is collected, reviewed, and actioned before App Store submission. Feedback review cadence defined. At least one bug found via TestFlight feedback (confirms the pipeline is actually working, not just documented).</div>
+        <div class="test-pass-criteria">Pass: &ge;10 active TestFlight testers; feedback review cadence defined; at least one bug found via TestFlight feedback.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="ops">
+      <div class="test-id">SR-025</div>
+      <div class="test-body">
+        <div class="test-title">App Store Submission Process</div>
+        <div class="test-detail">Documented checklist for App Store submission: screenshots updated, privacy label current, version notes written, build tested, dSYM archived. At least one successful end-to-end submission completed as a dry run before the real launch.</div>
+        <div class="test-pass-criteria">Pass: checklist exists; at least one successful end-to-end submission completed as a dry run.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="ops">
+      <div class="test-id">SR-026</div>
+      <div class="test-body">
+        <div class="test-title">HealthKit Diagnostic Script</div>
+        <div class="test-detail">If a user reports HealthKit not working (permissions, data not syncing), support has a step-by-step diagnostic script that can be executed over email. Covers: re-authorization, permission scope, iOS version compatibility. Tested by a non-engineer.</div>
+        <div class="test-pass-criteria">Pass: script exists; tested by a non-engineer in under 5 minutes; covers all three diagnostic areas.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="ops">
+      <div class="test-id">SR-027</div>
+      <div class="test-body">
+        <div class="test-title">Data Export Capability</div>
+        <div class="test-detail">If a user requests their data (personal preference or regulatory request), support can produce a human-readable export (CSV or JSON) within 7 days. Export process documented, tested end-to-end, and output confirmed as human-readable by a non-engineer.</div>
+        <div class="test-pass-criteria">Pass: export process documented; tested end-to-end; output format confirmed as human-readable.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 5: Support Quality Standards -->
+<div class="category-block" id="cat-quality">
+  <div class="category-header" onclick="toggleCategory('cat-quality')">
+    <span style="font-size:14px">&#11088;</span>
+    <span class="category-title">5. Support Quality Standards</span>
+    <span class="category-count">6 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="quality">
+      <div class="test-id">SR-028</div>
+      <div class="test-body">
+        <div class="test-title">First Response SLA</div>
+        <div class="test-detail">All support requests receive a first human response within 24 hours on business days. An automated acknowledgment ("We received your message — we'll respond within 24 hours") fires within 4 hours. Both automated and human response SLAs are documented.</div>
+        <div class="test-pass-criteria">Pass: automated acknowledgment configured and tested; 24h human response SLA documented.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="quality">
+      <div class="test-id">SR-029</div>
+      <div class="test-body">
+        <div class="test-title">Resolution Rate</div>
+        <div class="test-detail">&ge;80% of reported issues are resolved (user confirms resolution OR issue is fixed in a new version) within 14 days. Resolution tracking exists and is measurable. Rate can be calculated from the support log at any time.</div>
+        <div class="test-pass-criteria">Pass: resolution tracking exists; 14-day rate calculable from support log.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="quality">
+      <div class="test-id">SR-030</div>
+      <div class="test-body">
+        <div class="test-title">User Satisfaction Follow-Up</div>
+        <div class="test-detail">For resolved issues, a one-question follow-up is sent: "Was this resolved to your satisfaction?" Follow-up mechanism exists, response rate is tracked, and the team has a target response rate to aim for.</div>
+        <div class="test-pass-criteria">Pass: follow-up mechanism exists; response rate tracked; target &gt;30%.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="quality">
+      <div class="test-id">SR-031</div>
+      <div class="test-body">
+        <div class="test-title">Support Language Review</div>
+        <div class="test-detail">All support response templates reviewed against the H.O.N. voice guide. Zero corporate filler. "Dear valued customer", "We apologize for the inconvenience", and "Please do not hesitate" are explicitly absent. Reviewed by the content team before launch.</div>
+        <div class="test-pass-criteria">Pass: templates reviewed by the content team; all three banned phrases absent from every template.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="quality">
+      <div class="test-id">SR-032</div>
+      <div class="test-body">
+        <div class="test-title">Knowledge Base</div>
+        <div class="test-detail">Written answers exist for the 10 most anticipated user questions before launch. Questions based on TestFlight feedback themes. Support team can locate any answer in under 60 seconds. Knowledge base updated when new questions are discovered.</div>
+        <div class="test-pass-criteria">Pass: knowledge base exists with &ge;10 entries; support team can locate any answer in under 60 seconds.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="quality">
+      <div class="test-id">SR-033</div>
+      <div class="test-body">
+        <div class="test-title">Escalation Response Time</div>
+        <div class="test-detail">Escalated issues (P0, data loss, HealthKit) receive engineering review within 4 hours during business hours, 8 hours outside. SLA documented and tested in a simulated escalation drill with timed response before launch.</div>
+        <div class="test-pass-criteria">Pass: SLA documented; tested in a simulated escalation drill with timed response.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 6: App Store Review Management -->
+<div class="category-block" id="cat-reviews">
+  <div class="category-header" onclick="toggleCategory('cat-reviews')">
+    <span style="font-size:14px">&#11088;</span>
+    <span class="category-title">6. App Store Review Management</span>
+    <span class="category-count">5 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="reviews">
+      <div class="test-id">SR-034</div>
+      <div class="test-body">
+        <div class="test-title">Negative Review Response Rate</div>
+        <div class="test-detail">100% of 1-star and 2-star reviews receive a personal response within 48 hours. Response names the specific complaint; does not use a template. Monitoring is active from day one of public availability.</div>
+        <div class="test-pass-criteria">Pass: monitoring active; 0 negative reviews go unresponded after 48 hours.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="reviews">
+      <div class="test-id">SR-035</div>
+      <div class="test-body">
+        <div class="test-title">Positive Review Response</div>
+        <div class="test-detail">4-star and 5-star reviews receive a brief, on-brand thank-you. No two responses are identical. 5 sample positive responses written before launch; all distinct; all pass the voice test.</div>
+        <div class="test-pass-criteria">Pass: 5 sample positive responses written; all distinct; all pass the voice test.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="reviews">
+      <div class="test-id">SR-036</div>
+      <div class="test-body">
+        <div class="test-title">Version-Aware Review Context</div>
+        <div class="test-detail">Support team can determine within 2 minutes which app version was current when any review was posted. Version-to-date mapping is documented. Tested with 3 historical TestFlight reviews to confirm the mapping is accurate and accessible.</div>
+        <div class="test-pass-criteria">Pass: version-to-date mapping documented; tested with 3 historical TestFlight reviews.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="reviews">
+      <div class="test-id">SR-037</div>
+      <div class="test-body">
+        <div class="test-title">Review Update Outreach</div>
+        <div class="test-detail">When a bug cited in a negative review is fixed, support follows up on the original review with the fix version. Follow-up protocol documented and tested with one closed TestFlight bug. Reviewers are invited to update their rating.</div>
+        <div class="test-pass-criteria">Pass: follow-up protocol documented; tested with one closed TestFlight bug.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="reviews">
+      <div class="test-id">SR-038</div>
+      <div class="test-body">
+        <div class="test-title">Suspicious Review Detection</div>
+        <div class="test-detail">If a sudden spike of 1-star reviews from new accounts appears, the team has a process to report to Apple. App Store Connect review management account is active. Reporting process is documented before launch.</div>
+        <div class="test-pass-criteria">Pass: reporting process documented; App Store Connect review management account active.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 7: Privacy & Compliance -->
+<div class="category-block" id="cat-privacy">
+  <div class="category-header" onclick="toggleCategory('cat-privacy')">
+    <span style="font-size:14px">&#128274;</span>
+    <span class="category-title">7. Privacy &amp; Compliance</span>
+    <span class="category-count">6 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="privacy">
+      <div class="test-id">SR-039</div>
+      <div class="test-body">
+        <div class="test-title">Data Deletion Fulfillment</div>
+        <div class="test-detail">A user who requests complete data deletion receives confirmation within 7 days. Deletion removes all local workout data, cached analytics, and UserDefaults. Process tested end-to-end. Confirmation template exists.</div>
+        <div class="test-pass-criteria">Pass: deletion process tested end-to-end; confirmation template exists; deletion confirmed to be complete.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="privacy">
+      <div class="test-id">SR-040</div>
+      <div class="test-body">
+        <div class="test-title">HealthKit Data Disclosure</div>
+        <div class="test-detail">Support can accurately explain in plain language: what HealthKit data is accessed (HRV, heart rate, sleep, steps), when it's accessed, why, and what happens to it. Plain English disclosure document exists. Support team answers 5 test questions correctly without guessing.</div>
+        <div class="test-pass-criteria">Pass: disclosure document exists in plain English; support team answers 5 test questions correctly without guessing.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="privacy">
+      <div class="test-id">SR-041</div>
+      <div class="test-body">
+        <div class="test-title">Privacy Policy Currency</div>
+        <div class="test-detail">Privacy policy is reviewed and updated before every App Store submission that changes data access patterns. Privacy policy review is a required step in the submission checklist. Last reviewed within 30 days of submission.</div>
+        <div class="test-pass-criteria">Pass: privacy policy review is a required step in the submission checklist; last reviewed within 30 days.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="privacy">
+      <div class="test-id">SR-042</div>
+      <div class="test-body">
+        <div class="test-title">Minor User Protocol</div>
+        <div class="test-detail">If a user indicates they are under 13 (via support contact), the response protocol complies with COPPA: data deletion offered immediately. Escalation to legal/founder defined. Response does not collect further information from the minor.</div>
+        <div class="test-pass-criteria">Pass: protocol documented; escalation to legal/founder defined; response does not collect further information from the minor.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="privacy">
+      <div class="test-id">SR-043</div>
+      <div class="test-body">
+        <div class="test-title">Support Screenshot Policy</div>
+        <div class="test-detail">If a user shares a screenshot in a support context, it is used only to resolve the issue and deleted afterward. Not stored, not shared. Policy documented; support team briefed; deletion confirmation step in issue resolution checklist.</div>
+        <div class="test-pass-criteria">Pass: policy documented; support team briefed; deletion confirmation step in issue resolution checklist.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="privacy">
+      <div class="test-id">SR-044</div>
+      <div class="test-body">
+        <div class="test-title">Security Report Protocol</div>
+        <div class="test-detail">If a user reports a security vulnerability, the protocol is: (1) acknowledge within 24 hours, (2) do not publicly disclose, (3) escalate to engineering immediately, (4) fix before any public statement. Responsible engineer named. No public disclosure policy in writing.</div>
+        <div class="test-pass-criteria">Pass: protocol documented; responsible engineer named; no public disclosure policy in writing.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Section 2 -->
+<div class="section-heading">Section 2 — Pre-Launch Support Gates</div>
+
+<div class="gate-card">
+  <ul class="gate-list">
+    <li class="gate-item">
+      <div class="gate-icon">!</div>
+      <span>Crash detection pipeline operational — SR-001 passed; detection method documented and active.</span>
+    </li>
+    <li class="gate-item">
+      <div class="gate-icon">!</div>
+      <span>Support channel live and tested — SR-008 passed; end-to-end inbound message test completed.</span>
+    </li>
+    <li class="gate-item">
+      <div class="gate-icon">!</div>
+      <span>Launch day runbook dry run completed — SR-021 passed; all named people confirmed 48h before submission.</span>
+    </li>
+    <li class="gate-item">
+      <div class="gate-icon">!</div>
+      <span>On-call coverage confirmed for first 72 hours — SR-023 passed; all access verified.</span>
+    </li>
+    <li class="gate-item">
+      <div class="gate-icon">!</div>
+      <span>dSYM archive process verified — SR-005 passed; symbolication tested on a sample crash log.</span>
+    </li>
+    <li class="gate-item">
+      <div class="gate-icon">!</div>
+      <span>Known issues log current and accessible — SR-015 passed; log updated this sprint; support can find any issue in under 30 seconds.</span>
+    </li>
+    <li class="gate-item">
+      <div class="gate-icon">!</div>
+      <span>All P0/P1 known issues have workarounds documented — SR-016 passed; workarounds tested by a non-engineer.</span>
+    </li>
+  </ul>
+</div>
+
+<div class="metrics-grid">
+  <div class="metric-card">
+    <div class="metric-card-title">Crash Metrics</div>
+    <div class="metric-row">
+      <span class="metric-name">Crash-free session rate</span>
+      <span class="metric-target positive">&gt;99.5%</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-name">P0 response time</span>
+      <span class="metric-target amber">&lt;4h</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-name">Symbolication rate</span>
+      <span class="metric-target positive">100%</span>
+    </div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-card-title">Feedback Metrics</div>
+    <div class="metric-row">
+      <span class="metric-name">First response time</span>
+      <span class="metric-target amber">&lt;24h</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-name">14-day resolution rate</span>
+      <span class="metric-target positive">&gt;80%</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-name">Review response rate</span>
+      <span class="metric-target positive">100%</span>
+    </div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-card-title">Quality Metrics</div>
+    <div class="metric-row">
+      <span class="metric-name">User satisfaction rate</span>
+      <span class="metric-target positive">&gt;70%</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-name">Escalation rate</span>
+      <span class="metric-target amber">&lt;5%</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-name">Knowledge base coverage</span>
+      <span class="metric-target positive">Top 10 Qs</span>
+    </div>
+  </div>
+</div>
+
+<!-- Section 3 -->
+<div class="section-heading">Section 3 — Definition of Done for Support</div>
+
+<div class="done-card">
+  <p>Support is done when the person who reported a problem has heard back from a real human, in plain language, with a specific answer — not a ticket number and a promise. For bugs: done means the fix shipped and the user who reported it knows. For data loss: done means the person understands exactly what was recoverable and what wasn't, without false hope or corporate deflection. For sensitive contacts: done means the person feels heard and has a resource in hand, with no pressure to keep using the app. For App Store reviews: done means every negative review has a direct, specific reply that names the complaint — and when that complaint is fixed, another reply says so. The support operation passes its own criteria when a new team member, handed all the documentation and five real inbound reports, can classify, respond, and escalate every one of them correctly in under an hour, without guessing at any step. If they have to guess, the documentation failed — not the person.</p>
+</div>
+
+<!-- Section 4 -->
+<div class="section-heading">Section 4 — LLM Triage Prompt</div>
+
+<div class="prompt-card">
+  <div class="prompt-card-title">Support Triage — LLM Prompt</div>
+  <p style="font-size:12px;color:var(--text2);margin-bottom:16px;line-height:1.6;">Paste this prompt into any capable LLM (Claude, GPT-4) with the user report appended. Use the output as a starting point — verify against the known issues log before acting.</p>
+
+  <div class="prompt-section-label">System Context</div>
+  <div class="prompt-block">You are a support triage assistant for H.O.N. (Habit Over Numbers), an iOS-only fitness coaching app. H.O.N. is dark-mode, pre-launch (TestFlight active), data is stored locally on device only — no backend server, no cloud sync. Support channels: App Store reviews and developer email. H.O.N. voice is spare, direct, identity-affirming. Never cheerleading. Never corporate. Response drafts must sound like a real human wrote them.
+
+Known issue patterns (check first):
+- B-001: Decimal weight overflow (e.g. 95 lbs displays as 95.1151)
+- B-002: FAIL pill overflows reps field layout
+- C-003: Countdown timer flashes during 3-2-1 start sequence
+- HealthKit permissions re-prompting after user already authorized
+- Phrase bank repetition (coaching tips feel repetitive)</div>
+
+  <div class="prompt-section-label">User Report Input</div>
+  <div class="prompt-block">[USER REPORT TEXT]</div>
+
+  <div class="prompt-section-label">Required Output</div>
+  <div style="margin-top:8px;">
+    <div class="output-item">
+      <span class="output-num">1.</span>
+      <span><strong style="color:var(--text);">Issue type:</strong> crash / data loss / bug / feature request / voice complaint / privacy / sensitive welfare</span>
+    </div>
+    <div class="output-item">
+      <span class="output-num">2.</span>
+      <span><strong style="color:var(--text);">Severity:</strong> P0 / P1 / P2 / P3 — with one sentence of justification</span>
+    </div>
+    <div class="output-item">
+      <span class="output-num">3.</span>
+      <span><strong style="color:var(--text);">Known issue match:</strong> yes (with bug ID from list above) / no — if no, describe why it doesn't match any known pattern</span>
+    </div>
+    <div class="output-item">
+      <span class="output-num">4.</span>
+      <span><strong style="color:var(--text);">H.O.N.-voice response draft:</strong> direct, human, specific to the complaint, no corporate filler, under 150 words. Do not open with "Dear" or "Hi [name]". Do not include "We apologize for the inconvenience." Do not close with "Please don't hesitate to contact us."</span>
+    </div>
+    <div class="output-item">
+      <span class="output-num">5.</span>
+      <span><strong style="color:var(--text);">Escalation:</strong> yes/no — if yes, specify who to notify (engineering lead / PM / founder) and why</span>
+    </div>
+    <div class="output-item">
+      <span class="output-num">6.</span>
+      <span><strong style="color:var(--text);">Engineering ticket required:</strong> yes/no — if yes, include a one-line ticket description</span>
+    </div>
+    <div class="output-item">
+      <span class="output-num">7.</span>
+      <span><strong style="color:var(--text);">Knowledge base gap:</strong> yes/no — if yes, suggest a title for the new knowledge base entry</span>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'hon_support_review_status';
+
+function loadStatuses() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  } catch(e) { return {}; }
+}
+
+function saveStatuses(statuses) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(statuses));
+}
+
+function updateStatus(sel) {
+  const tc = sel.closest('.test-case');
+  const id = tc.querySelector('.test-id').textContent.trim();
+  const val = sel.value;
+
+  tc.className = 'test-case status-' + val;
+  tc.dataset.status = val;
+  sel.className = 'status-select status-' + val;
+
+  const statuses = loadStatuses();
+  statuses[id] = val;
+  saveStatuses(statuses);
+
+  updateStats();
+  filterTests(currentFilter);
+}
+
+function toggleCategory(id) {
+  const block = document.getElementById(id);
+  block.classList.toggle('collapsed');
+}
+
+let currentFilter = 'all';
+
+function filterTests(filter, btn) {
+  currentFilter = filter;
+  if (btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  document.querySelectorAll('.test-case').forEach(tc => {
+    if (filter === 'all') {
+      tc.style.display = 'flex';
+    } else if (filter === 'fail') {
+      tc.style.display = (tc.dataset.status === 'fail') ? 'flex' : 'none';
+    } else {
+      tc.style.display = (tc.dataset.status === filter) ? 'flex' : 'none';
+    }
+  });
+}
+
+function updateStats() {
+  const all = document.querySelectorAll('.test-case');
+  let open = 0, pass = 0, partial = 0, fail = 0;
+  all.forEach(tc => {
+    switch(tc.dataset.status) {
+      case 'open':    open++;    break;
+      case 'pass':    pass++;    break;
+      case 'partial': partial++; break;
+      case 'fail':    fail++;    break;
+    }
+  });
+  document.getElementById('stat-total').textContent   = all.length + ' total';
+  document.getElementById('stat-open').textContent    = open + ' open';
+  document.getElementById('stat-partial').textContent = partial + ' partial';
+  document.getElementById('stat-pass').textContent    = pass + ' passed';
+}
+
+// Restore saved statuses on load
+(function() {
+  const statuses = loadStatuses();
+  document.querySelectorAll('.test-case').forEach(tc => {
+    const id = tc.querySelector('.test-id').textContent.trim();
+    if (statuses[id]) {
+      const val = statuses[id];
+      tc.className = 'test-case status-' + val;
+      tc.dataset.status = val;
+      const sel = tc.querySelector('.status-select');
+      sel.value = val;
+      sel.className = 'status-select status-' + val;
+    }
+  });
+  updateStats();
+})();
+</script>
+
+</body>
+</html>

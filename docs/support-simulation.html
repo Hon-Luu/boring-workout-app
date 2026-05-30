@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H.O.N. — Support Simulation Protocol</title>
+<style>
+  :root {
+    --bg:       #111111;
+    --card:     #1c1c1e;
+    --border:   rgba(255,255,255,0.07);
+    --amber:    #f59e0b;
+    --positive: #34d399;
+    --negative: #f87171;
+    --warning:  #fbbf24;
+    --muted:    rgba(255,255,255,0.4);
+    --text:     rgba(255,255,255,0.88);
+    --text2:    rgba(255,255,255,0.55);
+    --blue:     #60a5fa;
+    --purple:   #a78bfa;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 32px 20px 64px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .header { margin-bottom: 36px; }
+  .header-top {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .logo {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber);
+  }
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--amber), transparent);
+    opacity: 0.3;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    color: var(--text);
+  }
+  .subtitle {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+
+  .section-heading {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin: 32px 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-heading::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .intro-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 28px;
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.7;
+    border-left: 3px solid var(--amber);
+  }
+
+  /* Scenario cards */
+  .scenario {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 14px;
+    transition: border-color 0.2s;
+  }
+  .scenario:hover { border-color: rgba(255,255,255,0.14); }
+
+  .scenario-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .scenario-id {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    letter-spacing: 0.08em;
+    color: var(--amber);
+    background: rgba(245,158,11,0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .scenario-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+    flex: 1;
+  }
+
+  .badge-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+
+  .badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .badge-time   { background: rgba(96,165,250,0.15); color: var(--blue); }
+  .badge-amber  { background: rgba(245,158,11,0.15); color: var(--amber); }
+  .badge-red    { background: rgba(248,113,113,0.15); color: var(--negative); }
+  .badge-green  { background: rgba(52,211,153,0.15); color: var(--positive); }
+  .badge-purple { background: rgba(167,139,250,0.15); color: var(--purple); }
+
+  .scenario-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 20px;
+    margin-bottom: 12px;
+  }
+  @media (max-width: 600px) {
+    .scenario-grid { grid-template-columns: 1fr; }
+  }
+
+  .field-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 3px;
+  }
+  .field-value {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+
+  .field-full { grid-column: 1 / -1; }
+
+  .step-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 4px;
+    counter-reset: steps;
+  }
+  .step-list li {
+    font-size: 13px;
+    color: var(--text2);
+    padding: 4px 0 4px 26px;
+    position: relative;
+    line-height: 1.5;
+    counter-increment: steps;
+  }
+  .step-list li::before {
+    content: counter(steps);
+    position: absolute;
+    left: 0;
+    top: 4px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(245,158,11,0.15);
+    color: var(--amber);
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'SF Mono', monospace;
+  }
+
+  .criteria-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  @media (max-width: 600px) {
+    .criteria-grid { grid-template-columns: 1fr; }
+  }
+
+  .criteria-box {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .criteria-pass {
+    background: rgba(52,211,153,0.06);
+    border: 1px solid rgba(52,211,153,0.15);
+    color: var(--positive);
+  }
+  .criteria-fail {
+    background: rgba(248,113,113,0.06);
+    border: 1px solid rgba(248,113,113,0.15);
+    color: var(--negative);
+  }
+  .criteria-box .criteria-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    opacity: 0.8;
+  }
+
+  /* Matrix */
+  .matrix-wrapper {
+    overflow-x: auto;
+    margin: 0 -4px;
+    padding: 0 4px;
+    border-radius: 10px;
+  }
+  .matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    min-width: 680px;
+  }
+  .matrix-table th {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text2);
+    padding: 8px 6px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    background: var(--card);
+  }
+  .matrix-table th.row-header {
+    text-align: left;
+    padding-left: 10px;
+    min-width: 80px;
+  }
+  .matrix-table td {
+    padding: 6px 4px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 10px;
+  }
+  .matrix-table td.row-header {
+    text-align: left;
+    padding-left: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    font-family: 'SF Mono', monospace;
+    color: var(--amber);
+    white-space: nowrap;
+  }
+  .matrix-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .cell-high {
+    background: rgba(245,158,11,0.2);
+    color: var(--amber);
+    border-radius: 3px;
+    font-weight: 700;
+    font-size: 9px;
+  }
+  .cell-low {
+    color: rgba(255,255,255,0.18);
+    font-size: 9px;
+  }
+
+  /* Results template */
+  .template-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    margin-top: 16px;
+  }
+  .template-field {
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .template-field:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+  .template-field-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 6px;
+  }
+  .template-field-placeholder {
+    font-size: 13px;
+    color: rgba(255,255,255,0.2);
+    font-style: italic;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px dashed rgba(255,255,255,0.1);
+    border-radius: 6px;
+    line-height: 1.5;
+  }
+
+  /* LLM prompt card */
+  .prompt-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--amber);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-top: 16px;
+  }
+  .prompt-card-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 16px;
+  }
+  .prompt-section-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-top: 14px;
+    margin-bottom: 6px;
+  }
+  .prompt-block {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.7;
+    white-space: pre-wrap;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+  .output-item {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.6;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    display: flex;
+    gap: 10px;
+  }
+  .output-item:last-child { border-bottom: none; }
+  .output-num {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'SF Mono', monospace;
+    color: var(--amber);
+    min-width: 18px;
+    margin-top: 1px;
+  }
+
+  .separator {
+    height: 1px;
+    background: var(--border);
+    margin: 28px 0;
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 20px 14px 48px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <span class="logo">H.O.N.</span>
+    <div class="divider-line"></div>
+  </div>
+  <h1>Support Simulation Protocol</h1>
+  <div class="subtitle">15 support scenarios &middot; Triage priority matrix &middot; Response capture template &middot; LLM pre-triage prompt &middot; Last updated: 2026-05-30</div>
+</div>
+
+<!-- Section 1 -->
+<div class="section-heading">Section 1 — How to Run Support Simulations</div>
+<div class="intro-card">
+Support simulations are structured drills that replicate real inbound contacts — crash reports, data loss emails, App Store reviews, HealthKit complaints, sensitive welfare contacts — before any of them happen at scale. Each scenario gives the support operator a trigger (a realistic user message or situation) and a set of steps to execute using only the documented support materials. The operator follows the steps exactly, timing each stage against the defined SLAs. Results are captured using the template in Section 4 and filed in <code style="font-family:monospace;font-size:12px;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">docs/uat/</code>. Any step that requires guessing is a documentation gap — mark it and fix the documentation, not the person. Run all 15 scenarios before App Store submission. Prioritize the matrix H-marked scenarios for each role first; secondary scenarios as time allows. A scenario is complete only when the response has been drafted, the SLA measured, and the escalation decision confirmed — not just when the steps are read.
+</div>
+
+<!-- Section 2 -->
+<div class="section-heading">Section 2 — 15 Support Simulation Scenarios</div>
+
+<!-- SSIM-01 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SSIM-01</div>
+    <div class="scenario-title">P0 Crash on Launch</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">15 min</span>
+    <span class="badge badge-red">Trigger: Crash report</span>
+    <span class="badge badge-amber">Focus: P0 crash SLA</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">P0 classification speed, repro kit usage, engineering notification timing, and first user response within the defined SLA window.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger</div>
+      <div class="field-value">User report: "App crashes every time I open it. Happened 3 times."</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Classify severity using the crash matrix — is this P0? (Launch crash = P0 by definition.)</li>
+        <li>Check known issues log for a matching crash pattern before assuming it's new.</li>
+        <li>Execute the repro kit: gather device model, iOS version, app version, approximate session count from the report. Note what's missing.</li>
+        <li>If reproduced: notify engineering immediately using the escalation tree; draft user response acknowledging the crash and stating a fix is being investigated.</li>
+        <li>If not reproduced: draft response requesting the missing repro info — specific, not a generic "please send more details."</li>
+        <li>Measure time from report received to: classification complete, engineering notified, user response sent.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Classified P0 within 30 minutes. Engineering notified within 1 hour. User response sent within 4 hours. Repro kit used; all fields populated or marked missing.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Any step exceeds the SLA window. Crash classified below P0. Repro kit skipped. User response is generic or delayed past 4 hours.
+    </div>
+  </div>
+</div>
+
+<!-- SSIM-02 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SSIM-02</div>
+    <div class="scenario-title">Data Loss Report</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">15 min</span>
+    <span class="badge badge-red">Trigger: User email</span>
+    <span class="badge badge-amber">Focus: Data loss protocol</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Immediate P0 classification, honest communication about local-only storage, recovery step execution, and engineering escalation with full context.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger</div>
+      <div class="field-value">User report: "I updated the app and all my workouts are gone. 6 months of data."</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Classify immediately as P0 — any data loss is P0 by the severity matrix.</li>
+        <li>Request: prior version number, current version, iOS version, device model. Ask for these specifically, not generically.</li>
+        <li>Check if this symptom matches a known migration bug in the current release notes or known issues log.</li>
+        <li>Execute the data loss protocol: explain that data is stored locally on device only (no server backup), ask about iCloud backup presence, provide recovery steps if any exist.</li>
+        <li>Draft a response that is honest about recoverability — no false hope, no deflection. Warm and direct.</li>
+        <li>Escalate to engineering with full context: version numbers, repro kit data, and the response you sent.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Response sent within 4 hours. Honest about local-only storage — no implication of a server backup. Recovery steps included where available. Engineering escalated with repro kit completed.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Response promises recovery that isn't possible. Delays past 4 hours. Suggests a server restore that doesn't exist. Engineering not escalated with full context.
+    </div>
+  </div>
+</div>
+
+<!-- SSIM-03 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SSIM-03</div>
+    <div class="scenario-title">App Store 1-Star Review — Known Bug</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">10 min</span>
+    <span class="badge badge-amber">Trigger: App Store review</span>
+    <span class="badge badge-amber">Focus: Review response quality</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Known-issue matching speed, specificity of response, voice compliance, and 48-hour posting discipline.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger</div>
+      <div class="field-value">Review: "Decimal weights are always wrong. 95 lbs becomes 95.1151 somehow."</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Recognize this as B-001 (weight decimal overflow — known bug). Check the known issues log to confirm fix status.</li>
+        <li>Check fix status: is B-001 fixed in the currently live build? If yes, which version? If no, what's the fix timeline?</li>
+        <li>Draft a response that names the specific bug (decimal overflow in weights), explains it's known and being fixed with version if available, or confirms it's fixed and asks the user to update.</li>
+        <li>Review the draft against the voice guide: no "Dear valued user", no "we apologize for the inconvenience", no template language. Response should sound like one human to another.</li>
+        <li>Post the response within 48 hours of the review appearing.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Response is personal, names the decimal overflow specifically, on-brand, posted within 48 hours. If fixed: version number included. If not fixed: honest about timeline.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Generic template response. No mention of the specific bug. Posted after 48 hours. Uses any banned corporate filler phrase.
+    </div>
+  </div>
+</div>
+
+<!-- SSIM-04 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SSIM-04</div>
+    <div class="scenario-title">Coaching Voice Complaint</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">10 min</span>
+    <span class="badge badge-amber">Trigger: User email</span>
+    <span class="badge badge-purple">Focus: Feedback routing + response quality</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Correct classification as feedback (not a bug), routing to content team, quality of response, and backlog/synthesis logging.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger</div>
+      <div class="field-value">User email: "The coaching tips feel robotic. It keeps saying the same thing every session."</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Classify: this is feedback, not a bug. Route to content team. Do not open an engineering ticket.</li>
+        <li>Check the phrase rotation logic — is the phrase bank rotation window working? Is this a specific exercise with limited phrase variants? (Check known issues log for B-related phrase bank issues.)</li>
+        <li>Draft a response that acknowledges the feedback without being defensive, gives a brief honest explanation of how the rotation works (without being technical), and asks for a specific example exercise to investigate.</li>
+        <li>Tag this in the monthly feedback synthesis log under "voice complaints."</li>
+        <li>Create a phrase bank review task for the content team — include the user's specific complaint text.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Response is warm, specific, invites more detail, not defensive. Feedback logged in synthesis. Content team task created with user complaint text attached.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Response is defensive ("our coaching is highly personalized"). No follow-up action. Bug ticket opened instead of feedback routing. Synthesis log not updated.
+    </div>
+  </div>
+</div>
+
+<!-- SSIM-05 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SSIM-05</div>
+    <div class="scenario-title">HealthKit Permission Issue</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">10 min</span>
+    <span class="badge badge-amber">Trigger: User email</span>
+    <span class="badge badge-amber">Focus: HealthKit diagnostic</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Diagnostic script retrieval speed, clarity of written instructions for a non-technical user, and escalation threshold for unresolved cases.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger</div>
+      <div class="field-value">User email: "The app keeps asking for health permissions even though I already said yes."</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Pull the HealthKit diagnostic script from the support knowledge base.</li>
+        <li>Walk through the script: (a) Check Health app &rarr; Sources &rarr; H.O.N. &rarr; verify all permissions are granted, not just some. (b) If permissions appear granted but the issue persists: remove app from Health Sources and re-grant. (c) If still failing: check iOS version compatibility with current build.</li>
+        <li>Draft a clear, numbered response the user can follow without needing to email again. Plain language. No technical jargon.</li>
+        <li>If the issue is still unresolved after the user follows all steps: escalate to engineering with the diagnostic results.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Response includes clear numbered steps a non-technical user can follow. Steps resolve the issue for the majority of similar reports. Escalation threshold defined and documented.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Steps are technical or unclear. User requires a second email to get actionable instructions. Escalation threshold not defined.
+    </div>
+  </div>
+</div>
+
+<!-- SSIM-06 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SSIM-06</div>
+    <div class="scenario-title">Feature Request — Apple Watch</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">5 min</span>
+    <span class="badge badge-amber">Trigger: User email</span>
+    <span class="badge badge-green">Focus: Feature request routing</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Accurate backlog check, honest response without false promises, product team routing, and feature request logging.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger</div>
+      <div class="field-value">User email: "Any chance you'll add Apple Watch support for rep counting?"</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Check backlog — velocity profile feature exists in the models (Apple Watch data is partially implemented in the data layer). Do not communicate this internal detail; just understand the context.</li>
+        <li>Draft a response that acknowledges the request, does not promise a timeline, gives an honest status ("it's something we've thought about"), and communicates that the request is logged.</li>
+        <li>Log the request in the feature request tracker with a note of the user's context (rep counting specifically).</li>
+        <li>Notify the product team that this request has been received.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Response is honest (no false promises), warm, confirms the request is logged. Product team notified. Feature request in tracker with user context.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Response promises Apple Watch support in a specific version. Request dismissed without logging. Product team not notified.
+    </div>
+  </div>
+</div>
+
+<!-- SSIM-07 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SSIM-07</div>
+    <div class="scenario-title">Three Duplicate Reports — Same Bug</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">10 min</span>
+    <span class="badge badge-amber">Trigger: 3 emails, 1 week</span>
+    <span class="badge badge-amber">Focus: Duplicate detection efficiency</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Deduplication process execution, single-ticket discipline, all-user response coverage, and priority escalation for multi-user bugs.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger</div>
+      <div class="field-value">Three separate user emails in one week describing the same symptom: FAIL pill overflowing the reps field (B-002).</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Read all 3 reports. Identify the common symptom (FAIL pill layout overflow).</li>
+        <li>Match to B-002 in the known issues log. Confirm it's the same bug, not three variations.</li>
+        <li>Create one engineering ticket (if not already open) rather than three. Note "3 user reports" in the ticket.</li>
+        <li>Respond to all 3 users with consistent information: the bug is known, fix timeline if available, workaround if any exists.</li>
+        <li>Flag to engineering that this is affecting multiple users — this may increase fix priority.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      All 3 correctly linked to B-002. One ticket created (not three). All 3 users receive responses within 48 hours. Engineering notified of multi-user impact.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      3 separate tickets created. One or more users do not receive a response. Engineering not told this affects multiple users.
+    </div>
+  </div>
+</div>
+
+<!-- SSIM-08 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SSIM-08</div>
+    <div class="scenario-title">Post-Fix Review Update</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">8 min</span>
+    <span class="badge badge-amber">Trigger: v1.1 ships with B-001 fix</span>
+    <span class="badge badge-green">Focus: Issue closure</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Review history retrieval, proactive follow-up protocol execution, specific fix-version communication, and reviewer re-engagement.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger</div>
+      <div class="field-value">B-001 (decimal weight overflow) fixed and shipped in v1.1. User left a 2-star review citing this bug in v1.0.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Identify all App Store reviews that mention the decimal weight bug, posted before the v1.1 release date.</li>
+        <li>Draft a follow-up reply on each review: names the fix, names the version, invites the user to confirm it's resolved and update their rating if it is.</li>
+        <li>Post all replies within 7 days of v1.1 shipping.</li>
+        <li>Track whether any reviewers update their rating (note: Apple does not always notify; check manually).</li>
+      </ol>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      All affected reviews replied to within 7 days of v1.1 shipping. Specific version number (1.1) mentioned. Reviewers explicitly invited to update their rating.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      No follow-up on fixed bugs. Old negative reviews remain with no update response. Version number omitted from reply.
+    </div>
+  </div>
+</div>
+
+<!-- SSIM-09 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SSIM-09</div>
+    <div class="scenario-title">Launch Day Monitoring Run</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">20 min (dry run)</span>
+    <span class="badge badge-red">Trigger: Simulated launch day</span>
+    <span class="badge badge-amber">Focus: Runbook execution</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Runbook completeness, monitoring cadence execution, P1 simulation handling under time pressure, and runbook gap identification before real launch.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger</div>
+      <div class="field-value">Simulate launch day: app is live, monitoring begins. Execute the full runbook start to finish.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Execute the launch day runbook step-by-step. Do not skip steps because the situation is simulated.</li>
+        <li>Check App Store Connect crash reports (even if empty — confirm the access and navigation work).</li>
+        <li>Check support email inbox. Confirm response SLA clock would be running.</li>
+        <li>Check TestFlight feedback panel.</li>
+        <li>Simulate one P1 report arriving: classify it, draft a response, decide escalation — using only the documented runbook.</li>
+        <li>Note every runbook step that was ambiguous, took longer than expected, or required a judgment call not covered by the documentation.</li>
+        <li>Update the runbook based on all findings before real launch.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      All runbook steps completed within the planned time window. P1 simulation handled correctly. All ambiguous steps identified and resolved in the runbook before real launch day.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      A runbook step is missed or mishandled. P1 simulation results in wrong classification or missed escalation. Runbook not updated after findings.
+    </div>
+  </div>
+</div>
+
+<!-- SSIM-10 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SSIM-10</div>
+    <div class="scenario-title">Sensitive User Contact</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">10 min</span>
+    <span class="badge badge-red">Trigger: User email</span>
+    <span class="badge badge-amber">Focus: Sensitive feedback protocol</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Welfare concern recognition, non-medical-advice discipline, warm non-judgmental response, appropriate resource provision, and no-app-promotion compliance.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger</div>
+      <div class="field-value">User email: "I've been tracking everything obsessively and I can't stop working out even when I'm in pain. I don't know what to do."</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Recognize this as a sensitive welfare concern — not a bug, not a feature request. Pull the sensitive feedback protocol.</li>
+        <li>Confirm you will not give medical advice in the response. Not one sentence.</li>
+        <li>Draft a response that: acknowledges the experience warmly and without judgment, does not use the word "obsessive" back at them (mirrors their concern, does not label it), gently mentions that talking to someone — a friend, a doctor — can help, and provides a general mental health resource (e.g. NAMI helpline, or similar).</li>
+        <li>Do not promote continued use of the app anywhere in the response. This is not the moment.</li>
+        <li>Flag to the founder for awareness only — not for any data use or follow-up marketing.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Response is warm, non-judgmental, contains no medical advice, provides a concrete resource. App not promoted in the response. Founder flagged for awareness.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Response gives medical advice. Response is clinical or dismissive. App use encouraged in this context. The word "obsessive" used back at the user. No resource provided.
+    </div>
+  </div>
+</div>
+
+<!-- SSIM-11 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SSIM-11</div>
+    <div class="scenario-title">GDPR Data Deletion Request</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">10 min</span>
+    <span class="badge badge-amber">Trigger: User email</span>
+    <span class="badge badge-purple">Focus: Privacy compliance</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">24-hour acknowledgment SLA, data disclosure accuracy (local-only), deletion instruction completeness, 7-day confirmation deadline, and request logging.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger</div>
+      <div class="field-value">User email: "Please delete all my data immediately and tell me exactly what you had."</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Acknowledge receipt within 24 hours — even if the full response takes longer.</li>
+        <li>Send the data disclosure document: what's stored (workout log, exercise history, user profile, cached analytics — all local on device), where it lives, and what is not stored (no server, no analytics backend).</li>
+        <li>Instruct the user how to delete their data: delete the app from their iPhone deletes all local data. Confirm whether they also want any email correspondence deleted from support records.</li>
+        <li>Confirm deletion within 7 days (app deletion is immediate if they do it; confirm receipt of their action).</li>
+        <li>Log the request with a timestamp and the date confirmation was sent.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Acknowledgment within 24 hours. Data disclosure document accurate (local-only; no server). Deletion instructions correct. Confirmation sent within 7 days. Request logged with timestamps.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Acknowledgment delayed past 24 hours. Disclosure document incomplete or implies server storage. Confirmation not sent within 7 days. Request not logged.
+    </div>
+  </div>
+</div>
+
+<!-- SSIM-12 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SSIM-12</div>
+    <div class="scenario-title">Knowledge Base Gap Discovery</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">8 min</span>
+    <span class="badge badge-amber">Trigger: User asks uncovered question</span>
+    <span class="badge badge-green">Focus: Knowledge base maintenance</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">First-principles answering accuracy, knowledge base update discipline within 24 hours, and feature-demand signal detection.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger</div>
+      <div class="field-value">User asks a question not in the knowledge base: "Does H.O.N. work with Garmin?"</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Answer from first principles: H.O.N. is Apple ecosystem only — HealthKit, no Garmin integration. Be honest and specific about what integrations do exist (HealthKit, Apple Watch velocity data).</li>
+        <li>Draft a response that is direct, does not apologize for the limitation, and explains what the app does instead.</li>
+        <li>After sending, write a knowledge base entry for this question: "Does H.O.N. work with Garmin or non-Apple fitness trackers?" with the accurate answer.</li>
+        <li>Check if this signals demand for a third-party integration — if the question is received from 3 or more users, log it as a feature request with the "new feature" category.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Question answered correctly (Apple-ecosystem only). Knowledge base updated within 24 hours. Feature request logged if threshold reached.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Question answered incorrectly or vaguely. Knowledge base not updated within 24 hours. No feature demand signal tracked.
+    </div>
+  </div>
+</div>
+
+<!-- SSIM-13 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SSIM-13</div>
+    <div class="scenario-title">Negative Review — Positioning Complaint</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">8 min</span>
+    <span class="badge badge-amber">Trigger: 1-star App Store review</span>
+    <span class="badge badge-amber">Focus: Review response quality — positioning</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Non-defensive response discipline, one-sentence differentiator communication, re-engagement invitation, and voice compliance under pressure.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger</div>
+      <div class="field-value">1-star review: "This app doesn't do anything my old spreadsheet couldn't do. Waste of money."</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Recognize this as a positioning complaint — not a bug, not a missing feature. The person chose a different mental model for fitness tracking.</li>
+        <li>Draft a response that: does not argue with the comparison, acknowledges their preference is valid, communicates H.O.N.'s specific differentiator (coaching voice, habit engineering, readiness system) in exactly one sentence — not a feature list, and invites them to try one more session with the coaching enabled.</li>
+        <li>Do not promise features or discuss refunds unless they asked. Do not apologize for the product existing.</li>
+        <li>Verify the response passes the voice test: direct, human, no corporate filler.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Response is direct and non-defensive. Differentiator communicated in one sentence. Re-engagement invited. No feature promises. Passes the voice test.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Response argues with the spreadsheet comparison. Response is defensive. Feature list dumped instead of one differentiator sentence. Voice test fails.
+    </div>
+  </div>
+</div>
+
+<!-- SSIM-14 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SSIM-14</div>
+    <div class="scenario-title">Phased Rollout Bug Report</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">10 min</span>
+    <span class="badge badge-amber">Trigger: Report during 50% phased rollout</span>
+    <span class="badge badge-amber">Focus: Rollout management</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Version confirmation from report, correct P2 classification, rollout-continue vs. rollout-pause decision discipline, and response within SLA.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger</div>
+      <div class="field-value">New version in 50% phased rollout. User reports: countdown timer flashes during the 3-2-1 start sequence (C-003 — known bug).</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Confirm the user is on the new version — ask for or check the version number from the report. Do not assume.</li>
+        <li>Check the known issues log — C-003 (timer flash) is documented. Confirm this is the same bug.</li>
+        <li>Classify severity: P2 (visual bug, non-blocking — does not prevent workout logging). Decision: continue rollout. Document the reasoning.</li>
+        <li>Draft user response: acknowledge the flash, confirm it's known and being fixed, provide the workaround if one exists.</li>
+        <li>Define the threshold: if a P1 report comes in from the same new version, escalate to pause-rollout decision with engineering lead.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Version confirmed within 2 hours. Classification correct (P2). Rollout continues (not paused for a visual-only bug). User response sent within 48 hours. P1 escalation threshold defined.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Version not confirmed. Rollout paused for a P2 issue (over-response). Response delayed past 48 hours. Escalation threshold for pause not defined.
+    </div>
+  </div>
+</div>
+
+<!-- SSIM-15 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">SSIM-15</div>
+    <div class="scenario-title">New Support Team Member Onboarding Test</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">20 min</span>
+    <span class="badge badge-amber">Trigger: New team member + 5 mixed reports</span>
+    <span class="badge badge-green">Focus: Documentation usability</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Whether the documentation alone is sufficient for a new operator to classify, respond, and escalate correctly — without guidance from an experienced team member.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger</div>
+      <div class="field-value">New support team member given 5 mixed inbound reports and all support documentation. No prior coaching.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Hand the new member 5 reports (one each: crash, data loss, feature request, voice complaint, HealthKit issue) and access to all support documentation. No additional context.</li>
+        <li>New member must: classify each report by type and severity, check the known issues log, draft a response for each, and decide escalation — using only documentation.</li>
+        <li>Observer times each task from report-received to response-drafted. Note any step where the person had to pause, guess, or ask for help.</li>
+        <li>Reviewer evaluates: classification accuracy (5 of 5), response quality against the voice guide, and escalation decision correctness.</li>
+        <li>Any step that required guessing = a documentation gap. Mark it explicitly and fix the documentation before marking this scenario as passed.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      All 5 reports classified correctly. All 5 responses pass the voice test. All escalation decisions correct. Total time under 60 minutes. Zero guesses required.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Any misclassification, off-brand response, or incorrect escalation — this is a documentation failure, not a people failure. Any step requiring a guess = automatic fail until the documentation is fixed.
+    </div>
+  </div>
+</div>
+
+<!-- Section 3 — Role Matrix -->
+<div class="section-heading">Section 3 — Role &times; Scenario Priority Matrix</div>
+<div class="matrix-wrapper">
+  <table class="matrix-table">
+    <thead>
+      <tr>
+        <th class="row-header">Scenario</th>
+        <th>Support<br>Lead</th>
+        <th>PM</th>
+        <th>Eng<br>Lead</th>
+        <th>Design</th>
+        <th>Analytics</th>
+        <th>Content</th>
+        <th>Growth</th>
+        <th>Research</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="row-header">SSIM-01</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+      </tr>
+      <tr>
+        <td class="row-header">SSIM-02</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+      </tr>
+      <tr>
+        <td class="row-header">SSIM-03</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+        <td class="cell-high">H</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+      </tr>
+      <tr>
+        <td class="row-header">SSIM-04</td>
+        <td class="cell-high">H</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+        <td class="cell-high">H</td>
+      </tr>
+      <tr>
+        <td class="row-header">SSIM-05</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+      </tr>
+      <tr>
+        <td class="row-header">SSIM-06</td>
+        <td class="cell-high">H</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-high">H</td>
+        <td class="cell-high">H</td>
+      </tr>
+      <tr>
+        <td class="row-header">SSIM-07</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+      </tr>
+      <tr>
+        <td class="row-header">SSIM-08</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+      </tr>
+      <tr>
+        <td class="row-header">SSIM-09</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+      </tr>
+      <tr>
+        <td class="row-header">SSIM-10</td>
+        <td class="cell-high">H</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+        <td class="cell-high">H</td>
+      </tr>
+      <tr>
+        <td class="row-header">SSIM-11</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+      </tr>
+      <tr>
+        <td class="row-header">SSIM-12</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-high">H</td>
+        <td class="cell-high">H</td>
+      </tr>
+      <tr>
+        <td class="row-header">SSIM-13</td>
+        <td class="cell-high">H</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+        <td class="cell-high">H</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+      </tr>
+      <tr>
+        <td class="row-header">SSIM-14</td>
+        <td class="cell-high">H</td>
+        <td class="cell-high">H</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+      </tr>
+      <tr>
+        <td class="row-header">SSIM-15</td>
+        <td class="cell-high">H</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-low">·</td>
+        <td class="cell-high">H</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<p style="font-size:11px;color:var(--text2);margin-top:10px;">H = high priority for this role. Support Lead is H on all 15 scenarios.</p>
+
+<!-- Section 4 — Results Template -->
+<div class="section-heading">Section 4 — Results Capture Template</div>
+
+<div class="template-card">
+  <div class="template-field">
+    <div class="template-field-label">Scenario</div>
+    <div class="template-field-placeholder">SSIM-__ · Operator: [name] · Date: YYYY-MM-DD · Run type: solo / observed</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Report Type</div>
+    <div class="template-field-placeholder">crash / data loss / bug / feature request / voice complaint / privacy / sensitive welfare</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Severity Classified</div>
+    <div class="template-field-placeholder">P0 / P1 / P2 / P3 — with one sentence of justification for the classification.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Time to Classification</div>
+    <div class="template-field-placeholder">Elapsed time from "report received" to severity classified. Compare against target: P0 ≤30 min, P1/P2 ≤2 hours.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Time to First Response</div>
+    <div class="template-field-placeholder">Elapsed time from "report received" to response drafted and ready to send. Compare against SLA: P0 ≤4h, P1/P2 ≤48h.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Response Drafted</div>
+    <div class="template-field-placeholder">Paste the full response draft here, or reference the file path if saved externally. Include the voice check result: pass / fail + notes.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Escalation Triggered</div>
+    <div class="template-field-placeholder">Yes / No — if yes: who was notified, when, and what information was sent. If no: brief justification for why escalation was not required.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Resolution Achieved</div>
+    <div class="template-field-placeholder">Yes / No / Pending — if yes: how resolution was confirmed. If pending: what remaining step is outstanding and by when.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Pass / Fail / Partial</div>
+    <div class="template-field-placeholder">PASS / FAIL / PARTIAL — with one sentence explaining the verdict against the scenario's pass criteria.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Documentation Gap Found</div>
+    <div class="template-field-placeholder">Yes / No — if yes: describe the exact step where documentation was insufficient or missing. This is the most important field in the template.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Action Item</div>
+    <div class="template-field-placeholder">Any items to add to support-review.html, the known issues log, the knowledge base, or the runbook. Cross-reference by SR-ID if applicable. Owner and due date.</div>
+  </div>
+</div>
+
+<!-- Section 5 — LLM Triage Prompt -->
+<div class="section-heading">Section 5 — LLM Pre-Triage Prompt</div>
+
+<div class="prompt-card">
+  <div class="prompt-card-title">Support Triage — LLM Prompt</div>
+  <p style="font-size:12px;color:var(--text2);margin-bottom:16px;line-height:1.6;">Paste this prompt into any capable LLM (Claude, GPT-4) with the user report appended. Treat the output as a first draft — verify against the known issues log and run the response through the voice check before sending anything.</p>
+
+  <div class="prompt-section-label">System Context</div>
+  <div class="prompt-block">You are a support triage assistant for H.O.N. (Habit Over Numbers), an iOS-only fitness coaching app. H.O.N. is dark-mode, currently in pre-launch TestFlight with App Store submission pending. All user data is stored locally on device — no backend server, no cloud sync. Support channels are App Store reviews and developer email. The H.O.N. voice is spare, direct, identity-affirming. Never cheerleading. Never corporate. Response drafts must sound like one human to another — not a support ticket system.
+
+Known issues (match against these before creating new ones):
+- B-001: Decimal weight overflow (e.g. 95 lbs displays as 95.1151)
+- B-002: FAIL pill overflows reps field layout
+- C-003: Countdown timer flashes during 3-2-1 start sequence
+- HealthKit re-prompting despite prior authorization
+- Phrase bank repetition (coaching tips feel repetitive, same phrases each session)
+
+Voice rules — NEVER use in response drafts:
+- "Dear valued customer" or any "Dear [name]" opener
+- "We sincerely apologize for any inconvenience"
+- "Please do not hesitate to contact us"
+- "Our team is working hard to..."
+- Any passive-voice deflection ("it has been noted that...")</div>
+
+  <div class="prompt-section-label">User Report Input</div>
+  <div class="prompt-block">[USER REPORT TEXT]</div>
+
+  <div class="prompt-section-label">Required Output</div>
+  <div style="margin-top:8px;">
+    <div class="output-item">
+      <span class="output-num">1.</span>
+      <span><strong style="color:var(--text);">Issue type:</strong> crash / data loss / bug / feature request / voice complaint / privacy / sensitive welfare — one word only</span>
+    </div>
+    <div class="output-item">
+      <span class="output-num">2.</span>
+      <span><strong style="color:var(--text);">Severity:</strong> P0 / P1 / P2 / P3 — with one sentence of justification using the matrix (P0 = launch crash or data loss; P1 = core workout flow; P2 = secondary views; P3 = edge case &lt;0.1%)</span>
+    </div>
+    <div class="output-item">
+      <span class="output-num">3.</span>
+      <span><strong style="color:var(--text);">Known issue match:</strong> yes (cite the bug ID) / no — if no, explain in one sentence why it doesn't match any known pattern</span>
+    </div>
+    <div class="output-item">
+      <span class="output-num">4.</span>
+      <span><strong style="color:var(--text);">Response draft in H.O.N. voice:</strong> direct, human, specific to this complaint, under 150 words. No opener like "Dear" or "Hi [name]". No apology boilerplate. No close like "Please don't hesitate." If sensitive welfare: acknowledge warmly, no medical advice, include one concrete resource.</span>
+    </div>
+    <div class="output-item">
+      <span class="output-num">5.</span>
+      <span><strong style="color:var(--text);">Escalation:</strong> yes/no — if yes, specify who (engineering lead / PM / founder) and the one-line reason why</span>
+    </div>
+    <div class="output-item">
+      <span class="output-num">6.</span>
+      <span><strong style="color:var(--text);">Engineering ticket required:</strong> yes/no — if yes, one-line ticket description suitable for a backlog</span>
+    </div>
+    <div class="output-item">
+      <span class="output-num">7.</span>
+      <span><strong style="color:var(--text);">Knowledge base gap:</strong> yes/no — if yes, suggest a title for the new knowledge base entry that would have answered this question</span>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
