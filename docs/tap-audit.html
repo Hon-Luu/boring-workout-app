@@ -1,0 +1,3263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>H.O.N. — Tap &amp; Interactive Element Audit</title>
+  <style>
+    :root {
+      --bg: #111111; --card: #1c1c1e; --border: #2c2c2e;
+      --text: #f5f5f5; --muted: #8e8e93;
+      --amber: #f59e0b; --positive: #34d399; --negative: #f87171;
+      --blue: #60a5fa; --purple: #a78bfa; --orange: #fb923c;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, 'SF Pro Text', sans-serif;
+      font-size: 14px;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* ── Page header ── */
+    .page-header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 24px 20px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .page-title {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin: 0 0 4px;
+      color: var(--text);
+    }
+
+    .page-subtitle {
+      color: var(--muted);
+      font-size: 13px;
+      margin: 0 0 14px;
+      line-height: 1.5;
+      max-width: 640px;
+    }
+
+    .header-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .element-badge {
+      background: var(--purple);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.2px;
+    }
+
+    /* ── Filter chips ── */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .filter-chip {
+      background: var(--border);
+      border: 1px solid transparent;
+      border-radius: 20px;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 5px 14px;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      user-select: none;
+    }
+
+    .filter-chip:hover {
+      background: #3a3a3c;
+      color: var(--text);
+    }
+
+    .filter-chip.active {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #fff;
+    }
+
+    .filter-chip[data-filter="not-tested"].active { background: var(--muted); border-color: var(--muted); color: #fff; }
+    .filter-chip[data-filter="pass"].active        { background: var(--positive); border-color: var(--positive); color: #111; }
+    .filter-chip[data-filter="fail"].active        { background: var(--negative); border-color: var(--negative); color: #fff; }
+    .filter-chip[data-filter="na"].active          { background: var(--blue); border-color: var(--blue); color: #fff; }
+
+    /* ── Progress bar ── */
+    .progress-wrap {
+      margin-bottom: 4px;
+    }
+
+    .progress-label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .progress-label strong {
+      color: var(--text);
+    }
+
+    .progress-track {
+      background: var(--border);
+      border-radius: 6px;
+      height: 6px;
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .progress-fill {
+      background: linear-gradient(90deg, var(--blue), var(--purple));
+      border-radius: 6px;
+      height: 100%;
+      transition: width 0.3s ease;
+      width: 0%;
+    }
+
+    /* ── Main content ── */
+    .content {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px 16px 40px;
+    }
+
+    /* ── Collapsible section ── */
+    .section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+
+    .section-header {
+      align-items: center;
+      cursor: pointer;
+      display: flex;
+      gap: 10px;
+      padding: 14px 16px;
+      user-select: none;
+      transition: background 0.12s;
+    }
+
+    .section-header:hover {
+      background: rgba(255,255,255,0.04);
+    }
+
+    .section-title {
+      flex: 1;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .section-screen-tag {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      background: var(--border);
+      padding: 2px 8px;
+      border-radius: 10px;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+
+    .section-count {
+      font-size: 12px;
+      color: var(--muted);
+      min-width: 40px;
+      text-align: right;
+    }
+
+    .chevron {
+      color: var(--muted);
+      font-size: 11px;
+      transition: transform 0.2s;
+    }
+
+    .section.open .chevron {
+      transform: rotate(90deg);
+    }
+
+    .section-body {
+      border-top: 1px solid var(--border);
+      display: none;
+    }
+
+    .section.open .section-body {
+      display: block;
+    }
+
+    /* ── Tap item row ── */
+    .tap-item {
+      border-bottom: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto auto;
+      gap: 4px 12px;
+      padding: 12px 16px;
+      transition: background 0.1s;
+    }
+
+    .tap-item:last-child {
+      border-bottom: none;
+    }
+
+    .tap-item:hover {
+      background: rgba(255,255,255,0.025);
+    }
+
+    /* dim filtered-out items */
+    .tap-item.hidden {
+      display: none;
+    }
+
+    .tap-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .tap-id {
+      font-family: 'SF Mono', 'Menlo', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--purple);
+      min-width: 90px;
+    }
+
+    .tap-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    /* Hit-target badges */
+    .hit-target {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 10px;
+      letter-spacing: 0.2px;
+    }
+
+    .hit-target.ok {
+      background: rgba(52, 211, 153, 0.15);
+      color: var(--positive);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+    }
+
+    .hit-target.warn {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--amber);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .hit-target.flag {
+      background: rgba(248, 113, 113, 0.15);
+      color: var(--negative);
+      border: 1px solid rgba(248, 113, 113, 0.3);
+    }
+
+    /* Ghost-risk tags */
+    .ghost-tag {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
+    .ghost-tag.high   { background: rgba(248,113,113,0.15); color: var(--negative); border: 1px solid rgba(248,113,113,0.3); }
+    .ghost-tag.medium { background: rgba(245,158,11,0.15);  color: var(--amber);    border: 1px solid rgba(245,158,11,0.3); }
+    .ghost-tag.low    { background: rgba(142,142,147,0.15); color: var(--muted);    border: 1px solid rgba(142,142,147,0.3); }
+
+    /* gesture tag */
+    .gesture-tag {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: rgba(96,165,250,0.12);
+      color: var(--blue);
+      border: 1px solid rgba(96,165,250,0.25);
+    }
+
+    .tap-detail {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+      grid-column: 1;
+      grid-row: 2;
+    }
+
+    /* Status select */
+    .status-select {
+      appearance: none;
+      -webkit-appearance: none;
+      background: var(--border);
+      border: 1px solid #3a3a3c;
+      border-radius: 8px;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+      grid-column: 2;
+      grid-row: 1 / 3;
+      align-self: center;
+      letter-spacing: 0.3px;
+      padding: 6px 10px;
+      text-align: center;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      min-width: 100px;
+    }
+
+    .status-select:focus {
+      outline: 2px solid var(--blue);
+      outline-offset: 1px;
+    }
+
+    /* Dynamic colour based on data-status attribute — applied via JS */
+    .tap-item[data-status="pass"] .status-select {
+      background: rgba(52,211,153,0.15);
+      border-color: rgba(52,211,153,0.4);
+      color: var(--positive);
+    }
+
+    .tap-item[data-status="fail"] .status-select {
+      background: rgba(248,113,113,0.15);
+      border-color: rgba(248,113,113,0.4);
+      color: var(--negative);
+    }
+
+    .tap-item[data-status="na"] .status-select {
+      background: rgba(96,165,250,0.12);
+      border-color: rgba(96,165,250,0.3);
+      color: var(--blue);
+    }
+
+    .tap-item[data-status="not-tested"] .status-select {
+      background: var(--border);
+      border-color: #3a3a3c;
+      color: var(--muted);
+    }
+
+    /* Section row stripe coloring by status for quick scan */
+    .tap-item[data-status="pass"]       { border-left: 3px solid var(--positive); }
+    .tap-item[data-status="fail"]       { border-left: 3px solid var(--negative); }
+    .tap-item[data-status="na"]         { border-left: 3px solid var(--blue); }
+    .tap-item[data-status="not-tested"] { border-left: 3px solid transparent; }
+
+    /* ── Partial JS (stub — full logic appended in Part 2) ── */
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════
+     PAGE HEADER
+════════════════════════════════════════════════ -->
+<header class="page-header">
+  <h1 class="page-title">H.O.N. — Tap &amp; Interactive Element Audit</h1>
+  <p class="page-subtitle">
+    Screen-by-screen inventory of every interactive element. Verify hit targets,
+    ghost tap risks, and gesture coverage.
+  </p>
+
+  <div class="header-meta">
+    <span class="element-badge">130 elements across 7 screens</span>
+  </div>
+
+  <!-- Filter chips -->
+  <div class="filter-bar">
+    <button class="filter-chip active" data-filter="all"        onclick="setFilter('all')">All</button>
+    <button class="filter-chip"        data-filter="not-tested" onclick="setFilter('not-tested')">Not Tested</button>
+    <button class="filter-chip"        data-filter="pass"       onclick="setFilter('pass')">Pass</button>
+    <button class="filter-chip"        data-filter="fail"       onclick="setFilter('fail')">Fail</button>
+    <button class="filter-chip"        data-filter="na"         onclick="setFilter('na')">N/A</button>
+  </div>
+
+  <!-- Progress bar -->
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <strong id="progress-tested">0</strong> of <strong>130</strong> elements tested
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+  </div>
+</header>
+
+<!-- ════════════════════════════════════════════════
+     MAIN CONTENT
+════════════════════════════════════════════════ -->
+<main class="content">
+
+  <!-- ══════════════════════════════════════════
+       SECTION 1 — TAB BAR (Global)
+       TAP-G-001 to TAP-G-006
+  ══════════════════════════════════════════ -->
+  <div class="section open" id="sec-tab-bar">
+    <div class="section-header" onclick="toggleSection('tab-bar')">
+      <span class="section-title">Tab Bar</span>
+      <span class="section-screen-tag">Global</span>
+      <span class="section-count" id="count-tab-bar">0/6</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body" id="section-tab-bar">
+
+      <!-- TAP-G-001 -->
+      <div class="tap-item" data-id="TAP-G-001" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-G-001</span>
+          <span class="tap-name">Home tab icon</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">
+          Navigates to HomeView (tab 0). Tab bar items are always ≥44×44pt per Apple HIG — no concern here.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-G-001', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-G-002 -->
+      <div class="tap-item" data-id="TAP-G-002" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-G-002</span>
+          <span class="tap-name">Workout tab icon</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">
+          Navigates to WorkoutTabView (tab 1). Standard tab bar sizing — compliant.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-G-002', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-G-003 -->
+      <div class="tap-item" data-id="TAP-G-003" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-G-003</span>
+          <span class="tap-name">Progress tab icon</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">
+          Navigates to Progress view (tab 2). Standard tab bar sizing — compliant.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-G-003', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-G-004 -->
+      <div class="tap-item" data-id="TAP-G-004" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-G-004</span>
+          <span class="tap-name">Insights tab icon</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">
+          Navigates to StrengthLabView / Insights (tab 3). Standard tab bar sizing — compliant.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-G-004', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-G-005 -->
+      <div class="tap-item" data-id="TAP-G-005" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-G-005</span>
+          <span class="tap-name">Trainer tab icon</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">
+          Navigates to TrainerTabView (tab 4). Standard tab bar sizing — compliant.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-G-005', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-G-006 -->
+      <div class="tap-item" data-id="TAP-G-006" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-G-006</span>
+          <span class="tap-name">Active workout badge on Workout tab</span>
+          <span class="hit-target warn">~32pt?</span>
+        </div>
+        <div class="tap-detail">
+          Visible only during an active session. Tap navigates into ActiveWorkoutView. The badge itself is a small overlay on the tab icon — its interactive area is the underlying tab item, but the badge visual can mislead users into tapping off-centre. Verify that the tap region is still the full tab item, not the badge alone.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-G-006', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+    </div><!-- /section-body tab-bar -->
+  </div><!-- /section tab-bar -->
+
+
+  <!-- ══════════════════════════════════════════
+       SECTION 2 — HOME VIEW
+       TAP-H-001 to TAP-H-014
+  ══════════════════════════════════════════ -->
+  <div class="section open" id="sec-home">
+    <div class="section-header" onclick="toggleSection('home')">
+      <span class="section-title">Home View</span>
+      <span class="section-screen-tag">Tab 0</span>
+      <span class="section-count" id="count-home">0/14</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body" id="section-home">
+
+      <!-- TAP-H-001 -->
+      <div class="tap-item" data-id="TAP-H-001" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-H-001</span>
+          <span class="tap-name">Gear icon (top-right toolbar)</span>
+          <span class="hit-target warn">~32pt</span>
+        </div>
+        <div class="tap-detail">
+          Opens Settings sheet. Icon-only toolbar buttons frequently render at ~32pt — check that SwiftUI's
+          <code>.toolbar</code> item has a sufficient tap area or wraps in a <code>Button</code> with explicit frame. Ghost tap risk: LOW (isolated in corner).
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-H-001', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-H-002 -->
+      <div class="tap-item" data-id="TAP-H-002" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-H-002</span>
+          <span class="tap-name">Readiness score card</span>
+          <span class="hit-target ok">Full-width</span>
+          <span class="ghost-tag high">Ghost HIGH</span>
+        </div>
+        <div class="tap-detail">
+          Expected action: navigates to Insights (StrengthLabView). The card is full-width so hit target is fine, but the card sits above "today's exercises" rows — accidental taps when scrolling are a HIGH ghost-tap risk. Verify there is a visible affordance (chevron, highlight on press) so users know it is tappable.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-H-002', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-H-003 -->
+      <div class="tap-item" data-id="TAP-H-003" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-H-003</span>
+          <span class="tap-name">First today's exercise hint row</span>
+          <span class="hit-target ok">Full-width row</span>
+        </div>
+        <div class="tap-detail">
+          Navigates to Workout tab or starts a workout prefilled with that exercise. Full-width list row — hit target is adequate. Confirm action is deterministic (does not start a workout silently without user confirmation).
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-H-003', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-H-004 -->
+      <div class="tap-item" data-id="TAP-H-004" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-H-004</span>
+          <span class="tap-name">Subsequent exercise hint rows</span>
+          <span class="hit-target ok">Full-width row</span>
+        </div>
+        <div class="tap-detail">
+          Same action as TAP-H-003 for rows 2-N in the today's exercises list. Verify consistent behaviour across all hint rows — especially if the list is scrollable and rows overlap the readiness card edge on scroll bounce.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-H-004', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-H-005 -->
+      <div class="tap-item" data-id="TAP-H-005" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-H-005</span>
+          <span class="tap-name">"Start Workout" CTA button</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">
+          Primary CTA on HomeView — navigates to Workout tab (tab 1). Should be full-width or near-full-width with a minimum height of 44pt. Verify button state when an active workout already exists (should it say "Resume Workout" instead?).
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-H-005', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-H-006 -->
+      <div class="tap-item" data-id="TAP-H-006" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-H-006</span>
+          <span class="tap-name">Progress trend card</span>
+          <span class="hit-target ok">Full-width</span>
+          <span class="ghost-tag medium">Ghost MEDIUM</span>
+        </div>
+        <div class="tap-detail">
+          Expected action: navigates to Progress tab (tab 2). Full-width card — hit target is fine. Ghost tap risk is MEDIUM because the card occupies a large passive-looking area; users may scroll past without realising it is tappable. Ensure a visual press state exists.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-H-006', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-H-007 -->
+      <div class="tap-item" data-id="TAP-H-007" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-H-007</span>
+          <span class="tap-name">HONInAppBanner action area</span>
+          <span class="hit-target ok">Full-width</span>
+        </div>
+        <div class="tap-detail">
+          HONInAppBanner is only shown on tab 0 (HomeView). Tap triggers the banner's associated action (context-dependent). Verify banner does not block the tab bar or readiness card when visible. Action should complete and dismiss the banner, or navigate as appropriate.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-H-007', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-H-008 -->
+      <div class="tap-item" data-id="TAP-H-008" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-H-008</span>
+          <span class="tap-name">HONInAppBanner dismiss X button</span>
+          <span class="hit-target warn">~28pt</span>
+        </div>
+        <div class="tap-detail">
+          If the banner has a separate dismiss button (X icon), it is likely rendered small (~28pt). Check for <code>.contentShape(Rectangle())</code> or <code>.frame(width:44, height:44)</code> padding around the icon. Ghost tap risk LOW (corner placement).
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-H-008', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-H-009 -->
+      <div class="tap-item" data-id="TAP-H-009" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-H-009</span>
+          <span class="tap-name">Exercise note chip / tag</span>
+          <span class="hit-target warn">~32pt</span>
+        </div>
+        <div class="tap-detail">
+          Chip-style elements are frequently under-sized. Expected action: opens exercise detail. Verify chip height ≥ 36pt with generous horizontal padding, and that adjacent chips do not cause mis-taps. Ghost tap risk LOW if chips are isolated.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-H-009', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-H-010 -->
+      <div class="tap-item" data-id="TAP-H-010" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-H-010</span>
+          <span class="tap-name">"Full Analytics →" link</span>
+          <span class="hit-target warn">Inline link</span>
+        </div>
+        <div class="tap-detail">
+          Inline link-style text navigates to Insights (StrengthLabView). Text-only links are rarely ≥44pt tall — the tap region is typically only the text bounds. Recommend wrapping in a button with padding or using a full-row tappable area. Ghost tap risk LOW (text is clearly styled as a link).
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-H-010', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-H-011 -->
+      <div class="tap-item" data-id="TAP-H-011" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-H-011</span>
+          <span class="tap-name">Streak display</span>
+          <span class="hit-target warn">~36pt</span>
+          <span class="ghost-tag medium">Ghost MEDIUM</span>
+        </div>
+        <div class="tap-detail">
+          Expected action: navigates to Progress tab. Streak is typically a small badge or inline number — if tappable, verify the tap region is padded to ≥44pt. Ghost tap risk is MEDIUM: users habitually tap stats expecting navigation, so a non-tappable streak would feel broken. Document whether this is actually interactive.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-H-011', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-H-012 -->
+      <div class="tap-item" data-id="TAP-H-012" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-H-012</span>
+          <span class="tap-name">Coach note text</span>
+          <span class="hit-target ok">Full-width</span>
+          <span class="ghost-tag low">Ghost LOW</span>
+        </div>
+        <div class="tap-detail">
+          Sourced from <code>homeCache.readiness.coachingNote</code>. Determine if this text is expandable (truncated with "Read more") or static. If static, no tap interaction is needed — but verify it does not accidentally intercept taps meant for the readiness card beneath or surrounding it.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-H-012', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-H-013 -->
+      <div class="tap-item" data-id="TAP-H-013" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-H-013</span>
+          <span class="tap-name">Routine suggestion row</span>
+          <span class="hit-target ok">Full-width row</span>
+        </div>
+        <div class="tap-detail">
+          Tap starts the suggested routine. Full-width row — hit target is adequate. Confirm the routine is populated from <code>homeCache.todayHints</code> and the workout starts with the correct exercises pre-loaded.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-H-013', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-H-014 -->
+      <div class="tap-item" data-id="TAP-H-014" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-H-014</span>
+          <span class="tap-name">Pull-to-refresh (swipe gesture)</span>
+          <span class="hit-target ok">N/A — Gesture</span>
+          <span class="gesture-tag">Gesture</span>
+        </div>
+        <div class="tap-detail">
+          Swipe-down triggers <code>refreshAnalytics()</code>. No tap-target concern — this is a system-provided pull-to-refresh gesture. Verify the loading indicator appears promptly and the view updates after the background analytics pass completes. Mark N/A for hit-target audit.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-H-014', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+    </div><!-- /section-body home -->
+  </div><!-- /section home -->
+
+
+  <!-- ══════════════════════════════════════════
+       SECTION 3 — WORKOUT VIEW (Pre-start)
+       TAP-W-001 to TAP-W-008
+  ══════════════════════════════════════════ -->
+  <div class="section open" id="sec-workout-pre">
+    <div class="section-header" onclick="toggleSection('workout-pre')">
+      <span class="section-title">Workout View (Pre-start)</span>
+      <span class="section-screen-tag">Tab 1</span>
+      <span class="section-count" id="count-workout-pre">0/8</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body" id="section-workout-pre">
+
+      <!-- TAP-W-001 -->
+      <div class="tap-item" data-id="TAP-W-001" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-001</span>
+          <span class="tap-name">"Start Workout" primary button</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">
+          Creates a new active session and navigates to ActiveWorkoutView. Primary CTA — should be full-width or minimum 44pt height. Verify this button is hidden or replaced when an active workout already exists in <code>store.activeWorkout</code>.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-001', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-002 -->
+      <div class="tap-item" data-id="TAP-W-002" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-002</span>
+          <span class="tap-name">Routine row (in list)</span>
+          <span class="hit-target ok">Full-width row</span>
+        </div>
+        <div class="tap-detail">
+          Tap starts that routine immediately (creates activeWorkout from <code>WorkoutTemplate</code>). Full-width list row — hit target compliant. Verify the routine's exercises are correctly seeded into the active workout before navigating.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-002', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-003 -->
+      <div class="tap-item" data-id="TAP-W-003" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-003</span>
+          <span class="tap-name">"Create Routine" button</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">
+          Opens the routine builder sheet. Should have ≥44pt hit target. Confirm the sheet displays correctly and the keyboard does not immediately focus an input on open (which can push content off-screen on smaller devices).
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-003', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-004 -->
+      <div class="tap-item" data-id="TAP-W-004" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-004</span>
+          <span class="tap-name">Routine row swipe-to-delete</span>
+          <span class="hit-target ok">N/A — Gesture</span>
+          <span class="gesture-tag">Gesture</span>
+        </div>
+        <div class="tap-detail">
+          Destructive swipe gesture on routine rows. Verify a confirmation dialog appears before the routine is permanently deleted. The delete action should remove from <code>store.routines</code> and persist the change. Mark N/A for tap hit-target; test gesture discoverability separately.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-004', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-005 -->
+      <div class="tap-item" data-id="TAP-W-005" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-005</span>
+          <span class="tap-name">Routine edit / pencil icon</span>
+          <span class="hit-target warn">~28pt</span>
+        </div>
+        <div class="tap-detail">
+          Opens the routine edit view. Icon-only button — likely rendered at ~28pt without additional padding. Add <code>.frame(width: 44, height: 44)</code> or <code>.contentShape(Rectangle())</code> if missing. Ghost tap risk LOW (trailing edge of row, distinct from row tap).
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-005', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-006 -->
+      <div class="tap-item" data-id="TAP-W-006" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-006</span>
+          <span class="tap-name">Exercise search field</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">
+          Tap opens the keyboard and focuses the search field, filtering the exercise picker. Standard <code>TextField</code> or <code>searchable</code> modifier — typically ≥44pt. Verify search results update reactively as the user types, and clearing the field restores the full list.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-006', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-007 -->
+      <div class="tap-item" data-id="TAP-W-007" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-007</span>
+          <span class="tap-name">Exercise row in picker</span>
+          <span class="hit-target ok">Full-width row</span>
+        </div>
+        <div class="tap-detail">
+          Tapping an exercise in the picker either adds it to an existing workout or starts an ad-hoc session with that exercise. Full-width row — hit target is compliant. Verify behaviour is correct in both contexts (active workout exists vs. no active workout).
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-007', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-008 -->
+      <div class="tap-item" data-id="TAP-W-008" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-008</span>
+          <span class="tap-name">Filter chips in picker (body region / equipment)</span>
+          <span class="hit-target warn">~34pt</span>
+        </div>
+        <div class="tap-detail">
+          Chip-style filter buttons for body region and equipment type. Chip height is frequently under 44pt — verify each chip has enough vertical padding, or wraps in a scroll row with <code>.frame(minHeight: 44)</code>. Multiple chips in a row can cause mis-taps if spacing is tight.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-008', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+    </div><!-- /section-body workout-pre -->
+  </div><!-- /section workout-pre -->
+
+
+  <!-- ══════════════════════════════════════════
+       SECTION 4 — ACTIVE WORKOUT VIEW
+       TAP-W-020 to TAP-W-045
+  ══════════════════════════════════════════ -->
+  <div class="section open" id="sec-active-workout">
+    <div class="section-header" onclick="toggleSection('active-workout')">
+      <span class="section-title">Active Workout View</span>
+      <span class="section-screen-tag">Tab 1 — Active</span>
+      <span class="section-count" id="count-active-workout">0/26</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body" id="section-active-workout">
+
+      <!-- TAP-W-020 -->
+      <div class="tap-item" data-id="TAP-W-020" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-020</span>
+          <span class="tap-name">Exercise row header</span>
+          <span class="hit-target ok">Full-width row</span>
+        </div>
+        <div class="tap-detail">
+          Collapse or expand the sets for that exercise within ActiveWorkoutView. Full-width row — hit target is adequate. Verify the chevron rotates and the set cards animate in/out smoothly. Ghost tap risk LOW (row is clearly labeled).
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-020', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-021 -->
+      <div class="tap-item" data-id="TAP-W-021" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-021</span>
+          <span class="tap-name">Weight input field (per set)</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">
+          Opens numeric keypad for weight entry on a <code>SetRecord</code>. Standard <code>TextField</code> — typically ≥44pt. Verify the keypad type is <code>.decimalPad</code> to allow fractional weights (e.g., 2.5 kg increments). <code>Equipment.effectiveWeight(_:)</code> is called downstream.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-021', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-022 -->
+      <div class="tap-item" data-id="TAP-W-022" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-022</span>
+          <span class="tap-name">Reps input field (per set)</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">
+          Opens numeric keypad for rep count. Verify keypad type is <code>.numberPad</code> (integer reps only). The e1RM formula routes based on rep count: Epley for 2–10, Mayhew for 11–15, exact for 1 rep, excluded for >15 — so bad input here has downstream analytics consequences.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-022', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-023 -->
+      <div class="tap-item" data-id="TAP-W-023" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-023</span>
+          <span class="tap-name">"Complete Set" button</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">
+          Marks <code>SetRecord.isCompleted = true</code> and triggers narrative coaching text from <code>WorkoutNarrativeEngine</code>. Verify the button is disabled (or appropriately guarded) when weight or reps fields are empty/zero. Confirm the coaching text appears in the narrative area after tap.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-023', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-024 -->
+      <div class="tap-item" data-id="TAP-W-024" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-024</span>
+          <span class="tap-name">Drop set toggle</span>
+          <span class="hit-target warn">Toggle ~36pt</span>
+        </div>
+        <div class="tap-detail">
+          Enables the <code>dropWeight</code> / <code>dropReps</code> input fields on a set and initiates the drop set flow. System <code>Toggle</code> renders at ~36pt — typically acceptable but verify the label area also contributes to the tap target. Ghost tap risk LOW (toggle is visually distinct).
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-024', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-025 -->
+      <div class="tap-item" data-id="TAP-W-025" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-025</span>
+          <span class="tap-name">Drop weight input</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">
+          Opens numeric keypad for the drop set weight. Only visible when the drop set toggle (TAP-W-024) is active. Verify the field is pre-populated with a sensible default (e.g., 80% of main set weight) and uses <code>.decimalPad</code>.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-025', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-026 -->
+      <div class="tap-item" data-id="TAP-W-026" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-026</span>
+          <span class="tap-name">Drop reps input</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">
+          Opens numeric keypad for the drop set rep count. Only visible when drop set toggle is active. Use <code>.numberPad</code>. Confirm input updates <code>SetRecord.dropReps</code> in the model correctly.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-026', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-027 -->
+      <div class="tap-item" data-id="TAP-W-027" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-027</span>
+          <span class="tap-name">"Complete Drop Set" button</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">
+          Marks <code>SetRecord.isDropCompleted = true</code> and routes narrative engine to the "Drop Set — Completed" weight-slot phrases (IDs 76–85) via <code>weightState == .droppedCompleted</code>. Verify <code>hasCompletedDropSet</code> is correctly set to <code>true</code> in <code>ExerciseAnalysis</code> after tap.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-027', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-028 -->
+      <div class="tap-item" data-id="TAP-W-028" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-028</span>
+          <span class="tap-name">To-Failure toggle</span>
+          <span class="hit-target warn">Toggle ~36pt</span>
+        </div>
+        <div class="tap-detail">
+          Marks <code>SetRecord.toFailure = true</code>. Routes narrative engine to the "To Failure" connective slot (IDs 105–114) by setting <code>isToFailure = true</code> in <code>ExerciseAnalysis</code>. System Toggle — same sizing concern as TAP-W-024. Ghost tap risk LOW.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-028', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-029 -->
+      <div class="tap-item" data-id="TAP-W-029" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-029</span>
+          <span class="tap-name">RPE stepper / picker (6–10)</span>
+          <span class="hit-target warn">Stepper ~32pt</span>
+        </div>
+        <div class="tap-detail">
+          Sets <code>SetRecord.rpe</code> (6–10 scale). RPE is used for adjusted e1RM calculations in <code>StrengthAnalyticsEngine</code>. Steppers have +/− buttons that are frequently ~32pt. Verify each stepper button meets 44pt or uses a <code>Picker</code> wheel instead for easier interaction. Ghost tap risk LOW (clearly bounded control).
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-029', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-030 -->
+      <div class="tap-item" data-id="TAP-W-030" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-030</span>
+          <span class="tap-name">"Add Set" button (per exercise)</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">
+          Appends a new <code>SetRecord</code> to the exercise within the active workout. The new set should be pre-populated with the previous set's weight and target reps as a convenience default. Verify the set list scrolls to reveal the newly added row.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-030', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-031 -->
+      <div class="tap-item" data-id="TAP-W-031" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-031</span>
+          <span class="tap-name">Delete set (swipe-to-delete or minus button)</span>
+          <span class="hit-target warn">~28pt minus icon</span>
+        </div>
+        <div class="tap-detail">
+          Removes a <code>SetRecord</code> from the exercise. If implemented as a minus icon button in edit mode, the icon is frequently ~28pt — add <code>.frame(width:44, height:44)</code>. Swipe-to-delete is system-sized. Verify deleting a completed set does not leave orphaned narrative text. Ghost tap risk MEDIUM (close to weight/reps inputs).
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-031', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-032 -->
+      <div class="tap-item" data-id="TAP-W-032" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-032</span>
+          <span class="tap-name">"Add Exercise" button</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">
+          Opens the exercise picker sheet mid-workout. The selected exercise is appended to <code>store.activeWorkout.exercises</code>. Confirm the picker does not reset the active workout state and the keyboard does not remain open from a previous field. Verify the sheet dismisses correctly on selection.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-032', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-033 -->
+      <div class="tap-item" data-id="TAP-W-033" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-033</span>
+          <span class="tap-name">Equipment chip (e.g., "Dumbbell")</span>
+          <span class="hit-target warn">~34pt chip</span>
+        </div>
+        <div class="tap-detail">
+          Calls <code>store.quickSwapEquipment(for:)</code> on every render to populate options (O(n_exercises), safe). On tap, <code>store.bestVariant(equipment:matching:)</code> resolves the best exercise match (O(n_log)). Verify chips are spaced enough to prevent mis-taps between adjacent equipment options. <code>EquipmentChipRow</code> takes <code>[Equipment]</code>, not exercise tuples.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-033', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-034 -->
+      <div class="tap-item" data-id="TAP-W-034" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-034</span>
+          <span class="tap-name">Reorder exercise handle (drag gesture)</span>
+          <span class="hit-target ok">N/A — Gesture</span>
+          <span class="gesture-tag">Gesture</span>
+        </div>
+        <div class="tap-detail">
+          Drag handle allows reordering of exercises within the active workout list. Long-press-to-lift or direct drag depending on implementation. No tap-target concern — verify the handle is visually distinct (lines/dots icon) and that drag state correctly reorders <code>activeWorkout.exercises</code> without data loss.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-034', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-035 -->
+      <div class="tap-item" data-id="TAP-W-035" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-035</span>
+          <span class="tap-name">Exercise name in row</span>
+          <span class="hit-target ok">Full-width</span>
+          <span class="ghost-tag high">Ghost HIGH</span>
+        </div>
+        <div class="tap-detail">
+          Expected action: opens exercise detail or equipment swap picker. Full-width — hit target is adequate. Ghost tap risk is HIGH because the exercise name row sits immediately above set input fields; users scrolling to reach weight/reps may accidentally trigger this. Verify there is a clear press state and confirm whether the action is tap-on-name or tap-on-an-explicit-button.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-035', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-036 -->
+      <div class="tap-item" data-id="TAP-W-036" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-036</span>
+          <span class="tap-name">Rest timer (if present)</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">
+          Starts, stops, or resets the rest timer between sets. Verify the timer persists correctly if the user navigates away (e.g., taps another tab) and returns. The timer display should be ≥44pt tappable area. Document whether this feature is present in the current build.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-036', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-037 -->
+      <div class="tap-item" data-id="TAP-W-037" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-037</span>
+          <span class="tap-name">"Complete Workout" primary button</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">
+          Ends the session and writes a <code>WorkoutLogEntry</code> to <code>store.workoutLog</code>, then triggers <code>refreshAnalytics()</code>. Full-width primary button — hit target is compliant. Verify <code>activeWorkout</code> is set to <code>nil</code> after completion and the post-workout summary screen is shown.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-037', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-038 -->
+      <div class="tap-item" data-id="TAP-W-038" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-038</span>
+          <span class="tap-name">"Discard Workout" button</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">
+          Cancels the active workout with a confirmation dialog before any data is lost. Should be visually de-emphasised (destructive style but secondary prominence) relative to "Complete Workout". Verify the dialog blocks the action until the user explicitly confirms.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-038', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-039 -->
+      <div class="tap-item" data-id="TAP-W-039" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-039</span>
+          <span class="tap-name">Discard confirm "Yes, discard"</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">
+          Destructive confirmation inside the discard dialog. Permanently discards the active workout and sets <code>store.activeWorkout = nil</code>. Must be styled with <code>.destructive</code> role in <code>Alert</code>. Verify the action is irreversible and navigates back to the pre-start Workout tab.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-039', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-040 -->
+      <div class="tap-item" data-id="TAP-W-040" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-040</span>
+          <span class="tap-name">Discard confirm "Cancel"</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">
+          Dismisses the discard confirmation dialog and returns to the active workout without any changes. System <code>Alert</code> cancel button — always ≥44pt. Verify focus returns to the same position in the workout list (not scrolled to top).
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-040', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-041 -->
+      <div class="tap-item" data-id="TAP-W-041" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-041</span>
+          <span class="tap-name">Workout name field (if editable)</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">
+          Opens a text input to rename the workout session (stored in <code>WorkoutLogEntry.name</code>). If present, verify the field is clearly labelled and the keyboard dismisses on "Done" or tapping outside. Document if this field is present or absent in the current build.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-041', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-042 -->
+      <div class="tap-item" data-id="TAP-W-042" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-042</span>
+          <span class="tap-name">Narrative coaching text</span>
+          <span class="hit-target ok">Full-width</span>
+          <span class="ghost-tag low">Ghost LOW</span>
+        </div>
+        <div class="tap-detail">
+          Post-set coaching text generated by <code>WorkoutNarrativeEngine</code> from <code>phrase_bank.json</code>. Determine if this is expandable (truncated) or always fully shown. If static, verify it does not intercept taps intended for set rows below. Ghost tap risk LOW — text is clearly informational in style.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-042', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-043 -->
+      <div class="tap-item" data-id="TAP-W-043" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-043</span>
+          <span class="tap-name">Superset group toggle (if present)</span>
+          <span class="hit-target warn">Toggle ~36pt</span>
+        </div>
+        <div class="tap-detail">
+          Links two or more exercises as a superset, setting <code>WorkoutExercise.supersetGroup</code>. System Toggle — same sizing caveat as TAP-W-024 and TAP-W-028. Ghost tap risk LOW. Document whether this toggle is available per-exercise or as a pairing action between two exercise rows. Note if feature is absent in current build.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-043', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-044 -->
+      <div class="tap-item" data-id="TAP-W-044" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-044</span>
+          <span class="tap-name">Per-exercise notes field</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">
+          Opens a text input for free-form notes on a specific exercise within the session. Verify notes are saved to the correct <code>WorkoutExercise</code> and persist to <code>WorkoutLogEntry</code> on workout completion. Keyboard should dismiss on "Done" or tapping outside the field.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-044', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <!-- TAP-W-045 -->
+      <div class="tap-item" data-id="TAP-W-045" data-status="not-tested">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-W-045</span>
+          <span class="tap-name">Scroll gesture (exercise list)</span>
+          <span class="hit-target ok">N/A — Gesture</span>
+          <span class="gesture-tag">Gesture</span>
+        </div>
+        <div class="tap-detail">
+          Vertical scroll through the exercise list within ActiveWorkoutView. No tap-target concern for the gesture itself. Verify that scroll momentum does not inadvertently trigger taps on exercise name rows (TAP-W-035) or "Complete Set" buttons (TAP-W-023) after the gesture settles. Mark N/A for hit-target audit.
+        </div>
+        <select class="status-select" onchange="setStatus('TAP-W-045', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+    </div><!-- /section-body active-workout -->
+  </div><!-- /section active-workout -->
+
+<!-- PART 2 APPENDED BELOW -->
+
+  <!-- ═══════════════════════════════════════════════════
+       SECTION: PROGRESS VIEW
+       ═══════════════════════════════════════════════════ -->
+  <div class="section" id="section-progress">
+    <div class="section-header" onclick="toggleSection('progress')">
+      <div>
+        <span class="section-title">Progress View</span>
+        <span class="section-count" id="count-progress">0/0</span>
+      </div>
+      <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body" id="body-progress">
+
+      <div class="tap-item" data-id="TAP-P-001" data-status="not-tested" data-section="progress">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-P-001</span>
+          <span class="tap-name">Workout history row</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Opens workout detail / drill-down for that session. Full-width row — hit target ok. Confirm tapping anywhere on the row (not just the title) triggers navigation.</div>
+        <select class="status-select" onchange="setStatus('TAP-P-001', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-P-002" data-status="not-tested" data-section="progress">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-P-002</span>
+          <span class="tap-name">Workout history row swipe-to-delete</span>
+          <span class="hit-target ok">N/A — Gesture</span>
+          <span class="gesture-tag">Gesture</span>
+        </div>
+        <div class="tap-detail">Destructive swipe-left gesture on workout history row reveals Delete button. Confirm destructive action requires user confirmation before permanent deletion. Mark N/A for hit-target; test the gesture and confirmation dialog separately.</div>
+        <select class="status-select" onchange="setStatus('TAP-P-002', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-P-003" data-status="not-tested" data-section="progress">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-P-003</span>
+          <span class="tap-name">PR badge / chip</span>
+          <span class="hit-target warn">Ghost tap MEDIUM</span>
+        </div>
+        <div class="tap-detail">Chip/badge style is universally tappable in iOS apps. Expected behavior: opens exercise PR history. Ghost tap risk MEDIUM — chip may render at ~32×28pt. Verify tap area meets 44pt minimum or add padding. If not navigating, users will tap repeatedly and assume the app is broken.</div>
+        <select class="status-select" onchange="setStatus('TAP-P-003', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-P-004" data-status="not-tested" data-section="progress">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-P-004</span>
+          <span class="tap-name">Streak display</span>
+          <span class="hit-target warn">Ghost tap MEDIUM</span>
+        </div>
+        <div class="tap-detail">Static or tappable? Expected: navigate to consistency view. Prominent large number with label — users trained by apps like Duolingo and Apple Fitness expect streak numbers to drill down. Ghost tap risk MEDIUM. Either wire up navigation or visually signal non-interactivity.</div>
+        <select class="status-select" onchange="setStatus('TAP-P-004', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-P-005" data-status="not-tested" data-section="progress">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-P-005</span>
+          <span class="tap-name">ConsistencyDotGrid individual dot</span>
+          <span class="hit-target flag">Ghost tap HIGH — dots likely &lt;44pt</span>
+        </div>
+        <div class="tap-detail">Tappable? Expected: shows that day's workout summary. Ghost tap risk HIGH — individual dots in a grid are almost certainly rendered at ~12×12pt (see TAP-A-008). Dot-per-day pattern is interactive in Duolingo, Apple Fitness, Strava — users will tap. Either add a tap handler with a larger invisible hit area or clearly mark as non-interactive.</div>
+        <select class="status-select" onchange="setStatus('TAP-P-005', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-P-006" data-status="not-tested" data-section="progress">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-P-006</span>
+          <span class="tap-name">Filter / sort control</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Filters or sorts the workout history list. Full-size control — hit target ok. Verify that selecting a filter/sort option updates the list immediately and that the selected state is visually indicated.</div>
+        <select class="status-select" onchange="setStatus('TAP-P-006', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-P-007" data-status="not-tested" data-section="progress">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-P-007</span>
+          <span class="tap-name">Month / week toggle</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Changes time window for charts and history display. Segmented control or similar — hit target ok. Verify chart and list update immediately on toggle, and that the selected segment is clearly highlighted.</div>
+        <select class="status-select" onchange="setStatus('TAP-P-007', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-P-008" data-status="not-tested" data-section="progress">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-P-008</span>
+          <span class="tap-name">Exercise PR row</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Opens exercise history detail from the PR list. Full-width row — hit target ok. Verify navigation to exercise-specific history showing e1RM progression and recent sets.</div>
+        <select class="status-select" onchange="setStatus('TAP-P-008', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-P-009" data-status="not-tested" data-section="progress">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-P-009</span>
+          <span class="tap-name">"Full Analytics →" link</span>
+          <span class="hit-target warn">Ghost tap — inline link</span>
+        </div>
+        <div class="tap-detail">Navigates to Insights / Strength Lab tab. Inline text link — hit target risky (line height ~20pt). Verify the link has sufficient vertical padding or uses a Button wrapper to meet 44pt. Users tapping near the arrow glyph may miss if the tap area is tight.</div>
+        <select class="status-select" onchange="setStatus('TAP-P-009', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-P-010" data-status="not-tested" data-section="progress">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-P-010</span>
+          <span class="tap-name">Volume chart bar / data point</span>
+          <span class="hit-target warn">Ghost tap MEDIUM</span>
+        </div>
+        <div class="tap-detail">Tooltip or detail on tap. Ghost tap risk MEDIUM — chart bars may be narrow for low-volume weeks. Every major fitness app (Apple Fitness, Garmin) makes chart points tappable. If bars are tappable, ensure a minimum 44pt touch area by padding the hit zone. If not tappable, remove any visual hover affordance.</div>
+        <select class="status-select" onchange="setStatus('TAP-P-010', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-P-011" data-status="not-tested" data-section="progress">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-P-011</span>
+          <span class="tap-name">Body region filter chip</span>
+          <span class="hit-target warn">Ghost tap — chip</span>
+        </div>
+        <div class="tap-detail">Filters PRs by body region. Chip-style elements are commonly under 44pt tall (~32–34pt). Verify vertical padding adds sufficient touch area. Selected state should be visually distinct (filled vs. outline chip). Check TAP-A-009 for size audit.</div>
+        <select class="status-select" onchange="setStatus('TAP-P-011', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-P-012" data-status="not-tested" data-section="progress">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-P-012</span>
+          <span class="tap-name">Workout detail back button</span>
+          <span class="hit-target ok">44pt+ (nav bar)</span>
+        </div>
+        <div class="tap-detail">Returns to the workout history list from the detail drill-down. System navigation bar back button — hit target ok (iOS provides 44pt touch area on nav bar buttons). Verify the back label shows the parent screen name or "Back" appropriately.</div>
+        <select class="status-select" onchange="setStatus('TAP-P-012', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-P-013" data-status="not-tested" data-section="progress">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-P-013</span>
+          <span class="tap-name">Exercise row within workout detail</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Opens exercise history from within a completed workout's detail view. Full-width row — hit target ok. Verify navigation shows the exercise's full history, not just sets from this session.</div>
+        <select class="status-select" onchange="setStatus('TAP-P-013', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-P-014" data-status="not-tested" data-section="progress">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-P-014</span>
+          <span class="tap-name">Share workout button</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Opens the iOS share sheet for the completed workout. Full-size button — hit target ok. Verify the share payload is meaningful (workout name, date, exercises, volume) and renders legibly in common share destinations (Messages, Notes, etc.).</div>
+        <select class="status-select" onchange="setStatus('TAP-P-014', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-P-015" data-status="not-tested" data-section="progress">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-P-015</span>
+          <span class="tap-name">Category tabs (Strength / Cardio / Consistency)</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Switches between Strength, Cardio, and Consistency sub-sections within the Progress view. Segmented control or tab row — hit target ok. Verify each tab correctly scopes the displayed data and that switching tabs does not lose scroll position unexpectedly.</div>
+        <select class="status-select" onchange="setStatus('TAP-P-015', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+    </div><!-- /section-body progress -->
+  </div><!-- /section progress -->
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- INSIGHTS / STRENGTH LAB SECTION               -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="section" id="section-insights">
+    <div class="section-header" onclick="toggleSection('insights')">
+      <div class="section-title">
+        <span class="section-icon">🔬</span>
+        Insights / Strength Lab View
+        <span class="section-count" id="count-insights">0/18</span>
+      </div>
+      <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body open" id="body-insights">
+
+      <div class="tap-item" data-id="TAP-I-001" data-status="not-tested" data-section="insights">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-I-001</span>
+          <span class="tap-name">Exercise row in strength list</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Opens exercise drill-down / history. Full-width row — hit target ok. Verify drill-down loads e1RM trend chart, volume trend, and PR data correctly for that exercise.</div>
+        <select class="status-select" onchange="setStatus('TAP-I-001', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-I-002" data-status="not-tested" data-section="insights">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-I-002</span>
+          <span class="tap-name">Body region filter chip</span>
+          <span class="hit-target warn">~32×34pt</span>
+        </div>
+        <div class="tap-detail">Filters the exercise list to show only exercises for the selected body region. Ghost tap risk: chip may be borderline on height. Verify chip tap area meets 44pt or has .contentShape() padding applied.</div>
+        <select class="status-select" onchange="setStatus('TAP-I-002', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-I-003" data-status="not-tested" data-section="insights">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-I-003</span>
+          <span class="tap-name">Equipment filter chip</span>
+          <span class="hit-target warn">~32×34pt</span>
+        </div>
+        <div class="tap-detail">Filters the exercise list by equipment type. Same tap-target concerns as body-region chip. Verify chips have adequate padding and selection state is visually clear.</div>
+        <select class="status-select" onchange="setStatus('TAP-I-003', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-I-004" data-status="not-tested" data-section="insights">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-I-004</span>
+          <span class="tap-name">Sort control (score / name / recency)</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Sorts the strength exercise list by composite score, name, or most recent workout date. Hit target ok. Verify sort order updates immediately and persists if user navigates away and returns.</div>
+        <select class="status-select" onchange="setStatus('TAP-I-004', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-I-005" data-status="not-tested" data-section="insights">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-I-005</span>
+          <span class="tap-name">Strength decay chart data point</span>
+          <span class="hit-target warn">~30pt hit zone</span>
+        </div>
+        <div class="tap-detail">Tapping a data point on the decay chart should show a tooltip with date, e1RM, and decay value. Ghost tap risk MEDIUM — chart points are small. Verify tooltip dismisses on tap-away and does not block scrolling.</div>
+        <select class="status-select" onchange="setStatus('TAP-I-005', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-I-006" data-status="not-tested" data-section="insights">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-I-006</span>
+          <span class="tap-name">Composite score card</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Large card displaying aggregate composite strength score. Ghost tap risk HIGH — card layout implies tappability. Expected behavior: expands sheet explaining methodology. Verify card has clear tap affordance (chevron or "Details" label).</div>
+        <select class="status-select" onchange="setStatus('TAP-I-006', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-I-007" data-status="not-tested" data-section="insights">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-I-007</span>
+          <span class="tap-name">Info / "?" button</span>
+          <span class="hit-target warn">~28×28pt</span>
+        </div>
+        <div class="tap-detail">Small icon button that shows an explanation sheet for a metric or chart. Hit target warn — icon buttons at 28pt need .frame(width:44, height:44) invisible tap area. Verify sheet appears correctly and can be dismissed.</div>
+        <select class="status-select" onchange="setStatus('TAP-I-007', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-I-008" data-status="not-tested" data-section="insights">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-I-008</span>
+          <span class="tap-name">Exercise history chart (pan / pinch)</span>
+          <span class="hit-target na">Gesture — N/A</span>
+        </div>
+        <div class="tap-detail">Pan gesture scrubs through time range on the exercise history chart. Pinch gesture zooms in/out on the time axis. N/A for tap-target audit. Verify gestures do not conflict with parent scroll view.</div>
+        <select class="status-select" onchange="setStatus('TAP-I-008', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-I-009" data-status="not-tested" data-section="insights">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-I-009</span>
+          <span class="tap-name">Time range selector (30d / 90d / All)</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Segmented control or pill selector that changes the chart's displayed time window. Hit target ok. Verify chart animates on selection change and the selected segment is visually distinct.</div>
+        <select class="status-select" onchange="setStatus('TAP-I-009', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-I-010" data-status="not-tested" data-section="insights">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-I-010</span>
+          <span class="tap-name">e1RM row within exercise detail</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Row showing estimated 1-rep max value in exercise drill-down. Ghost tap risk LOW. Document whether tap opens a detail view or is purely informational. If non-interactive, ensure no tap highlight appears.</div>
+        <select class="status-select" onchange="setStatus('TAP-I-010', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-I-011" data-status="not-tested" data-section="insights">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-I-011</span>
+          <span class="tap-name">Volume trend section</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Section displaying volume trend data. Ghost tap risk LOW. Document whether section header or rows are tappable. If interactive, verify tap expands detail. If static, verify no visual tap-state feedback fires.</div>
+        <select class="status-select" onchange="setStatus('TAP-I-011', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-I-012" data-status="not-tested" data-section="insights">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-I-012</span>
+          <span class="tap-name">Back button from drill-down</span>
+          <span class="hit-target ok">44pt+ (system nav)</span>
+        </div>
+        <div class="tap-detail">System navigation back button returns to the exercise list from the drill-down detail view. Hit target ok — system nav buttons are always 44pt+. Verify back navigation preserves scroll position and filter state.</div>
+        <select class="status-select" onchange="setStatus('TAP-I-012', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-I-013" data-status="not-tested" data-section="insights">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-I-013</span>
+          <span class="tap-name">Pattern balance chart</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Chart showing movement pattern balance (push/pull/hinge/squat distribution). Ghost tap risk LOW. Document whether chart segments are tappable. If interactive, expected behavior is filtering list by that pattern. If static, confirm no tap state.</div>
+        <select class="status-select" onchange="setStatus('TAP-I-013', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-I-014" data-status="not-tested" data-section="insights">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-I-014</span>
+          <span class="tap-name">"Needs Work" / "Strong" badge</span>
+          <span class="hit-target warn">~chip size</span>
+        </div>
+        <div class="tap-detail">Status badge labels applied to exercises. Ghost tap risk MEDIUM — iOS badge/chip pattern universally signals tappable filter. Expected behavior: tapping opens exercise list filtered by that strength category. Verify badge has tap affordance.</div>
+        <select class="status-select" onchange="setStatus('TAP-I-014', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-I-015" data-status="not-tested" data-section="insights">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-I-015</span>
+          <span class="tap-name">Cardio section rows</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Rows in the Cardio section of Insights. Opens cardio detail view for that activity type. Hit target ok. Verify cardio detail renders correctly and displays relevant metrics (distance, pace, duration trends).</div>
+        <select class="status-select" onchange="setStatus('TAP-I-015', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-I-016" data-status="not-tested" data-section="insights">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-I-016</span>
+          <span class="tap-name">Movement pattern filter</span>
+          <span class="hit-target warn">~chip size</span>
+        </div>
+        <div class="tap-detail">Filter chip that narrows exercise list to a specific movement pattern (push, pull, hinge, squat, carry, etc.). Hit target warn — chip height likely borderline. Verify .contentShape(Rectangle()) or frame padding applied.</div>
+        <select class="status-select" onchange="setStatus('TAP-I-016', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-I-017" data-status="not-tested" data-section="insights">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-I-017</span>
+          <span class="tap-name">Scroll gesture (exercise list)</span>
+          <span class="hit-target na">Gesture — N/A</span>
+        </div>
+        <div class="tap-detail">Standard vertical scroll through the exercise list. N/A for tap-target audit. Verify scroll does not conflict with any horizontal chip row scroll. Confirm momentum scrolling feels natural.</div>
+        <select class="status-select" onchange="setStatus('TAP-I-017', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-I-018" data-status="not-tested" data-section="insights">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-I-018</span>
+          <span class="tap-name">Segment control (Insights + Advanced merged)</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">If Insights and Advanced views are merged per NAV-009, a segment control switches between the two modes. Hit target ok. Verify both segments render correct content and the transition is smooth.</div>
+        <select class="status-select" onchange="setStatus('TAP-I-018', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+    </div><!-- /section-body insights -->
+  </div><!-- /section insights -->
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- TRAINER VIEW SECTION                          -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="section" id="section-trainer">
+    <div class="section-header" onclick="toggleSection('trainer')">
+      <div class="section-title">
+        <span class="section-icon">🤖</span>
+        Trainer View
+        <span class="section-count" id="count-trainer">0/12</span>
+      </div>
+      <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body open" id="body-trainer">
+
+      <div class="tap-item" data-id="TAP-TR-001" data-status="not-tested" data-section="trainer">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-TR-001</span>
+          <span class="tap-name">"Generate Plan" button</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Calls WorkoutPlanEngine to compute a GuidedWorkoutPlan from current readiness and last performance data. Hit target ok. Verify loading state is shown while plan is computing, and that errors are handled gracefully.</div>
+        <select class="status-select" onchange="setStatus('TAP-TR-001', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-TR-002" data-status="not-tested" data-section="trainer">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-TR-002</span>
+          <span class="tap-name">Workout plan card</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Card displaying a generated workout plan. Ghost tap risk MEDIUM — card layout implies tappability. Expected behavior: expands detail view showing all exercises, sets, and rationale. Verify card has visible chevron or expand affordance.</div>
+        <select class="status-select" onchange="setStatus('TAP-TR-002', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-TR-003" data-status="not-tested" data-section="trainer">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-TR-003</span>
+          <span class="tap-name">"Start This Workout" button</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Navigates to ActiveWorkoutView pre-loaded with the generated plan's exercises and targets. Hit target ok. Verify workout starts correctly with all plan exercises populated, and that the active workout badge appears on the Workout tab.</div>
+        <select class="status-select" onchange="setStatus('TAP-TR-003', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-TR-004" data-status="not-tested" data-section="trainer">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-TR-004</span>
+          <span class="tap-name">Coach note text</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Prose block showing AI-generated coaching note for the plan. Ghost tap risk LOW. Document whether text is expandable (truncated with "more" affordance). If expandable, verify "more" tap works. If static, verify no tap highlight fires.</div>
+        <select class="status-select" onchange="setStatus('TAP-TR-004', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-TR-005" data-status="not-tested" data-section="trainer">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-TR-005</span>
+          <span class="tap-name">Refresh / regenerate button</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Re-runs WorkoutPlanEngine to generate a new plan variation. Hit target ok. Verify previous plan is replaced (not appended) and that plan history (TAP-TR-009) still records the prior plan.</div>
+        <select class="status-select" onchange="setStatus('TAP-TR-005', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-TR-006" data-status="not-tested" data-section="trainer">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-TR-006</span>
+          <span class="tap-name">Exercise row within plan</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Row listing an exercise in the generated plan. Ghost tap risk LOW. Expected behavior: opens exercise detail/history sheet. Verify exercise detail shows historical performance data for context when reviewing the plan.</div>
+        <select class="status-select" onchange="setStatus('TAP-TR-006', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-TR-007" data-status="not-tested" data-section="trainer">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-TR-007</span>
+          <span class="tap-name">Swap exercise button</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Opens exercise picker for substituting the plan's exercise with an alternative. Hit target ok. Verify picker shows only exercises with the same movement pattern / body region, and that swapping updates the plan correctly.</div>
+        <select class="status-select" onchange="setStatus('TAP-TR-007', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-TR-008" data-status="not-tested" data-section="trainer">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-TR-008</span>
+          <span class="tap-name">Intensity / readiness indicator</span>
+          <span class="hit-target warn">~varies</span>
+        </div>
+        <div class="tap-detail">Visual indicator showing current readiness level and recommended workout intensity. Ghost tap risk MEDIUM — readiness metrics are often interactive in fitness apps. Document whether tap expands ReadinessState detail. Verify tap affordance if interactive.</div>
+        <select class="status-select" onchange="setStatus('TAP-TR-008', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-TR-009" data-status="not-tested" data-section="trainer">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-TR-009</span>
+          <span class="tap-name">Plan history row</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Row in the plan history list showing a previously generated plan. Opens that past plan's detail view. Hit target ok. Verify historical plans are read-only and that "Start This Workout" is disabled or absent for past plans.</div>
+        <select class="status-select" onchange="setStatus('TAP-TR-009', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-TR-010" data-status="not-tested" data-section="trainer">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-TR-010</span>
+          <span class="tap-name">"Why this plan?" info button</span>
+          <span class="hit-target warn">~28×28pt icon</span>
+        </div>
+        <div class="tap-detail">Small icon button that opens a sheet explaining the plan rationale — which readiness factors, volume targets, and exercise selections drove the plan. Hit target warn — icon button needs expanded tap area. Verify sheet dismisses cleanly.</div>
+        <select class="status-select" onchange="setStatus('TAP-TR-010', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-TR-011" data-status="not-tested" data-section="trainer">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-TR-011</span>
+          <span class="tap-name">Accept plan button</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Locks the current plan for the session, preventing further regeneration. Hit target ok. Verify accepted state is clearly indicated and that "Generate Plan" / "Refresh" are disabled or hidden after acceptance.</div>
+        <select class="status-select" onchange="setStatus('TAP-TR-011', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-TR-012" data-status="not-tested" data-section="trainer">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-TR-012</span>
+          <span class="tap-name">Dismiss plan button</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Discards the current generated plan without starting a workout. Hit target ok. Verify dismissal resets the view to its empty/prompt state and that no partial plan data persists in SeedStore.</div>
+        <select class="status-select" onchange="setStatus('TAP-TR-012', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+    </div><!-- /section-body trainer -->
+  </div><!-- /section trainer -->
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- SETTINGS SECTION                              -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="section" id="section-settings">
+    <div class="section-header" onclick="toggleSection('settings')">
+      <div class="section-title">
+        <span class="section-icon">⚙️</span>
+        Settings (Sheet)
+        <span class="section-count" id="count-settings">0/18</span>
+      </div>
+      <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body open" id="body-settings">
+
+      <div class="tap-item" data-id="TAP-S-001" data-status="not-tested" data-section="settings">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-S-001</span>
+          <span class="tap-name">Name field</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Tapping opens a text input for the user's display name. Hit target ok. Verify keyboard appears immediately on tap, return key dismisses keyboard, and name is saved to userProfile in SeedStore.</div>
+        <select class="status-select" onchange="setStatus('TAP-S-001', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-S-002" data-status="not-tested" data-section="settings">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-S-002</span>
+          <span class="tap-name">Bodyweight field</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Opens numeric input for bodyweight. Used in strength score norms via StrengthScoreEngine. Hit target ok. Verify numeric keyboard appears, unit label (kg/lb) reflects current units setting, and value is persisted correctly.</div>
+        <select class="status-select" onchange="setStatus('TAP-S-002', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-S-003" data-status="not-tested" data-section="settings">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-S-003</span>
+          <span class="tap-name">Sex / biological sex picker</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Opens a picker for biological sex selection. Used for strength norm calculations. Hit target ok. Verify picker options are appropriate and selection is saved to userProfile.</div>
+        <select class="status-select" onchange="setStatus('TAP-S-003', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-S-004" data-status="not-tested" data-section="settings">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-S-004</span>
+          <span class="tap-name">Age field</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Opens numeric input for user age. Hit target ok. Verify numeric keyboard appears, reasonable bounds validation is applied (e.g., 13–100), and value is persisted to userProfile.</div>
+        <select class="status-select" onchange="setStatus('TAP-S-004', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-S-005" data-status="not-tested" data-section="settings">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-S-005</span>
+          <span class="tap-name">Training experience picker</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Opens picker for training experience level (beginner / intermediate / advanced). Affects strength norm percentiles. Hit target ok. Verify selection is saved and that changing experience level triggers recalculation of strength scores.</div>
+        <select class="status-select" onchange="setStatus('TAP-S-005', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-S-006" data-status="not-tested" data-section="settings">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-S-006</span>
+          <span class="tap-name">Units toggle (kg / lb)</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Toggles weight unit globally across the entire app. Hit target ok. Verify all weight displays update immediately after toggle, including active workout, history, and analytics. Confirm stored values remain in a canonical unit and display conversion is consistent.</div>
+        <select class="status-select" onchange="setStatus('TAP-S-006', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-S-007" data-status="not-tested" data-section="settings">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-S-007</span>
+          <span class="tap-name">HealthKit connect / disconnect button</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Triggers HealthKit permission request or revokes the integration. Hit target ok. Verify permission dialog appears on first connect, and that disconnect state is reflected in the button label. Confirm HealthKit data stops being read after disconnect.</div>
+        <select class="status-select" onchange="setStatus('TAP-S-007', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-S-008" data-status="not-tested" data-section="settings">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-S-008</span>
+          <span class="tap-name">Export data button</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Exports workout log as JSON or CSV. Hit target ok. Verify iOS share sheet appears with the exported file, the file is well-formed, and export includes all workoutLog entries without data loss.</div>
+        <select class="status-select" onchange="setStatus('TAP-S-008', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-S-009" data-status="not-tested" data-section="settings">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-S-009</span>
+          <span class="tap-name">Delete all data button</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Destructive action that permanently deletes all workout log, exercise history, and user profile data. Hit target ok. Verify a confirmation dialog appears BEFORE any deletion occurs, with clear destructive language and a non-destructive cancel option.</div>
+        <select class="status-select" onchange="setStatus('TAP-S-009', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-S-010" data-status="not-tested" data-section="settings">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-S-010</span>
+          <span class="tap-name">Delete confirm "Yes, delete everything"</span>
+          <span class="hit-target ok">44pt+ (destructive red)</span>
+        </div>
+        <div class="tap-detail">Confirms permanent deletion of all data. Should be styled in red / destructive color per iOS HIG. Hit target ok. Verify deletion clears SeedStore completely, resets caches, and navigates user to a clean onboarding or empty state.</div>
+        <select class="status-select" onchange="setStatus('TAP-S-010', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-S-011" data-status="not-tested" data-section="settings">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-S-011</span>
+          <span class="tap-name">Delete confirm "Cancel"</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Cancels the deletion confirmation dialog without deleting any data. Hit target ok. Verify cancel dismisses the alert and returns user to Settings with all data intact.</div>
+        <select class="status-select" onchange="setStatus('TAP-S-011', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-S-012" data-status="not-tested" data-section="settings">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-S-012</span>
+          <span class="tap-name">Done / Close button</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Dismisses the Settings sheet and saves any pending changes. Hit target ok. Verify all field changes are committed to SeedStore before dismissal, and that dismissing via swipe-down (TAP-S-018) also saves changes.</div>
+        <select class="status-select" onchange="setStatus('TAP-S-012', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-S-013" data-status="not-tested" data-section="settings">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-S-013</span>
+          <span class="tap-name">App version Easter egg</span>
+          <span class="hit-target warn">~small text area</span>
+        </div>
+        <div class="tap-detail">Long-press or triple-tap on the app version text may reveal debug info / build details. Hit target warn — text area is small. Document gesture type, confirm debug info displayed is safe to expose (no private keys or internal URLs), and verify it only appears in debug builds if sensitive.</div>
+        <select class="status-select" onchange="setStatus('TAP-S-013', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-S-014" data-status="not-tested" data-section="settings">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-S-014</span>
+          <span class="tap-name">Privacy policy link</span>
+          <span class="hit-target warn">~inline link height</span>
+        </div>
+        <div class="tap-detail">Opens privacy policy in Safari or an in-app webview (SFSafariViewController). Hit target warn — inline links have very small tap areas (~20pt height). Verify link resolves to correct URL and that the back/done button returns user to Settings.</div>
+        <select class="status-select" onchange="setStatus('TAP-S-014', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-S-015" data-status="not-tested" data-section="settings">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-S-015</span>
+          <span class="tap-name">Notification settings row</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Opens iOS notification permissions dialog or navigates to the app's page in iOS Settings. Hit target ok. Verify the correct destination opens and that permission state is reflected back in Settings when user returns.</div>
+        <select class="status-select" onchange="setStatus('TAP-S-015', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-S-016" data-status="not-tested" data-section="settings">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-S-016</span>
+          <span class="tap-name">Feedback / contact row</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Opens mail compose sheet (MFMailComposeViewController) or a feedback form. Hit target ok. Verify support email address is pre-populated, subject line includes app version and device info, and compose sheet can be dismissed without sending.</div>
+        <select class="status-select" onchange="setStatus('TAP-S-016', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-S-017" data-status="not-tested" data-section="settings">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-S-017</span>
+          <span class="tap-name">Restore purchases button</span>
+          <span class="hit-target ok">44pt+</span>
+        </div>
+        <div class="tap-detail">Triggers StoreKit restore purchases flow (if IAP is present). Hit target ok. Verify loading state is shown during restore, success/failure feedback is presented to user, and unlocked features are reflected immediately after successful restore.</div>
+        <select class="status-select" onchange="setStatus('TAP-S-017', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+      <div class="tap-item" data-id="TAP-S-018" data-status="not-tested" data-section="settings">
+        <div class="tap-meta">
+          <span class="tap-id">TAP-S-018</span>
+          <span class="tap-name">Scroll gesture within settings</span>
+          <span class="hit-target na">Gesture — N/A</span>
+        </div>
+        <div class="tap-detail">Standard vertical scroll through the Settings sheet content. N/A for tap-target audit. Verify scroll works smoothly and that the sheet's drag-to-dismiss gesture does not conflict with scrolling when content overflows.</div>
+        <select class="status-select" onchange="setStatus('TAP-S-018', this.value)">
+          <option value="not-tested">NOT TESTED</option>
+          <option value="pass">PASS</option>
+          <option value="fail">FAIL</option>
+          <option value="na">N/A</option>
+        </select>
+      </div>
+
+    </div><!-- /section-body settings -->
+  </div><!-- /section settings -->
+
+</div><!-- /main-content -->
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 2 — GHOST TAP RISK REGISTER                         -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section class="audit-section ghost-risk-section">
+  <div class="section2-header">
+    <h2 class="section2-title">Ghost Tap Risk Register</h2>
+    <p class="section2-subtitle">Elements that <em>look interactive</em> but may not respond to taps — leading to user confusion and silent UX failure.</p>
+  </div>
+
+  <div class="ghost-table-wrapper">
+    <table class="ghost-table">
+      <thead>
+        <tr>
+          <th>Element</th>
+          <th>Screen</th>
+          <th>Risk</th>
+          <th>Why It Looks Tappable</th>
+          <th>Recommended Fix</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="ghost-row odd">
+          <td class="ghost-element">Readiness score card</td>
+          <td class="ghost-screen">Home</td>
+          <td><span class="risk-badge high">HIGH</span></td>
+          <td>Full-card layout with prominent number; users expect fitness metric cards to be tappable</td>
+          <td>Add NavigationLink or .onTapGesture → Insights drill-down</td>
+        </tr>
+        <tr class="ghost-row even">
+          <td class="ghost-element">ConsistencyDotGrid dots</td>
+          <td class="ghost-screen">Progress</td>
+          <td><span class="risk-badge high">HIGH</span></td>
+          <td>Dot-per-day pattern is interactive in Duolingo, Apple Fitness, Strava — users are trained to expect tap behavior</td>
+          <td>Add tap handler showing that day's workout summary in a popover or sheet</td>
+        </tr>
+        <tr class="ghost-row odd">
+          <td class="ghost-element">Streak number display</td>
+          <td class="ghost-screen">Home / Progress</td>
+          <td><span class="risk-badge medium">MEDIUM</span></td>
+          <td>Prominent large number with label; users expect prominent stats to drill down</td>
+          <td>Add .onTapGesture → Progress consistency view or streak history sheet</td>
+        </tr>
+        <tr class="ghost-row even">
+          <td class="ghost-element">Coach narrative text</td>
+          <td class="ghost-screen">Home / Active Workout</td>
+          <td><span class="risk-badge medium">MEDIUM</span></td>
+          <td>Prose block that changes dynamically — users may tap expecting to expand or get more detail</td>
+          <td>Either make static clearly (no hover/tap state) or add expand sheet with full coaching context</td>
+        </tr>
+        <tr class="ghost-row odd">
+          <td class="ghost-element">PR badge / chip</td>
+          <td class="ghost-screen">Progress</td>
+          <td><span class="risk-badge medium">MEDIUM</span></td>
+          <td>Chip/badge style is universally tappable in iOS apps — amber color signals actionable state</td>
+          <td>Add NavigationLink → PR history for that exercise</td>
+        </tr>
+        <tr class="ghost-row even">
+          <td class="ghost-element">Exercise name in active workout</td>
+          <td class="ghost-screen">Active Workout</td>
+          <td><span class="risk-badge high">HIGH</span></td>
+          <td>Users trained by Strong, Hevy, and JEFIT to tap exercise name to swap or view history</td>
+          <td>Add .onTapGesture → exercise picker / swap sheet; or add explicit "Swap" button adjacent</td>
+        </tr>
+        <tr class="ghost-row odd">
+          <td class="ghost-element">Composite score card</td>
+          <td class="ghost-screen">Insights</td>
+          <td><span class="risk-badge high">HIGH</span></td>
+          <td>Large card with a number and label — identical visual pattern to tappable cards elsewhere in the app</td>
+          <td>Add tap → methodology explanation sheet; add chevron or "How it's calculated" label</td>
+        </tr>
+        <tr class="ghost-row even">
+          <td class="ghost-element">Chart bars / sparkline points</td>
+          <td class="ghost-screen">Progress / Insights</td>
+          <td><span class="risk-badge medium">MEDIUM</span></td>
+          <td>Every major fitness app (Apple Fitness, Garmin, MyFitnessPal) makes chart points tappable</td>
+          <td>Add tooltip on tap or navigate to that date's workout entry</td>
+        </tr>
+        <tr class="ghost-row odd">
+          <td class="ghost-element">Section / category title rows</td>
+          <td class="ghost-screen">Multiple</td>
+          <td><span class="risk-badge medium">MEDIUM</span></td>
+          <td>Disclosure-style typography signals collapse/expand but rows may be static</td>
+          <td>Either collapse on tap or remove chevron styling to avoid false affordance</td>
+        </tr>
+        <tr class="ghost-row even">
+          <td class="ghost-element">"Needs Work" / "Strong" badge</td>
+          <td class="ghost-screen">Insights</td>
+          <td><span class="risk-badge medium">MEDIUM</span></td>
+          <td>Status badge pattern in iOS universally signals tappable filter or action</td>
+          <td>Add tap → filter exercise list by that strength category</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<style>
+  .audit-section {
+    max-width: 960px;
+    margin: 32px auto;
+    padding: 0 20px;
+  }
+  .ghost-risk-section {
+    border-left: 4px solid var(--amber);
+    padding-left: 16px;
+    margin-left: 20px;
+    margin-right: 20px;
+    max-width: calc(100% - 40px);
+  }
+  .section2-header { margin-bottom: 16px; }
+  .section2-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--amber);
+    margin: 0 0 6px;
+    letter-spacing: -0.2px;
+  }
+  .section2-subtitle {
+    color: var(--muted);
+    font-size: 13px;
+    margin: 0;
+    line-height: 1.5;
+  }
+  .ghost-table-wrapper {
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+  .ghost-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .ghost-table thead tr {
+    background: rgba(245, 158, 11, 0.15);
+    border-bottom: 2px solid var(--amber);
+  }
+  .ghost-table th {
+    padding: 12px 14px;
+    text-align: left;
+    color: var(--amber);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  .ghost-row.odd { background: var(--card); }
+  .ghost-row.even { background: rgba(44, 44, 46, 0.5); }
+  .ghost-table td {
+    padding: 11px 14px;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    line-height: 1.45;
+  }
+  .ghost-table tr:last-child td { border-bottom: none; }
+  .ghost-element { font-weight: 600; white-space: nowrap; }
+  .ghost-screen { color: var(--muted); white-space: nowrap; }
+  .risk-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+  }
+  .risk-badge.high { background: rgba(248, 113, 113, 0.2); color: var(--negative); border: 1px solid rgba(248,113,113,0.3); }
+  .risk-badge.medium { background: rgba(245, 158, 11, 0.15); color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
+  .risk-badge.low { background: rgba(142, 142, 147, 0.15); color: var(--muted); border: 1px solid rgba(142,142,147,0.3); }
+</style>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 3 — HIT TARGET CHECKLIST                            -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section class="audit-section hit-target-section" style="margin-top:40px;">
+  <div class="section2-header">
+    <h2 class="section2-title" style="color: var(--positive);">Hit Target Checklist</h2>
+    <p class="section2-subtitle">Apple HIG minimum: 44×44pt. Elements below sorted by audit status. CHECK rows need manual verification on-device.</p>
+  </div>
+
+  <div class="ghost-table-wrapper">
+    <table class="ghost-table hit-table">
+      <thead>
+        <tr style="background: rgba(52, 211, 153, 0.1); border-bottom: 2px solid var(--positive);">
+          <th style="color: var(--positive);">ID</th>
+          <th style="color: var(--positive);">Element</th>
+          <th style="color: var(--positive);">Screen</th>
+          <th style="color: var(--positive);">Est. Size</th>
+          <th style="color: var(--positive);">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="ht-row ht-check">
+          <td class="ghost-element" style="font-size:12px;">TAP-A-001</td>
+          <td>Gear icon toolbar button</td>
+          <td class="ghost-screen">Home</td>
+          <td>~28×28pt</td>
+          <td><span class="ht-badge check">CHECK</span></td>
+        </tr>
+        <tr class="ht-row ht-check">
+          <td class="ghost-element" style="font-size:12px;">TAP-A-002</td>
+          <td>HONInAppBanner dismiss X</td>
+          <td class="ghost-screen">Home</td>
+          <td>~24×24pt</td>
+          <td><span class="ht-badge check">CHECK</span></td>
+        </tr>
+        <tr class="ht-row ht-check">
+          <td class="ghost-element" style="font-size:12px;">TAP-A-003</td>
+          <td>Equipment chip in active workout</td>
+          <td class="ghost-screen">Active Workout</td>
+          <td>~32×36pt</td>
+          <td><span class="ht-badge check">CHECK</span></td>
+        </tr>
+        <tr class="ht-row ht-pass">
+          <td class="ghost-element" style="font-size:12px;">TAP-A-004</td>
+          <td>Drop set toggle</td>
+          <td class="ghost-screen">Active Workout</td>
+          <td>~44×44pt (SwiftUI Toggle)</td>
+          <td><span class="ht-badge pass">PASS</span></td>
+        </tr>
+        <tr class="ht-row ht-pass">
+          <td class="ghost-element" style="font-size:12px;">TAP-A-005</td>
+          <td>To-Failure toggle</td>
+          <td class="ghost-screen">Active Workout</td>
+          <td>~44×44pt (SwiftUI Toggle)</td>
+          <td><span class="ht-badge pass">PASS</span></td>
+        </tr>
+        <tr class="ht-row ht-check">
+          <td class="ghost-element" style="font-size:12px;">TAP-A-006</td>
+          <td>RPE stepper buttons (+ / -)</td>
+          <td class="ghost-screen">Active Workout</td>
+          <td>~28×36pt</td>
+          <td><span class="ht-badge check">CHECK</span></td>
+        </tr>
+        <tr class="ht-row ht-check">
+          <td class="ghost-element" style="font-size:12px;">TAP-A-007</td>
+          <td>Delete set minus button</td>
+          <td class="ghost-screen">Active Workout</td>
+          <td>~28×28pt</td>
+          <td><span class="ht-badge check">CHECK</span></td>
+        </tr>
+        <tr class="ht-row ht-fail">
+          <td class="ghost-element" style="font-size:12px;">TAP-A-008</td>
+          <td>ConsistencyDotGrid individual dot</td>
+          <td class="ghost-screen">Progress</td>
+          <td>~12×12pt</td>
+          <td><span class="ht-badge fail">FAIL</span></td>
+        </tr>
+        <tr class="ht-row ht-check">
+          <td class="ghost-element" style="font-size:12px;">TAP-A-009</td>
+          <td>Filter chips (body region)</td>
+          <td class="ghost-screen">Progress / Insights</td>
+          <td>~32×34pt</td>
+          <td><span class="ht-badge check">CHECK</span></td>
+        </tr>
+        <tr class="ht-row ht-check">
+          <td class="ghost-element" style="font-size:12px;">TAP-A-010</td>
+          <td>Exercise note chip</td>
+          <td class="ghost-screen">Home</td>
+          <td>~28×28pt</td>
+          <td><span class="ht-badge check">CHECK</span></td>
+        </tr>
+        <tr class="ht-row ht-check">
+          <td class="ghost-element" style="font-size:12px;">TAP-A-011</td>
+          <td>"Full Analytics →" inline link</td>
+          <td class="ghost-screen">Home / Progress</td>
+          <td>~line height ~20pt</td>
+          <td><span class="ht-badge check">CHECK</span></td>
+        </tr>
+        <tr class="ht-row ht-pass">
+          <td class="ghost-element" style="font-size:12px;">TAP-A-012</td>
+          <td>Tab bar icons</td>
+          <td class="ghost-screen">All</td>
+          <td>~44×49pt (iOS tab bar)</td>
+          <td><span class="ht-badge pass">PASS</span></td>
+        </tr>
+        <tr class="ht-row ht-pass">
+          <td class="ghost-element" style="font-size:12px;">TAP-A-013</td>
+          <td>Navigation back button</td>
+          <td class="ghost-screen">Multiple</td>
+          <td>~44×44pt (system)</td>
+          <td><span class="ht-badge pass">PASS</span></td>
+        </tr>
+        <tr class="ht-row ht-check">
+          <td class="ghost-element" style="font-size:12px;">TAP-A-014</td>
+          <td>Info / "?" icon button</td>
+          <td class="ghost-screen">Insights</td>
+          <td>~28×28pt</td>
+          <td><span class="ht-badge check">CHECK</span></td>
+        </tr>
+        <tr class="ht-row ht-check">
+          <td class="ghost-element" style="font-size:12px;">TAP-A-015</td>
+          <td>Routine edit pencil icon</td>
+          <td class="ghost-screen">Workout</td>
+          <td>~28×28pt</td>
+          <td><span class="ht-badge check">CHECK</span></td>
+        </tr>
+        <tr class="ht-row ht-fail">
+          <td class="ghost-element" style="font-size:12px;">TAP-A-016</td>
+          <td>Active workout badge on tab icon</td>
+          <td class="ghost-screen">All</td>
+          <td>~20×20pt (badge)</td>
+          <td><span class="ht-badge fail">FAIL</span></td>
+        </tr>
+        <tr class="ht-row ht-check">
+          <td class="ghost-element" style="font-size:12px;">TAP-A-017</td>
+          <td>"Why this plan?" icon</td>
+          <td class="ghost-screen">Trainer</td>
+          <td>~28×28pt</td>
+          <td><span class="ht-badge check">CHECK</span></td>
+        </tr>
+        <tr class="ht-row ht-check">
+          <td class="ghost-element" style="font-size:12px;">TAP-A-018</td>
+          <td>Privacy policy inline link</td>
+          <td class="ghost-screen">Settings</td>
+          <td>~line height ~20pt</td>
+          <td><span class="ht-badge check">CHECK</span></td>
+        </tr>
+        <tr class="ht-row ht-pass">
+          <td class="ghost-element" style="font-size:12px;">TAP-A-019</td>
+          <td>Superset toggle</td>
+          <td class="ghost-screen">Active Workout</td>
+          <td>~44×44pt</td>
+          <td><span class="ht-badge pass">PASS</span></td>
+        </tr>
+        <tr class="ht-row ht-pass">
+          <td class="ghost-element" style="font-size:12px;">TAP-A-020</td>
+          <td>Workout detail back chevron</td>
+          <td class="ghost-screen">Progress</td>
+          <td>~44×44pt (system nav)</td>
+          <td><span class="ht-badge pass">PASS</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<style>
+  .ht-row td { padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
+  .ht-row:last-child td { border-bottom: none; }
+  .ht-pass { background: rgba(52, 211, 153, 0.05); }
+  .ht-check { background: rgba(245, 158, 11, 0.05); }
+  .ht-fail { background: rgba(248, 113, 113, 0.07); }
+  .ht-badge {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .ht-badge.pass { background: rgba(52,211,153,0.2); color: var(--positive); border: 1px solid rgba(52,211,153,0.3); }
+  .ht-badge.check { background: rgba(245,158,11,0.2); color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
+  .ht-badge.fail { background: rgba(248,113,113,0.2); color: var(--negative); border: 1px solid rgba(248,113,113,0.3); }
+</style>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 4 — LLM SCREENSHOT TAP AUDIT PROMPT                 -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section class="audit-section llm-prompt-section" style="margin-top:40px; margin-bottom:0;">
+  <div class="llm-prompt-card">
+    <div class="llm-prompt-header">
+      <span class="llm-prompt-icon">🤖</span>
+      <div>
+        <div class="llm-prompt-title">LLM Screenshot Tap Audit Prompt</div>
+        <div class="llm-prompt-subtitle">Paste this prompt with any H.O.N. screenshot to get a full interactive element inventory.</div>
+      </div>
+    </div>
+    <pre class="llm-prompt-code">TASK: Interactive element audit for H.O.N. [SCREEN NAME]
+
+App context: H.O.N. is an iOS SwiftUI fitness app (dark mode only).
+Design language: amber (#f59e0b) = attention/current, green (#34d399) = positive/complete,
+red (#f87171) = warning/destructive, muted grey = inactive/secondary.
+Apple HIG minimum tap target: 44×44pt.
+
+Screenshot: [ATTACH SCREENSHOT HERE]
+
+For every visible element, provide:
+1. Element name / description
+2. Should be tappable? (yes / no / unclear)
+3. Has tap affordance? (button shape / chevron / underline / color / none)
+4. Estimated hit target size (ok ≥44pt / risky 30–43pt / too small &lt;30pt)
+5. Expected behavior on tap
+6. Risk: HIGH (ghost tap or invisible affordance) / MEDIUM / LOW
+
+Then produce three lists:
+• Ghost tap risks — looks interactive but likely isn't
+• Hidden affordances — IS interactive but looks static
+• Overlapping targets — two tappable elements within 8pt of each other
+
+Output format: markdown table + three bullet lists.</pre>
+    <button class="llm-copy-btn" onclick="copyPrompt(this)">Copy prompt</button>
+  </div>
+</section>
+
+<style>
+  .llm-prompt-section { max-width: 960px; margin-left: 20px; margin-right: 20px; }
+  .llm-prompt-card {
+    background: rgba(167, 139, 250, 0.07);
+    border: 1px solid rgba(167, 139, 250, 0.3);
+    border-left: 4px solid var(--purple);
+    border-radius: 12px;
+    padding: 20px 20px 16px;
+  }
+  .llm-prompt-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .llm-prompt-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+  .llm-prompt-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--purple);
+    margin-bottom: 4px;
+  }
+  .llm-prompt-subtitle { font-size: 13px; color: var(--muted); line-height: 1.4; }
+  .llm-prompt-code {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(167,139,250,0.2);
+    border-radius: 8px;
+    padding: 16px;
+    font-family: 'SF Mono', 'Menlo', 'Monaco', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #e2e8f0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin: 0 0 12px;
+    overflow-x: auto;
+  }
+  .llm-copy-btn {
+    background: rgba(167,139,250,0.15);
+    border: 1px solid rgba(167,139,250,0.4);
+    border-radius: 7px;
+    color: var(--purple);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 7px 16px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .llm-copy-btn:hover { background: rgba(167,139,250,0.25); }
+  .llm-copy-btn.copied { background: rgba(52,211,153,0.15); color: var(--positive); border-color: rgba(52,211,153,0.4); }
+</style>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 5 — GESTURE INVENTORY                               -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section class="audit-section gesture-section" style="margin-top:40px; margin-bottom:48px;">
+  <div class="section2-header">
+    <h2 class="section2-title" style="color: var(--blue);">Gesture Inventory</h2>
+    <p class="section2-subtitle">All non-tap gestures in H.O.N. Verify each during UAT to ensure gestures are discoverable, don't conflict with each other, and behave as expected.</p>
+  </div>
+
+  <div class="ghost-table-wrapper">
+    <table class="ghost-table gesture-table">
+      <thead>
+        <tr style="background: rgba(96,165,250,0.1); border-bottom: 2px solid var(--blue);">
+          <th style="color: var(--blue);">Gesture</th>
+          <th style="color: var(--blue);">Screen</th>
+          <th style="color: var(--blue);">Element</th>
+          <th style="color: var(--blue);">Expected Behavior</th>
+          <th style="color: var(--blue);">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="ghost-row odd">
+          <td><strong>Swipe left (delete)</strong></td>
+          <td class="ghost-screen">Progress</td>
+          <td>Workout history row</td>
+          <td>Reveals destructive Delete button; requires confirmation before executing permanent deletion</td>
+          <td><span class="gesture-badge not-tested">NOT TESTED</span></td>
+        </tr>
+        <tr class="ghost-row even">
+          <td><strong>Swipe left (delete)</strong></td>
+          <td class="ghost-screen">Active Workout</td>
+          <td>Set row</td>
+          <td>Removes that set from the exercise within the active workout session</td>
+          <td><span class="gesture-badge not-tested">NOT TESTED</span></td>
+        </tr>
+        <tr class="ghost-row odd">
+          <td><strong>Drag to reorder</strong></td>
+          <td class="ghost-screen">Active Workout</td>
+          <td>Exercise row handle</td>
+          <td>Reorders exercises within the active workout; handle should be visible and discoverable</td>
+          <td><span class="gesture-badge not-tested">NOT TESTED</span></td>
+        </tr>
+        <tr class="ghost-row even">
+          <td><strong>Pull to refresh</strong></td>
+          <td class="ghost-screen">Home</td>
+          <td>Scroll view</td>
+          <td>Triggers refreshAnalytics() and reloads homeCache with latest data from workoutLog</td>
+          <td><span class="gesture-badge not-tested">NOT TESTED</span></td>
+        </tr>
+        <tr class="ghost-row odd">
+          <td><strong>Swipe down</strong></td>
+          <td class="ghost-screen">Settings sheet</td>
+          <td>Any area</td>
+          <td>Dismisses Settings modal; verify pending field changes are saved before dismissal</td>
+          <td><span class="gesture-badge not-tested">NOT TESTED</span></td>
+        </tr>
+        <tr class="ghost-row even">
+          <td><strong>Swipe down</strong></td>
+          <td class="ghost-screen">Any sheet / modal</td>
+          <td>Sheet</td>
+          <td>Standard iOS swipe-to-dismiss for all presented sheets; verify no sheets block this gesture</td>
+          <td><span class="gesture-badge not-tested">NOT TESTED</span></td>
+        </tr>
+        <tr class="ghost-row odd">
+          <td><strong>Pan / drag</strong></td>
+          <td class="ghost-screen">Insights</td>
+          <td>Exercise history chart</td>
+          <td>Scrubs through the displayed time range, updating tooltip/cursor position in real time</td>
+          <td><span class="gesture-badge not-tested">NOT TESTED</span></td>
+        </tr>
+        <tr class="ghost-row even">
+          <td><strong>Pinch</strong></td>
+          <td class="ghost-screen">Insights</td>
+          <td>Exercise history chart</td>
+          <td>Zooms in/out on the time axis; should not conflict with parent scroll view pinch</td>
+          <td><span class="gesture-badge not-tested">NOT TESTED</span></td>
+        </tr>
+        <tr class="ghost-row odd">
+          <td><strong>Long press</strong></td>
+          <td class="ghost-screen">Settings</td>
+          <td>App version text</td>
+          <td>May reveal debug info or build details (Easter egg); document gesture threshold and output</td>
+          <td><span class="gesture-badge not-tested">NOT TESTED</span></td>
+        </tr>
+        <tr class="ghost-row even">
+          <td><strong>Swipe between tabs</strong></td>
+          <td class="ghost-screen">Tab bar</td>
+          <td>Tab bar area</td>
+          <td>Should NOT be swipeable — SwiftUI TabView swipe-between-tabs must be disabled; verify this is intentionally blocked</td>
+          <td><span class="gesture-badge not-tested">NOT TESTED</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<style>
+  .gesture-badge {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+  }
+  .gesture-badge.not-tested { background: rgba(142,142,147,0.15); color: var(--muted); border: 1px solid rgba(142,142,147,0.3); }
+  .gesture-badge.pass { background: rgba(52,211,153,0.2); color: var(--positive); border: 1px solid rgba(52,211,153,0.3); }
+  .gesture-badge.fail { background: rgba(248,113,113,0.2); color: var(--negative); border: 1px solid rgba(248,113,113,0.3); }
+  .gesture-badge.na { background: rgba(96,165,250,0.15); color: var(--blue); border: 1px solid rgba(96,165,250,0.3); }
+</style>
+
+<script>
+// ── Utility ──────────────────────────────────────────────────────
+function getAllItems() {
+  return Array.from(document.querySelectorAll('.tap-item'));
+}
+
+function getSectionItems(sectionId) {
+  return Array.from(document.querySelectorAll(`.tap-item[data-section="${sectionId}"]`));
+}
+
+// ── Copy prompt ───────────────────────────────────────────────────
+function copyPrompt(btn) {
+  var pre = btn.previousElementSibling;
+  navigator.clipboard.writeText(pre.textContent).then(function() {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(function() {
+      btn.textContent = 'Copy prompt';
+      btn.classList.remove('copied');
+    }, 2000);
+  }).catch(function() {
+    // Fallback for environments without clipboard API
+    var range = document.createRange();
+    range.selectNode(pre);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    document.execCommand('copy');
+    window.getSelection().removeAllRanges();
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(function() {
+      btn.textContent = 'Copy prompt';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+// ── Status persistence ────────────────────────────────────────────
+function setStatus(id, value) {
+  // Persist to localStorage
+  localStorage.setItem('tap-audit-' + id, value);
+
+  // Update data-status on the item element
+  var item = document.querySelector('[data-id="' + id + '"]');
+  if (item) {
+    item.setAttribute('data-status', value);
+    // Keep select in sync if called programmatically
+    var sel = item.querySelector('.status-select');
+    if (sel && sel.value !== value) sel.value = value;
+  }
+
+  // Recompute global progress
+  updateProgressBar();
+
+  // Recompute section count for this item's section
+  if (item) {
+    var section = item.getAttribute('data-section');
+    if (section) updateSectionCount(section);
+  }
+
+  // Re-apply current filter
+  applyCurrentFilter();
+}
+
+// ── Filter ────────────────────────────────────────────────────────
+var currentFilter = 'all';
+
+function setFilter(filter) {
+  currentFilter = filter;
+
+  // Update active chip styles
+  var chips = document.querySelectorAll('.filter-chip');
+  chips.forEach(function(chip) {
+    chip.classList.toggle('active', chip.getAttribute('data-filter') === filter);
+  });
+
+  applyCurrentFilter();
+}
+
+function applyCurrentFilter() {
+  var items = getAllItems();
+  items.forEach(function(item) {
+    var status = item.getAttribute('data-status') || 'not-tested';
+    var show = false;
+    if (currentFilter === 'all') {
+      show = true;
+    } else if (currentFilter === 'not-tested') {
+      show = (status === 'not-tested');
+    } else if (currentFilter === 'pass') {
+      show = (status === 'pass');
+    } else if (currentFilter === 'fail') {
+      show = (status === 'fail');
+    } else if (currentFilter === 'na') {
+      show = (status === 'na');
+    } else if (currentFilter === 'warn') {
+      // Show items whose hit-target badge has class 'warn' or 'flag'
+      var badge = item.querySelector('.hit-target');
+      show = badge && (badge.classList.contains('warn') || badge.classList.contains('flag'));
+    }
+    item.style.display = show ? '' : 'none';
+  });
+}
+
+// ── Section toggle ────────────────────────────────────────────────
+function toggleSection(id) {
+  var body = document.getElementById('body-' + id);
+  var sectionEl = document.getElementById('section-' + id);
+  if (!body) return;
+  var isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  // Rotate chevron
+  if (sectionEl) {
+    var chevron = sectionEl.querySelector('.section-chevron');
+    if (chevron) chevron.style.transform = isOpen ? 'rotate(-90deg)' : 'rotate(0deg)';
+  }
+}
+
+// ── Progress bar ──────────────────────────────────────────────────
+function updateProgressBar() {
+  var items = getAllItems();
+  var total = 0;
+  var passed = 0;
+  var failed = 0;
+  var notTested = 0;
+
+  items.forEach(function(item) {
+    var status = item.getAttribute('data-status') || 'not-tested';
+    if (status === 'na') return; // exclude N/A from totals
+    total++;
+    if (status === 'pass') passed++;
+    else if (status === 'fail') failed++;
+    else notTested++;
+  });
+
+  var pct = total > 0 ? Math.round((passed / total) * 100) : 0;
+
+  var fill = document.getElementById('progress-fill');
+  var label = document.getElementById('progress-label');
+  var countLabel = document.getElementById('progress-counts');
+
+  if (fill) fill.style.width = pct + '%';
+  if (label) label.textContent = pct + '% passed';
+  if (countLabel) {
+    countLabel.textContent = passed + ' passed · ' + failed + ' failed · ' + notTested + ' not tested · ' + (total - passed - failed - notTested) + ' N/A';
+  }
+}
+
+// ── Section counts ────────────────────────────────────────────────
+var knownSections = ['home', 'workout', 'active', 'progress', 'insights', 'trainer', 'settings'];
+
+function updateSectionCount(sectionId) {
+  var items = getSectionItems(sectionId);
+  var total = 0;
+  var passed = 0;
+  items.forEach(function(item) {
+    var status = item.getAttribute('data-status') || 'not-tested';
+    if (status === 'na') return;
+    total++;
+    if (status === 'pass') passed++;
+  });
+  var el = document.getElementById('count-' + sectionId);
+  if (el) el.textContent = passed + '/' + total;
+}
+
+function updateAllSectionCounts() {
+  knownSections.forEach(function(id) {
+    updateSectionCount(id);
+  });
+}
+
+// ── Init ──────────────────────────────────────────────────────────
+function initPage() {
+  // Restore all statuses from localStorage
+  var items = getAllItems();
+  items.forEach(function(item) {
+    var id = item.getAttribute('data-id');
+    if (!id) return;
+    var saved = localStorage.getItem('tap-audit-' + id);
+    if (saved) {
+      item.setAttribute('data-status', saved);
+      var sel = item.querySelector('.status-select');
+      if (sel) sel.value = saved;
+    }
+  });
+
+  // Set filter chips' initial active state
+  var chips = document.querySelectorAll('.filter-chip');
+  chips.forEach(function(chip) {
+    chip.classList.toggle('active', chip.getAttribute('data-filter') === 'all');
+  });
+
+  // Initial counts
+  updateProgressBar();
+  updateAllSectionCounts();
+  applyCurrentFilter();
+
+  // Initialise chevron rotation for closed sections
+  knownSections.forEach(function(id) {
+    var body = document.getElementById('body-' + id);
+    var sectionEl = document.getElementById('section-' + id);
+    if (body && sectionEl) {
+      var chevron = sectionEl.querySelector('.section-chevron');
+      if (chevron) {
+        chevron.style.transition = 'transform 0.2s ease';
+        chevron.style.transform = body.classList.contains('open') ? 'rotate(0deg)' : 'rotate(-90deg)';
+      }
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', initPage);
+</script>
+
+</body>
+</html>
