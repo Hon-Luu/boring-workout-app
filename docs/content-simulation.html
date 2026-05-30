@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H.O.N. — Content Simulation Protocol</title>
+<style>
+  :root {
+    --bg:       #111111;
+    --card:     #1c1c1e;
+    --border:   rgba(255,255,255,0.07);
+    --amber:    #f59e0b;
+    --positive: #34d399;
+    --negative: #f87171;
+    --warning:  #fbbf24;
+    --muted:    rgba(255,255,255,0.4);
+    --text:     rgba(255,255,255,0.88);
+    --text2:    rgba(255,255,255,0.55);
+    --blue:     #60a5fa;
+    --purple:   #a78bfa;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 32px 20px 64px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .header { margin-bottom: 36px; }
+  .header-top {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .logo {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber);
+  }
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--amber), transparent);
+    opacity: 0.3;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    color: var(--text);
+  }
+  .subtitle {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+
+  .section-heading {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin: 32px 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .section-heading::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .section-heading .toggle-arrow {
+    font-size: 10px;
+    color: var(--amber);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+  .section-heading.collapsed .toggle-arrow {
+    transform: rotate(-90deg);
+  }
+  .section-body {
+    overflow: hidden;
+    transition: opacity 0.2s;
+  }
+  .section-body.collapsed {
+    display: none;
+  }
+
+  .intro-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 28px;
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.7;
+    border-left: 3px solid var(--amber);
+  }
+
+  /* Scenario cards */
+  .scenario {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 14px;
+    transition: border-color 0.2s;
+  }
+  .scenario:hover { border-color: rgba(255,255,255,0.14); }
+
+  .scenario-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .scenario-id {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    letter-spacing: 0.08em;
+    color: var(--amber);
+    background: rgba(245,158,11,0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .scenario-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+    flex: 1;
+  }
+
+  .badge-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+
+  .badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .badge-time   { background: rgba(96,165,250,0.15); color: var(--blue); }
+  .badge-amber  { background: rgba(245,158,11,0.15); color: var(--amber); }
+  .badge-green  { background: rgba(52,211,153,0.15); color: var(--positive); }
+  .badge-purple { background: rgba(167,139,250,0.15); color: var(--purple); }
+
+  .scenario-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 20px;
+    margin-bottom: 12px;
+  }
+  @media (max-width: 600px) {
+    .scenario-grid { grid-template-columns: 1fr; }
+  }
+
+  .field-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 3px;
+  }
+  .field-value {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+
+  .field-full { grid-column: 1 / -1; }
+
+  .step-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 4px;
+    counter-reset: steps;
+  }
+  .step-list li {
+    font-size: 13px;
+    color: var(--text2);
+    padding: 4px 0 4px 26px;
+    position: relative;
+    line-height: 1.5;
+    counter-increment: steps;
+  }
+  .step-list li::before {
+    content: counter(steps);
+    position: absolute;
+    left: 0;
+    top: 4px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(245,158,11,0.15);
+    color: var(--amber);
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'SF Mono', monospace;
+  }
+
+  .criteria-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  @media (max-width: 600px) {
+    .criteria-grid { grid-template-columns: 1fr; }
+  }
+
+  .criteria-box {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .criteria-pass {
+    background: rgba(52,211,153,0.06);
+    border: 1px solid rgba(52,211,153,0.15);
+    color: var(--positive);
+  }
+  .criteria-fail {
+    background: rgba(248,113,113,0.06);
+    border: 1px solid rgba(248,113,113,0.15);
+    color: var(--negative);
+  }
+  .criteria-box .criteria-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    opacity: 0.8;
+  }
+
+  .uid-list {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+  .uid-chip {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(245,158,11,0.1);
+    color: var(--amber);
+    letter-spacing: 0.06em;
+  }
+  .uid-chip.secondary {
+    background: rgba(255,255,255,0.06);
+    color: var(--text2);
+  }
+  .uid-chip.team {
+    background: rgba(167,139,250,0.12);
+    color: var(--purple);
+  }
+
+  /* Matrix table */
+  .matrix-wrapper {
+    overflow-x: auto;
+    margin: 0 -4px;
+    padding: 0 4px;
+    border-radius: 10px;
+  }
+
+  .matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    min-width: 680px;
+  }
+
+  .matrix-table th {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text2);
+    padding: 8px 4px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    background: var(--card);
+  }
+
+  .matrix-table th.row-header {
+    text-align: left;
+    padding-left: 10px;
+    min-width: 80px;
+  }
+
+  .matrix-table td {
+    padding: 6px 4px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 10px;
+  }
+
+  .matrix-table td.row-header {
+    text-align: left;
+    padding-left: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    font-family: 'SF Mono', monospace;
+    color: var(--amber);
+    white-space: nowrap;
+  }
+
+  .matrix-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .cell-high {
+    background: rgba(245,158,11,0.2);
+    color: var(--amber);
+    border-radius: 3px;
+    font-weight: 700;
+    font-size: 9px;
+  }
+  .cell-low {
+    color: rgba(255,255,255,0.18);
+    font-size: 9px;
+  }
+  .cell-team {
+    background: rgba(167,139,250,0.15);
+    color: var(--purple);
+    border-radius: 3px;
+    font-weight: 700;
+    font-size: 9px;
+  }
+  .cell-empty { color: transparent; }
+
+  /* Results template */
+  .template-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    margin-top: 16px;
+  }
+
+  .template-field {
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .template-field:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+  .template-field-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 6px;
+  }
+  .template-field-placeholder {
+    font-size: 13px;
+    color: rgba(255,255,255,0.2);
+    font-style: italic;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px dashed rgba(255,255,255,0.1);
+    border-radius: 6px;
+    line-height: 1.5;
+  }
+
+  /* LLM triage card */
+  .triage-card {
+    background: var(--card);
+    border: 1px solid rgba(167,139,250,0.2);
+    border-left: 3px solid var(--purple);
+    border-radius: 14px;
+    padding: 24px;
+    margin-top: 16px;
+  }
+  .triage-card .triage-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin-bottom: 10px;
+  }
+  .triage-card .triage-desc {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  .prompt-block {
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(167,139,250,0.15);
+    border-radius: 10px;
+    padding: 18px 20px;
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.7;
+    white-space: pre-wrap;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+  }
+  .prompt-block .param {
+    color: var(--purple);
+    font-style: italic;
+  }
+  .prompt-block .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-top: 14px;
+    margin-bottom: 4px;
+    display: block;
+    font-style: normal;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+  }
+  .output-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  @media (max-width: 600px) {
+    .output-row { grid-template-columns: 1fr; }
+  }
+  .output-box {
+    background: rgba(167,139,250,0.06);
+    border: 1px solid rgba(167,139,250,0.12);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+  .output-box .output-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin-bottom: 4px;
+  }
+
+  .separator {
+    height: 1px;
+    background: var(--border);
+    margin: 28px 0;
+  }
+
+  code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    background: rgba(255,255,255,0.06);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 20px 14px 48px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <span class="logo">H.O.N.</span>
+    <div class="divider-line"></div>
+  </div>
+  <h1>Content Simulation Protocol</h1>
+  <div class="subtitle">15 content experience scenarios · Voice consistency matrix · Observation template · LLM voice pre-triage · Last updated: 2026-05-30</div>
+</div>
+
+<!-- Section 1 -->
+<div class="section-heading" onclick="toggleSection(this)">
+  <span class="toggle-arrow">▼</span>
+  Section 1 — How to Run
+</div>
+<div class="section-body">
+  <div class="intro-card">
+    Content simulations are observational runs where a tester adopts a persona and is exposed to H.O.N.'s coaching language across different contexts. The observer records whether phrases land as intended: specific vs. generic, direct vs. preachy, identity-affirming vs. clinical. Simulations are run <strong style="color:var(--text)">without explaining the voice guidelines to the persona</strong> — the goal is unprimed reaction, not confirmation. The persona reads or hears coaching outputs exactly as a real user would: cold, without context about how the phrase was constructed or what rule it was meant to satisfy.<br><br>
+    After each run, results are captured using the Observation Results Template in Section 4. Observations feed back directly to two places: the phrase bank (flagged phrases get rewritten or pulled) and copy audits (consistent failure patterns trigger a voice guide revision). Prioritize <strong style="color:var(--amber)">HIGH-marked scenarios</strong> in the matrix first. A scenario is only complete when the pass or fail criteria are verified — not when the steps are finished.
+  </div>
+</div>
+
+<!-- Section 2 -->
+<div class="section-heading" onclick="toggleSection(this)">
+  <span class="toggle-arrow">▼</span>
+  Section 2 — 15 Content Scenarios
+</div>
+<div class="section-body">
+
+<!-- CSIM-01 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">CSIM-01</div>
+    <div class="scenario-title">Blind Voice Test</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 10 min</span>
+    <span class="badge badge-amber">Trigger: Prepared phrase set (10 phrases)</span>
+    <span class="badge badge-amber">Focus: Voice distinctiveness</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Can a persona identify which 5 phrases belong to the same app without being told the source? Does H.O.N.'s voice have enough identity to cluster correctly?</div>
+    </div>
+    <div>
+      <div class="field-label">Setup</div>
+      <div class="field-value">Prepare 10 phrases on paper, numbered 1–10, no source labels. 5 from H.O.N. phrase_bank.json; 5 from generic fitness apps. Do not pre-sort or group them.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Present the 10 phrases on paper, numbered 1–10, no source labels shown.</li>
+        <li>Ask the persona: "Some of these are from the same app. Group the ones that feel like they belong together."</li>
+        <li>Ask: "What made you group them that way? What did they have in common?"</li>
+        <li>Ask: "Which group felt more like it was talking to you specifically?"</li>
+        <li>Note whether H.O.N. phrases clustered correctly and what characteristics the persona named.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-01</span>
+        <span class="uid-chip">U-09</span>
+        <span class="uid-chip">U-11</span>
+        <span class="uid-chip">U-07</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Persona clusters all 5 H.O.N. phrases together. They can name at least one characteristic that defines the H.O.N. group — directness, specificity, or absence of hype.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Persona cannot cluster the phrases, or mixes H.O.N. and generic phrases into the same group without distinguishing them.
+    </div>
+  </div>
+</div>
+
+<!-- CSIM-02 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">CSIM-02</div>
+    <div class="scenario-title">Cheerleading Detection</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 8 min</span>
+    <span class="badge badge-amber">Trigger: 15-phrase review set with 3 borderline candidates</span>
+    <span class="badge badge-amber">Focus: Voice gate</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Does an independent reader flag the same phrases the content team is unsure about? What threshold does the target persona apply?</div>
+    </div>
+    <div>
+      <div class="field-label">Setup</div>
+      <div class="field-value">Prepare 15 phrases — 12 clean, 3 pre-flagged borderline cheerleading candidates. The 3 borderline phrases are known to the observer but not labeled for the persona.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Present 15 phrases. Ask: "Do any of these feel over-eager, preachy, or like they're trying too hard?"</li>
+        <li>Ask the persona to mark any that feel off. Do not prompt or guide.</li>
+        <li>For each marked phrase, ask: "What specifically bothered you?"</li>
+        <li>For any borderline phrase the persona did not mark, read it aloud together and ask: "What about this one?"</li>
+        <li>Note the exact language that triggered the reaction in each case.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-11</span>
+        <span class="uid-chip">U-01</span>
+        <span class="uid-chip">U-09</span>
+        <span class="uid-chip">U-17</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Persona marks all 3 pre-flagged borderline phrases without prompting. Their stated reason aligns with the specific voice rule being violated.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Persona does not flag the borderline phrases, or marks different phrases and cannot articulate why. Borderline phrases pass undetected.
+    </div>
+  </div>
+</div>
+
+<!-- CSIM-03 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">CSIM-03</div>
+    <div class="scenario-title">Specificity Stress Test — Minimal Data State</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 8 min</span>
+    <span class="badge badge-amber">Trigger: First-time use state · 0 prior sessions</span>
+    <span class="badge badge-amber">Focus: Specificity floor</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">With the absolute minimum data available, does the coaching output still feel specific to this person — or generic? What is the floor?</div>
+    </div>
+    <div>
+      <div class="field-label">Setup</div>
+      <div class="field-value">Fresh install with no prior sessions. Log the first set ever: Squat, 60 kg, 5 reps. Do not add any other data before the persona sees the coaching output.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Log the first set ever in a fresh install (Squat, 60 kg, 5 reps).</li>
+        <li>Read the post-set coaching note aloud to the persona — or show it on screen.</li>
+        <li>Ask: "Does this feel like it's talking to you, or to anyone?"</li>
+        <li>Ask: "Does it reference anything about what you just did?"</li>
+        <li>Ask: "What would make this feel more personal?"</li>
+        <li>Note what the phrase referenced: exercise name, first attempt, nothing specific.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-13</span>
+        <span class="uid-chip">U-06</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Phrase references at least the exercise name or the first-attempt context. Persona says it feels like it knows something about them — even something small.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Phrase could apply to any user doing any exercise. Persona says "this could be from any app."
+    </div>
+  </div>
+</div>
+
+<!-- CSIM-04 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">CSIM-04</div>
+    <div class="scenario-title">Cardio vs. Strength Voice Parity</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 12 min</span>
+    <span class="badge badge-amber">Trigger: One strength workout + one cardio session</span>
+    <span class="badge badge-amber">Focus: Voice consistency across modalities</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Do the session summaries for both modalities feel like they come from the same coach? Or does cardio get a different, more generic voice?</div>
+    </div>
+    <div>
+      <div class="field-label">Setup</div>
+      <div class="field-value">Complete a 3-exercise strength workout and a 20-minute AMRAP cardio session. Collect both session summaries. Read them to the persona without revealing which is which.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Complete a 3-exercise strength workout. Note the session summary coaching output.</li>
+        <li>Complete a 20-minute AMRAP cardio session. Note the session summary coaching output.</li>
+        <li>Read both summaries to the persona without revealing which is which. Ask: "Do these sound like they're from the same app?"</li>
+        <li>Ask: "Which one feels more specific to what was actually done?"</li>
+        <li>Ask: "Is there any difference in tone between them?"</li>
+        <li>Note if the cardio summary sounds more generic or uses different register.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-07</span>
+        <span class="uid-chip">U-13</span>
+        <span class="uid-chip secondary">U-14</span>
+        <span class="uid-chip secondary">U-03</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Persona says both sound like the same voice. Both summaries reference specific session data. No tone discrepancy detected.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Persona says cardio summary "sounds different" or "more generic." Cardio summary does not reference specific session data.
+    </div>
+  </div>
+</div>
+
+<!-- CSIM-05 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">CSIM-05</div>
+    <div class="scenario-title">Milestone Weight Test</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 10 min</span>
+    <span class="badge badge-amber">Trigger: Seeded sessions at counts 1, 10, and 100</span>
+    <span class="badge badge-amber">Focus: Proportional significance in milestone messaging</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Does the Session 100 milestone message feel meaningfully more significant than Session 1? Does the language scale with the achievement, or do all milestones flatten at the same emotional weight?</div>
+    </div>
+    <div>
+      <div class="field-label">Setup</div>
+      <div class="field-value">Seed the app to trigger Session 1, Session 10, and Session 100 milestone messages. Read them in sequence without context about which session count they represent.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Read the Session 1 milestone message aloud. Ask: "How does this land?"</li>
+        <li>Read the Session 10 milestone message. Ask: "How does this compare to the first?"</li>
+        <li>Read the Session 100 milestone message. Ask: "Does this feel appropriately significant for 100 sessions?"</li>
+        <li>Ask: "Is there a clear difference in weight between the first message and the last?"</li>
+        <li>Note if any message feels over- or under-stated for its session count.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-07</span>
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-13</span>
+        <span class="uid-chip secondary">U-05</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Persona perceives clear escalation in significance: 1 &lt; 10 &lt; 100. Session 100 message feels earned and weighty without being over-stated.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      All three messages feel similar in emotional weight. Session 100 does not feel meaningfully more significant than Session 10.
+    </div>
+  </div>
+</div>
+
+<!-- CSIM-06 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">CSIM-06</div>
+    <div class="scenario-title">Comeback Tone — No Guilt Test</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 10 min</span>
+    <span class="badge badge-amber">Trigger: Three gap states — 7, 21, and 45 days</span>
+    <span class="badge badge-amber">Focus: Non-judgmental return language</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Does any comeback message make the persona feel guilty, judged, or reminded of their absence in a negative way? A user returning after 45 days should feel pulled in, not called out.</div>
+    </div>
+    <div>
+      <div class="field-label">Setup</div>
+      <div class="field-value">Seed the app to generate comeback messages at 7-day, 21-day, and 45-day gaps. Collect all three messages before the session.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Show the 7-day gap comeback message. Ask: "How does this make you feel — welcomed back, or called out?"</li>
+        <li>Show the 21-day gap message. Same question.</li>
+        <li>Show the 45-day gap message. Same question.</li>
+        <li>Ask: "Does any of these mention how long you were away?"</li>
+        <li>Ask: "Do any of these make you less likely to open the app again?"</li>
+        <li>Note any guilt-inducing language: gap duration mentioned numerically, "missed you," "it's been a while."</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-07</span>
+        <span class="uid-chip">U-10</span>
+        <span class="uid-chip">U-15</span>
+        <span class="uid-chip secondary">U-08</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      All three messages described as "welcoming" not "guilt-inducing." None mention the gap duration numerically. None reference failure or missed sessions.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Any message described as making the persona feel guilty. Any message references "X days" or implies the user failed by being absent.
+    </div>
+  </div>
+</div>
+
+<!-- CSIM-07 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">CSIM-07</div>
+    <div class="scenario-title">Empty State Copy Audit</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 10 min</span>
+    <span class="badge badge-amber">Trigger: Navigate all empty states across all tabs</span>
+    <span class="badge badge-amber">Focus: Empty state voice</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Are empty states informative and on-brand, or generic and deflating? Do they sound like the same app that generates post-set coaching?</div>
+    </div>
+    <div>
+      <div class="field-label">Setup</div>
+      <div class="field-value">Fresh install. Navigate to: Progress (no sessions), Trainer (no plan), Insights (no data), Cardio (no logs), Recovery (no readiness history). Collect copy from each.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Navigate to each empty state. Read the copy aloud as the persona would see it.</li>
+        <li>For each, ask: "Does this tell you what will appear here as you use the app?"</li>
+        <li>Ask: "Does this sound like the same app that gave you the post-set coaching?"</li>
+        <li>Ask: "Is there anything missing from this message?"</li>
+        <li>Note any empty state that feels blank, generic, or inconsistent with the coaching voice.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-06</span>
+        <span class="uid-chip">U-13</span>
+        <span class="uid-chip">U-17</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      All empty states are on-brand, informative, and feel like the same voice as the coaching outputs. None say "No data" or are blank.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Any empty state feels like a different app, is blank, or uses generic placeholder language ("No data yet," "Nothing here").
+    </div>
+  </div>
+</div>
+
+<!-- CSIM-08 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">CSIM-08</div>
+    <div class="scenario-title">Error Message Humanity Test</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 8 min</span>
+    <span class="badge badge-amber">Trigger: Validation errors — 0 weight, 0 reps, name too long</span>
+    <span class="badge badge-amber">Focus: Human error language</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Do error messages feel human and actionable, or technical and cold? Can the persona understand what went wrong and what to do next without re-reading?</div>
+    </div>
+    <div>
+      <div class="field-label">Setup</div>
+      <div class="field-value">Active workout open. Trigger three validation errors: 0 in the weight field, 0 reps, session name exceeding character limit.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Enter 0 in the weight field and attempt to log. Read the error message to the persona.</li>
+        <li>Enter 0 reps and attempt to log. Read the error message.</li>
+        <li>Enter a very long session name. Read the resulting error message.</li>
+        <li>For each, ask: "Does this tell you clearly what's wrong and how to fix it?"</li>
+        <li>Ask: "Does this feel like it was written by a person?"</li>
+        <li>Note any technical language: "invalid input," "null value," "out of range," "error code."</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-06</span>
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-15</span>
+        <span class="uid-chip">U-13</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      All error messages understood immediately on first read. All feel human and actionable. No technical jargon present.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Any error message requires a second read to understand, or uses technical language the persona does not recognize.
+    </div>
+  </div>
+</div>
+
+<!-- CSIM-09 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">CSIM-09</div>
+    <div class="scenario-title">Register Consistency Run</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 10 min</span>
+    <span class="badge badge-amber">Trigger: Full workout · 5 consecutive coaching outputs</span>
+    <span class="badge badge-amber">Focus: Register consistency</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Does the coaching voice shift register between consecutive outputs — formal to casual, energetic to flat? Can the persona detect a tonal inconsistency when hearing all 5 back to back?</div>
+    </div>
+    <div>
+      <div class="field-label">Setup</div>
+      <div class="field-value">Log 5 sets across 2 exercises. Collect the coaching note after each. Read all 5 in sequence to the persona without pausing for comment between them.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Log 5 sets across 2 exercises. Collect the coaching note after each set.</li>
+        <li>Read all 5 notes aloud in sequence. Do not comment between them.</li>
+        <li>Ask: "Do all of these sound like they come from the same person?"</li>
+        <li>Ask: "Did any of them feel out of place next to the others?"</li>
+        <li>Ask: "Would you describe these as formal, casual, or something else? Is that consistent across all 5?"</li>
+        <li>Note any register shift the persona detects — and which note triggered it.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-01</span>
+        <span class="uid-chip">U-09</span>
+        <span class="uid-chip">U-11</span>
+        <span class="uid-chip secondary">U-07</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Persona says all 5 notes sound like the same voice. No register shift detected across the sequence.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Persona identifies one or more outputs as tonally mismatched from the others. Any note described as "different" or "out of place."
+    </div>
+  </div>
+</div>
+
+<!-- CSIM-10 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">CSIM-10</div>
+    <div class="scenario-title">Clinical Language Detection</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 8 min</span>
+    <span class="badge badge-amber">Trigger: Readiness notes for scores 85, 72, 58, and 42</span>
+    <span class="badge badge-amber">Focus: Clinical vs. coaching language</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Does any readiness coaching output sound like a medical report rather than a coach's voice? Does the low-readiness note (42) make the persona feel monitored or supported?</div>
+    </div>
+    <div>
+      <div class="field-label">Setup</div>
+      <div class="field-value">Seed the app to generate ReadinessEngine outputs for four scores: 85, 72, 58, and 42. Collect all four notes before the session. Present them side by side or read them in order.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Show all 4 readiness notes side by side — or read them aloud in sequence from highest to lowest.</li>
+        <li>Ask: "Do any of these sound like something you'd read in a doctor's report?"</li>
+        <li>Ask: "Do any use words you'd expect in a medical or scientific context?"</li>
+        <li>Ask specifically about the lowest note (42): "Does this make you feel monitored or supported?"</li>
+        <li>Note any clinical language the persona flags without being prompted.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-11</span>
+        <span class="uid-chip">U-09</span>
+        <span class="uid-chip">U-06</span>
+        <span class="uid-chip">U-15</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      No clinical language flagged by the persona. Low-readiness note (42) described as "supportive" not "clinical" or "alarming."
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Any note described as sounding medical or like a data report. Persona says the low-readiness note makes them feel surveilled.
+    </div>
+  </div>
+</div>
+
+<!-- CSIM-11 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">CSIM-11</div>
+    <div class="scenario-title">Button Label Clarity Test</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 8 min</span>
+    <span class="badge badge-amber">Trigger: Navigate ActiveWorkoutView, Settings, session end flow</span>
+    <span class="badge badge-amber">Focus: Action label specificity</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Can the persona describe what each button does before tapping it, from the label alone? Button copy is coaching copy — ambiguous labels create friction and erode trust.</div>
+    </div>
+    <div>
+      <div class="field-label">Setup</div>
+      <div class="field-value">Open the app to ActiveWorkoutView. Prepare to walk through Settings and the session end confirmation flow. The persona should not have seen these screens before.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Open ActiveWorkoutView. Point to each button without tapping. Ask the persona to say what they think each one does.</li>
+        <li>Navigate to Settings. Repeat the same exercise — point to each action, ask for the predicted behavior.</li>
+        <li>Navigate to the session end flow (End Session confirmation). Repeat.</li>
+        <li>Note any button where the persona's prediction was wrong.</li>
+        <li>Ask: "Were any labels ambiguous? What would you rename them?"</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-06</span>
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-15</span>
+        <span class="uid-chip">U-17</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      90% or more of buttons correctly described from the label alone before tapping.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      More than 1 in 10 buttons misidentified from its label. Any button at the session end confirmation flow misread.
+    </div>
+  </div>
+</div>
+
+<!-- CSIM-12 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">CSIM-12</div>
+    <div class="scenario-title">Onboarding Copy Comprehension</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 10 min</span>
+    <span class="badge badge-amber">Trigger: Fresh install · Full onboarding walk-through</span>
+    <span class="badge badge-amber">Focus: Plain language in onboarding</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Are all onboarding labels and options understandable without fitness expertise? A user should not need to guess what "moderate" means relative to "intermediate."</div>
+    </div>
+    <div>
+      <div class="field-label">Setup</div>
+      <div class="field-value">Fresh install. Walk the persona through the full onboarding sequence. Before they select any option, ask them to describe what each choice means. Do not explain any label.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Present each onboarding screen. Before the persona selects, ask: "Tell me what each option means in your own words."</li>
+        <li>Note any label that requires explanation or causes hesitation.</li>
+        <li>Ask: "Was there any option you weren't sure which one to pick?"</li>
+        <li>After completing onboarding, ask: "Is there any word or phrase you'd change to make it clearer?"</li>
+        <li>Check specifically: goal labels, equipment labels, fitness level labels.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-06</span>
+        <span class="uid-chip">U-13</span>
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-17</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      All options understood without explanation. No label requires clarification from the observer. Persona selects the correct option for their situation.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Any label requires explanation from the observer, or the persona selects the wrong option for their situation due to label ambiguity.
+    </div>
+  </div>
+</div>
+
+<!-- CSIM-13 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">CSIM-13</div>
+    <div class="scenario-title">Long-Form Coaching Depth Test</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 8 min</span>
+    <span class="badge badge-amber">Trigger: Expanded coach note on ProgressView · 4-week plateau seeded</span>
+    <span class="badge badge-amber">Focus: Depth and specificity in expanded copy</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Does the expanded coaching note add genuine value beyond the collapsed preview? Is it specific and actionable — or just a longer version of a generic statement?</div>
+    </div>
+    <div>
+      <div class="field-label">Setup</div>
+      <div class="field-value">Seed a 4-week plateau on one exercise to trigger an urgent coaching note in ProgressView. Ensure the note is in the collapsed state before the session begins.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Confirm an urgent coaching note is present in ProgressView.</li>
+        <li>Read the collapsed note aloud to the persona.</li>
+        <li>Tap to expand. Read the full expanded note aloud.</li>
+        <li>Ask: "Did expanding give you new information, or just more of the same?"</li>
+        <li>Ask: "Did the expanded note tell you what to do next?"</li>
+        <li>Ask: "Does this read like it was written for you specifically, or for anyone with this problem?"</li>
+        <li>Note if expanded text is substantively different from the collapsed preview or just longer.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-01</span>
+        <span class="uid-chip">U-09</span>
+        <span class="uid-chip">U-11</span>
+        <span class="uid-chip secondary">U-20</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Persona says expanded text added genuinely new information. At least one suggested action is specific to their situation — not a generic "try adding volume."
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Persona says "it's just longer" or "I learned nothing new from expanding." Expanded note is a restatement of the collapsed preview.
+    </div>
+  </div>
+</div>
+
+<!-- CSIM-14 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">CSIM-14</div>
+    <div class="scenario-title">New Contributor Copy Test</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 15 min</span>
+    <span class="badge badge-amber">Trigger: Give a team member the voice guide · Ask them to write 3 phrases</span>
+    <span class="badge badge-purple">Focus: Voice guide usability</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Is the voice guide clear enough that a non-content-team member can write on-brand phrases without revision? This tests the guide — not the contributor.</div>
+    </div>
+    <div>
+      <div class="field-label">Setup</div>
+      <div class="field-value">Select a team member who has not been involved in content decisions (engineer or designer). Give them the H.O.N. voice guide (or the voice section of CLAUDE.md). Allow 10 minutes of reading time before writing.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Give the contributor the H.O.N. voice guide. Allow time to read before writing.</li>
+        <li>Ask them to write three phrases: (a) a post-set note for a user who hit all reps, (b) a readiness note for a score of 65, (c) a comeback message after 14 days away.</li>
+        <li>Review all 3 against CV-001 through CV-008 (the 8 voice rules).</li>
+        <li>Note which rules were easiest to apply and which were hardest — this reveals guide gaps.</li>
+        <li>Count how many of the 3 phrases need revision before they would be accepted into the phrase bank.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Cohort Note</div>
+      <div class="uid-list">
+        <span class="uid-chip team">Team Member</span>
+      </div>
+    </div>
+    <div class="field-full">
+      <div class="field-value" style="font-size:12px;color:var(--text2);margin-top:6px;">Not a user persona run. The content team acts as the observer. The contributor is treated as the test subject — and what they get wrong reveals what the guide fails to explain.</div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      2 or more of the 3 phrases pass all 8 voice rules without revision. The guide is clear enough for independent use.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      All 3 phrases require revision. This means the voice guide needs to be rewritten — not that the contributor failed.
+    </div>
+  </div>
+</div>
+
+<!-- CSIM-15 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">CSIM-15</div>
+    <div class="scenario-title">Voice Consistency Across 5 Screens</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 12 min</span>
+    <span class="badge badge-amber">Trigger: One coaching output collected from each of 5 views</span>
+    <span class="badge badge-amber">Focus: Cross-screen voice consistency</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Does the coaching voice hold across every surface of the app — or does it only feel strong in the primary workout view? The cardio summary is the most likely failure point.</div>
+    </div>
+    <div>
+      <div class="field-label">Setup</div>
+      <div class="field-value">Collect one coaching output from each of 5 different views: WorkoutNarrativeEngine (post-set), HomeView readiness note, TrainerTabView plan introduction, CardioSessionSummaryView summary, and ProgressView coach note.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Collect all 5 outputs before the session begins. Label them A–E internally (do not reveal which screen each came from).</li>
+        <li>Read all 5 to the persona in sequence, without identifying the source of each.</li>
+        <li>Ask: "Do all of these sound like the same app?"</li>
+        <li>Ask: "Which one sounds most different from the others?" Note which output was identified.</li>
+        <li>Ask: "If you had to describe the personality behind all 5, what would you say?" Target answer: "direct coach." Watch for: "mixed," "the cardio one is different," "some feel more formal."</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-09</span>
+        <span class="uid-chip">U-11</span>
+        <span class="uid-chip">U-07</span>
+        <span class="uid-chip">U-01</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      All 5 outputs sound like the same voice. Persona's personality description aligns with "direct coach" — direct, spare, specific.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Any output identified as clearly different in tone. Cardio summary singled out as sounding generic or inconsistent with the rest.
+    </div>
+  </div>
+</div>
+
+</div><!-- end section-body -->
+
+<!-- Section 3 -->
+<div class="section-heading" onclick="toggleSection(this)">
+  <span class="toggle-arrow">▼</span>
+  Section 3 — Cohort × Scenario Matrix
+</div>
+<div class="section-body">
+<p style="font-size:13px;color:var(--text2);margin-bottom:16px;">Amber H = high priority (run first). Dim dot = run if time permits. Empty = not applicable. CSIM-14 is a team run — marked across all columns.</p>
+
+<div class="matrix-wrapper">
+<table class="matrix-table">
+<thead>
+<tr>
+  <th class="row-header">User ↓ / CSIM →</th>
+  <th>01</th><th>02</th><th>03</th><th>04</th><th>05</th>
+  <th>06</th><th>07</th><th>08</th><th>09</th><th>10</th>
+  <th>11</th><th>12</th><th>13</th><th>14</th><th>15</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td class="row-header">U-01</td>
+  <td class="cell-high">H</td><td class="cell-high">H</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-team">Team</td><td class="cell-high">H</td>
+</tr>
+<tr>
+  <td class="row-header">U-02</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-high">H</td><td class="cell-high">H</td>
+  <td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-high">H</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-high">H</td><td class="cell-high">H</td><td class="cell-low">·</td><td class="cell-team">Team</td><td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">U-06</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-high">H</td><td class="cell-low">·</td><td class="cell-high">H</td>
+  <td class="cell-high">H</td><td class="cell-high">H</td><td class="cell-low">·</td><td class="cell-team">Team</td><td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">U-07</td>
+  <td class="cell-high">H</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-high">H</td>
+  <td class="cell-high">H</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-team">Team</td><td class="cell-high">H</td>
+</tr>
+<tr>
+  <td class="row-header">U-09</td>
+  <td class="cell-high">H</td><td class="cell-high">H</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-high">H</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-team">Team</td><td class="cell-high">H</td>
+</tr>
+<tr>
+  <td class="row-header">U-10</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-high">H</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-team">Team</td><td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">U-11</td>
+  <td class="cell-high">H</td><td class="cell-high">H</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-high">H</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-team">Team</td><td class="cell-high">H</td>
+</tr>
+<tr>
+  <td class="row-header">U-13</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-high">H</td><td class="cell-high">H</td>
+  <td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-high">H</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-low">·</td><td class="cell-team">Team</td><td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">U-15</td>
+  <td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-high">H</td><td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-low">·</td><td class="cell-high">H</td>
+  <td class="cell-high">H</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-team">Team</td><td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">U-17</td>
+  <td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-low">·</td><td class="cell-high">H</td><td class="cell-low">·</td><td class="cell-low">·</td><td class="cell-low">·</td>
+  <td class="cell-high">H</td><td class="cell-high">H</td><td class="cell-low">·</td><td class="cell-team">Team</td><td class="cell-low">·</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p style="font-size:11px;color:var(--text2);margin-top:10px;">H = high priority &nbsp;·&nbsp; · = run if time permits &nbsp;·&nbsp; Team = run with a team member, not a user persona</p>
+</div><!-- end section-body -->
+
+<!-- Section 4 -->
+<div class="section-heading" onclick="toggleSection(this)">
+  <span class="toggle-arrow">▼</span>
+  Section 4 — Observation Results Template
+</div>
+<div class="section-body">
+<p style="font-size:13px;color:var(--text2);margin-bottom:16px;">Fill one template per session. File results in <code>docs/uat/</code> with filename <code>CSIMxx-Uxx-YYYY-MM-DD.md</code>. Use the <code>uat</code> command for quick entries.</p>
+
+<div class="template-card">
+  <div class="template-field">
+    <div class="template-field-label">Scenario ID &amp; Title</div>
+    <div class="template-field-placeholder">CSIM-__ · [Scenario Title] — e.g., CSIM-01 · Blind Voice Test</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Persona</div>
+    <div class="template-field-placeholder">U-__ · [Brief persona description] — e.g., U-11 · Skeptic/analyst, high sensitivity to hollow language. Note any behavioral adjustments made during the run.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Observer</div>
+    <div class="template-field-placeholder">[Name] · Content &amp; Voice team member conducting the session. Note if a second observer was present.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Date</div>
+    <div class="template-field-placeholder">YYYY-MM-DD</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Phrases Tested</div>
+    <div class="template-field-placeholder">List the specific coaching outputs shown or read during this session. Include the exact text — do not paraphrase. Example: "You hit all 5. That's the third week straight at this weight." / phrase_bank.json ID: 42</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Voice Gate Results</div>
+    <div class="template-field-placeholder">For each of CV-001 through CV-008, note PASS or FAIL for the phrases tested. Example: CV-001 Directness — PASS · CV-002 Specificity — FAIL (phrase referenced no session data) · CV-003 Non-cheerleading — PASS · CV-004 Non-clinical — PASS · CV-005 Active voice — PASS · CV-006 No hedging — PASS · CV-007 No questions — PASS · CV-008 Identity-affirming — FAIL</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Specific Violation</div>
+    <div class="template-field-placeholder">If any CV rule failed, quote the exact phrase that caused the failure and name the rule. Example: "You're making progress!" — CV-003 Non-cheerleading: this is a generic affirmation with no reference to specific data.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Persona's Exact Words</div>
+    <div class="template-field-placeholder">The most revealing quote from the session — what the persona said without prompting. This is the primary evidence. Do not paraphrase. Example: "That one sounds like it's talking to someone else, not me."</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Verdict</div>
+    <div class="template-field-placeholder">PASS / FAIL / PARTIAL — with one sentence explaining the verdict against the scenario's stated pass criteria.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Suggested Rewrite</div>
+    <div class="template-field-placeholder">If a phrase failed, write the revised version here. It must pass all 5 voice dimensions: Directness · Specificity · Non-cheerleading · Non-clinical · Active voice. Mark as [DRAFT] until reviewed by the content team lead.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Action</div>
+    <div class="template-field-placeholder">Select all that apply: [ ] Phrase bank update — flag phrase ID for revision or removal · [ ] Voice guide update — add a rule clarification or example · [ ] Copy fix — specific screen or state identified for rewrite · [ ] No action required — phrase passed, observations filed for reference</div>
+  </div>
+</div>
+</div><!-- end section-body -->
+
+<!-- Section 5 -->
+<div class="section-heading" onclick="toggleSection(this)">
+  <span class="toggle-arrow">▼</span>
+  Section 5 — LLM Voice Pre-Triage Prompt
+</div>
+<div class="section-body">
+<div class="triage-card">
+  <div class="triage-label">LLM Pre-Triage — Voice Compliance Evaluation</div>
+  <div class="triage-desc">Use this prompt to evaluate a phrase or block of copy before running a live persona session. Pre-triage flags obvious violations early and identifies which CSIM scenario would be most useful for real-world validation. Paste the prompt into any capable LLM (Claude recommended). Replace the bracketed parameters with actual values before sending.</div>
+
+  <div class="prompt-block">You are evaluating copy written for H.O.N. (Habit Over Numbers), an iOS fitness coaching app. H.O.N.'s coaching voice is: spare, direct, identity-affirming. It never cheerleads. It makes declarative statements, uses active voice, references specific user data when available, and avoids clinical or medical language. It does not ask questions. It does not hedge. It does not say "great job" or "amazing." It talks to the user as a capable person who does not need to be managed.
+
+<span class="section-label">Inputs</span><span class="param">[COPY SNIPPET]</span>
+Paste the exact phrase, sentence, or block of copy to evaluate here.
+
+<span class="param">[CONTEXT]</span>
+Where this copy appears and what state triggered it. Example: "Post-set coaching note after a user hit all 5 target reps on Squat, third week at 80 kg." Or: "Readiness note shown on HomeView when readiness score is 42 out of 100."
+
+<span class="param">[DATA AVAILABLE]</span>
+What user data was available to the system when this phrase was generated. Example: "Exercise name, weight, reps logged, whether target reps were hit, last 3 sessions for this exercise." Or: "Only profile data — first session, no prior history."
+
+<span class="section-label">Output Format</span>1. VOICE COMPLIANCE SCORE — Rate 1 (fails) to 5 (passes) on each dimension:
+   · Directness: declarative statements, no hedging, no softening
+   · Specificity: references actual data from [CONTEXT] or [DATA AVAILABLE]
+   · Non-cheerleading: no hype words, no empty affirmations
+   · Non-clinical: no medical or data-report language
+   · Active voice: subject acts, not passive constructions
+
+2. VIOLATIONS FOUND — Quote the exact text from the snippet that fails, and name the rule it violates. If no violations, write "None found."
+
+3. REWRITE SUGGESTION — A revised version that passes all 5 dimensions. Must use the same data context. Must not introduce new information not present in [DATA AVAILABLE].
+
+4. APPROVAL RECOMMENDATION — One of:
+   APPROVE — phrase passes all 5 dimensions, ready for phrase bank
+   REVISE — phrase has 1–2 fixable issues; rewrite provided
+   REJECT — phrase fails core voice rules; structural problem, not a line edit
+
+5. SIMULATION TO RUN — Which CSIM scenario (01–15) would most usefully validate this phrase with a real persona, and why. Be specific about what the persona run would reveal that the LLM evaluation cannot.</div>
+
+  <div style="margin-top:16px;">
+    <div class="triage-label" style="color:var(--amber);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">Expected Output Boxes</div>
+    <div class="output-row">
+      <div class="output-box">
+        <div class="output-label">Voice Compliance Score</div>
+        Five dimensions rated 1–5. A phrase ready for the bank scores 4 or 5 on all dimensions. A score of 3 or below on any single dimension triggers REVISE or REJECT.
+      </div>
+      <div class="output-box">
+        <div class="output-label">Violations Found</div>
+        Exact quoted text with the named rule. "None found" is a valid result. Vague violations ("this could be more specific") without a quote do not count.
+      </div>
+      <div class="output-box">
+        <div class="output-label">Rewrite Suggestion</div>
+        Revised version using only the data in [DATA AVAILABLE]. Must not invent new information. Mark DRAFT until reviewed by the content team lead.
+      </div>
+      <div class="output-box">
+        <div class="output-label">Approval &amp; CSIM Routing</div>
+        APPROVE / REVISE / REJECT with the specific CSIM scenario recommended for live validation. Cardio or readiness copy should always route to CSIM-04 or CSIM-10.
+      </div>
+    </div>
+  </div>
+</div>
+</div><!-- end section-body -->
+
+<script>
+function toggleSection(heading) {
+  var arrow = heading.querySelector('.toggle-arrow');
+  var body = heading.nextElementSibling;
+  if (!body || !body.classList.contains('section-body')) return;
+  var isCollapsed = body.classList.contains('collapsed');
+  if (isCollapsed) {
+    body.classList.remove('collapsed');
+    heading.classList.remove('collapsed');
+    arrow.style.transform = '';
+  } else {
+    body.classList.add('collapsed');
+    heading.classList.add('collapsed');
+    arrow.style.transform = 'rotate(-90deg)';
+  }
+}
+</script>
+
+</body>
+</html>

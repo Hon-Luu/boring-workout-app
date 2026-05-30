@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H.O.N. — Analytics &amp; Instrumentation Review Criteria</title>
+<style>
+  :root {
+    --bg:       #111111;
+    --card:     #1c1c1e;
+    --border:   rgba(255,255,255,0.07);
+    --amber:    #f59e0b;
+    --positive: #34d399;
+    --negative: #f87171;
+    --warning:  #fbbf24;
+    --muted:    rgba(255,255,255,0.4);
+    --text:     rgba(255,255,255,0.88);
+    --text2:    rgba(255,255,255,0.55);
+    --blue:     #60a5fa;
+    --purple:   #a78bfa;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 32px 20px 64px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .header { margin-bottom: 36px; }
+  .header-top {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .logo {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber);
+  }
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--amber), transparent);
+    opacity: 0.3;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    color: var(--text);
+  }
+  .subtitle {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+
+  .section-heading {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin: 32px 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-heading::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .stats {
+    display: flex;
+    gap: 6px;
+    margin: 20px 0 28px;
+    flex-wrap: wrap;
+  }
+  .stat-pill {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.04em;
+  }
+  .stat-open    { background: rgba(248,113,113,0.15); color: var(--negative); }
+  .stat-pass    { background: rgba(52,211,153,0.15);  color: var(--positive); }
+  .stat-partial { background: rgba(251,191,36,0.15);  color: var(--warning); }
+  .stat-total   { background: rgba(255,255,255,0.08); color: var(--text2); }
+
+  .filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover  { border-color: var(--amber); color: var(--amber); }
+  .filter-btn.active { background: var(--amber); border-color: var(--amber); color: #111; }
+
+  /* Category block */
+  .category-block {
+    margin-bottom: 24px;
+  }
+  .category-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .category-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.04em;
+  }
+  .category-count {
+    font-size: 11px;
+    color: var(--text2);
+    background: rgba(255,255,255,0.06);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .category-chevron {
+    margin-left: auto;
+    color: var(--text2);
+    font-size: 11px;
+    transition: transform 0.2s;
+  }
+  .category-block.collapsed .category-chevron { transform: rotate(-90deg); }
+  .category-block.collapsed .test-list { display: none; }
+
+  /* Test case */
+  .test-case {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transition: border-color 0.2s;
+  }
+  .test-case:hover { border-color: rgba(255,255,255,0.12); }
+  .test-case.status-pass    { border-left: 3px solid var(--positive); }
+  .test-case.status-fail    { border-left: 3px solid var(--negative); }
+  .test-case.status-partial { border-left: 3px solid var(--warning); }
+  .test-case.status-open    { border-left: 3px solid rgba(255,255,255,0.15); }
+
+  .test-id {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    letter-spacing: 0.06em;
+    color: var(--amber);
+    background: rgba(245,158,11,0.1);
+    padding: 2px 7px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .test-body { flex: 1; }
+
+  .test-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+
+  .test-detail {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.5;
+    margin-bottom: 6px;
+  }
+
+  .test-pass-criteria {
+    font-size: 11px;
+    color: rgba(52,211,153,0.8);
+    background: rgba(52,211,153,0.06);
+    border: 1px solid rgba(52,211,153,0.12);
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+
+  .status-select {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .status-open    { background: rgba(248,113,113,0.15); color: var(--negative); }
+  .status-pass    { background: rgba(52,211,153,0.15);  color: var(--positive); }
+  .status-fail    { background: rgba(248,113,113,0.3);  color: #fca5a5; }
+  .status-partial { background: rgba(251,191,36,0.15);  color: var(--warning); }
+
+  code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 11px;
+    background: rgba(255,255,255,0.06);
+    padding: 1px 4px;
+    border-radius: 3px;
+  }
+
+  /* Gates */
+  .gate-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+  .gate-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .gate-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 13px;
+    color: var(--text2);
+  }
+  .gate-item:last-child { border-bottom: none; }
+  .gate-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(248,113,113,0.15);
+    color: var(--negative);
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* Metrics grid */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 640px) {
+    .metrics-grid { grid-template-columns: 1fr; }
+  }
+
+  .metric-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .metric-card-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 12px;
+  }
+
+  .metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 12px;
+  }
+  .metric-row:last-child { border-bottom: none; }
+
+  .metric-name { color: var(--text2); flex: 1; line-height: 1.4; }
+  .metric-target {
+    font-weight: 700;
+    color: var(--text);
+    font-family: 'SF Mono', monospace;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .metric-target.positive { color: var(--positive); }
+  .metric-target.amber    { color: var(--amber); }
+  .metric-target.negative { color: var(--negative); }
+
+  /* Done card */
+  .done-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--positive);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-top: 16px;
+  }
+  .done-card p {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.8;
+  }
+
+  /* LLM prompt card */
+  .prompt-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--purple);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-top: 16px;
+  }
+  .prompt-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin-bottom: 12px;
+  }
+  .prompt-body {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.7;
+    white-space: pre-wrap;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    font-size: 12px;
+  }
+  .prompt-note {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 12px;
+    line-height: 1.5;
+  }
+
+  .separator {
+    height: 1px;
+    background: var(--border);
+    margin: 28px 0;
+  }
+
+  .tier-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin-bottom: 14px;
+  }
+  .tier-a { background: rgba(248,113,113,0.15); color: var(--negative); }
+  .tier-b { background: rgba(96,165,250,0.15);  color: var(--blue); }
+  .tier-c { background: rgba(167,139,250,0.15); color: var(--purple); }
+
+  @media (max-width: 600px) {
+    body { padding: 20px 14px 48px; }
+    .test-case { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <span class="logo">H.O.N.</span>
+    <div class="divider-line"></div>
+  </div>
+  <h1>Analytics &amp; Instrumentation Review Criteria</h1>
+  <div class="subtitle">44 must-pass analytics criteria · Instrumentation gates · Funnel definitions · Dashboard quality · Definition of done · Last updated: 2026-05-30</div>
+</div>
+
+<div class="stats">
+  <span class="stat-pill stat-total" id="stat-total">44 total</span>
+  <span class="stat-pill stat-open" id="stat-open">— open/fail</span>
+  <span class="stat-pill stat-partial" id="stat-partial">— partial</span>
+  <span class="stat-pill stat-pass" id="stat-pass">— passed</span>
+</div>
+
+<div class="filters">
+  <button class="filter-btn active" onclick="filterTests('all', this)">All</button>
+  <button class="filter-btn" onclick="filterTests('open', this)">Open</button>
+  <button class="filter-btn" onclick="filterTests('pass', this)">Passed</button>
+  <button class="filter-btn" onclick="filterTests('fail', this)">Failed</button>
+  <button class="filter-btn" onclick="filterTests('partial', this)">Partial</button>
+</div>
+
+<!-- Section 1 -->
+<div class="section-heading">Section 1 — Must-Pass Analytics Criteria</div>
+
+<!-- Category 1: Event Taxonomy -->
+<div class="category-block" id="cat-events">
+  <div class="category-header" onclick="toggleCategory('cat-events')">
+    <span style="font-size:14px">📡</span>
+    <span class="category-title">1. Event Taxonomy</span>
+    <span class="category-count">8 tests · AN-001–AN-008</span>
+    <span class="category-chevron">▼</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="events">
+      <div class="test-id">AN-001</div>
+      <div class="test-body">
+        <div class="test-title">Core Workout Events</div>
+        <div class="test-detail">Three events must fire correctly: <code>session_started</code>, <code>set_logged</code> (with <code>exercise_id</code>, <code>weight</code>, <code>reps</code>, <code>completed</code>), and <code>session_ended</code> (with <code>duration</code>, <code>exercise_count</code>, <code>set_count</code>). These are the foundation of all session analytics. The <code>exercise_id</code> must be a UUID that matches the exercise database and remains stable across relaunches.</div>
+        <div class="test-pass-criteria">Pass: All three events fire correctly in TestFlight. <code>exercise_id</code> is UUID-stable and matches the static exercise database. <code>session_ended</code> fires at most once per session regardless of how the session is terminated.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="events">
+      <div class="test-id">AN-002</div>
+      <div class="test-body">
+        <div class="test-title">Onboarding Funnel Events</div>
+        <div class="test-detail">Three events must fire in sequence on fresh install: <code>onboarding_started</code>, <code>profile_saved</code> (with <code>goal</code>, <code>equipment</code>, <code>fitness_level</code>), <code>onboarding_completed</code>. Drop-off between steps must be identifiable from the event sequence. If a user quits mid-onboarding and returns, only one <code>onboarding_started</code> should exist per install.</div>
+        <div class="test-pass-criteria">Pass: All three events fire in sequence for a fresh install. Drop-off point identifiable from event sequence. No duplicate <code>onboarding_started</code> events for a single install.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="events">
+      <div class="test-id">AN-003</div>
+      <div class="test-body">
+        <div class="test-title">Feature Discovery Events</div>
+        <div class="test-detail">Three event types cover feature discovery: <code>tab_viewed</code> (with <code>tab_name</code>, <code>session_index</code>), <code>feature_first_used</code> (with <code>feature_name</code>), <code>drill_down_opened</code> (with <code>source_screen</code>, <code>destination</code>). Every tab and every drill-down sheet must fire a view event. <code>feature_first_used</code> must fire exactly once per feature per install — not per session.</div>
+        <div class="test-pass-criteria">Pass: Every tab and every drill-down sheet fires a view event. <code>feature_first_used</code> fires exactly once per feature per install. No duplicate discovery events on re-use.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="events">
+      <div class="test-id">AN-004</div>
+      <div class="test-body">
+        <div class="test-title">Coaching Engagement Events</div>
+        <div class="test-detail">Every coaching note interaction requires instrumentation: <code>coaching_note_shown</code> (with <code>note_type</code>, <code>exercise_id</code>), <code>coaching_note_dismissed</code>, and <code>coaching_note_expanded</code> (if the note supports expansion). The distinction between dismiss and expand is the core coaching engagement signal — it cannot be inferred after the fact.</div>
+        <div class="test-pass-criteria">Pass: Every coaching note shown fires <code>coaching_note_shown</code>. Dismiss vs. expand is distinguishable from distinct event names. <code>coaching_note_expanded</code> fires only when user deliberately expands, not on show.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="events">
+      <div class="test-id">AN-005</div>
+      <div class="test-body">
+        <div class="test-title">Trainer Tab Events</div>
+        <div class="test-detail">The Trainer tab funnel requires four events: <code>plan_generated</code> (with <code>readiness_score</code>, <code>exercise_count</code>), <code>plan_started</code> (user began the generated workout), <code>plan_completed</code>, <code>plan_dismissed</code>. A user who generates a plan and never starts it is a critical signal. A user who generates, starts, and abandons mid-workout is a different signal. Both must be distinguishable.</div>
+        <div class="test-pass-criteria">Pass: The funnel from <code>plan_generated</code> → <code>plan_started</code> → <code>plan_completed</code> is fully traceable. Dismissed plans are distinguishable from started-but-abandoned. No plan generates two <code>plan_generated</code> events.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="events">
+      <div class="test-id">AN-006</div>
+      <div class="test-body">
+        <div class="test-title">Progress Tab Engagement Events</div>
+        <div class="test-detail">Three events instrument Progress tab depth: <code>progress_tab_viewed</code> (with <code>data_age_days</code> — how old is the newest session), <code>section_expanded</code> (with <code>section_name</code> matching the 5 question categories), <code>drill_down_opened</code>. Each of the 5 question categories needs its own distinct <code>section_name</code> value so engagement per category is measurable independently.</div>
+        <div class="test-pass-criteria">Pass: Each of the 5 question categories has its own <code>section_name</code> value. Engagement per category is independently measurable. <code>data_age_days</code> correctly reflects days since the most recent logged session, not since install.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="events">
+      <div class="test-id">AN-007</div>
+      <div class="test-body">
+        <div class="test-title">Cardio Session Events</div>
+        <div class="test-detail">Cardio instrumentation requires three events: <code>cardio_session_started</code> (with <code>circuit_type</code>: AMRAP or EMOM), <code>round_completed</code>, <code>cardio_session_ended</code> (with <code>rounds_completed</code>, <code>duration</code>). AMRAP and EMOM sessions must be distinguishable so completion rates can be calculated by circuit type. A cardio session started must never be confused with a strength session started.</div>
+        <div class="test-pass-criteria">Pass: AMRAP and EMOM sessions are distinguishable from <code>circuit_type</code> alone. Completion rate calculable from <code>cardio_session_started</code> vs. <code>cardio_session_ended</code> counts. Cardio events never conflated with strength <code>session_started</code> events.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="events">
+      <div class="test-id">AN-008</div>
+      <div class="test-body">
+        <div class="test-title">Error and Recovery Events</div>
+        <div class="test-detail">Validation errors must be fully instrumented: <code>input_validation_error</code> (with <code>field_name</code>, <code>error_type</code>), <code>error_recovered</code> (user corrected and proceeded), <code>error_abandoned</code> (user left without correcting). Every validation error type — weight out of range, reps out of range, missing required field — must fire its own error event with the correct field name.</div>
+        <div class="test-pass-criteria">Pass: Recovery vs. abandonment distinguishable for every validation error type. <code>field_name</code> is populated with the actual field (e.g., <code>weight_kg</code>, <code>reps</code>) not a generic value. Each error type has a distinct <code>error_type</code> value.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 2: Funnel Definitions -->
+<div class="category-block" id="cat-funnels">
+  <div class="category-header" onclick="toggleCategory('cat-funnels')">
+    <span style="font-size:14px">&#8595;</span>
+    <span class="category-title">2. Funnel Definitions</span>
+    <span class="category-count">8 tests · AN-009–AN-016</span>
+    <span class="category-chevron">▼</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="funnels">
+      <div class="test-id">AN-009</div>
+      <div class="test-body">
+        <div class="test-title">Onboarding Funnel</div>
+        <div class="test-detail">Five-step funnel: install → <code>onboarding_started</code> → <code>profile_saved</code> → <code>onboarding_completed</code> → <code>first_workout_started</code>. This is the most critical funnel in the product. Drop-off at each step must be independently measurable. Target completion rate is greater than 85% through <code>onboarding_completed</code>.</div>
+        <div class="test-pass-criteria">Pass: Each step identifiable from events. Drop-off at each step measurable. Target: &gt;85% of users who start onboarding reach <code>onboarding_completed</code>. Time between each step calculable.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="funnels">
+      <div class="test-id">AN-010</div>
+      <div class="test-body">
+        <div class="test-title">First Workout Funnel</div>
+        <div class="test-detail">Three-step funnel: <code>session_started</code> → <code>first_set_logged</code> → <code>session_ended</code>. Average time-to-first-set measures onboarding-to-action velocity. Completion rate distinguishes users who start a workout and finish from those who start and abandon. Both signals inform early retention.</div>
+        <div class="test-pass-criteria">Pass: Completion rate measurable from <code>session_started</code> vs. <code>session_ended</code> counts. Average time-to-first-set calculable from event timestamps. Abandoned sessions (started but no <code>session_ended</code>) identifiable.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="funnels">
+      <div class="test-id">AN-011</div>
+      <div class="test-body">
+        <div class="test-title">Trainer Adoption Funnel</div>
+        <div class="test-detail">Five-step funnel: <code>app_opened</code> → <code>trainer_tab_viewed</code> → <code>plan_generated</code> → <code>plan_started</code> → <code>plan_completed</code>. Conversion rate at each step must be calculable within 48 hours of launch. Users who generate a plan but never start it are a key re-engagement target. Users who start but don't complete are a plan-quality signal.</div>
+        <div class="test-pass-criteria">Pass: Each step measurable. Conversion rate at each step calculable within 48 hours of TestFlight launch. Plan-generated-but-never-started users identifiable as a segment.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="funnels">
+      <div class="test-id">AN-012</div>
+      <div class="test-body">
+        <div class="test-title">Feature Depth Funnel</div>
+        <div class="test-detail">Four-step depth funnel for the Progress tab: <code>tab_viewed</code> → <code>section_expanded</code> → <code>drill_down_opened</code> → <code>drill_down_closed</code>. For each of the 5 Progress question categories, the depth-of-engagement funnel must be independently traceable. Category with the lowest drill-down rate is a design signal.</div>
+        <div class="test-pass-criteria">Pass: For each of the 5 Progress categories, the depth funnel is traceable independently. Category with lowest drill-down rate identifiable. Time spent in drill-down calculable from open/close timestamps.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="funnels">
+      <div class="test-id">AN-013</div>
+      <div class="test-body">
+        <div class="test-title">Retention Cohort Funnel</div>
+        <div class="test-detail">D1/D7/D30/D90 retention must be measurable from session events alone. A user is retained on Day N if they log a session on or within ±1 day of the Nth day after install. A user who logs a session on install day and then 29 days later is counted as retained at D30. Cohort must be groupable by install week.</div>
+        <div class="test-pass-criteria">Pass: D1, D7, D30, D90 retention calculable from events. A user logging sessions on day 0 and day 29 counts as D30-retained. Cohort groupable by install week for cohort analysis.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="funnels">
+      <div class="test-id">AN-014</div>
+      <div class="test-body">
+        <div class="test-title">Cardio Adoption Funnel</div>
+        <div class="test-detail">Three-step cardio funnel: <code>cardio_tab_viewed</code> → <code>cardio_session_started</code> → <code>cardio_session_ended</code>. Cardio adoption must be measurable separately from strength adoption. Dual-modality users (use both cardio and strength features) must be identifiable from event data — they are the highest-value retention segment.</div>
+        <div class="test-pass-criteria">Pass: Cardio adoption separate from strength adoption. Dual-modality users identifiable from having both <code>cardio_session_started</code> and strength <code>session_started</code> events. Cardio completion rate calculable.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="funnels">
+      <div class="test-id">AN-015</div>
+      <div class="test-body">
+        <div class="test-title">Comeback Funnel</div>
+        <div class="test-detail">Three-step comeback funnel: gap of ≥7 days detected → comeback message shown → <code>session_started</code> within 24 hours. The correlation between comeback message and same-day session is the core signal for messaging effectiveness. A user who opens the app after a 7-day gap and does not log a session is a pre-churn warning.</div>
+        <div class="test-pass-criteria">Pass: Correlation between comeback message and same-day session is measurable. Message-to-session rate calculable per comeback message variant. Opens-without-sessions after gap identifiable.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="funnels">
+      <div class="test-id">AN-016</div>
+      <div class="test-body">
+        <div class="test-title">Churn Signal Funnel</div>
+        <div class="test-detail">Three-signal churn model: <code>last_session_date</code> → no activity for 14 days → <code>app_opened_no_session</code> (opened but didn't log). Churn is defined as 30+ days without a logged session. The pre-churn warning window is days 12–29. Users in this window who open but don't log are the highest-priority re-engagement target.</div>
+        <div class="test-pass-criteria">Pass: Pre-churn warning signal identifiable from events. Churn defined as 30+ days no session and consistently measured. <code>app_opened_no_session</code> distinguishable from <code>session_started</code>. Opens-without-sessions countable per user.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 3: Dashboard Definitions -->
+<div class="category-block" id="cat-dashboards">
+  <div class="category-header" onclick="toggleCategory('cat-dashboards')">
+    <span style="font-size:14px">&#9632;</span>
+    <span class="category-title">3. Dashboard Definitions</span>
+    <span class="category-count">7 tests · AN-017–AN-023</span>
+    <span class="category-chevron">▼</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="dashboards">
+      <div class="test-id">AN-017</div>
+      <div class="test-body">
+        <div class="test-title">North Star Dashboard</div>
+        <div class="test-detail">One primary metric: Weekly Active Loggers (users who log ≥1 session in a rolling 7-day window). This metric must be visible in App Store Connect or an equivalent analytics tool within 48 hours of any session event. It must update at least daily. All other metrics are secondary to this one number.</div>
+        <div class="test-pass-criteria">Pass: Weekly Active Loggers metric defined, measurable, and updated at least daily. Visible in App Store Connect within 48 hours of any session. Historical trend visible (not just current value).</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="dashboards">
+      <div class="test-id">AN-018</div>
+      <div class="test-body">
+        <div class="test-title">Retention Dashboard</div>
+        <div class="test-detail">D1/D7/D30/D90 retention by install cohort, breakable down by onboarding goal (strength/consistency/body composition). This dashboard answers whether different user goals produce different retention curves — a core product hypothesis. Cohort filtering by goal must work without requiring a database join.</div>
+        <div class="test-pass-criteria">Pass: Retention curves visible for each install cohort. Cohort filtering by onboarding goal works. D1/D7/D30/D90 breakpoints all present. Week-over-week trend visible for each retention milestone.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="dashboards">
+      <div class="test-id">AN-019</div>
+      <div class="test-body">
+        <div class="test-title">Feature Adoption Dashboard</div>
+        <div class="test-detail">Percentage of MAU who used each major feature at least once in the last 30 days. Features tracked: Trainer tab, Progress drill-downs, RPE logging, drop sets, cardio sessions. Adoption percentage must be calculable for each feature independently. Week-over-week trend visible to detect adoption growth or stall.</div>
+        <div class="test-pass-criteria">Pass: Adoption % calculable for each of the 5 named features. Trend visible week-over-week. A feature that didn't exist in a prior period does not create a false decline. All 5 features have named, stable <code>feature_name</code> values in events.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="dashboards">
+      <div class="test-id">AN-020</div>
+      <div class="test-body">
+        <div class="test-title">Coaching Engagement Dashboard</div>
+        <div class="test-detail">Two event counts: <code>coaching_note_shown</code> vs. <code>coaching_note_expanded</code>. Ratio = coaching engagement rate. This must be calculable per coaching note type: post-set, readiness, trainer, summary. The lowest-engagement note type is a product signal — either the content is weak or the placement is wrong.</div>
+        <div class="test-pass-criteria">Pass: Engagement rate calculable per coaching note type. Four note types (post-set, readiness, trainer, summary) each have distinct <code>note_type</code> values. Trend visible over time. Lowest-engagement type identifiable without manual query.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="dashboards">
+      <div class="test-id">AN-021</div>
+      <div class="test-body">
+        <div class="test-title">Funnel Health Dashboard</div>
+        <div class="test-detail">Each of the 8 defined funnels (AN-009–AN-016) must have a live conversion rate visible in a single view. An alert must be configured for any funnel whose conversion rate drops more than 15% week-over-week. This dashboard is the first thing the analytics lead checks each Monday morning.</div>
+        <div class="test-pass-criteria">Pass: All 8 funnels have current conversion rates visible. Week-over-week delta visible for each funnel. Alert configured for &gt;15% week-over-week drop in any funnel. Dashboard updates within 24 hours of any event.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="dashboards">
+      <div class="test-id">AN-022</div>
+      <div class="test-body">
+        <div class="test-title">Error Rate Dashboard</div>
+        <div class="test-detail"><code>input_validation_error</code> count, <code>error_recovered</code> rate, and <code>error_abandoned</code> rate by field name and error type. The top 3 error types by abandonment rate must be identifiable within 48 hours of launch. High abandonment on a specific field is a UX failure requiring immediate attention.</div>
+        <div class="test-pass-criteria">Pass: Top 3 error types by abandonment rate identifiable within 48 hours of launch. Error rates breakable by <code>field_name</code> and <code>error_type</code>. Recovery rate vs. abandonment rate visible as a ratio per error type.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="dashboards">
+      <div class="test-id">AN-023</div>
+      <div class="test-body">
+        <div class="test-title">Session Quality Dashboard</div>
+        <div class="test-detail">Three session quality metrics: median session duration, median set count per session, median exercises per session. Breakdowns available by cohort (onboarding goal, fitness level, equipment). These metrics answer whether users are having substantive training sessions or skimming the surface of the app.</div>
+        <div class="test-pass-criteria">Pass: All three metrics calculable from <code>session_started</code>/<code>session_ended</code> events. Breakdown by onboarding goal, fitness level, and equipment available. Median (not mean) used to avoid distortion by outliers. Week-over-week trend visible.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 4: A/B Test Design -->
+<div class="category-block" id="cat-abtests">
+  <div class="category-header" onclick="toggleCategory('cat-abtests')">
+    <span style="font-size:14px">&#8942;</span>
+    <span class="category-title">4. A/B Test Design</span>
+    <span class="category-count">6 tests · AN-024–AN-029</span>
+    <span class="category-chevron">▼</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="abtests">
+      <div class="test-id">AN-024</div>
+      <div class="test-body">
+        <div class="test-title">Test Hypothesis</div>
+        <div class="test-detail">Every A/B test must have a written hypothesis in the exact format: "If we [change], then [metric] will [direction] because [reason]." The metric named must be measurable from existing events — no new instrumentation required to evaluate the hypothesis. This prevents starting tests that cannot be concluded.</div>
+        <div class="test-pass-criteria">Pass: Hypothesis exists in the specified format before test launches. Metric named is measurable from existing event schema. No new instrumentation required to evaluate the test result. Hypothesis is filed in a doc accessible to the full team.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="abtests">
+      <div class="test-id">AN-025</div>
+      <div class="test-body">
+        <div class="test-title">Sample Size Calculation</div>
+        <div class="test-detail">Minimum sample size must be calculated before the test starts, based on expected effect size and 80% statistical power. The test must not be evaluated before reaching minimum sample size — early peeking at results is not permitted. Sample size calculation must be documented alongside the hypothesis.</div>
+        <div class="test-pass-criteria">Pass: Sample size documented before test launches. Calculation based on expected effect size and 80% power. Test not evaluated before minimum sample reached. Calculation methodology documented (e.g., which calculator or formula used).</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="abtests">
+      <div class="test-id">AN-026</div>
+      <div class="test-body">
+        <div class="test-title">Single Variable Principle</div>
+        <div class="test-detail">Each test changes exactly one variable. The test spec must list all elements that remain unchanged to confirm isolation. No test simultaneously changes copy and layout, or metric and trigger. If a proposed test would require changing two variables, it must be split into two sequential tests.</div>
+        <div class="test-pass-criteria">Pass: Test spec lists all unchanged elements alongside the one changed variable. No test changes both copy and layout simultaneously. Test reviewer confirms single-variable isolation before launch approval.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="abtests">
+      <div class="test-id">AN-027</div>
+      <div class="test-body">
+        <div class="test-title">Guardrail Metrics</div>
+        <div class="test-detail">Every test must have at least one guardrail metric — a metric that would trigger early stopping if it drops below a defined threshold even if the primary metric improves. Example: session completion rate must not drop more than 10% in any variant. The threshold must be specified before the test starts, not after results are visible.</div>
+        <div class="test-pass-criteria">Pass: Guardrail metric defined and threshold specified before test launches. Guardrail monitored daily during test run. Early-stopping protocol documented: who is notified, who makes the call, how fast the test is stopped.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="abtests">
+      <div class="test-id">AN-028</div>
+      <div class="test-body">
+        <div class="test-title">Test Duration</div>
+        <div class="test-detail">Each test runs for at least 2 full weeks (to capture weekday vs. weekend behavior patterns) and at most 8 weeks. Start and end dates must be set before the test launches. No test is extended past 8 weeks without a documented reason — extended tests are a signal that the hypothesis was wrong or the metric is too noisy.</div>
+        <div class="test-pass-criteria">Pass: Start and end dates set before launch. Minimum duration 2 weeks. Maximum duration 8 weeks unless documented extension reason exists. Extension requests require team review, not unilateral decision.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="abtests">
+      <div class="test-id">AN-029</div>
+      <div class="test-body">
+        <div class="test-title">Rollout Decision Criteria</div>
+        <div class="test-detail">The decision rule must be written before the test launches: "If metric X improves by Y% with p&lt;0.05, ship variant; if not, ship control." No post-hoc rationalization of results is permitted. If the result is inconclusive, ship control and document why the test failed to reach significance — the failure is data.</div>
+        <div class="test-pass-criteria">Pass: Decision rule written before launch. Rule specifies metric, improvement threshold, and significance level. Inconclusive results default to shipping control. Post-hoc metric switching explicitly prohibited in team norms.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 5: Data Integrity -->
+<div class="category-block" id="cat-integrity">
+  <div class="category-header" onclick="toggleCategory('cat-integrity')">
+    <span style="font-size:14px">&#9679;</span>
+    <span class="category-title">5. Data Integrity</span>
+    <span class="category-count">8 tests · AN-030–AN-037</span>
+    <span class="category-chevron">▼</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="integrity">
+      <div class="test-id">AN-030</div>
+      <div class="test-body">
+        <div class="test-title">Duplicate Event Prevention</div>
+        <div class="test-detail">No event fires more than once per user action. This is most likely to fail for <code>set_logged</code> (double-tap on a submit button) and <code>session_ended</code> (background/foreground transitions). Duplicate events corrupt funnel conversion rates and session quality metrics irreversibly.</div>
+        <div class="test-pass-criteria">Pass: Log a single set; confirm exactly one <code>set_logged</code> event in the analytics stream. Terminate a session; confirm exactly one <code>session_ended</code> event. Test across double-tap, background/foreground, and force-quit scenarios.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="integrity">
+      <div class="test-id">AN-031</div>
+      <div class="test-body">
+        <div class="test-title">UUID Stability</div>
+        <div class="test-detail">Exercise IDs and session IDs must be stable across app launches and data migrations. An exercise logged on Day 1 must have the same UUID when queried on Day 30 after multiple app relaunches. UUID instability makes exercise-level analytics impossible and breaks the coaching narrative engine's historical lookup.</div>
+        <div class="test-pass-criteria">Pass: Exercise logged on Day 1 has the same UUID on Day 30 after multiple relaunches. UUID stable across app updates. UUID stable if user deletes and reinstalls (exercise UUIDs are compile-time constants, not generated at runtime).</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="integrity">
+      <div class="test-id">AN-032</div>
+      <div class="test-body">
+        <div class="test-title">Timestamp Accuracy</div>
+        <div class="test-detail">All events must have device-local timestamps in UTC. No event timestamp should be in the future or more than 1 second in the past at time of firing. A critical edge case: changing the device timezone mid-session must not retroactively shift existing session timestamps or corrupt duration calculations.</div>
+        <div class="test-pass-criteria">Pass: Timestamps correct across timezone changes tested by changing device timezone mid-session. No future timestamps. UTC format consistent across all events. Duration fields calculated from UTC timestamps, not local time.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="integrity">
+      <div class="test-id">AN-033</div>
+      <div class="test-body">
+        <div class="test-title">Null Safety</div>
+        <div class="test-detail">No event fires with a null or empty required field. This includes <code>exercise_id</code> on <code>set_logged</code>, <code>tab_name</code> on <code>tab_viewed</code>, and <code>note_type</code> on <code>coaching_note_shown</code>. Null fields in analytics events cannot be fixed retroactively — they are permanent gaps in the data.</div>
+        <div class="test-pass-criteria">Pass: All required event properties have non-null, non-empty values in 100% of fired events. Static analysis or runtime assertions confirm required fields are non-optional in the event schema. Zero null events in 1000 consecutive test events.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="integrity">
+      <div class="test-id">AN-034</div>
+      <div class="test-body">
+        <div class="test-title">Backfill Accuracy</div>
+        <div class="test-detail">For a fully local app, this applies to analytics export scenarios: if a session is logged and the analytics event is queued locally before export, the event timestamp must reflect when the session happened, not when the export occurred. This matters for retention calculations — an event exported 3 days after the session should not appear as a D3 session.</div>
+        <div class="test-pass-criteria">Pass: Event timestamp reflects time of occurrence, not time of export. If analytics are exported in batch, timestamps are not normalized to export time. Offline sessions (if tested) preserve original timestamps when later synced.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="integrity">
+      <div class="test-id">AN-035</div>
+      <div class="test-body">
+        <div class="test-title">Schema Versioning</div>
+        <div class="test-detail">The event schema must have a version field. Breaking changes to event structure — renaming a field, removing a field, changing a field's type — must increment the schema version. Analytics consumers must be able to filter by schema version so historical data remains analyzable after a schema change.</div>
+        <div class="test-pass-criteria">Pass: Every event includes a <code>schema_version</code> field. Breaking changes increment the version. Historical data queryable with either old or new schema version. No breaking change silently invalidates historical event data.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="integrity">
+      <div class="test-id">AN-036</div>
+      <div class="test-body">
+        <div class="test-title">Sampling Strategy</div>
+        <div class="test-detail">If event volume requires sampling, the sampling rate must be documented and consistent. Most importantly: the same user must always fall in the same sample bucket. Non-deterministic sampling by user_id corrupts cohort analysis — a user who appears in 70% of samples looks like a lighter user than they actually are.</div>
+        <div class="test-pass-criteria">Pass: If sampling is used, same user always in the same sample bucket (deterministic sampling by <code>user_id</code> or equivalent stable identifier). Sampling rate documented and visible in the analytics dashboard. Sampled metrics clearly labeled as sampled.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="integrity">
+      <div class="test-id">AN-037</div>
+      <div class="test-body">
+        <div class="test-title">Data Completeness Check</div>
+        <div class="test-detail">For every 100 <code>session_started</code> events, at least 80 <code>session_ended</code> events are expected — accounting for crashes, force-quits, and battery deaths. A completion rate below 80% in TestFlight signals that sessions are being lost, not just abandoned, which corrupts duration and quality metrics.</div>
+        <div class="test-pass-criteria">Pass: Session completion rate ≥80% in TestFlight. Alert configured if rate drops below 70%. Incomplete sessions (started but no ended) are distinguishable from abandoned sessions in the analytics stream.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 6: Privacy & Ethics -->
+<div class="category-block" id="cat-privacy">
+  <div class="category-header" onclick="toggleCategory('cat-privacy')">
+    <span style="font-size:14px">&#9632;</span>
+    <span class="category-title">6. Privacy &amp; Instrumentation Ethics</span>
+    <span class="category-count">7 tests · AN-038–AN-044</span>
+    <span class="category-chevron">▼</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="privacy">
+      <div class="test-id">AN-038</div>
+      <div class="test-body">
+        <div class="test-title">No PII in Events</div>
+        <div class="test-detail">No event may contain a user's name, email, phone number, or any directly identifying information. This includes indirect identifiers: a combination of fitness level + equipment + goal that uniquely identifies a person in a small cohort. The test requires a non-engineer to review the full event schema and confirm zero PII fields.</div>
+        <div class="test-pass-criteria">Pass: Event schema reviewed by a non-engineer who confirms zero PII fields. Review is documented with the reviewer's name and date. Schema review is repeated after any new event or field is added.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="privacy">
+      <div class="test-id">AN-039</div>
+      <div class="test-body">
+        <div class="test-title">Aggregate-Only Off-Device</div>
+        <div class="test-detail">Any data that leaves the device must be aggregate — not individual session records. H.O.N. is a local-first app. The App Store privacy label must reflect this. If any analytics pipeline sends individual events off-device (e.g., App Store Connect metrics, TestFlight crash reports), explicit user consent must be documented.</div>
+        <div class="test-pass-criteria">Pass: No individual session data transmitted without explicit user consent. Any off-device data pipeline is aggregate-only or clearly disclosed. Privacy label accurately reflects all off-device data flows.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="privacy">
+      <div class="test-id">AN-040</div>
+      <div class="test-body">
+        <div class="test-title">HealthKit Data Never in Analytics</div>
+        <div class="test-detail">HealthKit-derived data — HRV, heart rate, sleep, step count, active energy — must never appear in any analytics event. This is both a privacy requirement and an App Store Review compliance requirement. The event schema must contain no HealthKit field names, confirmed by schema review.</div>
+        <div class="test-pass-criteria">Pass: Event schema contains no HealthKit field names (HRV, heart_rate, sleep_hours, step_count, active_energy, etc.). Confirmed by schema review. HealthKit data stays on-device and is never exported, logged, or transmitted in any analytics pipeline.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="privacy">
+      <div class="test-id">AN-041</div>
+      <div class="test-body">
+        <div class="test-title">Opt-Out Respected</div>
+        <div class="test-detail">If a user opts out of analytics, zero events must fire from that point forward — not reduced events, not anonymized events. Zero. The opt-out toggle must be accessible in Settings. After toggling off, the next app session must produce no events in any analytics stream. This must be testable by the QA team without access to backend infrastructure.</div>
+        <div class="test-pass-criteria">Pass: Toggle analytics off; verify zero events in stream for subsequent sessions. Opt-out persists across app restarts. Opt-out respected immediately — not queued events sent before the toggle takes effect.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="privacy">
+      <div class="test-id">AN-042</div>
+      <div class="test-body">
+        <div class="test-title">Retention Policy Documented</div>
+        <div class="test-detail">Analytics data must have a defined retention period — recommended 2 years for a product at this stage. The policy must be written, reviewed by the team, and communicated to users in a privacy policy or equivalent disclosure. Data beyond the retention period must be automatically deleted, not manually managed.</div>
+        <div class="test-pass-criteria">Pass: Retention policy written and communicated to team before launch. Retention period defined (e.g., 2 years). Automatic deletion mechanism exists for data past retention period. Policy accessible to users in privacy policy.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="privacy">
+      <div class="test-id">AN-043</div>
+      <div class="test-body">
+        <div class="test-title">App Store Privacy Label Accurate</div>
+        <div class="test-detail">The Privacy Nutrition Label in App Store Connect must accurately reflect all data collected. Every event property type must map to a disclosed data category. If <code>fitness_level</code> is collected, the label must disclose "Health &amp; Fitness" data. If device crash data is collected, the label must disclose "Crash Data." The label must be updated whenever new events are added.</div>
+        <div class="test-pass-criteria">Pass: Every event property type maps to a disclosed data category in the privacy label. Label reviewed and updated before each App Store submission. Discrepancy between label and actual collection is a P0 issue.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="privacy">
+      <div class="test-id">AN-044</div>
+      <div class="test-body">
+        <div class="test-title">Minimal Collection Principle</div>
+        <div class="test-detail">No event may collect more fields than are required to answer the business question it was designed to answer. Each event must have a documented "question this answers." No field exists without a question it answers. Any field that cannot be linked to a specific business question must be removed before launch.</div>
+        <div class="test-pass-criteria">Pass: Each event has a documented "question this answers." No field exists without a linked question. Schema reviewed for orphan fields before launch. Any new field added post-launch requires a documented business question before it ships.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<div class="separator"></div>
+
+<!-- Section 2: Pre-Launch Gates -->
+<div class="section-heading">Section 2 — Analytics Pre-Launch Gates</div>
+
+<div class="tier-label tier-a">Gate 1 — Instrumentation Completeness (must pass before TestFlight)</div>
+<div class="gate-card" style="margin-bottom:20px;">
+  <ul class="gate-list">
+    <li><div class="gate-icon">!</div><span>All 8 core event types (AN-001–AN-008) verified firing correctly with correct fields in debug build</span></li>
+    <li><div class="gate-icon">!</div><span>Zero null required fields in 500 consecutive test events across all event types</span></li>
+    <li><div class="gate-icon">!</div><span>UUID stability confirmed across 3 app relaunches with same exercise data</span></li>
+    <li><div class="gate-icon">!</div><span>Schema version field present in every event</span></li>
+    <li><div class="gate-icon">!</div><span>Non-engineer PII review completed and documented (AN-038)</span></li>
+    <li><div class="gate-icon">!</div><span>HealthKit field exclusion confirmed by schema review (AN-040)</span></li>
+  </ul>
+</div>
+
+<div class="tier-label tier-b">Gate 2 — Dashboard Readiness (must pass before App Store submission)</div>
+<div class="gate-card" style="margin-bottom:20px;">
+  <ul class="gate-list">
+    <li><div class="gate-icon">!</div><span>All 8 funnels (AN-009–AN-016) have live conversion rates visible in the funnel health dashboard</span></li>
+    <li><div class="gate-icon">!</div><span>North Star metric (Weekly Active Loggers) updating within 24 hours of any session event</span></li>
+    <li><div class="gate-icon">!</div><span>Retention dashboard showing D1/D7 retention from TestFlight cohort data</span></li>
+    <li><div class="gate-icon">!</div><span>Alert configured for &gt;15% week-over-week drop in any funnel conversion rate</span></li>
+    <li><div class="gate-icon">!</div><span>App Store Privacy Nutrition Label reviewed and confirmed accurate against current event schema</span></li>
+    <li><div class="gate-icon">!</div><span>Opt-out flow tested and confirmed producing zero events post-toggle</span></li>
+  </ul>
+</div>
+
+<div class="section-heading">Instrumentation Health Metrics Grid</div>
+
+<div class="metrics-grid">
+  <div class="metric-card">
+    <div class="metric-card-title">Data Quality</div>
+    <div class="metric-row"><span class="metric-name">Event completeness rate</span><span class="metric-target positive">&gt;99%</span></div>
+    <div class="metric-row"><span class="metric-name">Null field rate (required fields)</span><span class="metric-target positive">&lt;0.1%</span></div>
+    <div class="metric-row"><span class="metric-name">Duplicate event rate</span><span class="metric-target positive">&lt;0.5%</span></div>
+    <div class="metric-row"><span class="metric-name">Schema version consistency</span><span class="metric-target positive">100%</span></div>
+    <div class="metric-row"><span class="metric-name">Timestamp accuracy (UTC)</span><span class="metric-target positive">100%</span></div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-card-title">Funnel Health</div>
+    <div class="metric-row"><span class="metric-name">Onboarding completion</span><span class="metric-target positive">&gt;85%</span></div>
+    <div class="metric-row"><span class="metric-name">First workout completion</span><span class="metric-target positive">&gt;80%</span></div>
+    <div class="metric-row"><span class="metric-name">Trainer plan start rate</span><span class="metric-target amber">&gt;40%</span></div>
+    <div class="metric-row"><span class="metric-name">Session ended vs. started</span><span class="metric-target positive">&gt;80%</span></div>
+    <div class="metric-row"><span class="metric-name">Comeback message → session</span><span class="metric-target amber">&gt;30%</span></div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-card-title">Engagement Signals</div>
+    <div class="metric-row"><span class="metric-name">Coaching note engagement rate</span><span class="metric-target amber">&gt;25%</span></div>
+    <div class="metric-row"><span class="metric-name">Progress tab drill-down rate</span><span class="metric-target amber">&gt;35%</span></div>
+    <div class="metric-row"><span class="metric-name">Trainer tab adoption (D30)</span><span class="metric-target amber">&gt;40%</span></div>
+    <div class="metric-row"><span class="metric-name">RPE logging adoption</span><span class="metric-target amber">&gt;30%</span></div>
+    <div class="metric-row"><span class="metric-name">Dual-modality users (D30)</span><span class="metric-target amber">&gt;20%</span></div>
+  </div>
+</div>
+
+<div class="separator"></div>
+
+<!-- Section 3: Definition of Done -->
+<div class="section-heading">Section 3 — Definition of Done for Analytics</div>
+
+<div class="done-card">
+  <p>Analytics instrumentation is done when we can answer our five most important product questions — is the onboarding funnel healthy, are users coming back, which features are being used, is the coaching resonating, and where are users failing — without writing any new code. Done means all 44 criteria in this document are green, the funnel health dashboard is live and alerting, the privacy label is accurate, and a teammate who joined the team yesterday can pull a retention curve from App Store Connect without needing to ask how. Done does not mean we have instrumented everything imaginable — it means we have instrumented exactly what we need to make product decisions with confidence, nothing more. Every field in our event schema has a question it answers. Every event that fires has a dashboard that reads it. Every dashboard has an owner who checks it on Mondays. Done also means we have drawn a hard line: no HealthKit data in events, no PII in any field, no individual records leaving the device, and opt-out produces zero events. Instrumentation that violates user trust is not instrumentation — it is a liability. We ship when the data is honest, complete, and useful. Not before.</p>
+</div>
+
+<div class="separator"></div>
+
+<!-- Section 4: LLM Instrumentation Review Prompt -->
+<div class="section-heading">Section 4 — LLM Instrumentation Review Prompt</div>
+
+<p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6;">Use this prompt when planning instrumentation for a new feature. Paste it into your LLM of choice with the feature name and description filled in. Review the output against the event schema and funnel health dashboard before writing any instrumentation code.</p>
+
+<div class="prompt-card">
+  <div class="prompt-label">Instrumentation Review Prompt Template</div>
+  <div class="prompt-body">You are an analytics instrumentation reviewer for H.O.N., an iOS fitness coaching app. H.O.N. is local-first (no backend server), dark mode only, with five tabs: Home, Workout, Progress, Insights, Trainer. All analytics are opt-in. No HealthKit data may appear in any event. No PII may appear in any field.
+
+Feature name: [FEATURE NAME]
+Feature description: [DESCRIPTION — one to three sentences explaining what the feature does and what user action it enables]
+
+Please provide:
+
+1. EVENTS NEEDED
+   List each event that should fire for this feature. For each event:
+   - Event name (snake_case)
+   - Required fields and their types
+   - When it fires (exact trigger condition)
+   - The business question this event answers
+
+2. FUNNELS IMPACTED
+   Which of the 8 defined funnels does this feature affect?
+   - Onboarding / First Workout / Trainer Adoption / Feature Depth / Retention / Cardio Adoption / Comeback / Churn Signal
+   - Does this feature add a new step to any funnel, or does it create a new funnel?
+
+3. DASHBOARD UPDATES REQUIRED
+   Which dashboards need to be updated to reflect this feature?
+   - North Star / Retention / Feature Adoption / Coaching Engagement / Funnel Health / Error Rate / Session Quality
+   - Is a new dashboard or metric card needed?
+
+4. PRIVACY FLAGS
+   - Does any proposed event field risk containing PII? If so, how should it be redesigned?
+   - Does this feature interact with HealthKit? If so, confirm that no HealthKit data appears in events.
+   - Does this feature require an update to the App Store Privacy Nutrition Label?
+
+5. ESTIMATED INSTRUMENTATION EFFORT
+   Simple (1–2 events, no new funnels, no dashboard changes) / Medium (3–5 events, 1–2 funnel steps, 1 dashboard update) / Complex (6+ events, new funnel, new dashboard, privacy review required)</div>
+  <div class="prompt-note">Replace <code>[FEATURE NAME]</code> and <code>[DESCRIPTION]</code> before sending. Review all output against the current event schema (AN-033, AN-035) before writing any instrumentation code. Any event the LLM proposes that is not in the existing schema requires a schema version increment (AN-035).</div>
+</div>
+
+<script>
+const STORAGE_KEY = 'hon_analytics_review_status';
+
+function loadStatuses() {
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  document.querySelectorAll('.test-case').forEach(tc => {
+    const id = tc.querySelector('.test-id').textContent;
+    if (saved[id]) {
+      const sel = tc.querySelector('.status-select');
+      sel.value = saved[id];
+      applyStatus(tc, sel, saved[id]);
+    }
+  });
+  updateStats();
+}
+
+function updateStatus(selectEl) {
+  const tc = selectEl.closest('.test-case');
+  const id = tc.querySelector('.test-id').textContent;
+  const status = selectEl.value;
+  applyStatus(tc, selectEl, status);
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  saved[id] = status;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+  updateStats();
+}
+
+function applyStatus(tc, sel, status) {
+  tc.className = 'test-case status-' + status;
+  sel.className = 'status-select status-' + status;
+  tc.dataset.status = status;
+}
+
+function updateStats() {
+  const all = document.querySelectorAll('.test-case');
+  let open = 0, pass = 0, fail = 0, partial = 0;
+  all.forEach(tc => {
+    switch(tc.dataset.status) {
+      case 'open':    open++;    break;
+      case 'pass':    pass++;    break;
+      case 'fail':    fail++;    break;
+      case 'partial': partial++; break;
+    }
+  });
+  document.getElementById('stat-total').textContent = all.length + ' total';
+  document.getElementById('stat-open').textContent = (open + fail) + ' open/fail';
+  document.getElementById('stat-partial').textContent = partial + ' partial';
+  document.getElementById('stat-pass').textContent = pass + ' passed';
+}
+
+function filterTests(status, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.test-case').forEach(tc => {
+    if (status === 'all') {
+      tc.style.display = '';
+    } else {
+      tc.style.display = tc.dataset.status === status ? '' : 'none';
+    }
+  });
+}
+
+function toggleCategory(id) {
+  const block = document.getElementById(id);
+  block.classList.toggle('collapsed');
+}
+
+loadStatuses();
+</script>
+</body>
+</html>

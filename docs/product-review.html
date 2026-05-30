@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H.O.N. — Product Review Criteria</title>
+<style>
+  :root {
+    --bg:       #111111;
+    --card:     #1c1c1e;
+    --border:   rgba(255,255,255,0.07);
+    --amber:    #f59e0b;
+    --positive: #34d399;
+    --negative: #f87171;
+    --warning:  #fbbf24;
+    --muted:    rgba(255,255,255,0.4);
+    --text:     rgba(255,255,255,0.88);
+    --text2:    rgba(255,255,255,0.55);
+    --blue:     #60a5fa;
+    --purple:   #a78bfa;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 32px 20px 64px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .header { margin-bottom: 36px; }
+  .header-top {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .logo {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber);
+  }
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--amber), transparent);
+    opacity: 0.3;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    color: var(--text);
+  }
+  .subtitle {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+
+  .section-heading {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin: 32px 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-heading::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .stats {
+    display: flex;
+    gap: 6px;
+    margin: 20px 0 28px;
+    flex-wrap: wrap;
+  }
+  .stat-pill {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.04em;
+  }
+  .stat-open    { background: rgba(248,113,113,0.15); color: var(--negative); }
+  .stat-pass    { background: rgba(52,211,153,0.15);  color: var(--positive); }
+  .stat-partial { background: rgba(251,191,36,0.15);  color: var(--warning); }
+  .stat-total   { background: rgba(255,255,255,0.08); color: var(--text2); }
+
+  .filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover  { border-color: var(--amber); color: var(--amber); }
+  .filter-btn.active { background: var(--amber); border-color: var(--amber); color: #111; }
+
+  /* Category block */
+  .category-block {
+    margin-bottom: 24px;
+  }
+  .category-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .category-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.04em;
+  }
+  .category-count {
+    font-size: 11px;
+    color: var(--text2);
+    background: rgba(255,255,255,0.06);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .category-chevron {
+    margin-left: auto;
+    color: var(--text2);
+    font-size: 11px;
+    transition: transform 0.2s;
+  }
+  .category-block.collapsed .category-chevron { transform: rotate(-90deg); }
+  .category-block.collapsed .test-list { display: none; }
+
+  /* Test case */
+  .test-case {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transition: border-color 0.2s;
+  }
+  .test-case:hover { border-color: rgba(255,255,255,0.12); }
+  .test-case.status-pass   { border-left: 3px solid var(--positive); }
+  .test-case.status-fail   { border-left: 3px solid var(--negative); }
+  .test-case.status-partial{ border-left: 3px solid var(--warning); }
+  .test-case.status-open   { border-left: 3px solid rgba(255,255,255,0.15); }
+
+  .test-id {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    letter-spacing: 0.06em;
+    color: var(--amber);
+    background: rgba(245,158,11,0.1);
+    padding: 2px 7px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .test-body { flex: 1; }
+
+  .test-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+
+  .test-detail {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.5;
+    margin-bottom: 6px;
+  }
+
+  .test-pass-criteria {
+    font-size: 11px;
+    color: rgba(52,211,153,0.8);
+    background: rgba(52,211,153,0.06);
+    border: 1px solid rgba(52,211,153,0.12);
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+
+  .status-select {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .status-open    { background: rgba(248,113,113,0.15); color: var(--negative); }
+  .status-pass    { background: rgba(52,211,153,0.15);  color: var(--positive); }
+  .status-fail    { background: rgba(248,113,113,0.3);  color: #fca5a5; }
+  .status-partial { background: rgba(251,191,36,0.15);  color: var(--warning); }
+
+  /* Gate list */
+  .gate-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .gate-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 13px;
+    color: var(--text2);
+  }
+  .gate-item:last-child { border-bottom: none; }
+  .gate-num {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(245,158,11,0.15);
+    color: var(--amber);
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    font-family: 'SF Mono', monospace;
+  }
+  .gate-text { color: var(--text); line-height: 1.5; }
+
+  /* Metrics grid */
+  .metrics-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 700px) {
+    .metrics-grid-3 { grid-template-columns: 1fr; }
+  }
+
+  .metric-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .metric-card-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 12px;
+  }
+
+  .metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 12px;
+  }
+  .metric-row:last-child { border-bottom: none; }
+  .metric-name { color: var(--text2); flex: 1; line-height: 1.4; }
+  .metric-target {
+    font-weight: 600;
+    color: var(--text);
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .metric-target.positive { color: var(--positive); }
+  .metric-target.amber    { color: var(--amber); }
+  .metric-target.blue     { color: var(--blue); }
+
+  .done-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--positive);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-top: 16px;
+  }
+  .done-card p {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.8;
+  }
+
+  /* LLM prompt card */
+  .prompt-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--amber);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-top: 16px;
+  }
+  .prompt-card-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 14px;
+  }
+  .prompt-params {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .prompt-param {
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    letter-spacing: 0.04em;
+    padding: 3px 10px;
+    border-radius: 4px;
+    background: rgba(245,158,11,0.12);
+    color: var(--amber);
+    border: 1px solid rgba(245,158,11,0.2);
+  }
+  .prompt-body {
+    font-size: 12px;
+    color: var(--text2);
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    padding: 16px 18px;
+    line-height: 1.7;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    white-space: pre-wrap;
+  }
+  .prompt-outputs {
+    margin-top: 14px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  @media (max-width: 600px) {
+    .prompt-outputs { grid-template-columns: 1fr; }
+  }
+  .prompt-output-item {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 12px;
+  }
+  .prompt-output-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin-bottom: 4px;
+  }
+  .prompt-output-desc {
+    color: var(--text2);
+    line-height: 1.4;
+  }
+
+  .separator {
+    height: 1px;
+    background: var(--border);
+    margin: 28px 0;
+  }
+
+  .intro-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 28px;
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.7;
+    border-left: 3px solid var(--amber);
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 20px 14px 48px; }
+    .test-case { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <span class="logo">H.O.N.</span>
+    <div class="divider-line"></div>
+  </div>
+  <h1>Product Review Criteria</h1>
+  <div class="subtitle">48 must-pass product criteria · Feature gates · OKR quality checks · Roadmap health · Definition of done · Last updated: 2026-05-30</div>
+</div>
+
+<div class="stats">
+  <span class="stat-pill stat-total" id="stat-total">48 total</span>
+  <span class="stat-pill stat-open" id="stat-open">— open</span>
+  <span class="stat-pill stat-partial" id="stat-partial">— partial</span>
+  <span class="stat-pill stat-pass" id="stat-pass">— passed</span>
+</div>
+
+<div class="filters">
+  <button class="filter-btn active" onclick="filterTests('all', this)">All</button>
+  <button class="filter-btn" onclick="filterTests('open', this)">Open</button>
+  <button class="filter-btn" onclick="filterTests('pass', this)">Passed</button>
+  <button class="filter-btn" onclick="filterTests('fail', this)">Failed</button>
+  <button class="filter-btn" onclick="filterTests('partial', this)">Partial</button>
+</div>
+
+<!-- Section 1 -->
+<div class="section-heading">Section 1 — 48 Must-Pass Product Criteria</div>
+
+<!-- Category 1: Feature Definition Completeness -->
+<div class="category-block" id="cat-definition">
+  <div class="category-header" onclick="toggleCategory('cat-definition')">
+    <span style="font-size:14px">&#9998;</span>
+    <span class="category-title">1. Feature Definition Completeness</span>
+    <span class="category-count">8 criteria</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="definition">
+      <div class="test-id">PR-001</div>
+      <div class="test-body">
+        <div class="test-title">Problem Statement</div>
+        <div class="test-detail">Every feature entering development must have a written one-sentence problem statement in the format: "Users who [context] cannot [do X] because [root cause]." This is the non-negotiable first artifact before any design or engineering work begins.</div>
+        <div class="test-pass-criteria">Pass: Problem statement exists, references a specific user segment (not "users in general"), and is falsifiable — meaning it could be proven wrong by data.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="definition">
+      <div class="test-id">PR-002</div>
+      <div class="test-body">
+        <div class="test-title">Success Metric</div>
+        <div class="test-detail">Each feature has exactly one primary success metric defined and agreed upon before the build starts. Secondary metrics are permitted but the primary drives go/no-go decisions. The metric must be answerable without a manual data pull or a human judgment call.</div>
+        <div class="test-pass-criteria">Pass: The metric is quantitative, time-bound, and measurable without manual data collection — a query or dashboard should answer it automatically.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="definition">
+      <div class="test-id">PR-003</div>
+      <div class="test-body">
+        <div class="test-title">Scope Boundary</div>
+        <div class="test-detail">Every feature spec includes a written "not in scope" list with at least 3 explicit exclusions. This list is written by the PM, reviewed by engineering and design, and treated as a binding constraint for the sprint — not a preference.</div>
+        <div class="test-pass-criteria">Pass: The "not in scope" list exists and specifically prevents the three most likely scope creep additions for this feature type.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="definition">
+      <div class="test-id">PR-004</div>
+      <div class="test-body">
+        <div class="test-title">User Story Coverage</div>
+        <div class="test-detail">Every user-facing interaction in the design has a corresponding user story written in the format: "As [persona], I want [action] so that [outcome]." Stories must map to specific personas from the cohort, not a generic user archetype.</div>
+        <div class="test-pass-criteria">Pass: No interaction exists in the design spec without a corresponding user story. Each story names a real cohort persona category.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="definition">
+      <div class="test-id">PR-005</div>
+      <div class="test-body">
+        <div class="test-title">Edge Case Documentation</div>
+        <div class="test-detail">At least 5 edge cases are documented in the spec before development begins. Edge cases are not bugs to handle later — they are design decisions that must be made now. Undocumented edge cases discovered during development represent a spec failure.</div>
+        <div class="test-pass-criteria">Pass: Edge cases explicitly cover at minimum: empty state, maximum data, error state, first-time use, and returning user with existing data.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="definition">
+      <div class="test-id">PR-006</div>
+      <div class="test-body">
+        <div class="test-title">Dependency Mapping</div>
+        <div class="test-detail">All cross-feature and cross-system dependencies are listed in the spec before the sprint is locked. Dependencies include data model requirements, engine changes, phrase bank additions, and any other feature that must ship first or in parallel.</div>
+        <div class="test-pass-criteria">Pass: No dependency is discovered during development that was not in the pre-build dependency list. Zero "surprise" blockers mid-sprint.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="definition">
+      <div class="test-id">PR-007</div>
+      <div class="test-body">
+        <div class="test-title">Rollback Plan</div>
+        <div class="test-detail">If a feature must be disabled after launch — due to a bug, poor adoption, or a bad data outcome — the rollback path is documented before the feature ships. Rollback should not require a new App Store submission in most cases.</div>
+        <div class="test-pass-criteria">Pass: Rollback takes under 4 hours and does not require a new App Store submission. Feature flag infrastructure tested before submission.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="definition">
+      <div class="test-id">PR-008</div>
+      <div class="test-body">
+        <div class="test-title">Acceptance Criteria Agreement</div>
+        <div class="test-detail">Engineering, Design, and Product have all reviewed and confirmed the same acceptance criteria document before build starts. This review must happen within 7 days of sprint start — not at kickoff months prior.</div>
+        <div class="test-pass-criteria">Pass: All three disciplines have reviewed and confirmed the same document within 7 days of the sprint start date. Sign-off log exists.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 2: User Value Clarity -->
+<div class="category-block" id="cat-value">
+  <div class="category-header" onclick="toggleCategory('cat-value')">
+    <span style="font-size:14px">&#128161;</span>
+    <span class="category-title">2. User Value Clarity</span>
+    <span class="category-count">7 criteria</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="value">
+      <div class="test-id">PR-009</div>
+      <div class="test-body">
+        <div class="test-title">The "So What" Test</div>
+        <div class="test-detail">When the feature is described in one sentence to a non-technical person — someone outside the product team — they should immediately understand why it matters without follow-up questions. If the listener needs context or explanation, the value proposition is not clear enough.</div>
+        <div class="test-pass-criteria">Pass: 3 of 3 non-technical test listeners can explain the feature's value back in their own words without prompting.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="value">
+      <div class="test-id">PR-010</div>
+      <div class="test-body">
+        <div class="test-title">Cohort Mapping</div>
+        <div class="test-detail">At least 3 cohort members (U-01 through U-22) are identified as primary beneficiaries before build starts. "Primary" means the feature directly addresses a documented problem for that cohort member — not a peripheral benefit.</div>
+        <div class="test-pass-criteria">Pass: The feature solves a documented problem for at least 3 named cohort members. Each mapping references a specific pain point in the cohort profile, not a general assumption.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="value">
+      <div class="test-id">PR-011</div>
+      <div class="test-body">
+        <div class="test-title">Frequency of Use</div>
+        <div class="test-detail">Estimated weekly interactions per active user is documented before launch. A feature used once per month and a feature used daily require fundamentally different approaches to design, placement, and coaching integration.</div>
+        <div class="test-pass-criteria">Pass: The frequency estimate exists and is grounded in analogous behavior already observed in the workout log — not a guess or an aspiration.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="value">
+      <div class="test-id">PR-012</div>
+      <div class="test-body">
+        <div class="test-title">Value Without Coaching</div>
+        <div class="test-detail">The feature must deliver its core value to a new user who has never read a tooltip, onboarding explanation, or help document. If the feature only works after training, it is not ready to ship. H.O.N. users are in motion — they do not stop to learn.</div>
+        <div class="test-pass-criteria">Pass: Observational test shows a new user can use the feature correctly without any instruction. No verbal cues from the tester.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="value">
+      <div class="test-id">PR-013</div>
+      <div class="test-body">
+        <div class="test-title">Differential Value</div>
+        <div class="test-detail">The feature provides something the user cannot get from a competing fitness app or a spreadsheet. H.O.N. is not competing on feature count — it is competing on intelligent, context-aware coaching that only works because of the data model underneath it.</div>
+        <div class="test-pass-criteria">Pass: One clear differentiator is documented that is unique to H.O.N.'s data model, coaching system, or identity-affirming voice — not just better UX on a commodity feature.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="value">
+      <div class="test-id">PR-014</div>
+      <div class="test-body">
+        <div class="test-title">Negative Impact Assessment</div>
+        <div class="test-detail">Features are built for a target cohort, but they live in an app used by everyone. A feature that is valuable for U-03 and clutters the experience for U-11 is not ready. Every feature must be assessed for its impact on cohort members who were not its primary target.</div>
+        <div class="test-pass-criteria">Pass: Cohort members outside the primary target can ignore the feature entirely without it adding noise, confusion, or friction to their experience.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="value">
+      <div class="test-id">PR-015</div>
+      <div class="test-body">
+        <div class="test-title">Minimum Viable Version</div>
+        <div class="test-detail">The smallest version that delivers the core user value ships first. Everything beyond that is labeled v2 or later. This is not a compromise — it is discipline. V1 must stand on its own; it cannot rely on v2 to make sense.</div>
+        <div class="test-pass-criteria">Pass: The v1 spec is describable in one paragraph. All additional complexity — edge cases, power user features, personalization layers — is explicitly labeled v2+ in the spec.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 3: OKR Quality -->
+<div class="category-block" id="cat-okr">
+  <div class="category-header" onclick="toggleCategory('cat-okr')">
+    <span style="font-size:14px">&#127919;</span>
+    <span class="category-title">3. OKR Quality</span>
+    <span class="category-count">7 criteria</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="okr">
+      <div class="test-id">PR-016</div>
+      <div class="test-body">
+        <div class="test-title">Objective Clarity</div>
+        <div class="test-detail">Each Objective is qualitative, aspirational, and time-bound. It describes a direction the team wants to move in, not a metric the team wants to hit. Numbers belong in KRs. An O with a number in it is a KR in disguise.</div>
+        <div class="test-pass-criteria">Pass: The Objective contains no number. It describes a direction and a timeframe. A new team member reading it understands where the product is trying to go.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="okr">
+      <div class="test-id">PR-017</div>
+      <div class="test-body">
+        <div class="test-title">Key Result Measurability</div>
+        <div class="test-detail">Every Key Result has a baseline value (what it is today), a target value (what it must be by the review date), and a measurement method (how exactly the number will be pulled). A KR without all three is a wish, not a commitment.</div>
+        <div class="test-pass-criteria">Pass: Each KR can be evaluated true or false without subjective interpretation. Anyone on the team should reach the same verdict from the same data.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="okr">
+      <div class="test-id">PR-018</div>
+      <div class="test-body">
+        <div class="test-title">KR Independence</div>
+        <div class="test-detail">No two Key Results for the same Objective measure the same underlying user behavior. If shipping one feature automatically moves two KRs, those KRs are not independent — and the OKR set is measuring coverage, not impact.</div>
+        <div class="test-pass-criteria">Pass: Achieving any single KR does not automatically achieve any other KR in the same Objective. Each KR requires a distinct behavioral change.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="okr">
+      <div class="test-id">PR-019</div>
+      <div class="test-body">
+        <div class="test-title">Leading vs. Lagging Balance</div>
+        <div class="test-detail">Every Objective has at least one leading indicator KR (something measurable before the outcome is known) and at least one lagging indicator KR (the outcome itself). Leading KRs let the team course-correct. Lagging KRs confirm whether they did.</div>
+        <div class="test-pass-criteria">Pass: Both types are present. The product team can name which KRs are leading and which are lagging — and why the distinction matters for this Objective.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="okr">
+      <div class="test-id">PR-020</div>
+      <div class="test-body">
+        <div class="test-title">OKR Coverage</div>
+        <div class="test-detail">The full OKR set covers the business risks relevant to the current product stage. For a pre-launch founder-led product, this means at minimum: activation (do users complete onboarding?), retention (do users come back?), and product quality (is the core loop working?). Gaps in coverage are blind spots.</div>
+        <div class="test-pass-criteria">Pass: No major business risk for the current stage goes uncovered by the OKR set. The team can map each risk to at least one KR.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="okr">
+      <div class="test-id">PR-021</div>
+      <div class="test-body">
+        <div class="test-title">Stretch Calibration</div>
+        <div class="test-detail">Key Results are set at a 70% confidence level — not guaranteed if the team executes normally, but not a lottery either. KRs the team hits 100% of the time were set too low. KRs the team never hits were set to motivate, not to measure. Both are counterproductive.</div>
+        <div class="test-pass-criteria">Pass: The team rates confidence between 60–80% at the time of setting. Any KR rated above 85% is reset; any rated below 50% is restructured.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="okr">
+      <div class="test-id">PR-022</div>
+      <div class="test-body">
+        <div class="test-title">Retrospective Cadence</div>
+        <div class="test-detail">OKRs have a defined check-in schedule. Quarter-end reviews are not sufficient — the value of OKRs is in mid-period course correction, and that only happens if check-ins are calendared before the quarter begins.</div>
+        <div class="test-pass-criteria">Pass: Check-ins are scheduled at 4-week intervals with a named responsible person who owns each KR. Check-in notes are documented, not just verbal.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 4: Roadmap Coherence -->
+<div class="category-block" id="cat-roadmap">
+  <div class="category-header" onclick="toggleCategory('cat-roadmap')">
+    <span style="font-size:14px">&#128506;</span>
+    <span class="category-title">4. Roadmap Coherence</span>
+    <span class="category-count">7 criteria</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="roadmap">
+      <div class="test-id">PR-023</div>
+      <div class="test-body">
+        <div class="test-title">Narrative Arc</div>
+        <div class="test-detail">The roadmap is not a feature list — it is a story about where the product is going and why. A new team member should be able to read it cold and describe the strategic direction in 5 minutes. If the roadmap requires verbal explanation, it is not doing its job.</div>
+        <div class="test-pass-criteria">Pass: Someone unfamiliar with the project can read the roadmap and accurately describe the product direction in their own words within 5 minutes.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="roadmap">
+      <div class="test-id">PR-024</div>
+      <div class="test-body">
+        <div class="test-title">Dependency Sequencing</div>
+        <div class="test-detail">No feature on the roadmap is scheduled before its dependencies are complete. The dependency graph has no cycles. A feature that cannot ship because another feature isn't done is a sequencing failure, not a scope problem.</div>
+        <div class="test-pass-criteria">Pass: The dependency graph has no cycles. Every dependency is scheduled earlier on the timeline than its dependents. The graph was verified, not assumed.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="roadmap">
+      <div class="test-id">PR-025</div>
+      <div class="test-body">
+        <div class="test-title">Capacity Realism</div>
+        <div class="test-detail">Roadmap items fit within the team's actual delivery velocity, with a 20% buffer for the unexpected. This is not pessimism — it is the baseline condition for sustainable delivery. A roadmap that requires heroics every quarter is a fictional roadmap.</div>
+        <div class="test-pass-criteria">Pass: Planned scope is at or below 80% of historical quarter capacity. Velocity was measured, not estimated from ideal conditions.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="roadmap">
+      <div class="test-id">PR-026</div>
+      <div class="test-body">
+        <div class="test-title">Now / Next / Later Structure</div>
+        <div class="test-detail">The roadmap has three horizons with decreasing specificity. "Now" is what is in active development with full specs. "Next" is what is coming with problem statements written. "Later" is directional — a bet, not a commitment. Treating all three the same creates false certainty.</div>
+        <div class="test-pass-criteria">Pass: "Now" items have complete specs. "Next" items have problem statements. "Later" items have only a direction statement. The distinction is visible in the document.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="roadmap">
+      <div class="test-id">PR-027</div>
+      <div class="test-body">
+        <div class="test-title">Backlog Link</div>
+        <div class="test-detail">Every item on the roadmap links to a specific backlog entry with the full detail needed to execute it. The roadmap is a summary view; the backlog is the source of truth. Roadmap items without a backlog link are vaporware.</div>
+        <div class="test-pass-criteria">Pass: 100% of roadmap items have a corresponding backlog entry with a specific ID. No orphaned roadmap items.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="roadmap">
+      <div class="test-id">PR-028</div>
+      <div class="test-body">
+        <div class="test-title">Kill Criteria</div>
+        <div class="test-detail">Every feature on the roadmap has a pre-defined kill criterion written before it ships: if metric X does not reach Y within Z days, the feature is removed or pivoted. Kill criteria make removing features the default response to poor performance, not a hard conversation.</div>
+        <div class="test-pass-criteria">Pass: Kill criteria are documented for every feature before it ships. The threshold is specific and time-bound — not "if users don't like it."</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="roadmap">
+      <div class="test-id">PR-029</div>
+      <div class="test-body">
+        <div class="test-title">Stakeholder Alignment</div>
+        <div class="test-detail">All team leads have reviewed the roadmap within the last 14 days. Roadmaps that have not been reviewed recently are not aligned — they are aspirational artifacts. At the pace H.O.N. moves, 14 days is an eternity; things change.</div>
+        <div class="test-pass-criteria">Pass: A sign-off log shows each team lead reviewed the roadmap within 14 days of any major revision or sprint boundary.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 5: Risk Assessment -->
+<div class="category-block" id="cat-risk">
+  <div class="category-header" onclick="toggleCategory('cat-risk')">
+    <span style="font-size:14px">&#9888;</span>
+    <span class="category-title">5. Risk Assessment</span>
+    <span class="category-count">6 criteria</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="risk">
+      <div class="test-id">PR-030</div>
+      <div class="test-body">
+        <div class="test-title">Technical Risk</div>
+        <div class="test-detail">The highest-risk engineering challenges — novel integrations, uncertain performance bounds, untested Apple frameworks — are identified before the sprint is committed and time-boxed as spikes. A spike that discovers the approach won't work is a success. A mid-sprint discovery is a failure of planning.</div>
+        <div class="test-pass-criteria">Pass: No technical unknown consumes more than 20% of a sprint without a prior spike result that justified the approach.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="risk">
+      <div class="test-id">PR-031</div>
+      <div class="test-body">
+        <div class="test-title">User Behavior Risk</div>
+        <div class="test-detail">Every assumption about how users will actually use a feature is written down explicitly and made falsifiable before launch. Assumptions left implicit become unverifiable after the fact. "Users will log RPE naturally" is an assumption. "Users who see RPE after a completed set will tap it within 3 sessions" is a testable one.</div>
+        <div class="test-pass-criteria">Pass: At least 3 behavioral assumptions are documented. Each has a test that could prove it wrong. Results tracked in post-launch review (PR-045).</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="risk">
+      <div class="test-id">PR-032</div>
+      <div class="test-body">
+        <div class="test-title">Competitive Risk</div>
+        <div class="test-detail">Any competitor shipping similar functionality within 90 days is identified and the team has decided whether to accelerate, differentiate, or proceed unchanged. Competitive moves discovered after launch are planning failures, not bad luck.</div>
+        <div class="test-pass-criteria">Pass: Competitive landscape reviewed in the last 30 days. No known competitor move that would materially affect launch timing or positioning went undetected.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="risk">
+      <div class="test-id">PR-033</div>
+      <div class="test-body">
+        <div class="test-title">Regulatory / Privacy Risk</div>
+        <div class="test-detail">Any feature touching HealthKit data, Apple Health integration, or personal health metrics has a documented privacy review before it ships. HealthKit is a privileged API. How H.O.N. uses that data — and what it does not do with it — is a core part of the product's identity and trust contract with users.</div>
+        <div class="test-pass-criteria">Pass: HealthKit data use is documented. No health data leaves the device without explicit user consent disclosed in the UI. Privacy review completed and signed off.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="risk">
+      <div class="test-id">PR-034</div>
+      <div class="test-body">
+        <div class="test-title">Scope Creep Risk</div>
+        <div class="test-detail">Each sprint has a scope freeze date — a date after which no new items are added to the sprint under any circumstance. Additions after the freeze go into the next sprint. The only exception is a P0 bug that blocks shipping.</div>
+        <div class="test-pass-criteria">Pass: Scope freeze date is documented and enforced. All post-freeze additions are logged in the backlog with the sprint they were deferred to.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="risk">
+      <div class="test-id">PR-035</div>
+      <div class="test-body">
+        <div class="test-title">Launch Timing Risk</div>
+        <div class="test-detail">App Store review is not a variable the team controls — it is a dependency that must be on the critical path. TestFlight distribution, marketing asset completion, and the App Store review buffer must all be accounted for in the launch plan before the submission date is set.</div>
+        <div class="test-pass-criteria">Pass: The launch plan explicitly accounts for a 7-day App Store review buffer. Submission date is set with that buffer included, not as the target launch date.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 6: Launch Readiness Gates -->
+<div class="category-block" id="cat-launch">
+  <div class="category-header" onclick="toggleCategory('cat-launch')">
+    <span style="font-size:14px">&#128640;</span>
+    <span class="category-title">6. Launch Readiness Gates</span>
+    <span class="category-count">7 criteria</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="launch">
+      <div class="test-id">PR-036</div>
+      <div class="test-body">
+        <div class="test-title">Feature Flag</div>
+        <div class="test-detail">All new features can be toggled off in production without submitting a new build to the App Store. Feature flags are not optional infrastructure — they are the difference between a controlled rollback and a weekend incident.</div>
+        <div class="test-pass-criteria">Pass: Feature flag infrastructure is in place and tested. The flag toggle is verified to work correctly in the TestFlight build before submission.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="launch">
+      <div class="test-id">PR-037</div>
+      <div class="test-body">
+        <div class="test-title">Analytics Instrumented</div>
+        <div class="test-detail">All meaningful interactions in the new feature are tracked before it launches — not after the first incident reveals a gap. The event list is reviewed by product and engineering before the TestFlight build. Post-launch analytics instrumentation is a D7 data failure waiting to happen.</div>
+        <div class="test-pass-criteria">Pass: The full event list is reviewed and confirmed present in the TestFlight build. No events added post-launch.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="launch">
+      <div class="test-id">PR-038</div>
+      <div class="test-body">
+        <div class="test-title">Support Documentation</div>
+        <div class="test-detail">The support team has a runbook for every known failure mode before launch day. A runbook that is written after the first incident is a retrospective, not a protocol. Known failures must be anticipated and scripted before real users encounter them.</div>
+        <div class="test-pass-criteria">Pass: Runbook exists and has been reviewed by at least one person outside of engineering. The reviewer confirmed they could execute the runbook without asking for help.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="launch">
+      <div class="test-id">PR-039</div>
+      <div class="test-body">
+        <div class="test-title">Marketing Alignment</div>
+        <div class="test-detail">The App Store listing — screenshots, description, what's new text — accurately reflects the feature before submission. A listing that describes a feature differently than the feature works creates user expectations H.O.N. cannot meet. This is a trust problem, not a marketing problem.</div>
+        <div class="test-pass-criteria">Pass: Store listing reviewed and approved by both product and brand before submission. Screenshots match actual UI. No aspirational language about capabilities the feature doesn't have.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="launch">
+      <div class="test-id">PR-040</div>
+      <div class="test-body">
+        <div class="test-title">TestFlight Validation</div>
+        <div class="test-detail">The feature has been used in real conditions by at least 10 TestFlight users. "Used" means complete sessions, not installation. Zero P0 bugs reported from those sessions. If the 10-user bar reveals a P0, fix it and run 10 more sessions.</div>
+        <div class="test-pass-criteria">Pass: 10 or more TestFlight sessions completed by real users. Zero P0 bugs reported from those sessions. Results documented.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="launch">
+      <div class="test-id">PR-041</div>
+      <div class="test-body">
+        <div class="test-title">Rollout Plan</div>
+        <div class="test-detail">If the feature warrants a phased rollout — new data model, significant UX change, anything that could affect all users immediately — the rollout plan is documented: starting percentage, timeline, and the success threshold required to expand to the next tier.</div>
+        <div class="test-pass-criteria">Pass: Rollout plan exists with defined criteria for moving from 10% to 100%. If no phased rollout is needed, the decision not to phase is documented with rationale.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="launch">
+      <div class="test-id">PR-042</div>
+      <div class="test-body">
+        <div class="test-title">Post-Launch Monitoring</div>
+        <div class="test-detail">The monitoring dashboard and alert thresholds are configured before the submission is made — not after the first incident reveals they were missing. A dashboard built in response to a crash is a diagnosis. A dashboard built before launch is a defense.</div>
+        <div class="test-pass-criteria">Pass: Monitoring dashboard is live and alert thresholds are configured before the App Store submission is sent. At least one person is on-call for the 24 hours after launch.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 7: Post-Launch Review -->
+<div class="category-block" id="cat-postlaunch">
+  <div class="category-header" onclick="toggleCategory('cat-postlaunch')">
+    <span style="font-size:14px">&#128202;</span>
+    <span class="category-title">7. Post-Launch Review</span>
+    <span class="category-count">6 criteria</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="postlaunch">
+      <div class="test-id">PR-043</div>
+      <div class="test-body">
+        <div class="test-title">D7 Data Review</div>
+        <div class="test-detail">Seven days after launch, the full team reviews KR progress together. The review is not a status update — it is a decision meeting. At least one decision must come out of it: iterate, hold, or pivot. A review without a decision is a ceremony.</div>
+        <div class="test-pass-criteria">Pass: D7 review meeting occurred. Data was presented (not summarized verbally). At least one decision was made and documented based on that data.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="postlaunch">
+      <div class="test-id">PR-044</div>
+      <div class="test-body">
+        <div class="test-title">User Feedback Synthesis</div>
+        <div class="test-detail">Qualitative signals — App Store reviews, support tickets, direct user research — are synthesized into named themes within 14 days of launch. Themes must map to actionable backlog items. A folder of unread reviews is not a feedback process.</div>
+        <div class="test-pass-criteria">Pass: A written feedback summary exists within 14 days. Themes are named and each maps to a specific backlog item or is explicitly recorded as "not actionable now."</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="postlaunch">
+      <div class="test-id">PR-045</div>
+      <div class="test-body">
+        <div class="test-title">Hypothesis Validation</div>
+        <div class="test-detail">Every behavioral assumption documented in PR-031 is evaluated against actual user behavior within 30 days of launch. Each assumption gets a verdict: confirmed, disproved, or inconclusive — with specific data cited. "Inconclusive" is an acceptable outcome; silence is not.</div>
+        <div class="test-pass-criteria">Pass: Each assumption from the risk assessment has a verdict with data cited. No assumption is left unevaluated. Inconclusive results include the specific data gap that prevented a verdict.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="postlaunch">
+      <div class="test-id">PR-046</div>
+      <div class="test-body">
+        <div class="test-title">Retention Impact</div>
+        <div class="test-detail">At D30, measure the retention delta between users who engaged with the new feature and those who did not. This is the clearest signal of whether the feature is adding to the product's core loop or sitting on the side of it. The delta — positive or negative — directly informs the next roadmap decision.</div>
+        <div class="test-pass-criteria">Pass: The delta is measured and documented. The result — not just the number, but the interpretation — informs a specific next roadmap decision.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="postlaunch">
+      <div class="test-id">PR-047</div>
+      <div class="test-body">
+        <div class="test-title">Technical Debt Log</div>
+        <div class="test-detail">Any shortcuts taken during development — skipped edge cases, hardcoded values, deferred refactors, known performance trade-offs — are logged within 7 days of launch with a specific remediation timeline. Debt documented is debt manageable; debt undocumented becomes a surprise.</div>
+        <div class="test-pass-criteria">Pass: Tech debt log is updated within 7 days of launch. Each item has a specific remediation timeline — not "someday" — assigned to a named owner.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="postlaunch">
+      <div class="test-id">PR-048</div>
+      <div class="test-body">
+        <div class="test-title">Retrospective</div>
+        <div class="test-detail">A team retrospective is completed within 21 days of launch. Action items from the retro are assigned to named owners with specific due dates — not shared responsibilities or open-ended timelines. A retro without assigned action items is a venting session, not a process improvement.</div>
+        <div class="test-pass-criteria">Pass: Retro notes exist and are accessible. Every action item has a named owner and a due date. At least one item addresses a repeatable process, not just a one-time fix.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<div class="separator"></div>
+
+<!-- Section 2: Pre-Launch Gates + OKR Quality -->
+<div class="section-heading">Section 2 — Pre-Launch Gates &amp; Quality Metrics</div>
+
+<div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:20px;">
+  <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--amber);margin-bottom:14px;">5 Gates That Block Any Feature Ship</div>
+  <ul class="gate-list">
+    <li class="gate-item"><div class="gate-num">1</div><span class="gate-text">Problem statement written and agreed by engineering, design, and product — before any build begins</span></li>
+    <li class="gate-item"><div class="gate-num">2</div><span class="gate-text">Primary success metric defined with baseline measured — not estimated or to be measured later</span></li>
+    <li class="gate-item"><div class="gate-num">3</div><span class="gate-text">All three disciplines (engineering, design, product) aligned on the same written acceptance criteria, reviewed within 7 days</span></li>
+    <li class="gate-item"><div class="gate-num">4</div><span class="gate-text">Analytics instrumented and verified working in the TestFlight build — not scheduled for post-launch instrumentation</span></li>
+    <li class="gate-item"><div class="gate-num">5</div><span class="gate-text">Kill criteria documented: specific metric, specific threshold, specific timeline — before the feature leaves development</span></li>
+  </ul>
+</div>
+
+<div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text2);margin:24px 0 12px;">OKR Quality Metrics</div>
+
+<div class="metrics-grid-3">
+  <div class="metric-card">
+    <div class="metric-card-title">Objective Quality</div>
+    <div class="metric-row"><span class="metric-name">O is inspirational — no numbers in objective text</span><span class="metric-target amber">Required</span></div>
+    <div class="metric-row"><span class="metric-name">KRs are measurable — each has baseline, target, method</span><span class="metric-target amber">Required</span></div>
+    <div class="metric-row"><span class="metric-name">Confidence at setting: 60–80% per KR</span><span class="metric-target positive">Target</span></div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-card-title">Roadmap Health</div>
+    <div class="metric-row"><span class="metric-name">Delivery velocity match: planned &le;80% of historical capacity</span><span class="metric-target amber">Gate</span></div>
+    <div class="metric-row"><span class="metric-name">Dependency coverage: 100% of roadmap items have deps mapped</span><span class="metric-target amber">Gate</span></div>
+    <div class="metric-row"><span class="metric-name">Kill criteria coverage: 100% of shipped features have kill criteria</span><span class="metric-target amber">Gate</span></div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-card-title">Post-Launch</div>
+    <div class="metric-row"><span class="metric-name">D7 data review completion rate</span><span class="metric-target positive">100%</span></div>
+    <div class="metric-row"><span class="metric-name">Hypothesis validation rate at D30</span><span class="metric-target positive">100%</span></div>
+    <div class="metric-row"><span class="metric-name">Retro completion within 21 days of launch</span><span class="metric-target positive">100%</span></div>
+  </div>
+</div>
+
+<div class="separator"></div>
+
+<!-- Section 3: Definition of Done -->
+<div class="section-heading">Section 3 — Definition of Done for Product</div>
+
+<div class="done-card">
+  <p>A feature is done from a product perspective when every stakeholder — engineering, design, and product — is looking at the same written acceptance criteria and can say without qualification that the feature meets them, when the problem statement it was built to solve has been verified to be the right problem by at least three named cohort members who experience the feature directly, when the success metric has a baseline and a measurement method that does not require anyone to manually pull data, when analytics are firing correctly in the TestFlight build and the D7 review is already calendared, when the kill criteria are written down and the team understands what it would take for this feature to be removed, and when a new user can encounter the feature for the first time without any onboarding and understand both what it does and why it matters to them. Done is not "code complete." Done is not "shipped." Done means the feature fulfills its contract — with the problem statement, with the cohort members it was built for, with the metrics that will evaluate it, and with the H.O.N. standard that every word, every number, and every coaching phrase is honest, specific, and worth the attention of the person on the other end of it.</p>
+</div>
+
+<div class="separator"></div>
+
+<!-- Section 4: LLM Feature Review Prompt -->
+<div class="section-heading">Section 4 — LLM Feature Review Prompt</div>
+
+<div class="prompt-card">
+  <div class="prompt-card-title">Pre-Build Feature Review — Paste into any LLM</div>
+  <div class="prompt-params">
+    <span class="prompt-param">[FEATURE NAME]</span>
+    <span class="prompt-param">[PROBLEM STATEMENT]</span>
+    <span class="prompt-param">[SUCCESS METRIC]</span>
+    <span class="prompt-param">[TARGET COHORT]</span>
+  </div>
+  <div class="prompt-body">You are a product reviewer for H.O.N. (Habit Over Numbers), a founder-led iOS fitness coaching app at pre-launch stage. The app uses a single data store (SeedStore), a phrase bank coaching system, and a coaching voice that is spare, direct, and identity-affirming — never cheerleading. The user cohort has 22 members (U-01 through U-22) across a wide range of training backgrounds, ages, and goals.
+
+Review the following feature proposal:
+
+Feature Name: [FEATURE NAME]
+Problem Statement: [PROBLEM STATEMENT]
+Primary Success Metric: [SUCCESS METRIC]
+Target Cohort: [TARGET COHORT]
+
+Evaluate and return exactly these five outputs:
+
+1. PROBLEM CLARITY (1–5): Rate the problem statement. Does it name a specific user segment? Is it falsifiable? Does it describe a root cause, not just a symptom? Explain the score.
+
+2. USER VALUE SCORE (1–5): Rate how clearly the feature delivers differentiated value. Could a competing app or a spreadsheet deliver the same outcome? Is the value self-evident without onboarding? Explain the score.
+
+3. RISK FLAGS: List any risks this feature introduces — technical risk (SeedStore side effects, analytics engine changes, phrase bank additions), user behavior risk (assumptions that could be wrong), competitive risk, privacy/HealthKit risk. Be specific. No generic risk categories.
+
+4. MISSING SPEC ELEMENTS: List what is absent from the spec that must exist before build starts. Reference the PR-001 through PR-008 criteria. Name each missing element.
+
+5. RECOMMENDED PRE-BUILD ACTIONS: List the 3 most important actions the team must take before this feature enters a sprint. Be direct. No hedging.</div>
+  <div style="margin-top:14px;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--purple);margin-bottom:8px;">Expected Outputs</div>
+  <div class="prompt-outputs">
+    <div class="prompt-output-item">
+      <div class="prompt-output-label">Problem Clarity</div>
+      <div class="prompt-output-desc">Rating 1–5 with written rationale tied to the problem statement format</div>
+    </div>
+    <div class="prompt-output-item">
+      <div class="prompt-output-label">User Value Score</div>
+      <div class="prompt-output-desc">Rating 1–5 with an explicit differential value assessment vs. competitor and spreadsheet</div>
+    </div>
+    <div class="prompt-output-item">
+      <div class="prompt-output-label">Risk Flags</div>
+      <div class="prompt-output-desc">Specific named risks in technical, behavioral, competitive, and privacy categories</div>
+    </div>
+    <div class="prompt-output-item">
+      <div class="prompt-output-label">Missing Spec Elements</div>
+      <div class="prompt-output-desc">Specific gaps mapped to PR-001 through PR-008 criteria by ID</div>
+    </div>
+    <div class="prompt-output-item" style="grid-column:1 / -1;">
+      <div class="prompt-output-label">Recommended Pre-Build Actions</div>
+      <div class="prompt-output-desc">3 specific, actionable steps the team must complete before this feature enters a sprint — not general advice</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'hon_product_review_status';
+
+function loadStatuses() {
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  document.querySelectorAll('.test-case').forEach(tc => {
+    const id = tc.querySelector('.test-id').textContent;
+    if (saved[id]) {
+      const sel = tc.querySelector('.status-select');
+      sel.value = saved[id];
+      applyStatus(tc, sel, saved[id]);
+    }
+  });
+  updateStats();
+}
+
+function updateStatus(selectEl) {
+  const tc = selectEl.closest('.test-case');
+  const id = tc.querySelector('.test-id').textContent;
+  const status = selectEl.value;
+  applyStatus(tc, selectEl, status);
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  saved[id] = status;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+  updateStats();
+}
+
+function applyStatus(tc, sel, status) {
+  tc.className = 'test-case status-' + status;
+  sel.className = 'status-select status-' + status;
+  tc.dataset.status = status;
+}
+
+function updateStats() {
+  const all = document.querySelectorAll('.test-case');
+  let open = 0, pass = 0, fail = 0, partial = 0;
+  all.forEach(tc => {
+    switch(tc.dataset.status) {
+      case 'open':    open++;    break;
+      case 'pass':    pass++;    break;
+      case 'fail':    fail++;    break;
+      case 'partial': partial++; break;
+    }
+  });
+  document.getElementById('stat-total').textContent   = all.length + ' total';
+  document.getElementById('stat-open').textContent    = (open + fail) + ' open/fail';
+  document.getElementById('stat-partial').textContent = partial + ' partial';
+  document.getElementById('stat-pass').textContent    = pass + ' passed';
+}
+
+function filterTests(status, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.test-case').forEach(tc => {
+    if (status === 'all') {
+      tc.style.display = '';
+    } else {
+      tc.style.display = tc.dataset.status === status ? '' : 'none';
+    }
+  });
+}
+
+function toggleCategory(id) {
+  const block = document.getElementById(id);
+  block.classList.toggle('collapsed');
+}
+
+loadStatuses();
+</script>
+</body>
+</html>

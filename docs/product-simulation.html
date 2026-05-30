@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H.O.N. — Product Simulation Protocol</title>
+<style>
+  :root {
+    --bg:       #111111;
+    --card:     #1c1c1e;
+    --border:   rgba(255,255,255,0.07);
+    --amber:    #f59e0b;
+    --positive: #34d399;
+    --negative: #f87171;
+    --warning:  #fbbf24;
+    --muted:    rgba(255,255,255,0.4);
+    --text:     rgba(255,255,255,0.88);
+    --text2:    rgba(255,255,255,0.55);
+    --blue:     #60a5fa;
+    --purple:   #a78bfa;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 32px 20px 64px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .header { margin-bottom: 36px; }
+  .header-top {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .logo {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber);
+  }
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--amber), transparent);
+    opacity: 0.3;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    color: var(--text);
+  }
+  .subtitle {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+
+  .section-heading {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin: 32px 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-heading::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .intro-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 28px;
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.7;
+    border-left: 3px solid var(--amber);
+  }
+
+  /* Scenario cards */
+  .scenario {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 14px;
+    transition: border-color 0.2s;
+  }
+  .scenario:hover { border-color: rgba(255,255,255,0.14); }
+
+  .scenario-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .scenario-id {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    letter-spacing: 0.08em;
+    color: var(--amber);
+    background: rgba(245,158,11,0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .scenario-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+    flex: 1;
+  }
+
+  .badge-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+
+  .badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .badge-time   { background: rgba(96,165,250,0.15);  color: var(--blue); }
+  .badge-amber  { background: rgba(245,158,11,0.15);  color: var(--amber); }
+  .badge-green  { background: rgba(52,211,153,0.15);  color: var(--positive); }
+  .badge-purple { background: rgba(167,139,250,0.15); color: var(--purple); }
+  .badge-red    { background: rgba(248,113,113,0.15); color: var(--negative); }
+
+  .scenario-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 20px;
+    margin-bottom: 12px;
+  }
+  @media (max-width: 600px) {
+    .scenario-grid { grid-template-columns: 1fr; }
+  }
+
+  .field-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 3px;
+  }
+  .field-value {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+
+  .field-full { grid-column: 1 / -1; }
+
+  .step-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 4px;
+    counter-reset: steps;
+  }
+  .step-list li {
+    font-size: 13px;
+    color: var(--text2);
+    padding: 4px 0 4px 26px;
+    position: relative;
+    line-height: 1.5;
+    counter-increment: steps;
+  }
+  .step-list li::before {
+    content: counter(steps);
+    position: absolute;
+    left: 0;
+    top: 4px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(245,158,11,0.15);
+    color: var(--amber);
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'SF Mono', monospace;
+  }
+
+  .criteria-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  @media (max-width: 600px) {
+    .criteria-grid { grid-template-columns: 1fr; }
+  }
+
+  .criteria-box {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .criteria-pass {
+    background: rgba(52,211,153,0.06);
+    border: 1px solid rgba(52,211,153,0.15);
+    color: var(--positive);
+  }
+  .criteria-fail {
+    background: rgba(248,113,113,0.06);
+    border: 1px solid rgba(248,113,113,0.15);
+    color: var(--negative);
+  }
+  .criteria-box .criteria-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    opacity: 0.8;
+  }
+
+  .uid-list {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+  .uid-chip {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(245,158,11,0.1);
+    color: var(--amber);
+    letter-spacing: 0.06em;
+  }
+  .uid-chip.secondary {
+    background: rgba(255,255,255,0.06);
+    color: var(--text2);
+  }
+
+  /* Matrix table */
+  .matrix-wrapper {
+    overflow-x: auto;
+    margin: 0 -4px;
+    padding: 0 4px;
+    border-radius: 10px;
+  }
+
+  .matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    min-width: 720px;
+  }
+
+  .matrix-table th {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text2);
+    padding: 8px 4px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    background: var(--card);
+  }
+
+  .matrix-table th.row-header {
+    text-align: left;
+    padding-left: 10px;
+    min-width: 90px;
+  }
+
+  .matrix-table td {
+    padding: 6px 4px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 10px;
+  }
+
+  .matrix-table td.row-header {
+    text-align: left;
+    padding-left: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    font-family: 'SF Mono', monospace;
+    color: var(--amber);
+    white-space: nowrap;
+  }
+
+  .matrix-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .cell-high {
+    background: rgba(245,158,11,0.2);
+    color: var(--amber);
+    border-radius: 3px;
+    font-weight: 700;
+    font-size: 9px;
+    padding: 1px 3px;
+  }
+  .cell-low {
+    color: rgba(255,255,255,0.18);
+    font-size: 9px;
+  }
+  .cell-empty { color: transparent; }
+
+  /* Results template */
+  .template-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    margin-top: 16px;
+  }
+
+  .template-field {
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .template-field:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+  .template-field-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 6px;
+  }
+  .template-field-placeholder {
+    font-size: 13px;
+    color: rgba(255,255,255,0.2);
+    font-style: italic;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px dashed rgba(255,255,255,0.1);
+    border-radius: 6px;
+    line-height: 1.5;
+  }
+
+  /* LLM prompt card */
+  .prompt-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--amber);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-top: 16px;
+  }
+  .prompt-card-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 14px;
+  }
+  .prompt-params {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .prompt-param {
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    letter-spacing: 0.04em;
+    padding: 3px 10px;
+    border-radius: 4px;
+    background: rgba(245,158,11,0.12);
+    color: var(--amber);
+    border: 1px solid rgba(245,158,11,0.2);
+  }
+  .prompt-body {
+    font-size: 12px;
+    color: var(--text2);
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    padding: 16px 18px;
+    line-height: 1.7;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    white-space: pre-wrap;
+  }
+  .prompt-outputs {
+    margin-top: 14px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  @media (max-width: 600px) {
+    .prompt-outputs { grid-template-columns: 1fr; }
+  }
+  .prompt-output-item {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 12px;
+  }
+  .prompt-output-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin-bottom: 4px;
+  }
+  .prompt-output-desc {
+    color: var(--text2);
+    line-height: 1.4;
+  }
+
+  .separator {
+    height: 1px;
+    background: var(--border);
+    margin: 28px 0;
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 20px 14px 48px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <span class="logo">H.O.N.</span>
+    <div class="divider-line"></div>
+  </div>
+  <h1>Product Simulation Protocol</h1>
+  <div class="subtitle">15 product decision scenarios · Prioritization matrix · Decision capture template · LLM pre-triage prompt · Last updated: 2026-05-30</div>
+</div>
+
+<!-- Section 1 -->
+<div class="section-heading">Section 1 — How to Run Product Simulations</div>
+<div class="intro-card">
+Product simulations are structured decision exercises that replicate the real pressures the H.O.N. product team faces: competing priorities, ambiguous data, team disagreements, and time pressure. Each scenario is run with the actual team members who would face the decision in production — not by one person acting all roles. Before running a simulation, assign a facilitator who is not a participant in the decision. The facilitator presents the scenario as written, does not offer opinions, and enforces the time constraints. Results are captured using the Decision Capture Template in Section 4 and filed alongside the relevant backlog entry. A simulation is only complete when a written decision exists — not when the time is up.
+</div>
+
+<!-- Section 2 -->
+<div class="section-heading">Section 2 — 15 Product Decision Scenarios</div>
+
+<!-- PSIM-01 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">PSIM-01</div>
+    <div class="scenario-title">Feature Prioritization Stress Test</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 45 min</span>
+    <span class="badge badge-amber">Trigger: Sprint planning</span>
+    <span class="badge badge-purple">High Stakes</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Whether the team can reach a prioritization decision using documented product criteria alone — without defaulting to PM authority, personal preference, or loudest voice in the room.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">5 candidate backlog features are ready for sprint consideration. Sprint has capacity for 2. The team must agree on which 2 ship.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Present 5 features with their backlog entries and PR criteria scores. No verbal advocacy from any team member yet.</li>
+        <li>Each team member independently ranks all 5 features using the PR-001 through PR-015 criteria as the only inputs. No discussion during this step.</li>
+        <li>Reveal all rankings simultaneously. Record where team members agree and where they diverge.</li>
+        <li>For any feature where rankings diverge by more than 2 positions, open a structured debate. The only valid arguments reference the problem statement (PR-001), the success metric (PR-002), or the cohort mapping (PR-010). No other evidence is admissible.</li>
+        <li>Attempt consensus. If consensus is not reached within 35 minutes, document the specific criterion that is driving the disagreement.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Roles</div>
+      <div class="uid-list">
+        <span class="uid-chip">PM</span>
+        <span class="uid-chip">Engineering Lead</span>
+        <span class="uid-chip">Design Lead</span>
+        <span class="uid-chip secondary">Analytics</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Team agrees on the top 2 features within 45 minutes. The decision is documented with the specific criteria that drove it. No team member's ranking was overridden by authority — only by evidence.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      PM breaks a tie by authority rather than by evidence. Decision made without referencing documented criteria. Debate devolves into opinion without a path back to the criteria. Time expires with no decision.
+    </div>
+  </div>
+</div>
+
+<!-- PSIM-02 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">PSIM-02</div>
+    <div class="scenario-title">OKR Pressure Test</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 30 min</span>
+    <span class="badge badge-amber">Trigger: OKR setting or quarter review</span>
+    <span class="badge badge-purple">High Stakes</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Whether the OKR set is clear enough for someone unfamiliar with the product to understand success, identify warning signs, and make a course-correction decision — all from the written document alone.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">A draft OKR set is ready for the quarter. A reviewer who has not participated in OKR setting is brought in cold.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Hand the written OKR document to the reviewer. No verbal context. They read it cold for up to 10 minutes.</li>
+        <li>Reviewer answers three questions without asking for help: (a) What does success look like at the end of this period? (b) How would you know if you are off track with 2 weeks left? (c) What would you do differently if a KR is at 30% with 2 weeks remaining?</li>
+        <li>Record the reviewer's answers verbatim before the product team responds.</li>
+        <li>Product team compares answers to what they would have said. Document every gap where verbal explanation would have been needed.</li>
+        <li>Every gap is a rewrite. Revise the OKR document to close each gap.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Roles</div>
+      <div class="uid-list">
+        <span class="uid-chip">External Reviewer</span>
+        <span class="uid-chip">PM</span>
+        <span class="uid-chip secondary">Analytics</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      The unfamiliar reviewer answers all three questions correctly from the written OKR alone — no verbal prompts from the PM or team needed. Answers align with what the product team would have said.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Any answer requires verbal explanation from a team member to clarify. Reviewer cannot identify what off-track looks like. Reviewer cannot describe a course-correction action. OKR document requires context to interpret.
+    </div>
+  </div>
+</div>
+
+<!-- PSIM-03 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">PSIM-03</div>
+    <div class="scenario-title">Scope Creep Simulation</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 20 min</span>
+    <span class="badge badge-amber">Trigger: Spec walkthrough or design review</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Whether the team can identify and formally defer scope additions in real time — even when the additions sound reasonable — without derailing the current sprint or sacrificing the original feature's focus.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">A spec walkthrough is in progress. The facilitator introduces 3 "reasonable sounding" scope additions at natural break points in the discussion.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Begin a spec walkthrough for an upcoming feature. Participants include PM, engineering, and design leads.</li>
+        <li>At three natural pause points, the facilitator introduces a scope addition that sounds plausible: "What if we also added..." Each addition is framed as small and logical.</li>
+        <li>For each addition, the team must decide: accept, defer, or reject — within 3 minutes of it being raised. No extended discussion without a decision path.</li>
+        <li>For deferred items, a team member writes the backlog entry for it before the session ends. Not "someone will write this later."</li>
+        <li>At session end, the facilitator reveals which items were planted scope additions. Team evaluates whether their decisions were based on criteria or social pressure.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Roles</div>
+      <div class="uid-list">
+        <span class="uid-chip">PM</span>
+        <span class="uid-chip">Engineering Lead</span>
+        <span class="uid-chip">Design Lead</span>
+        <span class="uid-chip secondary">Facilitator (non-participant)</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      All 3 planted additions are identified and formally deferred to the backlog with written rationale. No addition accepted into the current sprint without a corresponding removal. Backlog entries written before session ends.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Any addition accepted into the current sprint without removing something of equivalent size. Deferred items not written into the backlog before the session ends. Team unable to distinguish "small addition" from scope creep in real time.
+    </div>
+  </div>
+</div>
+
+<!-- PSIM-04 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">PSIM-04</div>
+    <div class="scenario-title">Kill Criteria Trigger</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 48 hours</span>
+    <span class="badge badge-red">Trigger: Feature at 30 days post-launch, primary metric at 40% of target</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Whether the team can make a hard product decision — iterate, pivot, or kill — quickly and with evidence, using pre-defined kill criteria rather than emotional attachment to something they built.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">A feature has been live for 30 days. Its primary success metric is at 40% of the target set before launch. The kill criteria threshold has been reached.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>PM presents the 30-day data: primary metric, secondary metrics, qualitative feedback summary.</li>
+        <li>Team pulls the pre-defined kill criteria from the spec. Read the exact language written before launch. Does the current state meet the kill threshold?</li>
+        <li>Each team member independently writes their recommendation — iterate, pivot, or kill — with one paragraph of rationale. No verbal discussion yet.</li>
+        <li>Share recommendations simultaneously. If all three point the same direction, that is the decision. If not, structured debate: each argument must cite data, not sentiment.</li>
+        <li>Decision is written and distributed within 48 hours of the trigger date.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Roles</div>
+      <div class="uid-list">
+        <span class="uid-chip">PM</span>
+        <span class="uid-chip">Engineering Lead</span>
+        <span class="uid-chip">Analytics</span>
+        <span class="uid-chip secondary">Design Lead</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Decision — iterate, pivot, or kill — is documented within 48 hours of the trigger. Decision cites the pre-defined kill criteria. All team members can explain how the data led to the decision, not just what the decision was.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Decision delayed beyond 48 hours. Decision made without referencing the pre-defined kill criteria. Feature retained "just in case" without a documented rationale. Data cited in the decision is selectively chosen to justify a predetermined outcome.
+    </div>
+  </div>
+</div>
+
+<!-- PSIM-05 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">PSIM-05</div>
+    <div class="scenario-title">New Competitor Feature Response</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 24 hours</span>
+    <span class="badge badge-red">Trigger: Competitor ships a feature on H.O.N. roadmap</span>
+    <span class="badge badge-purple">High Stakes</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Whether the team can respond to a competitive move with strategic clarity rather than reactivity — using H.O.N.'s differential value criteria (PR-013) as the decision framework, not emotion or market anxiety.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">A major competitor (e.g., Strong, Whoop, Ladder) ships a feature that is meaningfully similar to something on the H.O.N. roadmap. Team must decide within 24 hours.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>PM presents the competitor feature: screenshot, description, reported user response. No editorializing — just facts.</li>
+        <li>Team reviews using the differential value criteria (PR-013): what does H.O.N. do or know that the competitor cannot replicate? Reference the SeedStore data model, coaching voice, and cohort-specific intelligence.</li>
+        <li>Each team member writes their recommendation — accelerate, differentiate, or deprioritize — with a one-paragraph rationale tied to H.O.N.'s positioning.</li>
+        <li>Compare recommendations. If aligned, document and move. If not, 30-minute debate using only the differential value criteria as arbiters.</li>
+        <li>Written decision distributed within 24 hours of the trigger.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Roles</div>
+      <div class="uid-list">
+        <span class="uid-chip">PM</span>
+        <span class="uid-chip">Engineering Lead</span>
+        <span class="uid-chip">Design Lead</span>
+        <span class="uid-chip secondary">Growth</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Decision documented within 24 hours with written rationale tied to H.O.N.'s positioning and differential value. Rationale does not mention what the competitor did — only what H.O.N. is. Team does not rush to copy the competitor feature.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Decision delayed beyond 24 hours. Rationale is reactive ("we need to match this") rather than strategic. H.O.N.'s roadmap reprioritized based on competitor behavior without a differentiation argument. No written decision documented.
+    </div>
+  </div>
+</div>
+
+<!-- PSIM-06 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">PSIM-06</div>
+    <div class="scenario-title">Roadmap Narrative Test</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 15 min</span>
+    <span class="badge badge-amber">Trigger: After any major roadmap revision</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Whether the roadmap communicates a clear strategic narrative without verbal explanation — testing PR-023 in real conditions by using someone who has never seen the roadmap before.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">A new team member, advisor, or cohort contact joins. They read the current roadmap with no verbal briefing.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Hand the new person the roadmap. Give them 5 minutes to read it. No questions from them during this time.</li>
+        <li>Ask: "In your own words, what is this product trying to accomplish over the next 3 months? What is the single most important bet?"</li>
+        <li>Record their answer verbatim. No corrections from the team until the answer is complete.</li>
+        <li>Compare to the narrative the team would have given. Note every gap where the roadmap failed to communicate intent.</li>
+        <li>Each gap is a rewrite target. Revise the roadmap to close the gap before the next session.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Roles</div>
+      <div class="uid-list">
+        <span class="uid-chip">New Team Member / Advisor</span>
+        <span class="uid-chip">PM</span>
+        <span class="uid-chip secondary">Design Lead</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      The reader's description captures the core strategic narrative accurately. They can name the primary bet and the intended outcome without any coaching or verbal context.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Description is vague, feature-list level, or misses the primary strategic direction entirely. Any answer requires the PM to say "what we actually meant was..." The roadmap is not communicating its own narrative.
+    </div>
+  </div>
+</div>
+
+<!-- PSIM-07 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">PSIM-07</div>
+    <div class="scenario-title">Dependency Chain Stress Test</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 30 min</span>
+    <span class="badge badge-amber">Trigger: Before sprint lock</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Whether the team's dependency map is complete enough to survive the removal of a feature — revealing all downstream items that silently depended on it without being documented.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">The facilitator removes one planned feature from the roadmap without warning. The team has 30 minutes to identify all downstream features that cannot ship without it.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Facilitator removes one feature from the roadmap (chosen by facilitator, not team). No explanation given for why.</li>
+        <li>Team independently identifies all features on the roadmap that depend on the removed feature. Write them down before discussion.</li>
+        <li>Compare lists. Any dependency identified by only one team member was not in the shared dependency map.</li>
+        <li>For each undocumented dependency found, add it to the official dependency map immediately.</li>
+        <li>Facilitator reveals which feature was removed and why it was chosen (it should have had the most dependencies).</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Roles</div>
+      <div class="uid-list">
+        <span class="uid-chip">Engineering Lead</span>
+        <span class="uid-chip">PM</span>
+        <span class="uid-chip secondary">Design Lead</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      All downstream dependencies identified within 30 minutes. Every identified dependency was already in the official dependency map. No dependency discovered only during the simulation that the team had not previously documented.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      A downstream dependency is discovered during the simulation that was not in the documented dependency map. Team disagrees on which features are downstream, indicating the dependency map was not shared or reviewed by all disciplines.
+    </div>
+  </div>
+</div>
+
+<!-- PSIM-08 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">PSIM-08</div>
+    <div class="scenario-title">User Value Validation</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 20 min</span>
+    <span class="badge badge-amber">Trigger: Before any feature enters active development</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Whether the team has a shared, evidence-based understanding of which cohort members benefit from an upcoming feature — and whether that understanding is consistent across disciplines or siloed in the PM's head.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">An upcoming feature has a cohort mapping claim in the spec (PR-010). The team has not yet discussed it verbally.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Each team member independently reads the feature spec and names the 3 cohort members (U-01 through U-22) they believe benefit most. Write them down separately.</li>
+        <li>Reveal selections simultaneously. Document where the team agrees and where they differ.</li>
+        <li>For each cohort member named by only one person, that person must cite specific evidence from the cohort profile — not an assumption. If no evidence can be cited, that member is removed from the primary beneficiary list.</li>
+        <li>For cohort members named by all — document why. This is the true primary beneficiary profile for the feature.</li>
+        <li>Validate: are those 3+ cohort members enough to justify the feature's position on the roadmap?</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Roles</div>
+      <div class="uid-list">
+        <span class="uid-chip">PM</span>
+        <span class="uid-chip">Design Lead</span>
+        <span class="uid-chip">Research</span>
+        <span class="uid-chip secondary">Engineering Lead</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      All team members independently identify the same 3 core cohort members. Each mapping is supported by specific evidence from the cohort profile, not assumption. The team agrees the 3+ cohort members justify the feature's priority.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Team members name different cohort members without a shared rationale — indicating the cohort mapping lives only in the PM's mental model. Any mapping supported only by assumption, not evidence. Fewer than 3 cohort members with documented evidence after the session.
+    </div>
+  </div>
+</div>
+
+<!-- PSIM-09 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">PSIM-09</div>
+    <div class="scenario-title">Analytics Gap Simulation</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 25 min</span>
+    <span class="badge badge-amber">Trigger: Before any feature enters TestFlight</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Whether every question the team will want to answer at D7 has a corresponding tracked event in the build — not a plan to add tracking later. Analytics gaps found before launch are cheap to fix; gaps found at D7 are unrecoverable.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">A feature is ready for TestFlight. The event list is written and believed to be complete.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Each team member independently writes the 5 questions they would most want to answer at the D7 data review for this feature. No sharing yet.</li>
+        <li>Compile all questions. Deduplicate. Prioritize the top 10 by team vote.</li>
+        <li>For each question, map it to the specific event(s) in the current event list that would answer it. If no event answers the question, that is a gap.</li>
+        <li>For each gap: is it a missing event, an event that fires but doesn't capture the right property, or a question that cannot be answered from event data alone?</li>
+        <li>Add missing events to the build before TestFlight. Document questions that require other data sources (qualitative, HealthKit, etc.).</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Roles</div>
+      <div class="uid-list">
+        <span class="uid-chip">Analytics</span>
+        <span class="uid-chip">PM</span>
+        <span class="uid-chip">Engineering Lead</span>
+        <span class="uid-chip secondary">Design Lead</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Every top-10 D7 question has a corresponding tracked event in the TestFlight build. Gaps found during the simulation are fixed before TestFlight goes out. No D7 question is left unanswerable by a missing event.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      One or more top-10 D7 questions have no corresponding tracked event. Gaps are discovered at D7, not before. Event list was never mapped to specific D7 questions before the simulation.
+    </div>
+  </div>
+</div>
+
+<!-- PSIM-10 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">PSIM-10</div>
+    <div class="scenario-title">Launch Timing Crisis</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 15 min</span>
+    <span class="badge badge-red">Trigger: App Store review at Day 10 with no response</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Whether the team has a pre-defined contingency plan for App Store review delays — and whether that plan can be executed without improvisation, escalation theater, or panic-driven decisions.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">App Store review submitted. Day 10, no response. Cohort testers and marketing are expecting launch. Team must execute the contingency plan.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Facilitator announces: "It's Day 10 of App Store review. No response. Cohort and marketing are expecting launch in 2 days. Execute your contingency plan."</li>
+        <li>PM retrieves the contingency plan document (it should already exist). If it does not exist, the simulation fails immediately.</li>
+        <li>Team walks through each contingency action in order. Note which actions can be taken without a new build and which require engineering involvement.</li>
+        <li>Simulate communication: draft the message to cohort testers explaining the delay. Evaluate tone — is it honest without being alarming?</li>
+        <li>Identify the point at which the team would escalate to Apple's App Review team and what the escalation path looks like.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Roles</div>
+      <div class="uid-list">
+        <span class="uid-chip">PM</span>
+        <span class="uid-chip">Engineering Lead</span>
+        <span class="uid-chip">Support</span>
+        <span class="uid-chip secondary">Growth</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Contingency plan document exists and is retrieved within 2 minutes. Team executes the plan without improvisation. Cohort communication is drafted in a way that is honest about the delay without creating panic. Escalation path is known.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      No contingency plan exists. Team improvises. Cohort communication is delayed, vague, or over-explains in a way that creates distrust. No one knows the escalation path to Apple's App Review team.
+    </div>
+  </div>
+</div>
+
+<!-- PSIM-11 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">PSIM-11</div>
+    <div class="scenario-title">Retrospective Quality Check</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 20 min</span>
+    <span class="badge badge-amber">Trigger: 21 days after any retrospective</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Whether retrospective action items are actually completed and whether they changed team behavior — not just whether they were written down. A retro that produces no behavioral change is a ceremony, not a process.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">21 days have elapsed since the last retrospective. The action item list from that retro is reviewed with the named owners in the room.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Pull the retro action items from 21 days ago. Read each one aloud with the named owner present.</li>
+        <li>For each item: is it complete, in progress, or not started? The owner reports status — no pre-work or summary allowed. Real-time assessment only.</li>
+        <li>For completed items: did it change a team process, a document, or a repeated behavior? Or did it fix a one-time problem?</li>
+        <li>For incomplete items: why? Was the timeline unrealistic, the owner unclear, or the item actually not important enough to act on?</li>
+        <li>Calculate the completion rate. If below 80%, the retro format needs to change before the next one.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Roles</div>
+      <div class="uid-list">
+        <span class="uid-chip">PM</span>
+        <span class="uid-chip">Engineering Lead</span>
+        <span class="uid-chip">Design Lead</span>
+        <span class="uid-chip secondary">All named action item owners</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      More than 80% of action items are complete. At least one completed item demonstrably changed a team process or repeated behavior — not just fixed a one-time problem. Incomplete items have a documented reason.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Fewer than 50% of action items complete. No completed item changed a repeatable process. Incomplete items have no documented reason. The retro produced documentation but no behavioral change.
+    </div>
+  </div>
+</div>
+
+<!-- PSIM-12 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">PSIM-12</div>
+    <div class="scenario-title">Feature Sunset Decision</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 30 min</span>
+    <span class="badge badge-red">Trigger: Feature at &lt;5% usage for 90 days</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Whether the team can make a sunset decision without the bias toward keeping features that cost effort to build — using kill criteria and data as the only legitimate arguments, not sunk cost or "maybe someday."</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">A feature has been used by fewer than 5% of active users for 90 consecutive days. Pre-defined kill criteria have been met.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>PM presents the 90-day usage data. No framing — just the numbers. Usage rate, cohort overlap, support tickets generated, engineering maintenance cost.</li>
+        <li>Team pulls the pre-defined kill criteria. Read the exact language. Does the current state meet it?</li>
+        <li>Team debates three options: sunset entirely, simplify to reduce maintenance cost, or pivot to solve a different problem with the same infrastructure. No "keep as-is" option — it has already met kill criteria.</li>
+        <li>Decision made by consensus or structured vote. Any argument for keeping it must cite a specific user segment that would be harmed by removal — not a theoretical future user.</li>
+        <li>Decision documented with timeline: when removed from UI, when deprecated from codebase, any migration path for affected users.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Roles</div>
+      <div class="uid-list">
+        <span class="uid-chip">PM</span>
+        <span class="uid-chip">Analytics</span>
+        <span class="uid-chip">Engineering Lead</span>
+        <span class="uid-chip secondary">Design Lead</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Decision made using the kill criteria framework. The feature is not retained without a specific, evidence-backed rationale citing a real user segment harmed by removal. Decision includes a timeline for removal or simplification.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Feature retained with no documented rationale. "Just in case" accepted as a valid argument. Kill criteria not referenced in the decision. Sunk cost ("we spent three weeks on this") cited as a reason to keep it.
+    </div>
+  </div>
+</div>
+
+<!-- PSIM-13 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">PSIM-13</div>
+    <div class="scenario-title">Minimum Viable Version Test</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 20 min</span>
+    <span class="badge badge-amber">Trigger: Before any feature spec is finalized</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Whether the team can articulate a half-time MVP that still delivers the core user value — validating PR-015 and testing the team's ability to separate the essential from the elaboration under time pressure.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">An upcoming feature has a full spec. The facilitator informs the team they have half the estimated time. What ships in v1?</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Present the full feature spec including estimated development time.</li>
+        <li>Facilitator announces: "You have half the time. What ships in v1 and what moves to v2?" Each team member writes their v1 scope independently.</li>
+        <li>Compare v1 scopes. Where do team members agree? Where do they cut differently?</li>
+        <li>Test the v1 candidates: does each proposed v1 still deliver the core user value as described in the problem statement (PR-001)? Or does it solve a different, smaller problem?</li>
+        <li>Identify the agreed-upon v1. Write it as a one-paragraph spec. If it takes more than one paragraph to describe, it is not a v1 — it is still a full spec.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Roles</div>
+      <div class="uid-list">
+        <span class="uid-chip">PM</span>
+        <span class="uid-chip">Design Lead</span>
+        <span class="uid-chip">Engineering Lead</span>
+        <span class="uid-chip secondary">Research</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      A half-time MVP is described in one paragraph that still delivers the core user value from the problem statement. The team agrees on it. Everything cut is explicitly labeled v2+ in writing.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Team cannot identify what to cut without losing the feature's stated purpose. The half-time v1 requires more than one paragraph to describe. The team cannot agree on which elements are essential vs. elaboration. No v2+ list is created.
+    </div>
+  </div>
+</div>
+
+<!-- PSIM-14 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">PSIM-14</div>
+    <div class="scenario-title">Cross-Discipline Alignment Check</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 25 min</span>
+    <span class="badge badge-amber">Trigger: One week before sprint lock</span>
+    <span class="badge badge-purple">High Stakes</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Whether engineering, design, and product are building the same feature in their heads — or three slightly different features. Misalignment on acceptance criteria is the most expensive bug a team can ship. It manifests as rework, not a crash log.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">A feature has an accepted spec. One week before sprint lock, each discipline writes their understanding of the acceptance criteria independently.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Engineering Lead, Design Lead, and PM each write — independently and without consulting the spec — their understanding of the feature's acceptance criteria. What exactly must be true for this feature to be "done"?</li>
+        <li>Compare all three documents side by side. Identify: where do all three agree (core behavior), where do two agree and one differs (potential misalignment), where all three differ (definite misalignment).</li>
+        <li>For each area of misalignment, trace the gap back to a specific place in the spec that was ambiguous. Rewrite that section of the spec to eliminate the ambiguity.</li>
+        <li>Each discipline re-reads the revised spec and confirms in writing that their understanding now matches. This confirmation is the PR-008 sign-off.</li>
+        <li>If sign-off cannot be reached in the session, the feature does not enter the sprint until it can.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Roles</div>
+      <div class="uid-list">
+        <span class="uid-chip">PM</span>
+        <span class="uid-chip">Engineering Lead</span>
+        <span class="uid-chip">Design Lead</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      All three disciplines agree on the core behavior. Any differences found are minor implementation details — not behavioral disagreements. The revised spec receives written sign-off from all three within the session.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Core behavior is described differently by any two disciplines. The feature enters the sprint without written sign-off from all three. Differences discovered during development, not during this simulation.
+    </div>
+  </div>
+</div>
+
+<!-- PSIM-15 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">PSIM-15</div>
+    <div class="scenario-title">Post-Launch Hypothesis Review</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 30 min</span>
+    <span class="badge badge-amber">Trigger: 30 days after any feature launch</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Testing</div>
+      <div class="field-value">Whether the team evaluates behavioral assumptions with actual data rather than memory or confirmation bias — and whether assumptions that were disproved change anything about the next feature's spec.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">30 days after a feature launch. The behavioral assumptions from PR-031 are evaluated against actual user data from analytics, qualitative feedback, and support tickets.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Pull the behavioral assumptions documented in PR-031 for the feature. Read each one aloud. No data presented yet — just the original assumption as written before launch.</li>
+        <li>For each assumption, present the specific data that tests it. This must be an actual number, a qualitative quote, or a specific support ticket — not a general impression.</li>
+        <li>Assign a verdict to each assumption: Confirmed (data supports it), Disproved (data contradicts it), or Inconclusive (data exists but is insufficient to decide either way).</li>
+        <li>For Disproved assumptions: what does this mean for the next feature's spec? What assumption was wrong and how does that change what we build next?</li>
+        <li>For Inconclusive assumptions: what specific data would resolve them? Who owns getting that data and by when?</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Roles</div>
+      <div class="uid-list">
+        <span class="uid-chip">Analytics</span>
+        <span class="uid-chip">PM</span>
+        <span class="uid-chip">Research</span>
+        <span class="uid-chip secondary">Engineering Lead</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Every assumption from PR-031 receives a verdict with specific data cited. No assumption is evaluated without data. Disproved assumptions result in a documented change to how the next feature's spec handles similar assumptions.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Any assumption evaluated without specific data — only impressions or memory. Any assumption left unevaluated at all. Disproved assumptions acknowledged but not incorporated into next feature planning. Inconclusive assumptions left without an owner or resolution timeline.
+    </div>
+  </div>
+</div>
+
+<div class="separator"></div>
+
+<!-- Section 3: Priority Matrix -->
+<div class="section-heading">Section 3 — Role Priority Matrix</div>
+
+<div style="font-size:12px;color:var(--text2);margin-bottom:16px;line-height:1.5;">H marks scenarios where a role is a <strong style="color:var(--amber)">primary participant</strong> — meaning their presence and active engagement is required for the simulation to produce a valid result. All roles may observe any simulation; only H-marked roles are required participants.</div>
+
+<div class="matrix-wrapper">
+  <table class="matrix-table">
+    <thead>
+      <tr>
+        <th class="row-header">Scenario</th>
+        <th>PM</th>
+        <th>Eng Lead</th>
+        <th>Design Lead</th>
+        <th>Research</th>
+        <th>Analytics</th>
+        <th>Content</th>
+        <th>Growth</th>
+        <th>Support</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="row-header">PSIM-01</td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+      </tr>
+      <tr>
+        <td class="row-header">PSIM-02</td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+      </tr>
+      <tr>
+        <td class="row-header">PSIM-03</td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+      </tr>
+      <tr>
+        <td class="row-header">PSIM-04</td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+      </tr>
+      <tr>
+        <td class="row-header">PSIM-05</td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-low">·</span></td>
+      </tr>
+      <tr>
+        <td class="row-header">PSIM-06</td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+      </tr>
+      <tr>
+        <td class="row-header">PSIM-07</td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+      </tr>
+      <tr>
+        <td class="row-header">PSIM-08</td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+      </tr>
+      <tr>
+        <td class="row-header">PSIM-09</td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+      </tr>
+      <tr>
+        <td class="row-header">PSIM-10</td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-high">H</span></td>
+      </tr>
+      <tr>
+        <td class="row-header">PSIM-11</td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+      </tr>
+      <tr>
+        <td class="row-header">PSIM-12</td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+      </tr>
+      <tr>
+        <td class="row-header">PSIM-13</td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+      </tr>
+      <tr>
+        <td class="row-header">PSIM-14</td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+      </tr>
+      <tr>
+        <td class="row-header">PSIM-15</td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-high">H</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+        <td><span class="cell-low">·</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="separator"></div>
+
+<!-- Section 4: Decision Capture Template -->
+<div class="section-heading">Section 4 — Decision Capture Template</div>
+
+<div class="template-card">
+  <div class="template-field">
+    <div class="template-field-label">Simulation Metadata</div>
+    <div class="template-field-placeholder">Scenario: PSIM-__ · Facilitator: [name] · Participants: [names and roles] · Date: YYYY-MM-DD · Duration: [actual time] · Linked Feature or OKR: [backlog ID or OKR reference]</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Decision Being Simulated</div>
+    <div class="template-field-placeholder">State the exact decision the simulation was testing in one sentence. Example: "Whether the team can reach sprint prioritization consensus using documented criteria without PM authority override."</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Data Used in the Decision</div>
+    <div class="template-field-placeholder">List every piece of data referenced during the simulation: specific metrics, cohort profiles cited, PR criteria referenced by ID, prior retro notes consulted. "General knowledge" is not a valid data source in this field.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Outcome</div>
+    <div class="template-field-placeholder">State the decision reached. Include the specific option chosen (e.g., "Feature A and Feature C selected for sprint" or "Feature X kill criteria triggered — decision: sunset"). If no decision was reached, state that explicitly and explain why.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Dissenting View (if any)</div>
+    <div class="template-field-placeholder">If any participant disagreed with the final decision, record their exact position and reasoning here. Disagreements captured are more valuable than false consensus. Leave blank only if there was genuine agreement — not if the dissenter stayed silent.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Decision Quality Rating (1–5)</div>
+    <div class="template-field-placeholder">1 = decision made without criteria or data · 2 = criteria referenced but not the deciding factor · 3 = criteria-led but evidence incomplete · 4 = criteria and evidence both drove the decision · 5 = decision is fully reversible if evidence changes and all parties can explain why they reached it. Rate the process, not the outcome.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Pass / Fail Verdict</div>
+    <div class="template-field-placeholder">PASS / FAIL / PARTIAL — one sentence explaining which criterion drove the verdict. Reference the specific pass or fail condition from the scenario card.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Action Items</div>
+    <div class="template-field-placeholder">List every follow-up action with a named owner and a specific due date. Example: "Rewrite OKR KR-2 to clarify measurement method — PM — by 2026-06-06." No shared ownership. No open-ended timelines. "None" is only valid if the simulation passed cleanly.</div>
+  </div>
+</div>
+
+<div class="separator"></div>
+
+<!-- Section 5: LLM Pre-Triage Prompt -->
+<div class="section-heading">Section 5 — LLM Feature Pre-Triage Prompt</div>
+
+<div class="prompt-card">
+  <div class="prompt-card-title">Product Simulation Pre-Triage — Paste into any LLM</div>
+  <div class="prompt-params">
+    <span class="prompt-param">[FEATURE NAME]</span>
+    <span class="prompt-param">[BRIEF DESCRIPTION]</span>
+  </div>
+  <div class="prompt-body">You are a product strategist reviewing a feature proposal for H.O.N. (Habit Over Numbers), a founder-led iOS fitness coaching app at pre-launch stage. The app uses a single observable data store (SeedStore), a phrase bank coaching system, and five tabs: Home, Workout, Progress, Insights, Trainer. The coaching voice is spare, direct, and identity-affirming. There are 22 defined cohort members (U-01 through U-22) ranging from elite powerlifters to beginners to older adults recovering from injury.
+
+Feature being reviewed:
+Name: [FEATURE NAME]
+Description: [BRIEF DESCRIPTION]
+
+Evaluate and return exactly these five outputs:
+
+1. PROBLEM CLARITY (1–5): Does the description imply a clear problem with a specific user segment? Or is it solution-first? Is the problem falsifiable? Rate 1 (no discernible problem) to 5 (specific, falsifiable, segment-named).
+
+2. COHORT FIT: Name the 2–3 cohort member archetypes (from U-01 through U-22) most likely to benefit. Be specific — cite the training profile, goal, or behavioral characteristic that makes them the primary beneficiary. Then name 1 cohort archetype likely to be neutral or harmed by the feature's presence.
+
+3. RISK FLAGS: Identify the top 3 risks this feature introduces. Be specific to H.O.N.'s architecture: SeedStore side effects, phrase bank changes needed, analytics engine interaction, HealthKit data requirements, coaching voice fit, or App Store review risk. No generic software risks.
+
+4. SPEC GAPS: List the 3 most important spec elements missing based on the description provided. Reference the PR criteria by ID (PR-001 through PR-015). For each gap, state what the missing element would need to say to be considered complete.
+
+5. RECOMMENDED SIMULATION: Name the single PSIM scenario (PSIM-01 through PSIM-15) most critical to run before this feature enters a sprint. State why that specific simulation is the right pre-build stress test for this feature, not the others.</div>
+  <div style="margin-top:14px;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--purple);margin-bottom:8px;">Expected Outputs</div>
+  <div class="prompt-outputs">
+    <div class="prompt-output-item">
+      <div class="prompt-output-label">Problem Clarity</div>
+      <div class="prompt-output-desc">1–5 score with rationale — does the description start from a user problem or a solution in search of one?</div>
+    </div>
+    <div class="prompt-output-item">
+      <div class="prompt-output-label">Cohort Fit</div>
+      <div class="prompt-output-desc">2–3 primary beneficiary archetypes named with specific evidence + 1 cohort archetype likely to be neutral or harmed</div>
+    </div>
+    <div class="prompt-output-item">
+      <div class="prompt-output-label">Risk Flags</div>
+      <div class="prompt-output-desc">Top 3 risks specific to H.O.N.'s architecture: SeedStore, phrase bank, analytics, HealthKit, coaching voice, App Store</div>
+    </div>
+    <div class="prompt-output-item">
+      <div class="prompt-output-label">Spec Gaps</div>
+      <div class="prompt-output-desc">3 missing spec elements mapped to PR criteria IDs — each with a description of what the complete version would say</div>
+    </div>
+    <div class="prompt-output-item" style="grid-column:1 / -1;">
+      <div class="prompt-output-label">Recommended Simulation</div>
+      <div class="prompt-output-desc">Single PSIM ID (PSIM-01 through PSIM-15) with a specific rationale for why that simulation is the most critical pre-build stress test for this particular feature — not the others</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

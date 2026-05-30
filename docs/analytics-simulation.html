@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H.O.N. — Analytics Simulation Protocol</title>
+<style>
+  :root {
+    --bg:       #111111;
+    --card:     #1c1c1e;
+    --border:   rgba(255,255,255,0.07);
+    --amber:    #f59e0b;
+    --positive: #34d399;
+    --negative: #f87171;
+    --warning:  #fbbf24;
+    --muted:    rgba(255,255,255,0.4);
+    --text:     rgba(255,255,255,0.88);
+    --text2:    rgba(255,255,255,0.55);
+    --blue:     #60a5fa;
+    --purple:   #a78bfa;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 32px 20px 64px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .header { margin-bottom: 36px; }
+  .header-top {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .logo {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber);
+  }
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--amber), transparent);
+    opacity: 0.3;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    color: var(--text);
+  }
+  .subtitle {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+
+  .section-heading {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin: 32px 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-heading::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .intro-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 28px;
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.7;
+    border-left: 3px solid var(--amber);
+  }
+
+  /* Scenario cards */
+  .scenario {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 14px;
+    transition: border-color 0.2s;
+  }
+  .scenario:hover { border-color: rgba(255,255,255,0.14); }
+
+  .scenario-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .scenario-id {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    letter-spacing: 0.08em;
+    color: var(--amber);
+    background: rgba(245,158,11,0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .scenario-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+    flex: 1;
+  }
+
+  .badge-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+
+  .badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .badge-blue   { background: rgba(96,165,250,0.15);  color: var(--blue); }
+  .badge-amber  { background: rgba(245,158,11,0.15);  color: var(--amber); }
+  .badge-green  { background: rgba(52,211,153,0.15);  color: var(--positive); }
+  .badge-purple { background: rgba(167,139,250,0.15); color: var(--purple); }
+  .badge-red    { background: rgba(248,113,113,0.15); color: var(--negative); }
+
+  .scenario-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 20px;
+    margin-bottom: 12px;
+  }
+  @media (max-width: 600px) {
+    .scenario-grid { grid-template-columns: 1fr; }
+  }
+
+  .field-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 3px;
+  }
+  .field-value {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+
+  .field-full { grid-column: 1 / -1; }
+
+  .step-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 4px;
+    counter-reset: steps;
+  }
+  .step-list li {
+    font-size: 13px;
+    color: var(--text2);
+    padding: 4px 0 4px 26px;
+    position: relative;
+    line-height: 1.5;
+    counter-increment: steps;
+  }
+  .step-list li::before {
+    content: counter(steps);
+    position: absolute;
+    left: 0;
+    top: 4px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(245,158,11,0.15);
+    color: var(--amber);
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'SF Mono', monospace;
+  }
+
+  .criteria-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  @media (max-width: 600px) {
+    .criteria-grid { grid-template-columns: 1fr; }
+  }
+
+  .criteria-box {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .criteria-pass {
+    background: rgba(52,211,153,0.06);
+    border: 1px solid rgba(52,211,153,0.15);
+    color: var(--positive);
+  }
+  .criteria-fail {
+    background: rgba(248,113,113,0.06);
+    border: 1px solid rgba(248,113,113,0.15);
+    color: var(--negative);
+  }
+  .criteria-box .criteria-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    opacity: 0.8;
+  }
+
+  code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 11px;
+    background: rgba(255,255,255,0.06);
+    padding: 1px 4px;
+    border-radius: 3px;
+  }
+
+  /* Matrix table */
+  .matrix-wrapper {
+    overflow-x: auto;
+    margin: 0 -4px;
+    padding: 0 4px;
+    border-radius: 10px;
+  }
+
+  .matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    min-width: 780px;
+  }
+
+  .matrix-table th {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text2);
+    padding: 8px 4px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    background: var(--card);
+  }
+
+  .matrix-table th.row-header {
+    text-align: left;
+    padding-left: 10px;
+    min-width: 60px;
+  }
+
+  .matrix-table td {
+    padding: 6px 4px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 10px;
+  }
+
+  .matrix-table td.row-header {
+    text-align: left;
+    padding-left: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    font-family: 'SF Mono', monospace;
+    color: var(--amber);
+    white-space: nowrap;
+  }
+
+  .matrix-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .cell-high {
+    background: rgba(245,158,11,0.2);
+    color: var(--amber);
+    border-radius: 3px;
+    font-weight: 700;
+    font-size: 9px;
+  }
+  .cell-low {
+    color: rgba(255,255,255,0.18);
+    font-size: 9px;
+  }
+
+  /* Results template */
+  .template-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    margin-top: 16px;
+  }
+
+  .template-field {
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .template-field:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+  .template-field-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 6px;
+  }
+  .template-field-placeholder {
+    font-size: 13px;
+    color: rgba(255,255,255,0.2);
+    font-style: italic;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px dashed rgba(255,255,255,0.1);
+    border-radius: 6px;
+    line-height: 1.5;
+  }
+
+  /* LLM prompt */
+  .prompt-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--purple);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-top: 16px;
+  }
+  .prompt-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin-bottom: 12px;
+  }
+  .prompt-body {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.7;
+    white-space: pre-wrap;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .prompt-note {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 12px;
+    line-height: 1.5;
+  }
+
+  .separator {
+    height: 1px;
+    background: var(--border);
+    margin: 28px 0;
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 20px 14px 48px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <span class="logo">H.O.N.</span>
+    <div class="divider-line"></div>
+  </div>
+  <h1>Analytics Simulation Protocol</h1>
+  <div class="subtitle">15 analytics scenarios · Measurement gap matrix · Data capture template · LLM pre-triage prompt · Last updated: 2026-05-30</div>
+</div>
+
+<!-- Section 1: How to run -->
+<div class="section-heading">Section 1 — How to Run Analytics Simulations</div>
+<div class="intro-card">
+Analytics simulations are structured test runs that verify our instrumentation answers real product questions — not just that events fire, but that the resulting data is actually usable. Each simulation assigns a specific analyst or team member to one scenario, defines the exact data source and query approach, and produces a documented finding. Simulations are run in order of priority: start with ASIM-01 through ASIM-07, then ASIM-08 through ASIM-15 as time permits. Priority pairings in the matrix in Section 3 (marked H) indicate which team role is best suited for each scenario. A simulation is only complete when the Pass or Fail verdict is written with supporting evidence — not when the steps are finished. Results are captured using the template in Section 4.
+</div>
+
+<!-- Section 2: Scenarios -->
+<div class="section-heading">Section 2 — 15 Analytics Simulation Scenarios</div>
+
+<!-- ASIM-01 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">ASIM-01</div>
+    <div class="scenario-title">New User Funnel Trace</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-blue">Funnel: Onboarding</span>
+    <span class="badge badge-amber">Priority: Critical</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Measuring</div>
+      <div class="field-value">Can we trace a specific new user from install through their first completed workout using only event data, without any developer tools or device access?</div>
+    </div>
+    <div>
+      <div class="field-label">Data Source</div>
+      <div class="field-value">Analytics event stream (App Store Connect / TestFlight diagnostics or local event log). Events: <code>onboarding_started</code>, <code>profile_saved</code>, <code>onboarding_completed</code>, <code>session_started</code>, <code>set_logged</code>, <code>session_ended</code>.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Simulate a fresh install. Complete onboarding with a standard profile (goal: strength, equipment: barbell, fitness level: intermediate).</li>
+        <li>Log one complete workout: 3 exercises, 3 sets each, all sets marked complete.</li>
+        <li>Export or inspect the event stream. List all events in order of timestamp.</li>
+        <li>Attempt to reconstruct the full user journey from events alone: install → onboarding → first session → first set → session end.</li>
+        <li>Confirm each funnel step is represented by at least one event with a correct timestamp and non-null required fields.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Full journey traceable from events alone. All 6 event types present. Timestamps in correct sequence. No required field is null. An analyst with no app access could reconstruct the journey from the event log alone.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Any step missing from the event stream. Any required field null or empty. Events out of chronological order. Journey reconstruction requires developer-level app access or database inspection beyond the event log.
+    </div>
+  </div>
+</div>
+
+<!-- ASIM-02 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">ASIM-02</div>
+    <div class="scenario-title">Feature Adoption Audit</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-blue">Funnel: Feature Adoption</span>
+    <span class="badge badge-amber">Priority: High</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Measuring</div>
+      <div class="field-value">30 days after a new feature ships, can we answer: what % of users tried it, what % used it more than once, and what % use it in every session?</div>
+    </div>
+    <div>
+      <div class="field-label">Data Source</div>
+      <div class="field-value">Events: <code>feature_first_used</code>, <code>tab_viewed</code>, and feature-specific events (e.g., <code>coaching_note_expanded</code>, <code>plan_generated</code>). Query: group by user, count distinct sessions with feature use.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Choose one feature that has shipped in the last 30 days (e.g., RPE logging, drop sets, Trainer tab).</li>
+        <li>Identify the key event for that feature (e.g., <code>rpe_logged</code>, <code>drop_set_completed</code>, <code>plan_generated</code>).</li>
+        <li>From the event log, count: users with exactly 1 use (one-time tryout), users with 2–4 uses (occasional), users who use it every session (habitual).</li>
+        <li>Calculate adoption tiers: tryout %, occasional %, habitual % of total users who have logged at least one session.</li>
+        <li>Identify the top adoption barrier: which users tried and never returned to the feature?</li>
+      </ol>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      All three adoption tiers measurable (tryout, occasional, habitual). Top adoption barrier identifiable. Segment of try-and-abandon users extractable for follow-up. Query runs without requiring non-event data sources.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Cannot distinguish one-time tryout from habitual use. Feature event not present in stream or uses inconsistent naming. Query requires device-level data access beyond the event log.
+    </div>
+  </div>
+</div>
+
+<!-- ASIM-03 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">ASIM-03</div>
+    <div class="scenario-title">Churn Signal Detection</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-red">Funnel: Churn Signal</span>
+    <span class="badge badge-amber">Priority: Critical</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Measuring</div>
+      <div class="field-value">Can we identify users who have not logged a session in 12+ days but opened the app in the last 7 days — the pre-churn signal window?</div>
+    </div>
+    <div>
+      <div class="field-label">Data Source</div>
+      <div class="field-value">Events: <code>session_started</code> (to find last session date) and <code>app_opened_no_session</code> (app open without logging). Filter: last_session_date &gt; 12 days ago AND last_app_open &lt; 7 days ago.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>From the event log, identify the most recent <code>session_started</code> per user. Calculate days since last session.</li>
+        <li>Filter for users where days since last session is between 12 and 29 (pre-churn window).</li>
+        <li>From that filtered set, further filter for users with an <code>app_opened_no_session</code> event in the last 7 days.</li>
+        <li>Calculate this segment as a percentage of MAU. This is the pre-churn warning cohort.</li>
+        <li>Confirm: can you distinguish an app open that resulted in a session from one that did not, using only events?</li>
+      </ol>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Pre-churn segment identifiable and sized as % of MAU. App opens with and without sessions are distinguishable from events. Days-since-last-session calculable without database access. Segment extractable for re-engagement.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Cannot distinguish app opens with sessions from opens without. <code>app_opened_no_session</code> event missing or not firing. Pre-churn segment not quantifiable from event data alone.
+    </div>
+  </div>
+</div>
+
+<!-- ASIM-04 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">ASIM-04</div>
+    <div class="scenario-title">Coaching Engagement Measurement</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-blue">Dashboard: Coaching Engagement</span>
+    <span class="badge badge-green">Priority: High</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Measuring</div>
+      <div class="field-value">What % of post-set coaching notes result in the user reading more (expanding) vs. immediately dismissing? Which coaching note type has the lowest engagement?</div>
+    </div>
+    <div>
+      <div class="field-label">Data Source</div>
+      <div class="field-value">Events: <code>coaching_note_shown</code> and <code>coaching_note_expanded</code>, both with <code>note_type</code> field. Engagement rate = expanded / shown per note type.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Pull all <code>coaching_note_shown</code> events. Group by <code>note_type</code> (post-set, readiness, trainer, summary). Count per type.</li>
+        <li>Pull all <code>coaching_note_expanded</code> events. Group by <code>note_type</code>. Count per type.</li>
+        <li>Calculate expansion rate per type: expanded count / shown count. Express as a percentage.</li>
+        <li>Rank note types by expansion rate. Identify the lowest-engagement type.</li>
+        <li>For the lowest-engagement type, confirm: are dismissals happening within 1 second (not read) or after 3+ seconds (read but not expanded)?</li>
+      </ol>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Expansion rate per note type calculable. Lowest-engagement note type identifiable without manual inspection. Dismiss vs. expand distinguishable from event names alone. Time-in-view calculable if timestamps are millisecond-precision.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Expand vs. dismiss not distinguishable from events. <code>note_type</code> field missing or inconsistent values. Coaching note shown events not firing or not matched to user actions correctly.
+    </div>
+  </div>
+</div>
+
+<!-- ASIM-05 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">ASIM-05</div>
+    <div class="scenario-title">A/B Test Evaluation Simulation</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-purple">Category: A/B Testing</span>
+    <span class="badge badge-amber">Priority: High</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Measuring</div>
+      <div class="field-value">Given two event streams (variant A and B), can we determine which performed better on the primary metric using proper statistical methods?</div>
+    </div>
+    <div>
+      <div class="field-label">Data Source</div>
+      <div class="field-value">Simulated event data for 200 users split 50/50. Variant field attached to each user's events. Primary metric: session completion rate (session_ended / session_started). Apply chi-squared test or equivalent.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Generate or obtain simulated event data: 100 users in variant A, 100 in variant B. Both groups have 2 weeks of sessions.</li>
+        <li>Calculate session completion rate for each group: <code>session_ended</code> / <code>session_started</code> events per user, then average across group.</li>
+        <li>Apply a two-proportion z-test or chi-squared test to determine if the difference is statistically significant (p &lt; 0.05).</li>
+        <li>If p &lt; 0.05, declare a winner. If p ≥ 0.05, declare result inconclusive.</li>
+        <li>Check: was the sample size sufficient to detect the observed effect at 80% power? If not, document the underpowered result.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Clear winner identifiable at p &lt; 0.05 OR result is declared inconclusive at current sample size with a documented explanation. Statistical test can be run from event data alone. Sample size check performed.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Cannot perform statistical test from available data. Variant assignment not recoverable from events. Metric not calculable at per-user level. Test evaluated before reaching minimum sample size.
+    </div>
+  </div>
+</div>
+
+<!-- ASIM-06 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">ASIM-06</div>
+    <div class="scenario-title">Retention Cohort Analysis</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-blue">Funnel: Retention Cohort</span>
+    <span class="badge badge-amber">Priority: Critical</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Measuring</div>
+      <div class="field-value">For users who installed in a specific week, what are their D1, D7, and D30 retention rates? Can we generate a retention curve from events alone?</div>
+    </div>
+    <div>
+      <div class="field-label">Data Source</div>
+      <div class="field-value">Events: <code>onboarding_started</code> (install proxy) and <code>session_started</code> (retention proxy). Group by install week. Count users with sessions on or within ±1 day of D1, D7, D30.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Identify the install cohort: users whose <code>onboarding_started</code> event falls within a target week (e.g., the week of TestFlight launch).</li>
+        <li>For each user in the cohort, calculate their install date from <code>onboarding_started</code> timestamp.</li>
+        <li>For D1 retention: count users with a <code>session_started</code> event on install_date + 1 (±1 day tolerance). Divide by cohort size.</li>
+        <li>Repeat for D7 and D30. Plot the resulting three-point retention curve.</li>
+        <li>Filter the cohort by onboarding goal (strength/consistency/body composition). Generate a separate retention curve per goal. Compare curves.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Retention curve generated from event data alone. D1, D7, D30 all distinct and measurable. Cohort filterable by onboarding goal. A user with sessions on day 0 and day 29 correctly counted as D30-retained.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Cannot distinguish D7 retention from D30 retention. Install date not recoverable from events. Goal-based cohort filtering not possible. Retention metric requires device-level data beyond the event stream.
+    </div>
+  </div>
+</div>
+
+<!-- ASIM-07 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">ASIM-07</div>
+    <div class="scenario-title">Funnel Drop-off Diagnosis</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-blue">Funnel: Onboarding</span>
+    <span class="badge badge-red">Priority: Critical</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Measuring</div>
+      <div class="field-value">In the onboarding funnel, which step has the highest drop-off rate? Can we pinpoint exactly where we are losing users during first-run setup?</div>
+    </div>
+    <div>
+      <div class="field-label">Data Source</div>
+      <div class="field-value">Five onboarding events in sequence: <code>onboarding_started</code>, <code>profile_saved</code>, <code>onboarding_completed</code>, <code>session_started</code> (first session). Count users reaching each step. Drop-off = users at step N minus users at step N+1.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Pull all <code>onboarding_started</code> events. This is the funnel entry count.</li>
+        <li>Pull users who also have <code>profile_saved</code>. Calculate step 1 → step 2 conversion rate.</li>
+        <li>Pull users who also have <code>onboarding_completed</code>. Calculate step 2 → step 3 conversion rate.</li>
+        <li>Pull users who also have a <code>session_started</code> within 24 hours of <code>onboarding_completed</code>. Calculate step 3 → step 4 conversion rate.</li>
+        <li>Identify the step with the largest absolute drop in users. This is the primary UX intervention target.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Biggest drop-off step identified by name. % of users who stopped at that step is calculable. Funnel steps sequenceable for individual users (not just aggregate counts). Time between steps calculable from timestamps.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Cannot sequence the funnel steps for a single user. Events aggregated at the count level with no per-user attribution. Biggest drop-off step not distinguishable from noise in small samples.
+    </div>
+  </div>
+</div>
+
+<!-- ASIM-08 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">ASIM-08</div>
+    <div class="scenario-title">Trainer Adoption Funnel</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-blue">Funnel: Trainer Adoption</span>
+    <span class="badge badge-green">Priority: High</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Measuring</div>
+      <div class="field-value">Of users who viewed the Trainer tab, what % generated a plan? Of those, what % started it? Of those, what % completed it? Is the Trainer funnel healthy?</div>
+    </div>
+    <div>
+      <div class="field-label">Data Source</div>
+      <div class="field-value">Events: <code>trainer_tab_viewed</code>, <code>plan_generated</code>, <code>plan_started</code>, <code>plan_completed</code>. Three conversion rates calculable from sequential event counts per user.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Count users with at least one <code>trainer_tab_viewed</code> event. This is the funnel top.</li>
+        <li>Of those, count users who also have <code>plan_generated</code>. Calculate view → generate conversion rate.</li>
+        <li>Of those, count users who also have <code>plan_started</code>. Calculate generate → start conversion rate.</li>
+        <li>Of those, count users who also have <code>plan_completed</code>. Calculate start → complete conversion rate.</li>
+        <li>Identify users who generated a plan but never started it. Size this segment — they are the highest-priority Trainer re-engagement target.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Three-step funnel visible with conversion rates. Each conversion rate calculable without manual lookup. Plan-generated-but-never-started segment sized. Users who started but did not complete are distinguishable from completers.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Any step in the funnel missing from the event stream. Cannot distinguish plan_generated from plan_started. Completers not distinguishable from starters in event data.
+    </div>
+  </div>
+</div>
+
+<!-- ASIM-09 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">ASIM-09</div>
+    <div class="scenario-title">Cardio vs. Strength User Segmentation</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-blue">Funnel: Cardio Adoption</span>
+    <span class="badge badge-green">Priority: Medium</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Measuring</div>
+      <div class="field-value">Can we identify dual-modality users (strength + cardio) vs. single-modality users from event data? What % of active users use both modalities?</div>
+    </div>
+    <div>
+      <div class="field-label">Data Source</div>
+      <div class="field-value">Events: strength <code>session_started</code> and <code>cardio_session_started</code>. A dual-modality user has both event types in their history. Single-modality users have only one type.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>From the event log, identify all users with at least one strength <code>session_started</code> event (strength users).</li>
+        <li>From the event log, identify all users with at least one <code>cardio_session_started</code> event (cardio users).</li>
+        <li>Find the intersection: users who appear in both lists. This is the dual-modality segment.</li>
+        <li>Calculate: dual-modality % of total active users. Strength-only %. Cardio-only %.</li>
+        <li>Compare retention curves for dual-modality vs. single-modality users. Hypothesis: dual-modality users have higher D30 retention.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Dual-modality segment identifiable and sized from events alone. Cardio and strength sessions distinguishable without inspecting session content. Retention comparison between modality segments calculable.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Cardio and strength sessions not distinguishable from event data (same event name with no modality field). Dual-modality users cannot be identified without device-level data access.
+    </div>
+  </div>
+</div>
+
+<!-- ASIM-10 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">ASIM-10</div>
+    <div class="scenario-title">Error Rate Hotspot</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-red">Dashboard: Error Rate</span>
+    <span class="badge badge-amber">Priority: High</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Measuring</div>
+      <div class="field-value">Which input field has the highest abandonment rate after a validation error? Where are users giving up instead of correcting their input?</div>
+    </div>
+    <div>
+      <div class="field-label">Data Source</div>
+      <div class="field-value">Events: <code>input_validation_error</code> (with <code>field_name</code>, <code>error_type</code>), <code>error_recovered</code>, <code>error_abandoned</code>. Abandonment rate per field = abandoned / (abandoned + recovered).</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Pull all <code>input_validation_error</code> events. Group by <code>field_name</code>. Count total errors per field.</li>
+        <li>For each field, pull <code>error_recovered</code> and <code>error_abandoned</code> events that follow an error on that field.</li>
+        <li>Calculate abandonment rate per field: <code>error_abandoned</code> / (<code>error_abandoned</code> + <code>error_recovered</code>).</li>
+        <li>Rank fields by abandonment rate. Identify the top 3 highest-abandonment fields.</li>
+        <li>For the highest-abandonment field, identify the most common <code>error_type</code>. This is the primary UX fix target.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Top 3 error-prone fields identifiable with abandonment rates within 48 hours of launch. <code>field_name</code> links the error event to the specific input. Recovery vs. abandonment distinguishable per field. Most common error type per field identifiable.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Cannot link the error event to the specific field (field_name missing or generic). Recovery vs. abandonment not distinguishable as separate event types. Top-abandonment fields not rankable from event data alone.
+    </div>
+  </div>
+</div>
+
+<!-- ASIM-11 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">ASIM-11</div>
+    <div class="scenario-title">Session Quality Trend</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-blue">Dashboard: Session Quality</span>
+    <span class="badge badge-green">Priority: Medium</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Measuring</div>
+      <div class="field-value">Is median session duration improving, flat, or declining over the first 90 days of TestFlight? Is the app producing substantive workouts over time?</div>
+    </div>
+    <div>
+      <div class="field-label">Data Source</div>
+      <div class="field-value">Events: <code>session_started</code> and <code>session_ended</code> (both with UTC timestamps). Duration = <code>session_ended</code>.timestamp minus <code>session_started</code>.timestamp per session. Group by calendar week. Calculate median per week.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Pull all matched <code>session_started</code> / <code>session_ended</code> event pairs. Calculate duration in minutes for each session.</li>
+        <li>Discard outliers: sessions under 3 minutes (likely test sessions) and over 120 minutes (likely forgot to end).</li>
+        <li>Group by calendar week. Calculate median duration per week for 13 weeks (90 days).</li>
+        <li>Plot the weekly median trend. Assess direction: improving, flat, or declining.</li>
+        <li>Break down by user segment (goal: strength vs. consistency). Do different goals produce different duration trends?</li>
+      </ol>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Trend direction (improving/flat/declining) identifiable over 13 weeks. Week-over-week median calculable. Session pairs matched correctly by session ID. Outlier filtering possible from duration field alone.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Session duration not calculable from events (timestamps missing or unpaired). Session started and ended events cannot be matched to the same session. Trend direction not assessable due to insufficient data or incorrect pairing.
+    </div>
+  </div>
+</div>
+
+<!-- ASIM-12 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">ASIM-12</div>
+    <div class="scenario-title">Privacy Audit</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-red">Category: Privacy</span>
+    <span class="badge badge-amber">Priority: Critical</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Measuring</div>
+      <div class="field-value">Simulate a regulatory request: confirm that no PII appears in any event in the analytics stream. This is a compliance exercise, not a product question.</div>
+    </div>
+    <div>
+      <div class="field-label">Data Source</div>
+      <div class="field-value">Raw event stream. Pull 100 random events across all event types. Manually inspect every field value — not just field names, but actual values — for any string that could identify a person.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Pull 100 random events from the analytics stream, sampled across all event types and time periods.</li>
+        <li>For each event, list every field and its value. Do not skip fields with values that appear to be IDs or hashes.</li>
+        <li>Check each value against a PII checklist: name, email, phone, device name (can include real names), HealthKit-derived values, precise geolocation.</li>
+        <li>Flag any field value that could identify or re-identify a specific person, including indirect combinations (e.g., age + zip + fitness level in a small population).</li>
+        <li>Document findings: zero PII found (pass) or list each PII instance with field name, event type, and recommended fix (fail).</li>
+      </ol>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Zero PII found in 100 events. Review conducted by a non-engineer (person without knowledge of the schema design). Review documented with reviewer name, date, and list of events inspected.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Any field contains a name, email, HealthKit value, device name that includes a real name, or any combination of fields that re-identifies a user in a cohort of fewer than 22 people.
+    </div>
+  </div>
+</div>
+
+<!-- ASIM-13 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">ASIM-13</div>
+    <div class="scenario-title">Dashboard Latency</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-blue">Dashboard: All</span>
+    <span class="badge badge-green">Priority: Medium</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Measuring</div>
+      <div class="field-value">How long after a session ends does it appear in the analytics dashboard? Is the data fresh enough to make daily product decisions?</div>
+    </div>
+    <div>
+      <div class="field-label">Data Source</div>
+      <div class="field-value">Live analytics dashboard (App Store Connect or equivalent). Log one session at a known timestamp. Record dashboard state at 1h, 6h, 24h after session. Note when the session first appears.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Log a complete session. Note the exact time the <code>session_ended</code> event fires (to the minute).</li>
+        <li>Open the analytics dashboard. Confirm the session is not yet visible. Record current dashboard state.</li>
+        <li>At exactly 1 hour after session end, refresh the dashboard. Is the session visible? Record result.</li>
+        <li>At 6 hours after session end, refresh again. Is the session visible? Record result.</li>
+        <li>At 24 hours after session end, refresh again. The session must be visible by this point. If not, document the latency as a failure and escalate.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Session reflected in the analytics dashboard within 24 hours of <code>session_ended</code> event. Target: visible within 6 hours. North Star metric (Weekly Active Loggers) updates within 24 hours.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Session not reflected in any dashboard within 24 hours. Dashboard last-updated timestamp more than 24 hours old. Session visible in raw event stream but not in computed metrics (pipeline failure).
+    </div>
+  </div>
+</div>
+
+<!-- ASIM-14 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">ASIM-14</div>
+    <div class="scenario-title">Comeback Correlation</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-blue">Funnel: Comeback</span>
+    <span class="badge badge-amber">Priority: High</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Measuring</div>
+      <div class="field-value">Do users who receive a comeback message have a higher same-day session rate than those who open the app after a gap but do not receive a message? Does the message actually work?</div>
+    </div>
+    <div>
+      <div class="field-label">Data Source</div>
+      <div class="field-value">Events: <code>comeback_message_shown</code> (users who received the message after a 7+ day gap) and <code>session_started</code> within 24 hours. Control group: users with a 7+ day gap who opened the app but did not see a message.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Segment users: those with a <code>comeback_message_shown</code> event (treatment) and those with a 7+ day gap + app open but no message (control).</li>
+        <li>For each segment, count users who also have a <code>session_started</code> event within 24 hours of the gap-day app open.</li>
+        <li>Calculate same-day session rate for treatment vs. control. Is treatment rate higher?</li>
+        <li>Calculate the difference in same-day session rates. If treatment is higher by more than 10 percentage points, the message is effective.</li>
+        <li>Document: message text variant (if A/B tested), gap length distribution for treatment vs. control, and whether the correlation is consistent across different gap lengths (7–14 days vs. 15–29 days).</li>
+      </ol>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Correlation measurable from events. Treatment vs. control groups identifiable. Same-day session rate calculable per group. Message effectiveness quantifiable as a percentage-point difference. Gap length available from timestamps.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Cannot link comeback message event to subsequent session event for the same user. No control group (all gap users receive the message, preventing comparison). Gap length not calculable from event timestamps.
+    </div>
+  </div>
+</div>
+
+<!-- ASIM-15 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">ASIM-15</div>
+    <div class="scenario-title">Schema Version Stress Test</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-red">Category: Data Integrity</span>
+    <span class="badge badge-amber">Priority: High</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Measuring</div>
+      <div class="field-value">After a breaking schema change (renaming a field), is historical data still analyzable? Does schema versioning protect us from silent data loss when the event structure evolves?</div>
+    </div>
+    <div>
+      <div class="field-label">Data Source</div>
+      <div class="field-value">Event stream with mixed schema versions. Old events use <code>exercise_id</code>. New events use <code>exerciseId</code> (hypothetical rename). Verify both are queryable without data loss.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Confirm a baseline: run a query using <code>exercise_id</code> on historical events. Note the count of events returned.</li>
+        <li>Simulate a schema change: in the event schema definition, rename <code>exercise_id</code> to <code>exerciseId</code>. Increment the <code>schema_version</code> field from 1 to 2.</li>
+        <li>Log 5 new events with the updated schema (version 2). Confirm new events use <code>exerciseId</code>.</li>
+        <li>Run the original query using <code>exercise_id</code>. Confirm historical (version 1) events are still returned. Confirm version 2 events are not counted (correct — they use the new field name).</li>
+        <li>Run a new query using <code>exerciseId</code>. Confirm only version 2 events are returned. Document: is it possible to join both schema versions in a single query by checking <code>schema_version</code>?</li>
+      </ol>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Historical data queryable with the old field name after schema change. New data queryable with new field name. <code>schema_version</code> field allows filtering by version. A combined query spanning both versions is possible by checking <code>schema_version</code>.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Historical data becomes inaccessible after schema change. <code>schema_version</code> field absent or not populated. No mechanism to distinguish old-schema from new-schema events. Breaking change silently invalidates historical queries.
+    </div>
+  </div>
+</div>
+
+<div class="separator"></div>
+
+<!-- Section 3: Measurement Gap Matrix -->
+<div class="section-heading">Section 3 — Measurement Gap Matrix</div>
+<p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6;">Each cell represents a scenario-role pairing. H = this role should prioritize running this scenario. Critical gaps are where the scenario tests something the role owns. Run all H pairings before App Store submission.</p>
+
+<div class="matrix-wrapper">
+<table class="matrix-table">
+<thead>
+<tr>
+  <th class="row-header">Scenario</th>
+  <th>Analytics<br>Lead</th>
+  <th>PM</th>
+  <th>Engineering</th>
+  <th>Design</th>
+  <th>Growth</th>
+  <th>Content</th>
+  <th>Support</th>
+  <th>Research</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td class="row-header">ASIM-01</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">ASIM-02</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+</tr>
+<tr>
+  <td class="row-header">ASIM-03</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">ASIM-04</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+</tr>
+<tr>
+  <td class="row-header">ASIM-05</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+</tr>
+<tr>
+  <td class="row-header">ASIM-06</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+</tr>
+<tr>
+  <td class="row-header">ASIM-07</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+</tr>
+<tr>
+  <td class="row-header">ASIM-08</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">ASIM-09</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">ASIM-10</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">ASIM-11</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+</tr>
+<tr>
+  <td class="row-header">ASIM-12</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">ASIM-13</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">ASIM-14</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+</tr>
+<tr>
+  <td class="row-header">ASIM-15</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p style="font-size:11px;color:var(--text2);margin-top:10px;">H = this role owns or critically validates this scenario &nbsp;·&nbsp; · = run if capacity allows</p>
+
+<div class="separator"></div>
+
+<!-- Section 4: Results Capture Template -->
+<div class="section-heading">Section 4 — Results Capture Template</div>
+<p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6;">Copy this template for each simulation run. File in <code style="font-family:monospace;font-size:12px;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">docs/uat/</code> with filename <code style="font-family:monospace;font-size:12px;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">ASIMxx-YYYY-MM-DD.md</code>. Or use the <code style="font-family:monospace;font-size:12px;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">uat</code> command for quick entries.</p>
+
+<div class="template-card">
+  <div class="template-field">
+    <div class="template-field-label">Run Metadata</div>
+    <div class="template-field-placeholder">Scenario: ASIM-__ · Analyst: [name] · Date: YYYY-MM-DD · Data source: [event stream / App Store Connect / local log] · Build or TestFlight version: [build number]</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Scenario</div>
+    <div class="template-field-placeholder">State the scenario in one sentence. Example: "Can we trace a new user from install to first completed workout using only event data?"</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Data Source</div>
+    <div class="template-field-placeholder">Describe where the event data came from (e.g., local debug event log, App Store Connect aggregate, TestFlight crash + analytics report). State the time range and cohort of events used.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Query Used</div>
+    <div class="template-field-placeholder">Describe the query or filter logic used to obtain the data. If SQL-like syntax was used, include the key clauses. If manual inspection was used, describe the inspection method. Be specific enough that someone else could reproduce the query.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Finding</div>
+    <div class="template-field-placeholder">State the result in plain language. Include numbers: rates, counts, percentages. Example: "Session completion rate: 84%. Top drop-off step: set_logged to session_ended (11% abandonment)." Do not editorialize — state what the data shows.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Data Gap Discovered</div>
+    <div class="template-field-placeholder">Any measurement gap found during this run: a missing event, a null field, an untracked user segment, or a funnel step that cannot be reconstructed from events. "None discovered" is a valid entry. Data gaps discovered here should be filed as instrumentation bugs in BACKLOG.md.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Action Required</div>
+    <div class="template-field-placeholder">What must happen as a result of this finding? Examples: "Fix null field in coaching_note_shown event — assign to engineering," "Add schema_version to all events by next TestFlight build," "Update privacy label to reflect fitness_level collection." Be specific about owner and urgency.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Pass / Fail</div>
+    <div class="template-field-placeholder">PASS / FAIL / PARTIAL — with one sentence of justification. Example: "FAIL — cannot distinguish cardio_session_started from strength session_started without inspecting session content, violating ASIM-09 pass criteria." Cross-reference the relevant criteria from analytics-review.html (AN-0xx).</div>
+  </div>
+</div>
+
+<div class="separator"></div>
+
+<!-- Section 5: LLM Pre-Triage Prompt -->
+<div class="section-heading">Section 5 — LLM Metric Pre-Triage Prompt</div>
+
+<p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6;">Use this prompt before adding any new metric to the analytics plan. Paste it into an LLM with the metric name and business question filled in. The output should be reviewed against the current event schema before any instrumentation work begins.</p>
+
+<div class="prompt-card">
+  <div class="prompt-label">Metric Pre-Triage Prompt Template</div>
+  <div class="prompt-body">You are an analytics instrumentation reviewer for H.O.N., an iOS fitness coaching app. H.O.N. is local-first (no backend server), iOS only, dark mode, pre-launch. Analytics are opt-in and aggregate-only off-device. No HealthKit data may appear in any analytics event. No PII may appear in any field.
+
+Metric name: [METRIC NAME]
+Business question it answers: [BUSINESS QUESTION — one sentence. Example: "Are users who engage with the Trainer tab more retained at D30 than users who do not?"]
+
+Please provide:
+
+1. EVENTS NEEDED TO MEASURE IT
+   List each event required to calculate this metric. For each:
+   - Event name (snake_case, must match existing schema or be flagged as new)
+   - Required fields for this metric calculation
+   - Whether this event already exists in the schema (yes/no/unknown)
+   - If new: estimated engineering effort to add (hours)
+
+2. FUNNEL IT BELONGS TO
+   Which of the 8 defined funnels does this metric belong to?
+   - Onboarding / First Workout / Trainer Adoption / Feature Depth / Retention / Cardio Adoption / Comeback / Churn Signal
+   - If it does not fit any existing funnel, name the new funnel it would create.
+
+3. PRIVACY CONSIDERATIONS
+   - Does any field required to calculate this metric risk containing PII?
+   - Does this metric require tracking data that should not leave the device?
+   - Does calculating this metric require HealthKit data (which is prohibited)?
+   - Does adding this metric require an update to the App Store Privacy Nutrition Label?
+
+4. DASHBOARD PLACEMENT
+   Where should this metric appear in the analytics dashboard?
+   - North Star / Retention / Feature Adoption / Coaching Engagement / Funnel Health / Error Rate / Session Quality
+   - Is it a primary metric (top of card), a secondary breakdown, or an alert threshold?
+
+5. ESTIMATED QUERY COMPLEXITY
+   Simple: countable from a single event type with no joins or session-level aggregation.
+   Medium: requires matching multiple event types per user or session-level grouping.
+   Complex: requires cohort analysis, funnel sequencing, or statistical testing.</div>
+  <div class="prompt-note">Replace <code>[METRIC NAME]</code> and <code>[BUSINESS QUESTION]</code> before sending. Any event flagged as "new" by the LLM requires a schema version review (AN-035) and a privacy review (AN-038) before instrumentation begins. Any metric that requires HealthKit data must be redesigned — HealthKit data may never appear in analytics events.</div>
+</div>
+
+</body>
+</html>

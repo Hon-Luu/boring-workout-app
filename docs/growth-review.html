@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H.O.N. — Growth &amp; Acquisition Review Criteria</title>
+<style>
+  :root {
+    --bg:       #111111;
+    --card:     #1c1c1e;
+    --border:   rgba(255,255,255,0.07);
+    --amber:    #f59e0b;
+    --positive: #34d399;
+    --negative: #f87171;
+    --warning:  #fbbf24;
+    --muted:    rgba(255,255,255,0.4);
+    --text:     rgba(255,255,255,0.88);
+    --text2:    rgba(255,255,255,0.55);
+    --blue:     #60a5fa;
+    --purple:   #a78bfa;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 32px 20px 64px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .header { margin-bottom: 36px; }
+  .header-top {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .logo {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber);
+  }
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--amber), transparent);
+    opacity: 0.3;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    color: var(--text);
+  }
+  .subtitle {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+
+  .section-heading {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin: 32px 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-heading::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .stats {
+    display: flex;
+    gap: 6px;
+    margin: 20px 0 28px;
+    flex-wrap: wrap;
+  }
+  .stat-pill {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.04em;
+  }
+  .stat-open    { background: rgba(248,113,113,0.15); color: var(--negative); }
+  .stat-pass    { background: rgba(52,211,153,0.15);  color: var(--positive); }
+  .stat-partial { background: rgba(251,191,36,0.15);  color: var(--warning); }
+  .stat-total   { background: rgba(255,255,255,0.08); color: var(--text2); }
+
+  .filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover  { border-color: var(--amber); color: var(--amber); }
+  .filter-btn.active { background: var(--amber); border-color: var(--amber); color: #111; }
+
+  /* Category block */
+  .category-block { margin-bottom: 24px; }
+  .category-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .category-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.04em;
+  }
+  .category-count {
+    font-size: 11px;
+    color: var(--text2);
+    background: rgba(255,255,255,0.06);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .category-chevron {
+    margin-left: auto;
+    color: var(--text2);
+    font-size: 11px;
+    transition: transform 0.2s;
+  }
+  .category-block.collapsed .category-chevron { transform: rotate(-90deg); }
+  .category-block.collapsed .test-list { display: none; }
+
+  /* Test case */
+  .test-case {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transition: border-color 0.2s;
+  }
+  .test-case:hover { border-color: rgba(255,255,255,0.12); }
+  .test-case.status-pass   { border-left: 3px solid var(--positive); }
+  .test-case.status-fail   { border-left: 3px solid var(--negative); }
+  .test-case.status-partial{ border-left: 3px solid var(--warning); }
+  .test-case.status-open   { border-left: 3px solid rgba(255,255,255,0.15); }
+
+  .test-id {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    letter-spacing: 0.06em;
+    color: var(--amber);
+    background: rgba(245,158,11,0.1);
+    padding: 2px 7px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .test-body { flex: 1; }
+
+  .test-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+
+  .test-detail {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.5;
+    margin-bottom: 6px;
+  }
+
+  .test-pass-criteria {
+    font-size: 11px;
+    color: rgba(52,211,153,0.8);
+    background: rgba(52,211,153,0.06);
+    border: 1px solid rgba(52,211,153,0.12);
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+
+  .status-select {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .status-open    { background: rgba(248,113,113,0.15); color: var(--negative); }
+  .status-pass    { background: rgba(52,211,153,0.15);  color: var(--positive); }
+  .status-fail    { background: rgba(248,113,113,0.3);  color: #fca5a5; }
+  .status-partial { background: rgba(251,191,36,0.15);  color: var(--warning); }
+
+  /* Metrics section */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 600px) { .metrics-grid { grid-template-columns: 1fr; } }
+
+  .metric-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .metric-card-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 12px;
+  }
+  .metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 12px;
+  }
+  .metric-row:last-child { border-bottom: none; }
+  .metric-name { color: var(--text2); flex: 1; line-height: 1.4; }
+  .metric-target {
+    font-weight: 700;
+    color: var(--text);
+    font-family: 'SF Mono', monospace;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .metric-target.positive { color: var(--positive); }
+  .metric-target.amber    { color: var(--amber); }
+  .metric-target.negative { color: var(--negative); }
+  .metric-target.blue     { color: var(--blue); }
+
+  /* Gate items */
+  .gate-list { list-style: none; padding: 0; margin: 0; }
+  .gate-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 13px;
+    color: var(--text2);
+  }
+  .gate-item:last-child { border-bottom: none; }
+  .gate-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(245,158,11,0.12);
+    color: var(--amber);
+    font-size: 9px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+    font-family: 'SF Mono', monospace;
+  }
+
+  .done-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--positive);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-top: 16px;
+  }
+  .done-card p {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.8;
+  }
+
+  /* LLM prompt card */
+  .prompt-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--purple);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-top: 16px;
+  }
+  .prompt-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin-bottom: 10px;
+  }
+  .prompt-input {
+    font-size: 13px;
+    color: var(--text2);
+    margin-bottom: 14px;
+    line-height: 1.6;
+  }
+  .prompt-input strong { color: var(--text); }
+  .prompt-outputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  @media (max-width: 600px) { .prompt-outputs { grid-template-columns: 1fr; } }
+  .prompt-output-item {
+    background: rgba(167,139,250,0.05);
+    border: 1px solid rgba(167,139,250,0.12);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .prompt-output-key {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin-bottom: 3px;
+  }
+  .prompt-output-desc {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.4;
+  }
+
+  .gate-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+
+  .separator {
+    height: 1px;
+    background: var(--border);
+    margin: 28px 0;
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 20px 14px 48px; }
+    .test-case { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <span class="logo">H.O.N.</span>
+    <div class="divider-line"></div>
+  </div>
+  <h1>Growth &amp; Acquisition Review Criteria</h1>
+  <div class="subtitle">46 must-pass growth criteria &nbsp;·&nbsp; ASO gates &nbsp;·&nbsp; Lifecycle readiness &nbsp;·&nbsp; Referral mechanisms &nbsp;·&nbsp; Monetization readiness &nbsp;·&nbsp; Definition of done &nbsp;·&nbsp; Last updated: 2026-05-30</div>
+</div>
+
+<div class="stats">
+  <span class="stat-pill stat-total" id="stat-total">46 total</span>
+  <span class="stat-pill stat-open" id="stat-open">— open/fail</span>
+  <span class="stat-pill stat-partial" id="stat-partial">— partial</span>
+  <span class="stat-pill stat-pass" id="stat-pass">— passed</span>
+</div>
+
+<div class="filters">
+  <button class="filter-btn active" onclick="filterTests('all', this)">All</button>
+  <button class="filter-btn" onclick="filterTests('open', this)">Open</button>
+  <button class="filter-btn" onclick="filterTests('pass', this)">Passed</button>
+  <button class="filter-btn" onclick="filterTests('fail', this)">Failed</button>
+  <button class="filter-btn" onclick="filterTests('partial', this)">Partial</button>
+</div>
+
+<!-- Section 1 -->
+<div class="section-heading">Section 1 — Must-Pass Growth Criteria</div>
+
+<!-- Category 1: ASO -->
+<div class="category-block" id="cat-aso">
+  <div class="category-header" onclick="toggleCategory('cat-aso')">
+    <span style="font-size:14px">&#9733;</span>
+    <span class="category-title">1. App Store Optimization — ASO</span>
+    <span class="category-count">8 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="aso">
+      <div class="test-id">GR-001</div>
+      <div class="test-body">
+        <div class="test-title">App Name</div>
+        <div class="test-detail">App name is &le;30 characters, unique in the App Store search for "workout tracker" and "strength training", and communicates the product's purpose or identity.</div>
+        <div class="test-pass-criteria">Pass: Name search on App Store returns H.O.N. in top 5 for "habit workout tracker"; character count &le;30.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="aso">
+      <div class="test-id">GR-002</div>
+      <div class="test-body">
+        <div class="test-title">Subtitle</div>
+        <div class="test-detail">Subtitle is &le;30 characters, contains at least 2 high-traffic keywords not in the app name ("strength log", "fitness coach", "gym tracker"), and communicates the core value in plain language.</div>
+        <div class="test-pass-criteria">Pass: Subtitle tested against keyword tool; 2+ keywords with &gt;50k monthly searches included.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="aso">
+      <div class="test-id">GR-003</div>
+      <div class="test-body">
+        <div class="test-title">Description — Above the Fold</div>
+        <div class="test-detail">First 3 lines (visible without "More") communicate the core value proposition without requiring the user to tap. No feature list in the first paragraph — the opening is about the user's problem, not the app's features.</div>
+        <div class="test-pass-criteria">Pass: First 3 lines read aloud in &lt;10 seconds; convey why H.O.N. exists and who it's for.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="aso">
+      <div class="test-id">GR-004</div>
+      <div class="test-body">
+        <div class="test-title">Screenshots</div>
+        <div class="test-detail">3 screenshots minimum, optimized for iPhone 15 Pro Max (6.7") dimensions. Screenshot 1 shows the most distinctive UI moment (not the home screen). Each screenshot has a headline that communicates a benefit, not a feature name.</div>
+        <div class="test-pass-criteria">Pass: Screenshots reviewed; headline copy passes the voice test (direct, specific, not generic).</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="aso">
+      <div class="test-id">GR-005</div>
+      <div class="test-body">
+        <div class="test-title">Preview Video</div>
+        <div class="test-detail">15–30 second preview video shows real app usage (not animations of UI elements), starts with the most compelling moment in the first 3 seconds, and has no voiceover or text that says "Download now."</div>
+        <div class="test-pass-criteria">Pass: Video reviewed; first 3 seconds show a high-engagement UI state (active workout or PR moment); no download CTA.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="aso">
+      <div class="test-id">GR-006</div>
+      <div class="test-body">
+        <div class="test-title">Keywords Field</div>
+        <div class="test-detail">100 characters used fully; no duplicate keywords from name or subtitle; includes long-tail terms (e.g., "progressive overload tracker", "workout journal", "gym log for iPhone").</div>
+        <div class="test-pass-criteria">Pass: Keyword field is exactly 100 characters; no single word appears more than once across name + subtitle + keywords.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="aso">
+      <div class="test-id">GR-007</div>
+      <div class="test-body">
+        <div class="test-title">Rating Strategy</div>
+        <div class="test-detail">Review request is triggered at the right moment (after a PR, after session 10, after a milestone) — never after an error, never mid-workout.</div>
+        <div class="test-pass-criteria">Pass: Review request trigger defined in code; not triggered during a workout or after any error state.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="aso">
+      <div class="test-id">GR-008</div>
+      <div class="test-body">
+        <div class="test-title">App Store Category</div>
+        <div class="test-detail">Primary category is Health &amp; Fitness; secondary category chosen to maximize visibility in a less competitive category (e.g., Sports).</div>
+        <div class="test-pass-criteria">Pass: Both categories confirmed; app appears in browse under both.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 2: Onboarding Conversion -->
+<div class="category-block" id="cat-onboarding">
+  <div class="category-header" onclick="toggleCategory('cat-onboarding')">
+    <span style="font-size:14px">&#10132;</span>
+    <span class="category-title">2. Onboarding Conversion</span>
+    <span class="category-count">8 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="onboarding">
+      <div class="test-id">GR-009</div>
+      <div class="test-body">
+        <div class="test-title">Time to Value</div>
+        <div class="test-detail">User reaches their first meaningful interaction (logging a set OR receiving a workout plan) within 3 minutes of install.</div>
+        <div class="test-pass-criteria">Pass: Timed with a fresh install; &le;3 minutes to first value moment.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="onboarding">
+      <div class="test-id">GR-010</div>
+      <div class="test-body">
+        <div class="test-title">Onboarding Completion Rate</div>
+        <div class="test-detail">&ge;85% of users who start onboarding complete it (reach the home screen). Biggest drop-off step identified and addressed.</div>
+        <div class="test-pass-criteria">Pass: TestFlight data shows &ge;85% completion; biggest drop-off step identified and addressed.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="onboarding">
+      <div class="test-id">GR-011</div>
+      <div class="test-body">
+        <div class="test-title">Permission Request Timing</div>
+        <div class="test-detail">HealthKit permission requested after the user has seen value (after first session or home screen render), not on first launch.</div>
+        <div class="test-pass-criteria">Pass: Fresh install; HealthKit permission not shown until after reaching home screen.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="onboarding">
+      <div class="test-id">GR-012</div>
+      <div class="test-body">
+        <div class="test-title">Value Preview Before Permissions</div>
+        <div class="test-detail">Before asking for any permission, the app shows the user something compelling: their first workout template, the readiness system explained, or a sample coaching note.</div>
+        <div class="test-pass-criteria">Pass: User sees at least one compelling UI moment before any permission dialog appears.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="onboarding">
+      <div class="test-id">GR-013</div>
+      <div class="test-body">
+        <div class="test-title">Skip Option on Optional Steps</div>
+        <div class="test-detail">Every onboarding step that asks for optional data (name, body weight, equipment) has a visible skip. Skipping does not break any downstream feature.</div>
+        <div class="test-pass-criteria">Pass: All optional steps have a skip affordance; skipping does not break any downstream feature.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="onboarding">
+      <div class="test-id">GR-014</div>
+      <div class="test-body">
+        <div class="test-title">Progress Indicator</div>
+        <div class="test-detail">Onboarding shows how many steps remain. User is never surprised by how long onboarding is.</div>
+        <div class="test-pass-criteria">Pass: Progress dots or step counter visible throughout onboarding.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="onboarding">
+      <div class="test-id">GR-015</div>
+      <div class="test-body">
+        <div class="test-title">Onboarding → First Session Same-Day Rate</div>
+        <div class="test-detail">% of users who complete onboarding AND log a session on the same day. Target: &ge;60%.</div>
+        <div class="test-pass-criteria">Pass: &ge;60% same-day session rate in TestFlight.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="onboarding">
+      <div class="test-id">GR-016</div>
+      <div class="test-body">
+        <div class="test-title">Re-Onboarding for Returning Users</div>
+        <div class="test-detail">A user who deletes and reinstalls the app reaches their first session without re-doing the full onboarding (if their data is backed up or if they've been recognized).</div>
+        <div class="test-pass-criteria">Pass: Reinstall flow handles returning user gracefully; not forced through onboarding again if prior data exists.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 3: Lifecycle & Retention -->
+<div class="category-block" id="cat-lifecycle">
+  <div class="category-header" onclick="toggleCategory('cat-lifecycle')">
+    <span style="font-size:14px">&#9679;</span>
+    <span class="category-title">3. Lifecycle &amp; Retention Mechanisms</span>
+    <span class="category-count">8 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="lifecycle">
+      <div class="test-id">GR-017</div>
+      <div class="test-body">
+        <div class="test-title">Day 1 Notification</div>
+        <div class="test-detail">User receives a motivating (not generic) push notification within 20–24 hours of install if they have not returned. Notification is exercise-specific based on their onboarding goal.</div>
+        <div class="test-pass-criteria">Pass: Notification copy reviewed; references the user's goal or equipment (not "Don't forget to work out!").</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="lifecycle">
+      <div class="test-id">GR-018</div>
+      <div class="test-body">
+        <div class="test-title">Gap Detection</div>
+        <div class="test-detail">If a user has not logged a session in 5 days, the app prepares a comeback experience (not necessarily a notification — could be HomeView state on next open).</div>
+        <div class="test-pass-criteria">Pass: 5-day gap triggers a specific HomeView state distinct from the normal state.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="lifecycle">
+      <div class="test-id">GR-019</div>
+      <div class="test-body">
+        <div class="test-title">Streak System Is Informational, Not Anxiety-Inducing</div>
+        <div class="test-detail">The streak counter shows the current streak without threatening language if it's about to break. No "Your streak ends tonight!" Breaking a streak is presented neutrally on next open.</div>
+        <div class="test-pass-criteria">Pass: Streak display reviewed; no urgency language. Breaking a streak is presented neutrally on next open.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="lifecycle">
+      <div class="test-id">GR-020</div>
+      <div class="test-body">
+        <div class="test-title">Win Moment After First PR</div>
+        <div class="test-detail">After a user's first PR, the app has a moment worth sharing (screenshot-worthy UI, sharable stat card, or at minimum a memorable visual).</div>
+        <div class="test-pass-criteria">Pass: Trigger a PR; UI produces a shareable or memorable moment. User would consider sharing it.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="lifecycle">
+      <div class="test-id">GR-021</div>
+      <div class="test-body">
+        <div class="test-title">D7 Re-Engagement Notification</div>
+        <div class="test-detail">For users who haven't opened the app in 7 days, a push notification is sent. Notification references a specific fact about their training (last exercise, days since last session, upcoming goal milestone).</div>
+        <div class="test-pass-criteria">Pass: Notification copy references at least one fact from the user's data. Not generic.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="lifecycle">
+      <div class="test-id">GR-022</div>
+      <div class="test-body">
+        <div class="test-title">D30 Habit Reinforcement</div>
+        <div class="test-detail">Users who reach 30 days of any activity receive a message that reinforces their identity as an athlete and explains what their consistency has produced.</div>
+        <div class="test-pass-criteria">Pass: D30 message exists; it references their actual session count or progress, not a generic "30 days!" message.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="lifecycle">
+      <div class="test-id">GR-023</div>
+      <div class="test-body">
+        <div class="test-title">In-App Notification Opt-Out</div>
+        <div class="test-detail">User can opt out of push notifications from within the app (not just iOS Settings).</div>
+        <div class="test-pass-criteria">Pass: Settings screen has a notifications preference that reduces frequency or disables non-critical notifications.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="lifecycle">
+      <div class="test-id">GR-024</div>
+      <div class="test-body">
+        <div class="test-title">Lapse Recovery Funnel (30+ Days)</div>
+        <div class="test-detail">For users who have been inactive for 30+ days, a specific win-back sequence exists (could be a notification or a HomeView comeback state). Warm, not guilt-inducing.</div>
+        <div class="test-pass-criteria">Pass: 30+ day inactive user opens app; experience is distinct from 7-day gap experience. Warm, not guilt-inducing.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 4: Word of Mouth & Referral -->
+<div class="category-block" id="cat-wom">
+  <div class="category-header" onclick="toggleCategory('cat-wom')">
+    <span style="font-size:14px">&#8599;</span>
+    <span class="category-title">4. Word of Mouth &amp; Referral</span>
+    <span class="category-count">6 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="wom">
+      <div class="test-id">GR-025</div>
+      <div class="test-body">
+        <div class="test-title">Shareable PR Moment</div>
+        <div class="test-detail">When a user hits a personal record, the visual state is distinctive enough that they'd want to share it. A screenshot of the PR moment should communicate the achievement without requiring explanation.</div>
+        <div class="test-pass-criteria">Pass: PR UI screenshot shown to someone unfamiliar with the app; they understand it's a personal record without explanation.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="wom">
+      <div class="test-id">GR-026</div>
+      <div class="test-body">
+        <div class="test-title">Shareable Milestone</div>
+        <div class="test-detail">Session 25, 50, 100 milestone moments are visually distinct and shareable. The achievement is stated clearly: "Session 100. 100 times you chose to show up."</div>
+        <div class="test-pass-criteria">Pass: Milestone screenshot is self-explanatory to an outsider.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="wom">
+      <div class="test-id">GR-027</div>
+      <div class="test-body">
+        <div class="test-title">No Forced Sharing</div>
+        <div class="test-detail">The app never requires sharing to unlock a feature or advance. Sharing is always optional.</div>
+        <div class="test-pass-criteria">Pass: Zero share gates in the app. All features accessible without sharing.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="wom">
+      <div class="test-id">GR-028</div>
+      <div class="test-body">
+        <div class="test-title">Natural Recommendation Moment</div>
+        <div class="test-detail">The app asks "Do you know anyone who'd benefit from this?" or similar only at a high-satisfaction moment (post-PR, post-milestone, post D30). Never during onboarding, never after a mediocre session.</div>
+        <div class="test-pass-criteria">Pass: Recommendation prompt timing reviewed; only appears at high-satisfaction states.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="wom">
+      <div class="test-id">GR-029</div>
+      <div class="test-body">
+        <div class="test-title">App Store Review Request Timing</div>
+        <div class="test-detail">The review request fires at one of: post-PR, post-milestone (session 10+), or post D7 retention. Never mid-workout, never after an error.</div>
+        <div class="test-pass-criteria">Pass: Trigger conditions reviewed in code; confirmed to match the specified moments.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="wom">
+      <div class="test-id">GR-030</div>
+      <div class="test-body">
+        <div class="test-title">"Told by a Friend" Onboarding Path</div>
+        <div class="test-detail">If a user says they heard about the app from a friend during onboarding, the experience acknowledges it (even just a single line: "Welcome — glad your friend sent you.").</div>
+        <div class="test-pass-criteria">Pass: Referral source question exists in onboarding; positive response triggers a specific acknowledgement.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 5: Monetization Readiness -->
+<div class="category-block" id="cat-monetization">
+  <div class="category-header" onclick="toggleCategory('cat-monetization')">
+    <span style="font-size:14px">&#9671;</span>
+    <span class="category-title">5. Monetization Readiness</span>
+    <span class="category-count">6 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="monetization">
+      <div class="test-id">GR-031</div>
+      <div class="test-body">
+        <div class="test-title">Value Before Paywall</div>
+        <div class="test-detail">User experiences the full core loop (log a workout, receive coaching, see progress) at least once before encountering any paywall.</div>
+        <div class="test-pass-criteria">Pass: Fresh install; complete first workout; no subscription prompt before session is complete.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="monetization">
+      <div class="test-id">GR-032</div>
+      <div class="test-body">
+        <div class="test-title">Paywall Framing</div>
+        <div class="test-detail">If a paywall exists, it explains what the user gets (not what they're missing). "Unlock full analytics, advanced coaching, and unlimited trainer plans" not "You've hit your free limit."</div>
+        <div class="test-pass-criteria">Pass: Paywall copy reviewed; no negative framing, no FOMO language.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="monetization">
+      <div class="test-id">GR-033</div>
+      <div class="test-body">
+        <div class="test-title">Free Tier Is Genuinely Useful</div>
+        <div class="test-detail">Users who never pay can still get real value from the app indefinitely (not crippled). Define the free tier features; confirm they constitute a complete experience for a casual user.</div>
+        <div class="test-pass-criteria">Pass: Free tier features defined; confirm they constitute a complete experience for a casual user.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="monetization">
+      <div class="test-id">GR-034</div>
+      <div class="test-body">
+        <div class="test-title">Subscription Price Anchoring</div>
+        <div class="test-detail">If multiple tiers exist, the middle tier is the intended purchase; it's presented as the default and visually primary.</div>
+        <div class="test-pass-criteria">Pass: UI layout presents the intended tier as visually primary.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="monetization">
+      <div class="test-id">GR-035</div>
+      <div class="test-body">
+        <div class="test-title">Cancellation Is Easy</div>
+        <div class="test-detail">User can cancel from within the app (linking to iOS subscription management) — not buried in Settings. Within 2 taps of the home screen.</div>
+        <div class="test-pass-criteria">Pass: Settings screen has a visible subscription management link within 2 taps of the home screen.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="monetization">
+      <div class="test-id">GR-036</div>
+      <div class="test-body">
+        <div class="test-title">Trial Conversion Notification Timing</div>
+        <div class="test-detail">If a free trial exists, the conversion notification fires 24 hours before trial expiry (not 1 hour — that feels aggressive).</div>
+        <div class="test-pass-criteria">Pass: Trial expiry notification timing confirmed at T-24h.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 6: Acquisition Channels -->
+<div class="category-block" id="cat-acquisition">
+  <div class="category-header" onclick="toggleCategory('cat-acquisition')">
+    <span style="font-size:14px">&#9698;</span>
+    <span class="category-title">6. Acquisition Channels</span>
+    <span class="category-count">5 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="acquisition">
+      <div class="test-id">GR-037</div>
+      <div class="test-body">
+        <div class="test-title">App Store Search Presence</div>
+        <div class="test-detail">H.O.N. appears in the first page of results for "workout tracker", "strength log", "gym journal", "progressive overload app".</div>
+        <div class="test-pass-criteria">Pass: App Store search conducted on day of launch; H.O.N. visible on first page for at least 2 of 4 terms.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="acquisition">
+      <div class="test-id">GR-038</div>
+      <div class="test-body">
+        <div class="test-title">Landing Page Parity</div>
+        <div class="test-detail">The marketing landing page (if any) communicates the same core value proposition as the App Store listing. No feature on the landing page is absent from the app.</div>
+        <div class="test-pass-criteria">Pass: Landing page reviewed against app feature list; no missing features.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="acquisition">
+      <div class="test-id">GR-039</div>
+      <div class="test-body">
+        <div class="test-title">Influencer / Creator Brief</div>
+        <div class="test-detail">A one-page brief exists for any creator partnership that communicates: the H.O.N. voice, what not to say, and what the authentic use case looks like.</div>
+        <div class="test-pass-criteria">Pass: Brief exists; reviewed by content team; tested with one creator.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="acquisition">
+      <div class="test-id">GR-040</div>
+      <div class="test-body">
+        <div class="test-title">Press Kit Readiness</div>
+        <div class="test-detail">App icon (multiple sizes), 5 screenshots, 2-sentence description, and founding story are packaged and accessible for media.</div>
+        <div class="test-pass-criteria">Pass: Press kit exists in a shareable link; all assets are current build.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="acquisition">
+      <div class="test-id">GR-041</div>
+      <div class="test-body">
+        <div class="test-title">TestFlight → App Store Conversion Plan</div>
+        <div class="test-detail">A plan exists to convert TestFlight users to App Store installs on launch day (notification, email, or in-app message).</div>
+        <div class="test-pass-criteria">Pass: Conversion plan exists with a specific message and trigger.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 7: Growth Analytics -->
+<div class="category-block" id="cat-analytics">
+  <div class="category-header" onclick="toggleCategory('cat-analytics')">
+    <span style="font-size:14px">&#9783;</span>
+    <span class="category-title">7. Growth Analytics</span>
+    <span class="category-count">5 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="analytics">
+      <div class="test-id">GR-042</div>
+      <div class="test-body">
+        <div class="test-title">Install Source Tracking</div>
+        <div class="test-detail">The growth team can identify what % of installs came from organic App Store search vs. referral vs. marketing.</div>
+        <div class="test-pass-criteria">Pass: Source tracking mechanism exists and was tested before launch.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="analytics">
+      <div class="test-id">GR-043</div>
+      <div class="test-body">
+        <div class="test-title">Onboarding Drop-Off Visibility</div>
+        <div class="test-detail">The step with the highest onboarding drop-off is identifiable within 48 hours of launch.</div>
+        <div class="test-pass-criteria">Pass: Onboarding funnel dashboard live before launch day.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="analytics">
+      <div class="test-id">GR-044</div>
+      <div class="test-body">
+        <div class="test-title">D7 Retention Dashboard</div>
+        <div class="test-detail">D7 retention visible and segmented by install source, onboarding goal, and equipment type within 7 days of launch.</div>
+        <div class="test-pass-criteria">Pass: Dashboard live; all three segments queryable.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="analytics">
+      <div class="test-id">GR-045</div>
+      <div class="test-body">
+        <div class="test-title">Review Request Response Rate</div>
+        <div class="test-detail">% of users shown a review request who actually left a review. Target: &gt;15% response rate.</div>
+        <div class="test-pass-criteria">Pass: Metric trackable; target &gt;15% response rate.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="analytics">
+      <div class="test-id">GR-046</div>
+      <div class="test-body">
+        <div class="test-title">Referral Attribution</div>
+        <div class="test-detail">If a user was referred by another user, the referral is tracked and the referring user is attributed.</div>
+        <div class="test-pass-criteria">Pass: Referral attribution mechanism exists and was tested end-to-end.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<div class="separator"></div>
+
+<!-- Section 2: Pre-launch gates & metrics -->
+<div class="section-heading">Section 2 — Growth Pre-Launch Gates &amp; Metrics</div>
+
+<div class="gate-card">
+  <div class="metric-card-title" style="margin-bottom:14px;">Pre-Launch Gates — All Must Be Green Before Submission</div>
+  <ul class="gate-list">
+    <li class="gate-item"><div class="gate-icon">1</div><span>App Store listing fully complete: name, subtitle, description, keywords (100 chars), screenshots (3+), preview video reviewed and approved.</span></li>
+    <li class="gate-item"><div class="gate-icon">2</div><span>Onboarding completion rate &ge;85% confirmed in final TestFlight build.</span></li>
+    <li class="gate-item"><div class="gate-icon">3</div><span>Day 1 notification copy reviewed and approved; trigger logic verified in code.</span></li>
+    <li class="gate-item"><div class="gate-icon">4</div><span>D7 re-engagement notification copy personalized and referencing real training data.</span></li>
+    <li class="gate-item"><div class="gate-icon">5</div><span>Review request trigger defined in code; confirmed not to fire mid-workout or post-error.</span></li>
+    <li class="gate-item"><div class="gate-icon">6</div><span>PR moment UI is screenshot-worthy and self-explanatory to an outsider.</span></li>
+    <li class="gate-item"><div class="gate-icon">7</div><span>No forced sharing gates anywhere in the app.</span></li>
+    <li class="gate-item"><div class="gate-icon">8</div><span>Streak copy reviewed — zero urgency or threatening language.</span></li>
+    <li class="gate-item"><div class="gate-icon">9</div><span>Growth analytics dashboard live and confirmed tracking install source, onboarding funnel, D7 retention.</span></li>
+    <li class="gate-item"><div class="gate-icon">10</div><span>TestFlight-to-App-Store conversion plan written, reviewed, and scheduled for launch day.</span></li>
+  </ul>
+</div>
+
+<div class="metrics-grid">
+  <div class="metric-card">
+    <div class="metric-card-title">ASO Metrics</div>
+    <div class="metric-row"><span class="metric-name">Search rank — "habit workout tracker"</span><span class="metric-target amber">Top 5</span></div>
+    <div class="metric-row"><span class="metric-name">App Store listing conversion rate</span><span class="metric-target positive">&gt;35%</span></div>
+    <div class="metric-row"><span class="metric-name">Preview video play rate</span><span class="metric-target positive">&gt;40%</span></div>
+    <div class="metric-row"><span class="metric-name">Screenshot scroll rate (beyond first)</span><span class="metric-target amber">&gt;60%</span></div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-card-title">Onboarding Metrics</div>
+    <div class="metric-row"><span class="metric-name">Onboarding completion rate</span><span class="metric-target positive">&ge;85%</span></div>
+    <div class="metric-row"><span class="metric-name">Same-day first session rate</span><span class="metric-target positive">&ge;60%</span></div>
+    <div class="metric-row"><span class="metric-name">HealthKit permission opt-in rate</span><span class="metric-target positive">&gt;55%</span></div>
+    <div class="metric-row"><span class="metric-name">Time to first logged set (median)</span><span class="metric-target amber">&lt;3 min</span></div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-card-title">Retention</div>
+    <div class="metric-row"><span class="metric-name">D1 retention</span><span class="metric-target positive">&gt;55%</span></div>
+    <div class="metric-row"><span class="metric-name">D7 retention</span><span class="metric-target positive">&gt;30%</span></div>
+    <div class="metric-row"><span class="metric-name">D30 retention</span><span class="metric-target positive">&gt;15%</span></div>
+    <div class="metric-row"><span class="metric-name">D7 notification open rate</span><span class="metric-target amber">&gt;25%</span></div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-card-title">Referral &amp; Reviews</div>
+    <div class="metric-row"><span class="metric-name">PR moment share rate</span><span class="metric-target amber">&gt;8%</span></div>
+    <div class="metric-row"><span class="metric-name">Review request response rate</span><span class="metric-target positive">&gt;15%</span></div>
+    <div class="metric-row"><span class="metric-name">Average App Store rating (launch week)</span><span class="metric-target positive">&ge;4.5</span></div>
+    <div class="metric-row"><span class="metric-name">Referral attribution rate (tracked)</span><span class="metric-target blue">100%</span></div>
+  </div>
+</div>
+
+<div class="separator"></div>
+
+<!-- Section 3: Definition of Done for Growth -->
+<div class="section-heading">Section 3 — Definition of Done for Growth</div>
+
+<div class="done-card">
+  <p>H.O.N. is growth-ready when the App Store listing can be understood and evaluated by a stranger in 8 seconds, when a new user reaches their first logged set within 3 minutes of install, when at least 85% of users who start onboarding finish it, and when the first person to hit a PR would consider sharing a screenshot without being prompted. Done means all 46 growth criteria are green, the day-1 notification references something specific about who the user is and what they want — not a generic push-to-open, the streak system shows progress without threatening the user when life gets in the way, and lapsed users who return after 30 days are welcomed back with warmth rather than confronted with failure. Done for growth means the app earns its own word-of-mouth because the moments inside it are worth talking about — not because we built a referral mechanic, but because we built something people actually want to tell their friends about. Done does not mean viral. It means every growth mechanism in this document is grounded in real user behavior, tested against real cohort personas, and honest about what the product does and who it's for.</p>
+</div>
+
+<div class="separator"></div>
+
+<!-- Section 4: LLM Growth Audit Prompt -->
+<div class="section-heading">Section 4 — LLM Growth Audit Prompt</div>
+
+<p style="font-size:13px;color:var(--text2);margin-bottom:16px;">Use this prompt to evaluate any new feature or product moment for growth leverage before building. Input the feature name; the model outputs a structured growth audit across five dimensions.</p>
+
+<div class="prompt-card">
+  <div class="prompt-label">Growth Audit Prompt</div>
+  <div class="prompt-input">
+    You are the growth lead for H.O.N. (Habit Over Numbers), an iOS fitness coaching app. Your coaching voice is spare, direct, and identity-affirming — never cheerleading. The app's key differentiator is coaching voice and habit-building focus over vanity metrics. Target users are fitness enthusiasts ages 22–55, from beginner to advanced. The app is pre-launch, iOS-only, no subscription yet (future monetization planned). Distribution is App Store only.
+    <br><br>
+    Evaluate the following feature for growth potential:<br>
+    <strong>[FEATURE NAME]: _______________</strong>
+    <br><br>
+    For each dimension below, give a 2–3 sentence assessment and one concrete recommendation:
+  </div>
+  <div class="prompt-outputs">
+    <div class="prompt-output-item">
+      <div class="prompt-output-key">Word-of-Mouth Potential</div>
+      <div class="prompt-output-desc">Does this feature create a moment someone would tell a friend about or share? Is the output screenshot-worthy without explanation?</div>
+    </div>
+    <div class="prompt-output-item">
+      <div class="prompt-output-key">ASO Keyword Opportunity</div>
+      <div class="prompt-output-desc">Does this feature surface a new keyword category (e.g., "recovery tracker", "strength score") that could improve search rank? Should it appear in the subtitle or keywords field?</div>
+    </div>
+    <div class="prompt-output-item">
+      <div class="prompt-output-key">Lifecycle Trigger Potential</div>
+      <div class="prompt-output-desc">Does this feature create a natural trigger for a notification or in-app re-engagement message? What is the highest-signal moment this feature produces?</div>
+    </div>
+    <div class="prompt-output-item">
+      <div class="prompt-output-key">Monetization Fit</div>
+      <div class="prompt-output-desc">Does this feature belong in the free tier or premium tier? If premium, how would you frame the paywall without negative or FOMO language?</div>
+    </div>
+    <div class="prompt-output-item" style="grid-column: 1 / -1;">
+      <div class="prompt-output-key">Recommended Growth Simulation</div>
+      <div class="prompt-output-desc">Which GSIM scenario from growth-simulation.html most directly tests the growth assumptions behind this feature? Which cohort personas (U-01 through U-22) should run it first?</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'hon_growth_review_status';
+
+function loadStatuses() {
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  document.querySelectorAll('.test-case').forEach(tc => {
+    const id = tc.querySelector('.test-id').textContent;
+    if (saved[id]) {
+      const sel = tc.querySelector('.status-select');
+      sel.value = saved[id];
+      applyStatus(tc, sel, saved[id]);
+    }
+  });
+  updateStats();
+}
+
+function updateStatus(selectEl) {
+  const tc = selectEl.closest('.test-case');
+  const id = tc.querySelector('.test-id').textContent;
+  const status = selectEl.value;
+  applyStatus(tc, selectEl, status);
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  saved[id] = status;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+  updateStats();
+}
+
+function applyStatus(tc, sel, status) {
+  tc.className = 'test-case status-' + status;
+  sel.className = 'status-select status-' + status;
+  tc.dataset.status = status;
+}
+
+function updateStats() {
+  const all = document.querySelectorAll('.test-case');
+  let open = 0, pass = 0, fail = 0, partial = 0;
+  all.forEach(tc => {
+    switch(tc.dataset.status) {
+      case 'open': open++; break;
+      case 'pass': pass++; break;
+      case 'fail': fail++; break;
+      case 'partial': partial++; break;
+    }
+  });
+  document.getElementById('stat-total').textContent = all.length + ' total';
+  document.getElementById('stat-open').textContent = (open + fail) + ' open/fail';
+  document.getElementById('stat-partial').textContent = partial + ' partial';
+  document.getElementById('stat-pass').textContent = pass + ' passed';
+}
+
+function filterTests(status, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.test-case').forEach(tc => {
+    if (status === 'all') {
+      tc.style.display = '';
+    } else {
+      tc.style.display = tc.dataset.status === status ? '' : 'none';
+    }
+  });
+}
+
+function toggleCategory(id) {
+  const block = document.getElementById(id);
+  block.classList.toggle('collapsed');
+}
+
+loadStatuses();
+</script>
+</body>
+</html>

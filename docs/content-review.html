@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H.O.N. — Content &amp; Voice Review Criteria</title>
+<style>
+  :root {
+    --bg:       #111111;
+    --card:     #1c1c1e;
+    --border:   rgba(255,255,255,0.07);
+    --amber:    #f59e0b;
+    --positive: #34d399;
+    --negative: #f87171;
+    --warning:  #fbbf24;
+    --muted:    rgba(255,255,255,0.4);
+    --text:     rgba(255,255,255,0.88);
+    --text2:    rgba(255,255,255,0.55);
+    --blue:     #60a5fa;
+    --purple:   #a78bfa;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 32px 20px 64px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .header { margin-bottom: 36px; }
+  .header-top {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .logo {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber);
+  }
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--amber), transparent);
+    opacity: 0.3;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    color: var(--text);
+  }
+  .subtitle {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+
+  .section-heading {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin: 32px 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-heading::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .stats {
+    display: flex;
+    gap: 6px;
+    margin: 20px 0 28px;
+    flex-wrap: wrap;
+  }
+  .stat-pill {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.04em;
+  }
+  .stat-open    { background: rgba(248,113,113,0.15); color: var(--negative); }
+  .stat-pass    { background: rgba(52,211,153,0.15);  color: var(--positive); }
+  .stat-partial { background: rgba(251,191,36,0.15);  color: var(--warning); }
+  .stat-total   { background: rgba(255,255,255,0.08); color: var(--text2); }
+
+  .filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover  { border-color: var(--amber); color: var(--amber); }
+  .filter-btn.active { background: var(--amber); border-color: var(--amber); color: #111; }
+
+  .category-block {
+    margin-bottom: 24px;
+  }
+  .category-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .category-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.04em;
+  }
+  .category-count {
+    font-size: 11px;
+    color: var(--text2);
+    background: rgba(255,255,255,0.06);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .category-chevron {
+    margin-left: auto;
+    color: var(--text2);
+    font-size: 11px;
+    transition: transform 0.2s;
+  }
+  .category-block.collapsed .category-chevron { transform: rotate(-90deg); }
+  .category-block.collapsed .test-list { display: none; }
+
+  .test-case {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transition: border-color 0.2s;
+  }
+  .test-case:hover { border-color: rgba(255,255,255,0.12); }
+  .test-case.status-pass    { border-left: 3px solid var(--positive); }
+  .test-case.status-fail    { border-left: 3px solid var(--negative); }
+  .test-case.status-partial { border-left: 3px solid var(--warning); }
+  .test-case.status-open    { border-left: 3px solid rgba(255,255,255,0.15); }
+
+  .test-id {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    letter-spacing: 0.06em;
+    color: var(--amber);
+    background: rgba(245,158,11,0.1);
+    padding: 2px 7px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .test-body { flex: 1; }
+
+  .test-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+
+  .test-detail {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.5;
+    margin-bottom: 6px;
+  }
+
+  .test-pass-criteria {
+    font-size: 11px;
+    color: rgba(52,211,153,0.8);
+    background: rgba(52,211,153,0.06);
+    border: 1px solid rgba(52,211,153,0.12);
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+
+  .status-select {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .status-open    { background: rgba(248,113,113,0.15); color: var(--negative); }
+  .status-pass    { background: rgba(52,211,153,0.15);  color: var(--positive); }
+  .status-fail    { background: rgba(248,113,113,0.3);  color: #fca5a5; }
+  .status-partial { background: rgba(251,191,36,0.15);  color: var(--warning); }
+
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 600px) {
+    .metrics-grid { grid-template-columns: 1fr; }
+  }
+
+  .metric-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .metric-card-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 12px;
+  }
+
+  .metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 12px;
+  }
+  .metric-row:last-child { border-bottom: none; }
+  .metric-name { color: var(--text2); flex: 1; line-height: 1.4; }
+  .metric-target {
+    font-weight: 700;
+    color: var(--text);
+    font-family: 'SF Mono', monospace;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .metric-target.positive { color: var(--positive); }
+  .metric-target.amber    { color: var(--amber); }
+  .metric-target.negative { color: var(--negative); }
+
+  .gate-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .gate-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 13px;
+    color: var(--text2);
+  }
+  .gate-item:last-child { border-bottom: none; }
+  .gate-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(248,113,113,0.15);
+    color: var(--negative);
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .gate-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--negative);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+
+  .done-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--positive);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-top: 16px;
+  }
+  .done-card p {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.8;
+  }
+
+  .llm-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--purple);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-top: 16px;
+  }
+
+  .llm-card .llm-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin-bottom: 12px;
+  }
+
+  .llm-prompt {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.7;
+    background: rgba(255,255,255,0.03);
+    border: 1px dashed rgba(255,255,255,0.12);
+    border-radius: 8px;
+    padding: 16px 18px;
+    white-space: pre-wrap;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+
+  .separator {
+    height: 1px;
+    background: var(--border);
+    margin: 28px 0;
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 20px 14px 48px; }
+    .test-case { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <span class="logo">H.O.N.</span>
+    <div class="divider-line"></div>
+  </div>
+  <h1>Content &amp; Voice Review Criteria</h1>
+  <div class="subtitle">46 must-pass content criteria &middot; Voice gates &middot; Phrase bank quality &middot; Copy completeness &middot; Definition of done &middot; Last updated: 2026-05-30</div>
+</div>
+
+<div class="stats">
+  <span class="stat-pill stat-total" id="stat-total">46 total</span>
+  <span class="stat-pill stat-open" id="stat-open">— open</span>
+  <span class="stat-pill stat-partial" id="stat-partial">— partial</span>
+  <span class="stat-pill stat-pass" id="stat-pass">— passed</span>
+</div>
+
+<div class="filters">
+  <button class="filter-btn active" onclick="filterTests('all', this)">All</button>
+  <button class="filter-btn" onclick="filterTests('open', this)">Open</button>
+  <button class="filter-btn" onclick="filterTests('pass', this)">Passed</button>
+  <button class="filter-btn" onclick="filterTests('fail', this)">Failed</button>
+  <button class="filter-btn" onclick="filterTests('partial', this)">Partial</button>
+</div>
+
+<!-- Section 1 -->
+<div class="section-heading">Section 1 — Must-Pass Content Criteria</div>
+
+<!-- Category 1: Voice & Tone Foundation -->
+<div class="category-block" id="cat-voice">
+  <div class="category-header" onclick="toggleCategory('cat-voice')">
+    <span style="font-size:14px">&#128483;</span>
+    <span class="category-title">1. Voice &amp; Tone Foundation</span>
+    <span class="category-count">8 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="voice">
+      <div class="test-id">CV-001</div>
+      <div class="test-body">
+        <div class="test-title">No Cheerleading</div>
+        <div class="test-detail">Zero instances of: "Amazing!", "Crushing it!", "You're killing it!", "So proud of you!", "Beast mode!", "You've got this!", "Keep going champ!" anywhere in phrase_bank.json, HONMessageLibrary, or any Swift string. Search all user-facing string sources.</div>
+        <div class="test-pass-criteria">Pass: Full-text search returns zero matches for these phrases and their common variants across all source files.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="voice">
+      <div class="test-id">CV-002</div>
+      <div class="test-body">
+        <div class="test-title">Specificity Requirement</div>
+        <div class="test-detail">No coaching phrase can be fully true for every user in every state. Each phrase must reference at least one data point: exercise name, weight, reps, trend direction, gap duration, or readiness level. Phrases that work for any user in any state are generic and must be revised.</div>
+        <div class="test-pass-criteria">Pass: Randomly sample 20 phrases from phrase_bank.json; all 20 reference at least one data-specific element. Zero fully-generic phrases in the sample.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="voice">
+      <div class="test-id">CV-003</div>
+      <div class="test-body">
+        <div class="test-title">Direct Statement Rule</div>
+        <div class="test-detail">Coaching language uses declarative statements, not questions. Not "How did that feel?" but "Note how you feel." Not "Are you ready to push?" but "Push when ready." Questions shift the dynamic from coach to companion — H.O.N. coaches, it does not ask permission.</div>
+        <div class="test-pass-criteria">Pass: Zero coaching phrases end with a question mark across phrase_bank.json and all coaching output strings.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="voice">
+      <div class="test-id">CV-004</div>
+      <div class="test-body">
+        <div class="test-title">No Clinical Framing</div>
+        <div class="test-detail">Zero uses of: "compliance", "adherence", "protocol", "regimen", "optimization", "metrics", "performance indicator", "biometric" in user-facing text. Clinical language creates distance between the athlete and the work. H.O.N. speaks like a coach, not a research paper.</div>
+        <div class="test-pass-criteria">Pass: Search across all user-facing strings returns zero matches for clinical vocabulary. Developer comments and internal code identifiers are excluded.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="voice">
+      <div class="test-id">CV-005</div>
+      <div class="test-body">
+        <div class="test-title">Identity-Affirming Language</div>
+        <div class="test-detail">The user is referred to as doing the work, not being monitored. "You trained 4 days this week" not "Your training frequency was 4 sessions." Active voice, athlete as subject. The difference is whether the user is an actor in their own story or a data source being reported on.</div>
+        <div class="test-pass-criteria">Pass: Sample 10 coaching notes across different engine outputs; all use active voice with the user as grammatical subject. Zero passive constructions where the system is the actor.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="voice">
+      <div class="test-id">CV-006</div>
+      <div class="test-body">
+        <div class="test-title">Sentence Length</div>
+        <div class="test-detail">No coaching sentence exceeds 20 words. Short sentences create impact; long sentences feel like reports. This applies to every sentence in every phrase in phrase_bank.json, HONMessageLibrary, ReadinessEngine notes, and TrainerTabView plan introductions. Count compound sentences separately.</div>
+        <div class="test-pass-criteria">Pass: The longest sentence in any coaching output is &le;20 words when measured by simple word count. No exceptions.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="voice">
+      <div class="test-id">CV-007</div>
+      <div class="test-body">
+        <div class="test-title">No Hedging</div>
+        <div class="test-detail">Coaching language does not hedge with "try to", "might want to", "perhaps", "maybe", "could be". H.O.N. says what it means. Hedging language suggests uncertainty — the coaching should be confident and direct even when recommending a cautious approach ("Ease in today" not "Maybe try going lighter today").</div>
+        <div class="test-pass-criteria">Pass: Zero hedging phrases found in any coaching output across all engines and phrase banks. Search includes "try to", "might want", "perhaps", "maybe consider", "could be".</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="voice">
+      <div class="test-id">CV-008</div>
+      <div class="test-body">
+        <div class="test-title">Consistent Register</div>
+        <div class="test-detail">The coaching voice does not shift between formal and casual within the same session. If the app says "You've hit 5 reps" in one note, it does not say "Nailed it" in the next. Inconsistent register breaks the persona and signals that different people wrote different parts of the app — even if they did.</div>
+        <div class="test-pass-criteria">Pass: Read 5 consecutive coaching outputs from a single session aloud; no register shift detected. A neutral reviewer should not be able to tell that different phrase categories were assembled.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 2: Phrase Bank Quality -->
+<div class="category-block" id="cat-phrases">
+  <div class="category-header" onclick="toggleCategory('cat-phrases')">
+    <span style="font-size:14px">&#128196;</span>
+    <span class="category-title">2. Phrase Bank Quality</span>
+    <span class="category-count">8 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="phrases">
+      <div class="test-id">CV-009</div>
+      <div class="test-body">
+        <div class="test-title">Minimum Phrase Count</div>
+        <div class="test-detail">Every phrase category in phrase_bank.json has at least 8 variants. The rotation window is 8 uses — a category with fewer than 8 phrases will always repeat within the window, defeating the purpose of rotation. This is a hard floor, not a target.</div>
+        <div class="test-pass-criteria">Pass: All JSON keys with phrase arrays have length &ge;8. Any key with fewer than 8 phrases is a blocking issue.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="phrases">
+      <div class="test-id">CV-010</div>
+      <div class="test-body">
+        <div class="test-title">No Duplicate Meaning</div>
+        <div class="test-detail">Within a single phrase category, no two phrases communicate the same meaning in different words. Synonyms are not variants — they are duplicates. "You hit all your reps" and "You completed every rep" are the same phrase with different words. True variants communicate meaningfully different information or perspectives.</div>
+        <div class="test-pass-criteria">Pass: Review each category; no two phrases are paraphrases of each other. A reviewer should be unable to compress any two phrases into a single statement without losing meaning.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="phrases">
+      <div class="test-id">CV-011</div>
+      <div class="test-body">
+        <div class="test-title">Phrase Specificity Gradient</div>
+        <div class="test-detail">Within each category, phrases range from data-light (works with minimal context) to data-heavy (requires rich historical data). The engine picks based on data availability. A new user with one session should get a meaningful phrase, not a fallback error or a phrase that references non-existent history.</div>
+        <div class="test-pass-criteria">Pass: At least one phrase per category is usable for a new user with minimal data. At least one phrase per category references rich historical data. The gradient is intentional, not accidental.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="phrases">
+      <div class="test-id">CV-012</div>
+      <div class="test-body">
+        <div class="test-title">Rotation Window Effectiveness</div>
+        <div class="test-detail">The pick() rotation must prevent the same phrase from appearing more than once in 8 consecutive uses. This is the core mechanism preventing coaching text from feeling repetitive. Verify that the UserDefaults tracking correctly advances the index and wraps at the category length.</div>
+        <div class="test-pass-criteria">Pass: Simulate 24 consecutive uses of a phrase category; no phrase repeats within any 8-use window. If a category has exactly 8 phrases, the first phrase reappears only at position 9, 17, etc.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="phrases">
+      <div class="test-id">CV-013</div>
+      <div class="test-body">
+        <div class="test-title">Tone Consistency Across Categories</div>
+        <div class="test-detail">The "history" key, "weight" key, "connective" key, and "whats_next" key all sound like the same coach. WorkoutNarrativeEngine assembles phrases from multiple categories into a single coaching output — if the categories have different registers or voices, the assembled text will feel stitched together rather than authored.</div>
+        <div class="test-pass-criteria">Pass: Pull one phrase from each key; read them as a single assembled statement. No tonal inconsistency. A neutral reader should not detect that the phrases came from separate JSON keys.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="phrases">
+      <div class="test-id">CV-014</div>
+      <div class="test-body">
+        <div class="test-title">Empty Category Handling</div>
+        <div class="test-detail">If a phrase category is exhausted or unavailable (e.g., the JSON key is missing or empty), the engine must fail gracefully — omitting the slot rather than showing a placeholder, empty string, or raw key name. The user should never see "[MISSING]", a blank coaching note, or a crash.</div>
+        <div class="test-pass-criteria">Pass: Empty a phrase category in phrase_bank.json; verify that the assembled coaching output omits that slot silently. No "[MISSING]", no blank string, no crash. The remaining phrase slots assemble correctly.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="phrases">
+      <div class="test-id">CV-015</div>
+      <div class="test-body">
+        <div class="test-title">Cardio Phrase Parity</div>
+        <div class="test-detail">Cardio coaching phrases — end-of-session summaries and in-session EMOM transition cues — must match strength coaching in voice, quality, and quantity. Cardio is not a second-class feature. A user who trains cardio exclusively should receive coaching that feels as considered as what a strength-focused user receives.</div>
+        <div class="test-pass-criteria">Pass: Cardio phrase section exists in phrase_bank.json with &ge;10 end-of-session phrases and &ge;6 EMOM/transition phrases. All pass CV-001 through CV-008 independently.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="phrases">
+      <div class="test-id">CV-016</div>
+      <div class="test-body">
+        <div class="test-title">Phrase Freshness</div>
+        <div class="test-detail">Phrases must not reference specific dates, years, seasons, or real-world events that would become stale. "This winter" will be wrong in six months. "2026" will be wrong next year. "After the holiday season" excludes users in the southern hemisphere. Coaching text should be timeless.</div>
+        <div class="test-pass-criteria">Pass: No phrase contains "this year", "2026", "winter", "summer", "holiday", or any calendar-specific reference. Phrases read as true regardless of when they appear.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 3: Coaching Output Coverage -->
+<div class="category-block" id="cat-coverage">
+  <div class="category-header" onclick="toggleCategory('cat-coverage')">
+    <span style="font-size:14px">&#127919;</span>
+    <span class="category-title">3. Coaching Output Coverage</span>
+    <span class="category-count">8 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="coverage">
+      <div class="test-id">CV-017</div>
+      <div class="test-body">
+        <div class="test-title">Post-Set Coaching — Full State Coverage</div>
+        <div class="test-detail">Every set-completion state must have distinct coaching copy: hit all reps, missed reps, exceeded reps, first time this exercise, return after long gap, return after short gap, stalled progression, drop set completed, to-failure set. Nine states — all nine require at least one distinct phrase. A state that falls through to a blank is a content gap.</div>
+        <div class="test-pass-criteria">Pass: Each of the 9 states has at least one distinct phrase in phrase_bank.json. No state falls through to an empty coaching output. Trigger all 9 states in sequence and verify output in each.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="coverage">
+      <div class="test-id">CV-018</div>
+      <div class="test-body">
+        <div class="test-title">Readiness Coaching — Tier Coverage</div>
+        <div class="test-detail">Every readiness tier must have a substantively different coaching note: high (&ge;80), moderate-high (65–79), moderate (50–64), low (&lt;50). A coaching note that works for all four tiers is not tier-specific — it is generic. The note for score 42 should not be usable at score 85. ReadinessEngine.compute() must branch into distinct outputs per tier.</div>
+        <div class="test-pass-criteria">Pass: Generate coaching notes for scores 85, 72, 58, 42. All four are tier-appropriate and substantively different from each other. No two notes share more than one sentence.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="coverage">
+      <div class="test-id">CV-019</div>
+      <div class="test-body">
+        <div class="test-title">Trainer Plan Coaching — Plan-Specific Introduction</div>
+        <div class="test-detail">Every generated workout plan in TrainerTabView must have an introductory sentence explaining why this plan was suggested — based on readiness, last performance, or identified gaps. A generic "Here's your workout" is a content failure. The introduction should tell the user something the plan itself does not show them.</div>
+        <div class="test-pass-criteria">Pass: Generate plans at high readiness (&ge;80) and low readiness (&lt;50). Both plans have distinct, plan-specific introductions. Neither introduction is usable for the other plan.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="coverage">
+      <div class="test-id">CV-020</div>
+      <div class="test-body">
+        <div class="test-title">Session Summary Coaching — Session-Specific Reference</div>
+        <div class="test-detail">Every workout completion in CardioSessionSummaryView or the strength session summary must reference at least one specific element of that session: an exercise name, set count, PR achieved, readiness alignment, or volume number. A generic "Good session" tells the user nothing about what they actually did.</div>
+        <div class="test-pass-criteria">Pass: Complete 3 different workouts (different exercises, durations, volumes). All 3 session summaries reference at least one session-specific data element. No two summaries are identical.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="coverage">
+      <div class="test-id">CV-021</div>
+      <div class="test-body">
+        <div class="test-title">Milestone Coaching — Weight Proportionality</div>
+        <div class="test-detail">Sessions 1, 10, 25, 50, 100, 200, and 365 each have a distinct milestone message in HONMessageLibrary. Messages must be proportional to the milestone size — Session 1 and Session 100 should feel like completely different events. Session 365 is a year of consistent training; treating it like Session 10 would be a content failure.</div>
+        <div class="test-pass-criteria">Pass: All 7 milestones have distinct messages. Session 100 message is notably more significant in tone and content than Session 1. Session 365 message reads as the most significant of all seven.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="coverage">
+      <div class="test-id">CV-022</div>
+      <div class="test-body">
+        <div class="test-title">Comeback Coaching — Gap-Appropriate Tone</div>
+        <div class="test-detail">Gap durations of 7–13 days, 14–29 days, and 30+ days each require distinct comeback messages in HONHabitEngine. No message may reference the gap duration numerically — "you've been away for 23 days" is clinical and potentially shaming. Each message must be tonally calibrated to the size of the gap without naming it.</div>
+        <div class="test-pass-criteria">Pass: Three gap durations produce three distinct messages. None says "you've been away for X days" or any numeric gap reference. All three are warm, non-judgmental, and action-oriented.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="coverage">
+      <div class="test-id">CV-023</div>
+      <div class="test-body">
+        <div class="test-title">Empty State Copy — On-Brand Across All Screens</div>
+        <div class="test-detail">Every screen that can have an empty state must have an on-brand, one-line H.O.N.-voice message. Screens to verify: Progress with no sessions, Trainer with no plan, Insights with no data, cardio with no logs, StrengthLab with no e1RM data. No empty state may say "No data", "Nothing here", "N/A", or leave the space blank.</div>
+        <div class="test-pass-criteria">Pass: All empty states across all tabs show on-brand copy that tells the user what to do next in one sentence. No generic system placeholder text anywhere in the app.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="coverage">
+      <div class="test-id">CV-024</div>
+      <div class="test-body">
+        <div class="test-title">Error Message Copy — Human and Actionable</div>
+        <div class="test-detail">All form validation errors must be in plain, non-technical language. No error may say "Invalid input", "Value out of range", "Null reference", or any developer-facing message. Errors must name the specific problem and tell the user what to do: "Weight must be greater than zero" not "Invalid weight value".</div>
+        <div class="test-pass-criteria">Pass: Trigger every validation error in the app (0 weight, 0 reps, invalid session name, etc.). All messages are human-readable, non-technical, and actionable. None could be mistaken for a system error.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 4: Copy Completeness Audit -->
+<div class="category-block" id="cat-copy">
+  <div class="category-header" onclick="toggleCategory('cat-copy')">
+    <span style="font-size:14px">&#9989;</span>
+    <span class="category-title">4. Copy Completeness Audit</span>
+    <span class="category-count">7 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="copy">
+      <div class="test-id">CV-025</div>
+      <div class="test-body">
+        <div class="test-title">Tab Bar Labels — Unambiguous Single Nouns</div>
+        <div class="test-detail">All 5 tab labels must be single nouns that communicate function without ambiguity. A user who has never seen the app should be able to predict what they'll find on each tab from the label alone. Labels like "More" or "Dashboard" that don't name the content fail this test.</div>
+        <div class="test-pass-criteria">Pass: Show the tab bar to 3 people unfamiliar with H.O.N. All correctly identify each tab's purpose from the label alone, without seeing the tab's content. 15/15 correct identifications required.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="copy">
+      <div class="test-id">CV-026</div>
+      <div class="test-body">
+        <div class="test-title">NavigationTitle Clarity</div>
+        <div class="test-detail">Every primary screen must have a NavigationTitle that describes the screen's purpose in 1–2 words. No NavigationTitle may be "View", a company name, or a generic term that doesn't identify the screen. NavigationTitles that appear on multiple screens must be distinct from each other.</div>
+        <div class="test-pass-criteria">Pass: Navigate all 5 tabs and any nested primary screens. All NavigationTitles are descriptive, distinct, and 1–2 words. Zero instances of "View", "H.O.N.", or a repeated title on different screens.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="copy">
+      <div class="test-id">CV-027</div>
+      <div class="test-body">
+        <div class="test-title">Button Label Specificity</div>
+        <div class="test-detail">All CTA buttons must use action verbs + object ("Log Set", "End Session", "Save Routine") not generic labels. "OK" does not tell the user what they're confirming. "Submit" does not tell the user what they're submitting. "Continue" does not tell the user where they're going. Every button should be self-descriptive.</div>
+        <div class="test-pass-criteria">Pass: No button label in the app is "OK", "Submit", "Yes", "No", or "Continue" without a qualifying object. Every button label describes the specific action it performs.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="copy">
+      <div class="test-id">CV-028</div>
+      <div class="test-body">
+        <div class="test-title">Confirmation Dialog Copy</div>
+        <div class="test-detail">All confirmation dialogs for destructive actions must name the specific action and its consequence, not ask a generic question. "Are you sure?" is not a confirmation — it's a stall. "Delete this workout session? This cannot be undone." gives the user the information they need to decide.</div>
+        <div class="test-pass-criteria">Pass: All destructive-action confirmation dialogs reviewed. Each names the specific thing being deleted, ended, or lost. None uses "Are you sure?" without a qualifying clause that specifies the consequence.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="copy">
+      <div class="test-id">CV-029</div>
+      <div class="test-body">
+        <div class="test-title">Onboarding Copy — Plain Language</div>
+        <div class="test-detail">Onboarding labels for goal, equipment, and fitness level must use plain language that requires no prior fitness knowledge. "Mesocycle optimization" fails. "Hypertrophy phase" fails. "Build strength" passes. A user who has never trained before must be able to select their options confidently without needing to Google a term.</div>
+        <div class="test-pass-criteria">Pass: Walk a non-fitness-expert through onboarding labels only (no interaction). They can explain each option in their own words. Zero labels require prior fitness knowledge to interpret correctly.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="copy">
+      <div class="test-id">CV-030</div>
+      <div class="test-body">
+        <div class="test-title">Settings Labels — User-Centric Framing</div>
+        <div class="test-detail">All settings options must be labeled in terms of what the user gets, not what the system does. "Weight in kilograms" not "KG mode enabled." "Show previous session weights" not "Display historical performance data." The user should be able to predict the effect of each setting from its label without enabling it first.</div>
+        <div class="test-pass-criteria">Pass: All settings labels reviewed for user-centric framing. No label describes a system state; all describe a user outcome. A reviewer should be able to explain each setting's effect from the label alone.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="copy">
+      <div class="test-id">CV-031</div>
+      <div class="test-body">
+        <div class="test-title">Notification Copy — Context-Specific</div>
+        <div class="test-detail">Any push notification templates must follow voice guidelines and name a specific context relevant to the user. "Time to work out!" is generic and indistinguishable from any other fitness app. "Your squat is ready for its next attempt" tells the user something only H.O.N. could know. Notifications that don't use user data should not be sent.</div>
+        <div class="test-pass-criteria">Pass: All notification templates reviewed. None are generic fitness reminders. Each references user-specific context (exercise, readiness state, or streak element). All pass CV-001 through CV-008.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 5: Localization Readiness -->
+<div class="category-block" id="cat-l10n">
+  <div class="category-header" onclick="toggleCategory('cat-l10n')">
+    <span style="font-size:14px">&#127760;</span>
+    <span class="category-title">5. Localization Readiness</span>
+    <span class="category-count">6 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="l10n">
+      <div class="test-id">CV-032</div>
+      <div class="test-body">
+        <div class="test-title">Strings Externalized</div>
+        <div class="test-detail">All user-facing strings must be in Localizable.strings or an equivalent externalized format — not hardcoded in Swift view files. Hardcoded strings cannot be translated. This includes button labels, empty state messages, error messages, coaching text assembled in views (as opposed to engines), and NavigationTitles.</div>
+        <div class="test-pass-criteria">Pass: Grep for hardcoded English strings in iOSApp/Views/ returns zero results (excluding developer comments, identifiers, and format specifiers). All user-visible text is externalized.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="l10n">
+      <div class="test-id">CV-033</div>
+      <div class="test-body">
+        <div class="test-title">No String Concatenation</div>
+        <div class="test-detail">Coaching phrases must not be built by concatenating translated fragments. Word order varies by language — "You lifted 100 kg" in English becomes "100 kg gehoben hast du" in German if fragments are concatenated in English order. All coaching outputs must use full-phrase strings with interpolation for data values, not subject + verb + object assembly.</div>
+        <div class="test-pass-criteria">Pass: All coaching outputs use complete sentence templates with %@ or equivalent interpolation for data values. No coaching string is assembled from separately translated subject, verb, and object fragments.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="l10n">
+      <div class="test-id">CV-034</div>
+      <div class="test-body">
+        <div class="test-title">Date and Number Formatting</div>
+        <div class="test-detail">All dates and numbers must use locale-aware formatters. No hardcoded "lbs" or "kg" in string literals — use the formatter output. No hardcoded date formats like "MM/dd/yyyy" — use DateFormatter with the user's locale. This applies to all displayed values: weights, distances, durations, set counts, and dates in the log.</div>
+        <div class="test-pass-criteria">Pass: Change device locale to German. All dates display in locale-appropriate format (e.g., "30. Mai 2026"). All units display using the locale's preferred unit system. Zero hardcoded "lbs" or "kg" visible in any UI string.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="l10n">
+      <div class="test-id">CV-035</div>
+      <div class="test-body">
+        <div class="test-title">Character Length Budget</div>
+        <div class="test-detail">UI strings must have a character budget that accounts for 40% expansion when translated to German or French. A button label that is 12 characters in English may be 17 characters in German — the button must accommodate this without truncation or layout breaking. This is a layout constraint, not just a copy guideline.</div>
+        <div class="test-pass-criteria">Pass: The longest English string in any fixed-width UI container (buttons, chips, labels) × 1.4 still fits in its container at the same font size without truncation or overflow. Verify on iPhone SE (smallest supported screen).</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="l10n">
+      <div class="test-id">CV-036</div>
+      <div class="test-body">
+        <div class="test-title">Cultural Neutrality</div>
+        <div class="test-detail">No coaching phrase may assume a cultural context specific to one region. Sports idioms that are opaque outside their home culture ("knocked it out of the park", "hat trick"), references to local events, or assumptions about what "normal" training looks like in a specific country all fail this test. Coaching must be interpretable by a user anywhere.</div>
+        <div class="test-pass-criteria">Pass: All phrases reviewed for cultural neutrality. Zero region-specific sports idioms, cultural references, or assumptions about regional norms found. A reviewer from three different countries can interpret every phrase correctly.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="l10n">
+      <div class="test-id">CV-037</div>
+      <div class="test-body">
+        <div class="test-title">RTL Layout Preparedness</div>
+        <div class="test-detail">The app layout must remain usable when the system language is set to a right-to-left language (Arabic, Hebrew). SwiftUI natively handles most RTL mirroring, but custom layouts, absolute positioning, and icon directions must be verified. A broken RTL layout is a blocker for any market that uses RTL scripts.</div>
+        <div class="test-pass-criteria">Pass: Enable RTL in iOS Simulator (use a pseudolanguage or Hebrew locale). All 5 tabs render correctly. No text truncation from wrong-direction layout. No icon pointing the wrong direction. Navigation gestures work correctly.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 6: Voice Governance Process -->
+<div class="category-block" id="cat-governance">
+  <div class="category-header" onclick="toggleCategory('cat-governance')">
+    <span style="font-size:14px">&#128220;</span>
+    <span class="category-title">6. Voice Governance Process</span>
+    <span class="category-count">5 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="governance">
+      <div class="test-id">CV-038</div>
+      <div class="test-body">
+        <div class="test-title">Voice Gate Defined</div>
+        <div class="test-detail">A written voice checklist must exist with a minimum of 5 questions that every new phrase must answer before being added to phrase_bank.json or HONMessageLibrary. Without a formal gate, voice drift happens incrementally — each individual addition seems fine but the cumulative effect dilutes the voice. The checklist makes the standard explicit.</div>
+        <div class="test-pass-criteria">Pass: A voice gate checklist document exists, is accessible to all contributors (in repo or linked from CLAUDE.md), and contains at least 5 distinct questions a phrase must answer. The checklist is not aspirational — it blocks non-compliant phrases.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="governance">
+      <div class="test-id">CV-039</div>
+      <div class="test-body">
+        <div class="test-title">Approval Authority</div>
+        <div class="test-detail">One named person must have final voice approval authority for all new phrases. Approval by committee produces incoherent voice — every person approves phrases they personally find acceptable, and individual standards vary. A single approver produces a consistent standard. No phrase goes to production without their explicit, timestamped sign-off.</div>
+        <div class="test-pass-criteria">Pass: A sign-off log exists (can be a simple file, PR comment thread, or spreadsheet). Every phrase currently in production has a corresponding approval entry with a timestamp and approver identity.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="governance">
+      <div class="test-id">CV-040</div>
+      <div class="test-body">
+        <div class="test-title">Phrase Review Cadence</div>
+        <div class="test-detail">The phrase bank must be reviewed quarterly for freshness, specificity, and voice drift. Phrases that were excellent at launch may become stale, may drift from the established register, or may reference features that have changed. A quarterly review catches drift before it compounds. The review calendar must be scheduled, not ad hoc.</div>
+        <div class="test-pass-criteria">Pass: A review calendar entry exists. The most recent phrase bank review occurred within the last 90 days. Review notes or a change log from the last review are accessible to the team.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="governance">
+      <div class="test-id">CV-041</div>
+      <div class="test-body">
+        <div class="test-title">Contributor Guidelines</div>
+        <div class="test-detail">Any engineer or designer who might add copy — button labels, empty states, error messages, tooltips — must have access to the voice guide before writing. This prevents accidental voice violations introduced by contributors who are writing functionally correct copy but tonally inconsistent copy. The guide should be discoverable without asking.</div>
+        <div class="test-pass-criteria">Pass: The voice guide is accessible in the repo (CLAUDE.md or a linked document). It is referenced in contribution guidelines. A new contributor can find and read it without being told where to look.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="governance">
+      <div class="test-id">CV-042</div>
+      <div class="test-body">
+        <div class="test-title">Copy Regression Process</div>
+        <div class="test-detail">When a feature is changed or removed, its copy must be reviewed for continued accuracy. A phrase that references "your last cardio session" becomes stale if cardio is removed. A phrase that references a specific exercise by name becomes stale if that exercise is removed from the database. Stale copy that survives feature changes is a copy regression.</div>
+        <div class="test-pass-criteria">Pass: The feature change checklist (in PR templates or engineering process) includes an explicit copy review step. No shipped build contains coaching copy that references removed features, old UI patterns, or renamed data fields.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Category 7: Accessibility & Inclusion in Copy -->
+<div class="category-block" id="cat-a11y">
+  <div class="category-header" onclick="toggleCategory('cat-a11y')">
+    <span style="font-size:14px">&#9854;</span>
+    <span class="category-title">7. Accessibility &amp; Inclusion in Copy</span>
+    <span class="category-count">4 tests</span>
+    <span class="category-chevron">&#9660;</span>
+  </div>
+  <div class="test-list">
+
+    <div class="test-case status-open" data-status="open" data-cat="a11y">
+      <div class="test-id">CV-043</div>
+      <div class="test-body">
+        <div class="test-title">Plain Language — Grade 8 or Below</div>
+        <div class="test-detail">All instructional copy — onboarding, settings descriptions, error messages, help text — must be readable at a Grade 8 reading level or below on the Flesch-Kincaid scale. This is not about dumbing down content; it is about removing unnecessary complexity. Grade 8 is the threshold at which text becomes broadly accessible to adult readers.</div>
+        <div class="test-pass-criteria">Pass: Flesch-Kincaid readability score for all instructional copy is &le; Grade 8. Coaching phrases are exempt (they are by nature short and direct). Test instructional copy specifically: onboarding explanations, settings descriptions, error messages.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="a11y">
+      <div class="test-id">CV-044</div>
+      <div class="test-body">
+        <div class="test-title">Ability-Neutral Language</div>
+        <div class="test-detail">Coaching language must not assume physical capability. "Stand up straight" assumes the user can stand and has full spinal mobility. "Complete the movement" is ability-neutral. "Keep your chest up" assumes a specific posture. "Maintain control through the movement" is neutral. Users with physical limitations should not encounter coaching that presupposes capabilities they may not have.</div>
+        <div class="test-pass-criteria">Pass: All coaching phrases reviewed for ability-neutral language. Zero phrases assume standing, bilateral limb use, full range of motion, or any specific physical capability that varies by user. Phrases describe movement principles, not specific physical positions.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="a11y">
+      <div class="test-id">CV-045</div>
+      <div class="test-body">
+        <div class="test-title">Gender-Neutral Language</div>
+        <div class="test-detail">All coaching language must be gender-neutral. No "he/him" or "she/her" pronouns in coaching copy. No gendered assumptions about training goals ("for a lean look" carries gendered assumptions). No gendered archetypes ("strong like a man"). H.O.N. coaches the individual — the individual has no assumed gender.</div>
+        <div class="test-pass-criteria">Pass: Search returns zero gendered pronouns (he, him, his, she, her, hers) in all user-facing coaching strings. Zero phrases carry implicit gendered assumptions about training goals or body ideals.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+    <div class="test-case status-open" data-status="open" data-cat="a11y">
+      <div class="test-id">CV-046</div>
+      <div class="test-body">
+        <div class="test-title">Non-Judgmental Weight and Body Language</div>
+        <div class="test-detail">No copy may reference body weight as a positive or negative outcome. "Your training weight" is acceptable when it means the weight on the bar. "Your body weight goal" conflates fitness with body composition and is not acceptable. H.O.N. tracks performance, not body transformation. All weight references must be unambiguously about the load being lifted, not the user's body.</div>
+        <div class="test-pass-criteria">Pass: Search for "body weight", "losing weight", "gaining weight", "body fat", "lean", "tone", "slim" in all coaching strings returns zero results in user-facing text. "Training weight" and "bar weight" are acceptable where exercise-context-specific.</div>
+      </div>
+      <select class="status-select status-open" onchange="updateStatus(this)">
+        <option value="open" selected>Open</option>
+        <option value="pass">Pass</option>
+        <option value="fail">Fail</option>
+        <option value="partial">Partial</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<!-- Section 2: Pre-Launch Gates + Metrics -->
+<div class="section-heading">Section 2 — Pre-Launch Content Gates &amp; Metrics</div>
+
+<div class="gate-card">
+  <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--negative);margin-bottom:12px;">Content Pre-Launch Gates — All Must Pass</div>
+  <ul class="gate-list">
+    <li class="gate-item">
+      <div class="gate-icon">!</div>
+      <div><strong style="color:var(--text);">CV-001 through CV-008 — 100% pass rate required.</strong> No phrase in production violates any of the 8 Voice &amp; Tone Foundation rules. A single violation is a ship blocker.</div>
+    </li>
+    <li class="gate-item">
+      <div class="gate-icon">!</div>
+      <div><strong style="color:var(--text);">CV-017 — All 9 post-set states have copy.</strong> The coaching engine must never produce a blank output for a valid user state. Missing state coverage is a content gap that reaches every user in that state.</div>
+    </li>
+    <li class="gate-item">
+      <div class="gate-icon">!</div>
+      <div><strong style="color:var(--text);">CV-023 — All empty states have on-brand copy.</strong> "No data" or blank space on any screen is a ship blocker. Every screen the user can reach must have intentional copy in every possible state.</div>
+    </li>
+    <li class="gate-item">
+      <div class="gate-icon">!</div>
+      <div><strong style="color:var(--text);">CV-039 — Sign-off log exists and is current.</strong> No phrase ships without approval from the designated voice authority. The log is auditable — any team member can verify that any phrase was approved.</div>
+    </li>
+    <li class="gate-item">
+      <div class="gate-icon">!</div>
+      <div><strong style="color:var(--text);">CV-009 — All phrase categories have &ge;8 variants.</strong> A category with fewer than 8 phrases guarantees visible repetition within a single week of daily use. Rotation without sufficient variety is not rotation.</div>
+    </li>
+  </ul>
+</div>
+
+<div class="metrics-grid">
+  <div class="metric-card">
+    <div class="metric-card-title">Voice Consistency</div>
+    <div class="metric-row">
+      <span class="metric-name">Voice audit pass rate (CV-001–008)</span>
+      <span class="metric-target positive">100%</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-name">Cheerleading violations at launch</span>
+      <span class="metric-target positive">0</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-name">Clinical language violations at launch</span>
+      <span class="metric-target positive">0</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-name">Hedging violations at launch</span>
+      <span class="metric-target positive">0</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-name">Phrases exceeding 20-word sentence limit</span>
+      <span class="metric-target positive">0</span>
+    </div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-card-title">Phrase Bank Coverage</div>
+    <div class="metric-row">
+      <span class="metric-name">% app states with coaching copy</span>
+      <span class="metric-target positive">100%</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-name">% screens with on-brand empty state</span>
+      <span class="metric-target positive">100%</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-name">Phrase categories meeting 8-variant floor</span>
+      <span class="metric-target positive">100%</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-name">Milestones with distinct messages (of 7)</span>
+      <span class="metric-target amber">7 / 7</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-name">Cardio phrase categories complete</span>
+      <span class="metric-target amber">&ge; 2 keys</span>
+    </div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-card-title">Coaching Specificity</div>
+    <div class="metric-row">
+      <span class="metric-name">% phrases with at least one data reference</span>
+      <span class="metric-target positive">&ge; 95%</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-name">% post-set outputs referencing exercise data</span>
+      <span class="metric-target positive">100%</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-name">% session summaries referencing session data</span>
+      <span class="metric-target positive">100%</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-name">Generic phrases (no data reference)</span>
+      <span class="metric-target amber">&le; 5%</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-name">Readiness notes: distinct across all 4 tiers</span>
+      <span class="metric-target positive">4 / 4</span>
+    </div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-card-title">Copy Completeness</div>
+    <div class="metric-row">
+      <span class="metric-name">% screens with on-brand error messages</span>
+      <span class="metric-target positive">100%</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-name">Button labels passing specificity audit</span>
+      <span class="metric-target positive">100%</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-name">Settings labels passing user-centric audit</span>
+      <span class="metric-target positive">100%</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-name">Confirmation dialogs naming specific action</span>
+      <span class="metric-target positive">100%</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-name">Phrases in sign-off log (vs. in production)</span>
+      <span class="metric-target amber">100%</span>
+    </div>
+  </div>
+</div>
+
+<!-- Section 3: Definition of Done -->
+<div class="section-heading">Section 3 — Definition of Done for Content</div>
+
+<div class="done-card">
+  <p>Content is done when every phrase, label, error message, empty state, confirmation dialog, and coaching note in the shipped build has been authored against the Voice &amp; Tone Foundation (CV-001 through CV-008), reviewed against the phrase bank quality standards (CV-009 through CV-016), and explicitly approved by the designated voice authority with a timestamped sign-off entry. Done means every coached state has copy — no state falls through to a blank or a generic system string. Done means the phrase bank has at least 8 variants per category and those variants are meaningfully distinct, not paraphrases. Done means all instructional copy reads at Grade 8 or below, uses ability-neutral and gender-neutral language, and makes no reference to body composition or body ideals. Done means the governance process is operational: the voice gate is written, the sign-off log is current, the quarterly review is scheduled, and contribution guidelines point to the voice guide. A build is not content-done if any of the 5 pre-launch gates remain open. Content done is a prerequisite for ship-ready — it is not a post-launch cleanup task.</p>
+</div>
+
+<!-- Section 4: LLM Voice Review Prompt -->
+<div class="section-heading">Section 4 — LLM Voice Pre-Triage Prompt</div>
+
+<div class="llm-card">
+  <div class="llm-title">LLM Voice Review Prompt — Copy Input Template</div>
+  <div class="llm-prompt">You are reviewing copy for H.O.N. (Habit Over Numbers), an iOS fitness coaching app whose voice is its primary differentiator.
+
+VOICE DEFINITION:
+- Spare and direct. Short declarative sentences. No sentence exceeds 20 words.
+- Identity-affirming: the user is an athlete doing work, not a subject being monitored.
+- Specific: every phrase references at least one data point (exercise, weight, reps, trend, gap, or readiness).
+- Non-cheerleading: zero "Amazing!", "Crushing it!", "You've got this!" or equivalents.
+- Non-clinical: zero "compliance", "adherence", "protocol", "metrics", "optimization".
+- No hedging: zero "try to", "might want to", "perhaps", "maybe", "could be".
+- Consistent register: same level of formality throughout. Confident but not loud.
+
+INPUT:
+[PHRASE OR COPY SNIPPET]
+[Where it appears: post-set coaching / readiness note / trainer plan intro / session summary / empty state / error message / button label / other]
+[What state triggered it: e.g., "user hit all reps, 5th session with this exercise, readiness score 74"]
+
+OUTPUT FORMAT:
+
+Voice Compliance Score: [1–5 where 5 = fully compliant, 1 = multiple violations]
+
+Violations Found:
+- [Rule violated] — "[exact quote from input]" — reason this violates the rule
+
+Specificity Assessment:
+[Does this phrase reference at least one data element specific to this user's state? Name the element or note its absence.]
+
+Suggested Rewrite:
+"[Rewritten phrase that passes all 8 voice rules]"
+
+Approval Recommendation:
+[ ] Approve as written
+[ ] Approve with minor edits (specify)
+[ ] Reject — rewrite required (reason)</div>
+</div>
+
+<div class="separator"></div>
+<div style="font-size:11px;color:var(--text2);text-align:center;">H.O.N. Content &amp; Voice Review Criteria &middot; 46 tests across 7 categories &middot; docs/content-review.html</div>
+
+<script>
+const STORAGE_KEY = 'hon_content_review_status';
+
+function loadStatuses() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e) { return {}; }
+}
+function saveStatuses(data) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+function updateStatus(select) {
+  const testCase = select.closest('.test-case');
+  const id = testCase.querySelector('.test-id').textContent.trim();
+  const status = select.value;
+
+  testCase.className = 'test-case status-' + status;
+  select.className = 'status-select status-' + status;
+
+  const saved = loadStatuses();
+  saved[id] = status;
+  saveStatuses(saved);
+
+  updateStats();
+}
+
+function updateStats() {
+  const all = document.querySelectorAll('.test-case');
+  let open = 0, pass = 0, fail = 0, partial = 0;
+  all.forEach(tc => {
+    const s = tc.dataset.status;
+    if (s === 'open') open++;
+    else if (s === 'pass') pass++;
+    else if (s === 'fail') fail++;
+    else if (s === 'partial') partial++;
+  });
+  document.getElementById('stat-total').textContent = all.length + ' total';
+  document.getElementById('stat-open').textContent = (open + fail) + ' open/fail';
+  document.getElementById('stat-partial').textContent = partial + ' partial';
+  document.getElementById('stat-pass').textContent = pass + ' passed';
+}
+
+function filterTests(status, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  document.querySelectorAll('.test-case').forEach(tc => {
+    if (status === 'all') {
+      tc.style.display = '';
+    } else if (status === 'fail') {
+      tc.style.display = (tc.dataset.status === 'fail') ? '' : 'none';
+    } else {
+      tc.style.display = (tc.dataset.status === status) ? '' : 'none';
+    }
+  });
+
+  document.querySelectorAll('.category-block').forEach(cat => {
+    if (status !== 'all') {
+      cat.classList.remove('collapsed');
+    }
+  });
+}
+
+function toggleCategory(id) {
+  document.getElementById(id).classList.toggle('collapsed');
+}
+
+// Restore saved statuses on load
+(function init() {
+  const saved = loadStatuses();
+  document.querySelectorAll('.test-case').forEach(tc => {
+    const id = tc.querySelector('.test-id').textContent.trim();
+    if (saved[id]) {
+      const status = saved[id];
+      tc.dataset.status = status;
+      tc.className = 'test-case status-' + status;
+      const sel = tc.querySelector('.status-select');
+      sel.value = status;
+      sel.className = 'status-select status-' + status;
+    }
+  });
+  updateStats();
+})();
+</script>
+</body>
+</html>
