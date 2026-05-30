@@ -1,0 +1,1953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H.O.N. — Design Simulation Protocol</title>
+<style>
+  :root {
+    --bg:       #111111;
+    --card:     #1c1c1e;
+    --border:   rgba(255,255,255,0.07);
+    --amber:    #f59e0b;
+    --positive: #34d399;
+    --negative: #f87171;
+    --warning:  #fbbf24;
+    --muted:    rgba(255,255,255,0.4);
+    --text:     rgba(255,255,255,0.88);
+    --text2:    rgba(255,255,255,0.55);
+    --blue:     #60a5fa;
+    --purple:   #a78bfa;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 32px 20px 64px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .header { margin-bottom: 36px; }
+  .header-top {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .logo {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber);
+  }
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--amber), transparent);
+    opacity: 0.3;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    color: var(--text);
+  }
+  .subtitle {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+
+  .section-heading {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin: 32px 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-heading::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .intro-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 28px;
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.7;
+    border-left: 3px solid var(--amber);
+  }
+
+  /* Scenario cards */
+  .scenario {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 14px;
+    transition: border-color 0.2s;
+  }
+  .scenario:hover { border-color: rgba(255,255,255,0.14); }
+
+  .scenario-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .scenario-id {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    letter-spacing: 0.08em;
+    color: var(--amber);
+    background: rgba(245,158,11,0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .scenario-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+    flex: 1;
+  }
+
+  .badge-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+
+  .badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .badge-time   { background: rgba(96,165,250,0.15); color: var(--blue); }
+  .badge-amber  { background: rgba(245,158,11,0.15); color: var(--amber); }
+  .badge-green  { background: rgba(52,211,153,0.15); color: var(--positive); }
+  .badge-purple { background: rgba(167,139,250,0.15); color: var(--purple); }
+
+  .scenario-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 20px;
+    margin-bottom: 12px;
+  }
+  @media (max-width: 600px) {
+    .scenario-grid { grid-template-columns: 1fr; }
+  }
+
+  .field-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 3px;
+  }
+  .field-value {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+
+  .field-full { grid-column: 1 / -1; }
+
+  .step-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 4px;
+    counter-reset: steps;
+  }
+  .step-list li {
+    font-size: 13px;
+    color: var(--text2);
+    padding: 4px 0 4px 26px;
+    position: relative;
+    line-height: 1.5;
+    counter-increment: steps;
+  }
+  .step-list li::before {
+    content: counter(steps);
+    position: absolute;
+    left: 0;
+    top: 4px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(245,158,11,0.15);
+    color: var(--amber);
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'SF Mono', monospace;
+  }
+
+  .criteria-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  @media (max-width: 600px) {
+    .criteria-grid { grid-template-columns: 1fr; }
+  }
+
+  .criteria-box {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .criteria-pass {
+    background: rgba(52,211,153,0.06);
+    border: 1px solid rgba(52,211,153,0.15);
+    color: var(--positive);
+  }
+  .criteria-fail {
+    background: rgba(248,113,113,0.06);
+    border: 1px solid rgba(248,113,113,0.15);
+    color: var(--negative);
+  }
+  .criteria-box .criteria-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    opacity: 0.8;
+  }
+
+  .uid-list {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+  .uid-chip {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(245,158,11,0.1);
+    color: var(--amber);
+    letter-spacing: 0.06em;
+  }
+  .uid-chip.secondary {
+    background: rgba(255,255,255,0.06);
+    color: var(--text2);
+  }
+
+  /* Matrix table */
+  .matrix-wrapper {
+    overflow-x: auto;
+    margin: 0 -4px;
+    padding: 0 4px;
+    border-radius: 10px;
+  }
+
+  .matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    min-width: 700px;
+  }
+
+  .matrix-table th {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text2);
+    padding: 8px 4px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    background: var(--card);
+  }
+
+  .matrix-table th.row-header {
+    text-align: left;
+    padding-left: 10px;
+    min-width: 90px;
+  }
+
+  .matrix-table td {
+    padding: 6px 4px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 10px;
+  }
+
+  .matrix-table td.row-header {
+    text-align: left;
+    padding-left: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    font-family: 'SF Mono', monospace;
+    color: var(--amber);
+    white-space: nowrap;
+  }
+
+  .matrix-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .cell-high {
+    background: rgba(245,158,11,0.2);
+    color: var(--amber);
+    border-radius: 3px;
+    font-weight: 700;
+    font-size: 9px;
+  }
+  .cell-low {
+    color: rgba(255,255,255,0.18);
+    font-size: 9px;
+  }
+  .cell-empty { color: transparent; }
+
+  /* Results template */
+  .template-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    margin-top: 16px;
+  }
+
+  .template-field {
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .template-field:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+  .template-field-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 6px;
+  }
+  .template-field-placeholder {
+    font-size: 13px;
+    color: rgba(255,255,255,0.2);
+    font-style: italic;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px dashed rgba(255,255,255,0.1);
+    border-radius: 6px;
+    line-height: 1.5;
+  }
+
+  /* LLM prompt card */
+  .prompt-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--purple);
+    border-radius: 14px;
+    padding: 24px;
+    margin-top: 16px;
+  }
+
+  .prompt-card-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin-bottom: 12px;
+  }
+
+  .prompt-card-desc {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  .prompt-block {
+    background: rgba(167,139,250,0.05);
+    border: 1px solid rgba(167,139,250,0.15);
+    border-radius: 8px;
+    padding: 16px 18px;
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.7;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    white-space: pre-wrap;
+  }
+
+  .prompt-param {
+    color: var(--purple);
+    font-weight: 700;
+  }
+
+  .prompt-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin-top: 16px;
+    margin-bottom: 6px;
+    opacity: 0.8;
+  }
+
+  .output-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 8px;
+  }
+  .output-list li {
+    font-size: 12px;
+    color: var(--text2);
+    padding: 4px 0 4px 20px;
+    position: relative;
+    line-height: 1.5;
+  }
+  .output-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--purple);
+    font-size: 11px;
+  }
+
+  .separator {
+    height: 1px;
+    background: var(--border);
+    margin: 28px 0;
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 20px 14px 48px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <span class="logo">H.O.N.</span>
+    <div class="divider-line"></div>
+  </div>
+  <h1>Design Simulation Protocol</h1>
+  <div class="subtitle">20 design experience scenarios · Cohort-matched · Observation guide · Results template · Last updated: 2026-05-30</div>
+</div>
+
+<!-- Section 1: How to run -->
+<div class="section-heading">Section 1 — How to Run Design Simulations</div>
+<div class="intro-card">
+Design simulations are observational runs where a tester adopts a cohort persona and navigates the app while an observer records what they notice, what confuses them, what they miss, and what makes them feel something. The goal is <em>not</em> to check whether features work — it's to understand whether the visual language, coaching voice, information hierarchy, and emotional design land as intended. The tester does not explain the UI or intervene. The observer watches silently and records reactions, hesitations, wrong taps, body language, and verbal responses to open-ended questions asked after each moment. Runs are 15–30 minutes each. All observations use the results template in Section 4. Prioritize runs marked HIGH in the matrix — these are the persona × scenario pairings most likely to surface real design signal. Reference <a href="cohort.html" style="color:var(--amber)">cohort.html</a> for full persona details before each run. For any scenario where a real user is unavailable, use the LLM simulation prompt in Section 5 to generate a predicted response before scheduling real-user time.
+</div>
+
+<!-- Section 2: Scenarios -->
+<div class="section-heading">Section 2 — 20 Design Simulation Scenarios</div>
+
+<!-- DSIM-01 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">DSIM-01</div>
+    <div class="scenario-title">First Impression — 5-Second HomeView Test</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 5 min</span>
+    <span class="badge badge-amber">Trigger: Cold open, HomeView</span>
+    <span class="badge badge-purple">Focus: Visual hierarchy</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Whether the most important element (readiness score or today's workout suggestion) draws the eye first without any coaching. Can the user say in one sentence what this screen is for?</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">Open HomeView with 4 weeks of seeded data. Persona has no prior context about the app.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Open HomeView with 4 weeks of seeded data loaded.</li>
+        <li>Show the screen to the persona for exactly 5 seconds, then hide it.</li>
+        <li>Ask: "What was the most prominent thing you noticed?"</li>
+        <li>Ask: "What do you think this screen is for?"</li>
+        <li>Show the screen again for 30 seconds — ask what they would tap first and why.</li>
+        <li>Note whether their answer matches the intended design hierarchy (readiness score as dominant element, today hints as secondary).</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-06</span>
+        <span class="uid-chip">U-11</span>
+        <span class="uid-chip">U-17</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Persona names the readiness score or "today's workout" as the first thing they noticed. They can describe the screen's purpose accurately in one sentence.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Persona names a secondary element (logo, tab bar, decorative element) as most prominent. They cannot describe the screen purpose after 30 seconds of viewing.
+    </div>
+  </div>
+</div>
+
+<!-- DSIM-02 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">DSIM-02</div>
+    <div class="scenario-title">Navigation Orientation — Tab Discovery Without Prompting</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 10 min</span>
+    <span class="badge badge-amber">Trigger: Fresh state, no prior context</span>
+    <span class="badge badge-purple">Focus: Navigation &amp; IA</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Whether the 5-tab structure is self-explanatory. Can the persona find where to log a workout, see their progress, and get a trainer recommendation — without being told where these features live?</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">App open on HomeView with seeded data. Persona has not used the app before. Observer says only: "This is a workout app — explore it."</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Hand persona the device with the app open on HomeView. Say: "This is a workout app — explore it."</li>
+        <li>Observe silently for 5 minutes. Note which tabs they explore, the order, and how long they spend on each.</li>
+        <li>After 5 minutes, ask: "Where would you go to see how you've been doing over the past month?"</li>
+        <li>Ask: "Where would you go to get a suggested workout for today?"</li>
+        <li>Ask: "Where would you log a workout you're about to do?"</li>
+        <li>Note any tabs they never opened, and any confusion about tab labels or icons.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-06</span>
+        <span class="uid-chip">U-13</span>
+        <span class="uid-chip">U-17</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Persona correctly identifies Progress, Trainer, and Workout tabs for each question within 30 seconds of asking — without backtracking more than once per question.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Persona cannot locate one or more primary features without assistance after 3 minutes. One or more tabs are never opened in the 5-minute free exploration.
+    </div>
+  </div>
+</div>
+
+<!-- DSIM-03 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">DSIM-03</div>
+    <div class="scenario-title">Coaching Voice Reception — Does It Sound Like H.O.N.?</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 15 min</span>
+    <span class="badge badge-amber">Trigger: Post-workout state with seeded coaching text</span>
+    <span class="badge badge-purple">Focus: Voice &amp; tone</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Whether the coaching language feels specific, direct, and identity-affirming — or generic, clinical, or patronizing. Whether the persona would act differently based on the coaching received.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">Post-workout state with 5 seeded coaching outputs across different views. Outputs read aloud or shown on screen in sequence.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Seed 5 coaching outputs across views: post-set narrative (ActiveWorkoutView), readiness note (HomeView), trainer plan note (TrainerTabView), session summary, and an empty-state copy line.</li>
+        <li>Read each out loud to the persona, or show it on screen one at a time.</li>
+        <li>For each, ask: "Does this feel like it's talking to you specifically, or to anyone?"</li>
+        <li>Ask: "Does this make you want to do anything differently?"</li>
+        <li>Ask: "Does any of this feel off — too preachy, too robotic, too vague?"</li>
+        <li>Ask: "What one word would you use to describe the coaching voice?" Target: "direct", "honest", "calm". Watch for: "generic", "cold", "fake".</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-01</span>
+        <span class="uid-chip">U-07</span>
+        <span class="uid-chip">U-09</span>
+        <span class="uid-chip">U-11</span>
+        <span class="uid-chip">U-14</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      3 or more of 5 coaching outputs rated as "specific to me" rather than "generic." Persona's one-word descriptor aligns with H.O.N. voice intent (direct, honest, calm).
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      2 or more outputs described as generic, robotic, or preachy. Persona cannot identify what makes the coaching specific. One-word descriptor is "generic," "cold," or "fake."
+    </div>
+  </div>
+</div>
+
+<!-- DSIM-04 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">DSIM-04</div>
+    <div class="scenario-title">Emotional Moment — Workout Completion Splash</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 10 min</span>
+    <span class="badge badge-amber">Trigger: Complete 3-exercise workout, tap End Session</span>
+    <span class="badge badge-purple">Focus: Emotional design</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Whether the completion state produces a felt emotional response — pride, satisfaction, acknowledgement. Whether it feels earned or perfunctory. Whether the splash content registers as meaningful and session-specific.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">Persona logs a full 3-exercise workout (Squat 4×5, Bench 4×5, Row 4×5), then taps End Session.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Persona logs a full 3-exercise workout: Squat 4×5, Bench 4×5, Row 4×5.</li>
+        <li>Persona taps End Session.</li>
+        <li>Observer watches face and body language during the completion splash without commentary.</li>
+        <li>After dismissing the splash, ask: "How did that feel?"</li>
+        <li>Ask: "Did you feel like the app acknowledged what you just did, or just logged it?"</li>
+        <li>Ask: "Was there anything on that screen you didn't notice at first?"</li>
+        <li>Ask: "What would have made that moment feel more significant?"</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-05</span>
+        <span class="uid-chip">U-07</span>
+        <span class="uid-chip">U-13</span>
+        <span class="uid-chip">U-20</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Persona uses a positive emotion word (satisfied, good, proud, noticed) unprompted. They identify at least one session-specific data point from the splash without being prompted.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Persona says "fine" or is visibly neutral. They don't recall anything specific from the splash. They describe the moment as "just a screen" or "the same as always."
+    </div>
+  </div>
+</div>
+
+<!-- DSIM-05 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">DSIM-05</div>
+    <div class="scenario-title">PR Visual Recognition — Does the Moment Land?</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 10 min</span>
+    <span class="badge badge-amber">Trigger: Log a set that beats all-time e1RM</span>
+    <span class="badge badge-purple">Focus: Emotional design &amp; visual hierarchy</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Whether the PR visual treatment (green pip, PR label, or equivalent) is noticed without prompting. Whether the persona understands the significance without reading help text.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">Exercise history seeded so that a specific weight/rep combination will trigger a new all-time e1RM. Persona logs that exact set in ActiveWorkoutView.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Seed the exercise history so a specific weight/rep combo will trigger a PR.</li>
+        <li>Persona logs that exact set in ActiveWorkoutView.</li>
+        <li>Observe whether they react to any visual change on the set row immediately.</li>
+        <li>After 30 seconds, ask: "Did anything look different about that set?"</li>
+        <li>Ask: "Did the app communicate anything about that set being special?"</li>
+        <li>If they missed it, point to the PR indicator and ask: "Did you notice this? What do you think it means?"</li>
+        <li>Note whether the visual treatment is strong enough to catch attention during the mid-workout workflow state.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-01</span>
+        <span class="uid-chip">U-05</span>
+        <span class="uid-chip">U-09</span>
+        <span class="uid-chip">U-20</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Persona notices the PR treatment without prompting within 10 seconds of the set completing. They correctly identify it as a personal record without reading a tooltip.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Persona completes the set and moves on without noticing the PR indicator. When pointed to it, they cannot interpret its meaning without explanation.
+    </div>
+  </div>
+</div>
+
+<!-- DSIM-06 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">DSIM-06</div>
+    <div class="scenario-title">Comeback Message — Non-Judgmental Return After a Gap</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 10 min</span>
+    <span class="badge badge-amber">Trigger: Last session 14 days ago, cold open</span>
+    <span class="badge badge-purple">Focus: Emotional design &amp; voice</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Whether the comeback experience feels warm and welcoming, or guilt-inducing. Whether the message feels specific to their situation or formulaic. Whether it makes the persona want to continue or reminds them of their absence.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">Last session date set to 14 days ago in seeded data. App opened fresh; HomeView appears with comeback state active.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Set last session date to 14 days ago in seeded data.</li>
+        <li>Open app fresh; HomeView appears with comeback message.</li>
+        <li>Let persona read it silently without commentary.</li>
+        <li>Ask: "How does this make you feel?"</li>
+        <li>Ask: "Does this feel like something written for you, or a generic notification?"</li>
+        <li>Ask: "Does this make you want to work out now, or does it make you feel bad about being away?"</li>
+        <li>Ask: "Read the message out loud — is there anything that felt off?" Watch for guilt-inducing phrases like "you've been away for 14 days" or "it's been a while."</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-07</span>
+        <span class="uid-chip">U-08</span>
+        <span class="uid-chip">U-10</span>
+        <span class="uid-chip">U-15</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Persona describes the feeling as "welcomed back" or "understood" — not "judged" or "reminded." Message does not reference the gap duration numerically.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Persona uses words like "guilty," "called out," or "obligated." Message references the specific number of missed days. Persona says it made them feel worse about returning.
+    </div>
+  </div>
+</div>
+
+<!-- DSIM-07 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">DSIM-07</div>
+    <div class="scenario-title">Progress Tab Comprehension — 5 Question Categories</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 15 min</span>
+    <span class="badge badge-amber">Trigger: 8 weeks seeded, mix of plateaus and PRs</span>
+    <span class="badge badge-purple">Focus: IA &amp; visual hierarchy</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Whether the 5 question-named categories ("Am I getting stronger?", "How strong am I?", "How do I train?", "Am I doing cardio?", "How am I recovering?") are immediately legible as a navigation structure without tapping into them.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">ProgressView open with 8 weeks of seeded data: a mix of plateaued lifts, PR lifts, and cardio sessions.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Open ProgressView with seeded data. Let persona scroll through once without tapping — observe where they slow down, where they skip.</li>
+        <li>Ask: "Without tapping anything, tell me what you think each section is showing you."</li>
+        <li>Ask: "If you wanted to know whether your squat has been going up, where would you look?"</li>
+        <li>Ask: "If you were wondering if you're training enough, which section answers that?"</li>
+        <li>Tap into one section together — ask if the content matches what they expected.</li>
+        <li>Note any section they found confusing, redundant, or unnecessary.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-06</span>
+        <span class="uid-chip">U-09</span>
+        <span class="uid-chip">U-11</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Persona correctly maps at least 4 of 5 sections to their function before tapping. They identify the correct section for the strength question and the frequency question.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Persona opens the wrong section for one or both test questions. They describe the category names as confusing or overlapping. Content inside a section doesn't match their expectation.
+    </div>
+  </div>
+</div>
+
+<!-- DSIM-08 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">DSIM-08</div>
+    <div class="scenario-title">Full Analytics Discovery — Can They Find It?</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 10 min</span>
+    <span class="badge badge-amber">Trigger: ProgressView open, no coaching</span>
+    <span class="badge badge-purple">Focus: IA &amp; discoverability</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Whether the "Full Analytics →" entry point to StrengthLabView is discoverable without prompting. Whether the persona understands what it leads to before tapping it.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">ProgressView open with seeded data. Observer says: "There's a deeper view of your strength analytics accessible from this screen. See if you can find it."</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Open ProgressView. Tell persona: "There's a deeper view of your strength analytics accessible from this screen. See if you can find it."</li>
+        <li>Give them up to 3 minutes. Observe where they look and what they tap.</li>
+        <li>If they find it, ask: "Did you tap it? What did you expect to find?"</li>
+        <li>If they don't find it in 3 minutes, point to it and ask: "Did this register as something you could tap?"</li>
+        <li>Ask: "What does 'Full Analytics' mean to you — what would you expect to see?"</li>
+        <li>Note whether the row design (text + arrow) reads as a tap target vs. a label.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-01</span>
+        <span class="uid-chip">U-09</span>
+        <span class="uid-chip">U-11</span>
+        <span class="uid-chip">U-20</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Persona locates the entry point within 90 seconds without assistance. They correctly anticipate deeper analytics data before tapping.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Persona cannot find the entry point within 3 minutes. When pointed to it, they do not perceive it as tappable. They cannot predict what's behind it.
+    </div>
+  </div>
+</div>
+
+<!-- DSIM-09 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">DSIM-09</div>
+    <div class="scenario-title">Settings via Gear Icon — Is It Found?</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 5 min</span>
+    <span class="badge badge-amber">Trigger: HomeView open, no tab-based Settings</span>
+    <span class="badge badge-purple">Focus: Navigation &amp; discoverability</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Whether the gear icon in the HomeView toolbar is recognized as settings access without a label. Whether removing Settings from the tab bar causes confusion or is transparent to the persona.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">HomeView open. Observer says: "Where would you go to change your unit preferences (kg vs lbs)?"</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Open HomeView. Tell persona: "Where would you go to change your unit preferences (kg vs lbs)?"</li>
+        <li>Observe where they look — tabs first, or toolbar first.</li>
+        <li>If they find the gear icon and tap it, note how long it took.</li>
+        <li>If they open a wrong destination first, note where they went.</li>
+        <li>Ask: "Did you look anywhere else before you found Settings?"</li>
+        <li>Ask: "Does it feel natural that Settings isn't in the tab bar?"</li>
+        <li>Note any confusion about the icon vs. a "Settings" text label.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-06</span>
+        <span class="uid-chip">U-13</span>
+        <span class="uid-chip">U-17</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Persona locates the gear icon within 60 seconds. They associate it with settings without a text label and describe its placement as natural.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Persona taps through 2 or more wrong destinations. They require more than 90 seconds to locate Settings, or need to be told where to find it.
+    </div>
+  </div>
+</div>
+
+<!-- DSIM-10 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">DSIM-10</div>
+    <div class="scenario-title">Color Semantics — Amber vs Green vs Muted</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 10 min</span>
+    <span class="badge badge-amber">Trigger: ProgressView with plateau and PR lift</span>
+    <span class="badge badge-purple">Focus: Visual language</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Whether the semantic color system is legible without a legend. Do users correctly interpret amber as "attention needed" and green as "positive"? Do they read the dashed amber line on a plateau differently from a solid green line?</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">ProgressView with one lift showing a 4-week plateau (amber dashed line treatment) and one lift showing recent PR growth (green solid line).</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Open ProgressView with one plateaued lift (amber dashed treatment) and one PR-growth lift (green solid).</li>
+        <li>Ask persona: "Looking at these two trend lines, what's the difference between them?"</li>
+        <li>Ask: "Does the color or style of the line tell you anything?"</li>
+        <li>Ask: "Which of these two exercises would you say needs more attention?"</li>
+        <li>Ask: "What does the dotted/dashed line mean to you?"</li>
+        <li>Note whether they correctly map amber/dashed = needs attention, green/solid = healthy progress.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-06</span>
+        <span class="uid-chip">U-15</span>
+        <span class="uid-chip">U-17</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Persona correctly identifies the amber/dashed lift as the one needing attention. They associate green with positive progress without being told. Dashed line reads as "uncertain" or "needs work."
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Persona cannot distinguish the two treatments, or interprets amber as positive and green as negative. Dashed line is indistinguishable from solid line.
+    </div>
+  </div>
+</div>
+
+<!-- DSIM-11 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">DSIM-11</div>
+    <div class="scenario-title">Information Density — Power User Stress Test</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 15 min</span>
+    <span class="badge badge-amber">Trigger: 50+ sessions seeded, 6 exercises tracked</span>
+    <span class="badge badge-purple">Focus: Layout &amp; density</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Whether ProgressView and StrengthLabView become overwhelming with dense data. Whether the visual hierarchy holds under load — does the most important information still read as dominant when there's a lot of data?</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">52 workout sessions seeded across 6 primary exercises with realistic progressive overload data. Power-user persona navigates freely.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Seed 52 workout sessions across 6 primary exercises with realistic progressive overload data.</li>
+        <li>Open ProgressView. Let power-user persona scroll through at their own pace.</li>
+        <li>Ask: "Does anything feel crowded or hard to read?"</li>
+        <li>Ask: "Is there any section where you lost track of what was most important?"</li>
+        <li>Open Full Analytics (StrengthLabView). Repeat both questions.</li>
+        <li>Ask: "If you had to summarize what this screen is telling you in one sentence, what would it be?"</li>
+        <li>Note any visual elements that become illegible or visually confused with dense data.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-01</span>
+        <span class="uid-chip">U-09</span>
+        <span class="uid-chip">U-11</span>
+        <span class="uid-chip">U-20</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Persona can summarize each view in one sentence. No section described as "too much" or "I couldn't tell what was important." Hierarchy remains clear at density.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Persona describes any section as overwhelming. They cannot identify the dominant data point on a screen. Any chart becomes illegible with 50+ sessions.
+    </div>
+  </div>
+</div>
+
+<!-- DSIM-12 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">DSIM-12</div>
+    <div class="scenario-title">Sparse Data — New User Experience Across All Screens</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 15 min</span>
+    <span class="badge badge-amber">Trigger: 2 sessions seeded (bare minimum)</span>
+    <span class="badge badge-purple">Focus: Empty states &amp; progressive disclosure</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Whether the app is coherent and encouraging with only 2 sessions of data. Whether empty sections are gracefully absent or awkwardly visible. Whether a new user understands what will appear as they train more.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">Exactly 2 workout sessions seeded (Day 1, Day 3). New persona navigates all 5 tabs.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Seed exactly 2 workout sessions (Day 1, Day 3).</li>
+        <li>Open app as new persona; navigate all 5 tabs without prompting.</li>
+        <li>For each screen, ask: "Does this screen make sense right now?"</li>
+        <li>Ask: "Is there anything missing that you expected to see?"</li>
+        <li>Ask: "When you look at the sections that have no data, do you understand what will eventually appear there?"</li>
+        <li>Specifically check RecoveryTrendContent — does the user see their 2 readiness scores or the 14-day fallback?</li>
+        <li>Note any screen that appears broken or incomplete vs. one that feels intentionally sparse.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-06</span>
+        <span class="uid-chip">U-13</span>
+        <span class="uid-chip">U-17</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Persona describes the sparse state as "early but clear" — they understand what will appear as they continue. No section appears broken. RecoveryTrendContent shows actual 2-point history.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Persona says one or more screens "look broken" or "don't make sense yet." Any section shows a blank white box with no explanation. RecoveryTrendContent shows 14-day fallback with only 2 sessions.
+    </div>
+  </div>
+</div>
+
+<!-- DSIM-13 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">DSIM-13</div>
+    <div class="scenario-title">Milestone Moment — Session 25 Reaction</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 10 min</span>
+    <span class="badge badge-amber">Trigger: Seeded to session 24; persona logs session 25</span>
+    <span class="badge badge-purple">Focus: Emotional design</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Whether the session-25 milestone splash is visually distinct from a regular workout completion. Whether the naming ("Session 25 — a quarter century") resonates. Whether the persona feels the milestone is meaningful vs. arbitrary.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">24 completed sessions seeded. Persona logs a full workout and ends the session, triggering the session-25 milestone.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Seed 24 completed sessions.</li>
+        <li>Persona logs a full workout and ends the session.</li>
+        <li>Observe their reaction to the milestone splash — note body language and facial expression without commentary.</li>
+        <li>Ask: "What just happened?"</li>
+        <li>Ask: "How did that feel different from a normal session end?"</li>
+        <li>Ask: "Would you share this with someone, or does it feel private?"</li>
+        <li>Ask: "Does the number 25 feel significant to you, or arbitrary?"</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-05</span>
+        <span class="uid-chip">U-07</span>
+        <span class="uid-chip">U-13</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Persona identifies the milestone as distinct from a regular completion. They describe a positive emotional response. They perceive 25 as a meaningful marker, not an arbitrary number.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Persona does not notice the splash is different from a regular completion. "25" feels arbitrary. Persona dismisses the splash without reading it.
+    </div>
+  </div>
+</div>
+
+<!-- DSIM-14 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">DSIM-14</div>
+    <div class="scenario-title">Typography Hierarchy — One Dominant Number Test</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 10 min</span>
+    <span class="badge badge-amber">Trigger: HomeView, ProgressView, and ActiveWorkoutView in sequence</span>
+    <span class="badge badge-purple">Focus: Typography &amp; visual hierarchy</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Whether each screen has exactly one element the eye lands on first — the "hero number" — and whether supporting data clearly feels secondary. Do users know which number to pay attention to on each screen?</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">Three screens shown in sequence for 3 seconds each: HomeView, ProgressView, ActiveWorkoutView mid-workout.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Show HomeView for 3 seconds. Ask: "What number did your eye land on first?"</li>
+        <li>Show ProgressView for 3 seconds. Ask the same question.</li>
+        <li>Show ActiveWorkoutView mid-workout for 3 seconds. Ask the same question.</li>
+        <li>For each screen, ask: "Was there any confusion about which number was most important?"</li>
+        <li>Ask: "Were there any numbers that felt like they were fighting for your attention?"</li>
+        <li>Note any screens where two elements appear to have equal visual weight.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-06</span>
+        <span class="uid-chip">U-15</span>
+        <span class="uid-chip">U-17</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Persona names the intended hero element on each screen (readiness score on Home, first e1RM trend on Progress, current set's weight on ActiveWorkout). They describe secondary stats as "smaller" or "background."
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Persona names a secondary element on any screen. They describe two elements as "equally important" on any screen. Any screen fails to produce a clear first-glance answer.
+    </div>
+  </div>
+</div>
+
+<!-- DSIM-15 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">DSIM-15</div>
+    <div class="scenario-title">Active Workout Density — Cognitive Load Under 3+ Exercises</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 15 min</span>
+    <span class="badge badge-amber">Trigger: 3-exercise workout in progress</span>
+    <span class="badge badge-purple">Focus: Layout &amp; cognitive load</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Whether the active workout view remains coherent and focused when 3 exercises with 4 sets each are loaded. Does the current exercise feel primary? Do upcoming exercises feel appropriately subordinate without being invisible?</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">A workout with 3 exercises (Squat 4 sets, Bench 4 sets, Row 4 sets) in progress. Persona is on set 2 of Exercise 1.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Set up a workout with 3 exercises: Squat (4 sets), Bench (4 sets), Row (4 sets).</li>
+        <li>Begin the workout; persona is on set 2 of Exercise 1.</li>
+        <li>Let them interact naturally for 5 minutes without prompting.</li>
+        <li>Ask: "At any point did you feel the screen was too busy?"</li>
+        <li>Ask: "Could you always tell which exercise and set you were on?"</li>
+        <li>Ask: "Did you notice the upcoming exercises? Were they helpful or distracting?"</li>
+        <li>Ask: "Did anything feel missing from this screen while you were working out?"</li>
+        <li>Note: did they accidentally interact with a set they weren't on?</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-01</span>
+        <span class="uid-chip">U-09</span>
+        <span class="uid-chip">U-20</span>
+        <span class="uid-chip secondary">U-03</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Persona always knows their current exercise and set number. They do not accidentally complete the wrong set. They describe the layout as "focused" or "clear."
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Persona expresses confusion about which exercise is active, or accidentally taps a row that is not the current set. They describe the screen as "too busy" or "hard to follow."
+    </div>
+  </div>
+</div>
+
+<!-- DSIM-16 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">DSIM-16</div>
+    <div class="scenario-title">Error State Recovery — Invalid Input Legibility</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 8 min</span>
+    <span class="badge badge-amber">Trigger: Weight field in ActiveWorkoutView</span>
+    <span class="badge badge-purple">Focus: Interaction design</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Whether invalid input produces a clear, immediate, inline error that the persona understands and can correct without help or frustration. Error placement and phrasing matter as much as the error's existence.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">ActiveWorkoutView with at least one exercise loaded. Persona enters invalid values in the weight and reps fields.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>In ActiveWorkoutView, persona enters "0" in the weight field and attempts to log the set.</li>
+        <li>Observe what happens. Does an error appear? Where is it placed?</li>
+        <li>Ask: "Did you know what went wrong?"</li>
+        <li>Ask: "Did you know how to fix it?"</li>
+        <li>Repeat with a clearly invalid rep count (e.g., 0 reps).</li>
+        <li>Ask: "Did the error state feel like an obstacle or a helpful catch?"</li>
+        <li>Note whether error appears inline adjacent to the field (good) or as a modal alert (bad).</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-06</span>
+        <span class="uid-chip">U-13</span>
+        <span class="uid-chip">U-15</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Persona identifies the error without reading a manual. They correct it in under 15 seconds. Error appears inline adjacent to the field. They describe it as "helpful" not "annoying."
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Persona cannot identify what went wrong. Error appears as a modal alert interrupting flow. Correction takes more than 30 seconds. Persona expresses frustration.
+    </div>
+  </div>
+</div>
+
+<!-- DSIM-17 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">DSIM-17</div>
+    <div class="scenario-title">Voice Consistency Audit — Same App, Same Voice?</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 15 min</span>
+    <span class="badge badge-amber">Trigger: Post-workout state; 5 coaching outputs shown in sequence</span>
+    <span class="badge badge-purple">Focus: Voice &amp; tone</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Whether the coaching language reads as one consistent voice across all screens — or whether some screens feel like a different app. Can the persona feel the same personality across a set-completion note, a readiness message, a trainer note, a session summary, and an empty state?</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">Post-workout state with 5 coaching outputs sourced from different screens, shown without revealing their origin.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Show persona 5 coaching outputs in this order (without revealing which screen they're from): (a) a post-set WorkoutNarrativeEngine output; (b) a HomeView readiness coaching note; (c) a TrainerTabView plan introduction; (d) a CardioSessionSummaryView coaching sentence; (e) an empty state message from ProgressView.</li>
+        <li>For each, ask: "Does this sound like the same app?"</li>
+        <li>After all 5, ask: "Did any of these sound like they came from a different place?"</li>
+        <li>Ask: "Would you describe the overall tone as more like a coach, a friend, a doctor, or a training log?" Target answer: "coach."</li>
+        <li>Note any screen where the tone was clearly different from the others.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-01</span>
+        <span class="uid-chip">U-07</span>
+        <span class="uid-chip">U-09</span>
+        <span class="uid-chip">U-11</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Persona says all 5 outputs read as the same voice. Their tone descriptor matches "coach" or an equivalent (direct, clear, human). No outlier output identified.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Persona identifies one or more outputs as clearly different in tone. Cardio outputs are the most likely failure point. Persona chooses "training log" or "robot" as the tone descriptor.
+    </div>
+  </div>
+</div>
+
+<!-- DSIM-18 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">DSIM-18</div>
+    <div class="scenario-title">Progressive Disclosure — Advanced Features Out of Sight</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 10 min</span>
+    <span class="badge badge-amber">Trigger: Fresh workout state, mid-level fitness persona</span>
+    <span class="badge badge-purple">Focus: Human-centered design</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Whether RPE chips, drop set toggles, velocity profile, and other advanced features are hidden by default — and whether a mid-level user feels the app is right-sized for them, not overwhelming.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">Persona opens a new workout from scratch and adds a single exercise. They are a mid-level fitness user, not an advanced tracker.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Persona opens a new workout from scratch.</li>
+        <li>Adds a single exercise and starts logging.</li>
+        <li>Ask: "Is there anything on this screen you don't understand or didn't expect?"</li>
+        <li>Ask: "Does this screen feel too simple, too complex, or about right for you?"</li>
+        <li>Now show them how to access advanced features (long-press or expand). Ask: "Did you know that was there?"</li>
+        <li>Ask: "Does knowing it's there but hidden make the app feel more or less trustworthy?"</li>
+        <li>Note any advanced feature that is visible before it should be for this persona's level.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-02</span>
+        <span class="uid-chip">U-06</span>
+        <span class="uid-chip">U-13</span>
+        <span class="uid-chip">U-17</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Persona describes the default view as "right for me" or "clean." No advanced features visible before interaction. Discovering hidden features produces an "oh, nice" reaction rather than confusion.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Persona is confused by an advanced feature that's visible by default. They describe the screen as "overwhelming" or "not for me." Hidden features feel like they were hidden to obscure something.
+    </div>
+  </div>
+</div>
+
+<!-- DSIM-19 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">DSIM-19</div>
+    <div class="scenario-title">Dark Pattern Check — Is Any Interaction Manipulative?</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 15 min</span>
+    <span class="badge badge-amber">Trigger: Full app walkthrough across all 5 tabs</span>
+    <span class="badge badge-purple">Focus: Human-centered design &amp; ethics</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Whether any interaction pattern, notification, streak mechanism, or coaching language pressures the user into engagement they wouldn't choose freely. H.O.N. is built on earned trust — any dark pattern is a design failure.</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">Full app walkthrough. Persona is a persona who has experienced burnout or an inconsistent relationship with fitness (U-07, U-10, U-15, U-08).</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Persona navigates all 5 tabs freely for 10 minutes.</li>
+        <li>Ask: "Did anything feel like the app was pushing you to do something you didn't want to do?"</li>
+        <li>Ask: "Did any message or notification feel guilt-inducing or pressure-y?"</li>
+        <li>Ask: "Did any streak or milestone counter make you feel anxious about breaking it?"</li>
+        <li>Ask: "Did you feel like the app respected your decision when you didn't want to log something?"</li>
+        <li>Ask: "Is there anything that felt manipulative, even mildly?"</li>
+        <li>Note any instance of: FOMO language, streak anxiety induction, notification frequency that feels aggressive, or comebacks that reference the gap negatively.</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-07</span>
+        <span class="uid-chip">U-15</span>
+        <span class="uid-chip">U-17</span>
+        <span class="uid-chip secondary">U-08</span>
+        <span class="uid-chip secondary">U-10</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      Persona describes zero interactions as pressure-inducing or manipulative. Streak display is informational, not anxiety-producing. Persona feels respected when they choose not to engage.
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Persona identifies one or more moments of feeling pressured or guilt-tripped. Streak counter produces anxiety about missing a day. Any coaching text references what the user "should" have done.
+    </div>
+  </div>
+</div>
+
+<!-- DSIM-20 -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="scenario-id">DSIM-20</div>
+    <div class="scenario-title">Cross-Persona Contrast — Novice vs Expert on the Same Screen</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-time">Est. 20 min</span>
+    <span class="badge badge-amber">Trigger: StrengthLabView, 8 weeks of seeded data</span>
+    <span class="badge badge-purple">Focus: Design for range</span>
+  </div>
+  <div class="scenario-grid">
+    <div>
+      <div class="field-label">What We're Observing</div>
+      <div class="field-value">Whether the same screen is comprehensible to both a novice (U-02, first-time fitness tracker) and an expert (U-01, powerlifter who fact-checks e1RM). Does the design serve both without alienating either?</div>
+    </div>
+    <div>
+      <div class="field-label">Trigger Condition</div>
+      <div class="field-value">StrengthLabView with 8 weeks of seeded data. Run this scenario twice: once with U-02 persona, once with U-01 persona. Compare results side by side.</div>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Steps</div>
+      <ol class="step-list">
+        <li>Run this scenario twice: once with U-02 (novice) persona, once with U-01 (expert) persona. Same screen, same seeded data.</li>
+        <li>For each persona: let them explore StrengthLabView for 5 minutes.</li>
+        <li>Ask: "Does this screen feel like it was built for someone like you?"</li>
+        <li>Ask: "Is there anything here you found too basic? Too complex?"</li>
+        <li>Ask: "What's the first thing you'd want to change or add?"</li>
+        <li>Compare the two sets of answers. Note where their needs diverge and where they align.</li>
+        <li>Determine: does the current design serve the novice without insulting the expert? Does it serve the expert without overwhelming the novice?</li>
+      </ol>
+    </div>
+    <div class="field-full">
+      <div class="field-label">Priority Cohort Members</div>
+      <div class="uid-list">
+        <span class="uid-chip">U-01</span>
+        <span class="uid-chip">U-02</span>
+      </div>
+    </div>
+  </div>
+  <div class="criteria-grid">
+    <div class="criteria-box criteria-pass">
+      <div class="criteria-label">Pass</div>
+      U-02 says "I understand this" and U-01 says "this has what I need" — both without significant friction. Neither persona describes the screen as "not for me."
+    </div>
+    <div class="criteria-box criteria-fail">
+      <div class="criteria-label">Fail</div>
+      Either persona describes the screen as "not for me." U-02 says it's overwhelming or incomprehensible. U-01 says it's too basic or missing critical data they'd rely on.
+    </div>
+  </div>
+</div>
+
+<!-- Section 3: Matrix -->
+<div class="section-heading">Section 3 — Cohort × Scenario Priority Matrix</div>
+<p style="font-size:13px;color:var(--text2);margin-bottom:16px;">Amber H = high priority (run first). Dim dot = run if time permits. Rows are scenarios DSIM-01 through DSIM-20. Columns are the 10 cohort members most relevant to design perception testing.</p>
+
+<div class="matrix-wrapper">
+<table class="matrix-table">
+<thead>
+<tr>
+  <th class="row-header">Scenario ↓ / Cohort →</th>
+  <th>U-01<br><span style="font-weight:400;font-size:8px;opacity:0.6">Powerlifter</span></th>
+  <th>U-02<br><span style="font-weight:400;font-size:8px;opacity:0.6">First-timer</span></th>
+  <th>U-06<br><span style="font-weight:400;font-size:8px;opacity:0.6">Older adult</span></th>
+  <th>U-07<br><span style="font-weight:400;font-size:8px;opacity:0.6">Comeback</span></th>
+  <th>U-09<br><span style="font-weight:400;font-size:8px;opacity:0.6">Data-driven</span></th>
+  <th>U-11<br><span style="font-weight:400;font-size:8px;opacity:0.6">Skeptic</span></th>
+  <th>U-13<br><span style="font-weight:400;font-size:8px;opacity:0.6">Gym newc.</span></th>
+  <th>U-15<br><span style="font-weight:400;font-size:8px;opacity:0.6">Time-poor</span></th>
+  <th>U-17<br><span style="font-weight:400;font-size:8px;opacity:0.6">Casual</span></th>
+  <th>U-20<br><span style="font-weight:400;font-size:8px;opacity:0.6">Competitive</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td class="row-header">DSIM-01</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">DSIM-02</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">DSIM-03</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">DSIM-04</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+</tr>
+<tr>
+  <td class="row-header">DSIM-05</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+</tr>
+<tr>
+  <td class="row-header">DSIM-06</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">DSIM-07</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">DSIM-08</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+</tr>
+<tr>
+  <td class="row-header">DSIM-09</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">DSIM-10</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">DSIM-11</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+</tr>
+<tr>
+  <td class="row-header">DSIM-12</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">DSIM-13</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">DSIM-14</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">DSIM-15</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+</tr>
+<tr>
+  <td class="row-header">DSIM-16</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">DSIM-17</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">DSIM-18</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">DSIM-19</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+</tr>
+<tr>
+  <td class="row-header">DSIM-20</td>
+  <td class="cell-high">H</td>
+  <td class="cell-high">H</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+  <td class="cell-low">·</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p style="font-size:11px;color:var(--text2);margin-top:10px;">H = high priority run &nbsp;·&nbsp; · = run if time permits &nbsp;·&nbsp; Run U-01 + U-02 together for DSIM-20 and compare results side by side</p>
+
+<!-- Section 4: Results Template -->
+<div class="section-heading">Section 4 — Design Observation Results Template</div>
+<p style="font-size:13px;color:var(--text2);margin-bottom:16px;">Copy this template for each design simulation run. File in <code style="font-family:monospace;font-size:12px;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">docs/uat/</code> with filename <code style="font-family:monospace;font-size:12px;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">DSIMxx-Uxx-YYYY-MM-DD.md</code>. Focus on what the persona said and did, not on what you think they meant.</p>
+
+<div class="template-card">
+  <div class="template-field">
+    <div class="template-field-label">Scenario ID &amp; Title</div>
+    <div class="template-field-placeholder">DSIM-__ — [Scenario title] · Persona: U-__ · Observer: [name] · Date: YYYY-MM-DD</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Device / OS Version</div>
+    <div class="template-field-placeholder">Device model, iOS version, simulator or physical, build SHA or version number.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Data State</div>
+    <div class="template-field-placeholder">Describe the data seed state used: fresh install, seeded X sessions over Y weeks, specific edge conditions set (e.g., last session 14 days ago, PR seeded at 100 kg × 5).</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">First Impression</div>
+    <div class="template-field-placeholder">What did the persona notice first, in their exact words? Quote verbatim where possible. Note the element they named and whether it matched the intended design hierarchy.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Moments of Delight</div>
+    <div class="template-field-placeholder">Any reactions, expressions, or comments that indicated a positive emotional response. Note body language, unprompted verbal responses, and what triggered the reaction.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Moments of Friction</div>
+    <div class="template-field-placeholder">Hesitations, wrong taps, confused expressions, abandoned flows, and re-reads. Note how long each friction moment lasted and whether the persona resolved it independently.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Voice &amp; Tone Reaction</div>
+    <div class="template-field-placeholder">How the persona described the coaching language. Quote any descriptors they used (e.g., "direct," "generic," "like it knows me"). Note which specific output triggered the strongest reaction.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Visual Hierarchy Finding</div>
+    <div class="template-field-placeholder">Did the intended dominant element draw the eye first? Which element did they name first on each screen? Did any secondary element compete for attention unexpectedly?</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Surprise / Unexpected Behavior</div>
+    <div class="template-field-placeholder">Anything the persona did or said that wasn't predicted by the scenario design. Note divergences from the expected path and what may have caused them.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Pass / Fail / Partial</div>
+    <div class="template-field-placeholder">PASS / FAIL / PARTIAL — with one sentence explaining the verdict against the scenario's pass criteria. If PARTIAL, specify which part passed and which failed.</div>
+  </div>
+  <div class="template-field">
+    <div class="template-field-label">Priority Design Fix</div>
+    <div class="template-field-placeholder">If any: one line describing the single most important design change suggested by this run. Frame as a specific, actionable change — not a general observation. "None" is a valid entry.</div>
+  </div>
+</div>
+
+<!-- Section 5: LLM Simulation Prompt -->
+<div class="section-heading">Section 5 — LLM Design Simulation Prompt</div>
+<p style="font-size:13px;color:var(--text2);margin-bottom:16px;">Use this prompt to simulate how a specific cohort persona would experience a specific screen before scheduling a real-user run. LLM prediction is not a substitute for real users — use it to triage. Run real users where the LLM rates design risk 3 or higher, or predicts high ambiguity in the confusion or hierarchy fields.</p>
+
+<div class="prompt-card">
+  <div class="prompt-card-title">LLM Persona × Screen Experience Prompt</div>
+  <div class="prompt-card-desc">
+    Copy the prompt below. Fill in the four bracketed parameters from the scenario and cohort profile. Paste into any capable LLM (Claude recommended). Use the output to decide whether the real-user run is urgent (risk ≥ 3) or can wait.
+  </div>
+
+  <div class="prompt-block"><span style="color:var(--text2);font-size:11px;opacity:0.6">// PARAMETERS — fill all four before submitting</span>
+
+<span class="prompt-param">[PERSONA ID + DESCRIPTION]</span>
+Cohort ID and one-paragraph summary of who this person is: their fitness background, technical comfort level, relationship with tracking apps, emotional state around fitness, and any specific sensitivities (e.g., history of burnout, competitive mindset, skepticism of gamification).
+
+<span class="prompt-param">[SCREEN NAME]</span>
+The exact screen name as it appears in the app architecture: e.g., HomeView, StrengthLabView, ActiveWorkoutView, ProgressView, TrainerTabView.
+
+<span class="prompt-param">[SCREEN STATE / WHAT'S ON IT]</span>
+A precise description of the screen's current state: what data is visible, what elements are present, what coaching text is shown, how much data is loaded (sparse vs. dense), and any special states (PR just logged, comeback state active, mid-workout, empty state).
+
+<span class="prompt-param">[DESIGN FOCUS DIMENSION]</span>
+The specific design dimension being evaluated from this list: visual hierarchy / navigation &amp; IA / voice &amp; tone / emotional design / layout &amp; cognitive load / interaction design / human-centered design / color semantics / progressive disclosure.</div>
+
+  <div class="prompt-label">Prompt to send</div>
+  <div class="prompt-block">You are simulating how a real person experiences a mobile app screen. You are not evaluating the app's functional correctness — only how it feels, reads, and communicates to the specific persona described.
+
+Persona: <span class="prompt-param">[PERSONA ID + DESCRIPTION]</span>
+
+Screen: <span class="prompt-param">[SCREEN NAME]</span> in its current state: <span class="prompt-param">[SCREEN STATE / WHAT'S ON IT]</span>
+
+Design focus: <span class="prompt-param">[DESIGN FOCUS DIMENSION]</span>
+
+Simulate this persona's experience of this screen. Output each section below with 2–4 sentences of specific, persona-grounded reasoning. Do not be generic. If you lack information, say what you'd need to know.
+
+1. Predicted First Impression — What element does this persona's eye land on first, and why? What do they think this screen is for in the first 5 seconds?
+
+2. Predicted Confusion Points — What, if anything, would confuse or slow this persona? What might they misread, misinterpret, or skip entirely?
+
+3. Predicted Emotional Response — How does this persona feel during and after interacting with this screen? Is there a specific moment of friction, delight, or indifference? Why?
+
+4. Predicted Voice Perception — How does this persona interpret the coaching language on this screen? Does it feel specific to them, or generic? What word would they use to describe the tone?
+
+5. Most Likely to Miss — What element on this screen is this persona most likely to overlook entirely, and why? What does their missing it tell us about the design's hierarchy?
+
+6. Most Likely to Delight — What single element is most likely to produce a positive reaction from this persona? What makes it land for them specifically?
+
+7. Design Risk Rating (1–5) — Rate the design risk for this persona × screen pairing. 1 = very likely to work as intended. 5 = very likely to confuse, alienate, or frustrate. Justify in one sentence.
+
+8. Recommended Real-User Test Priority — Based on your simulation, should this pairing be tested with a real user? Answer: URGENT (risk ≥ 3 or high ambiguity in findings above), STANDARD (risk 2, test when scheduled), or LOW (risk 1, test if capacity allows). Give one sentence of reasoning.</div>
+
+  <div class="prompt-label">How to use this output</div>
+  <ul class="output-list">
+    <li>Design risk 4–5: schedule real-user run immediately, before any design changes to this screen.</li>
+    <li>Design risk 3: run LLM simulation with a second persona for the same screen; escalate if results diverge.</li>
+    <li>Design risk 1–2: add to the standard queue; no urgency unless adjacent scenarios are also scoring high.</li>
+    <li>High ambiguity in "Most Likely to Miss": signals a hierarchy problem — revisit visual weight before testing.</li>
+    <li>Predicted voice perception mismatch: signals a copywriting problem — audit phrase bank before testing.</li>
+    <li>Compare LLM output to real-user results after running. Large divergences indicate the LLM is missing persona signal — update the persona description in the next run.</li>
+  </ul>
+</div>
+
+</body>
+</html>
